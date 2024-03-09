@@ -8,6 +8,9 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 // les clusters pour regrouper les marqueurs
 var markerClusters = L.markerClusterGroup();
 
+// Limite de la clusterisation au département
+var clusterGroupsByDepartment = {};
+
 // Chemin vers le GeoJSON
 var geojsonFeature = 'data/dpt.geojson';
 
