@@ -1,1 +1,11 @@
-
+{
+    "googleSheetUrl": "https://docs.google.com/spreadsheets/d/194dyKaJGB2RPur_vnqCgrnAJDlrhhxyLe4MLAyjb2S0/gviz/tq?tqx=out:json",
+    "geojsonFeature": "data/dpt.geojson",
+    "iconConfigPath": "config/types.json",
+    "popupFields": ["nom", "type", "lien"],
+    "joinField": "code_dep",
+    "mapSettings": {
+        "center": [46.603354, 1.888334],
+        "zoomLevel": 6
+    }
+}
