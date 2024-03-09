@@ -83,9 +83,7 @@ const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, 
     }).addTo(map);
 
     // Log des entrées non appariées
-    if (unmatchedEntries.length > 0) {
-        console.log('Entrées du Google Sheet sans correspondance:', unmatchedEntries);
-    }
+    console.log('Entrées du Google Sheet sans correspondance:', unmatchedEntries);
 };
 
 // Fonction pour créer la légende avec le fichier de configuration
