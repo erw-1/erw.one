@@ -90,12 +90,12 @@ html, body {
 }
 
 .modal-body ul {
-    list-style-type: none; /* Enlève les puces */
     margin: 0;
     padding: 0;
 }
 
 .modal-body li {
+    list-style-type: none; /* Enlève les puces */
     padding: 10px 0;
     border-bottom: 1px solid #ddd;
     overflow: auto; /* Assurez-vous que le contenu ne déborde pas */
