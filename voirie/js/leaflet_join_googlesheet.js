@@ -76,9 +76,8 @@ function createLegend(map, typesConfig) {
     legend.onAdd = function () {
         var div = L.DomUtil.create('div', 'info legend');
         div.innerHTML += '<div class="title">Fonction des outils</div>';
-        Object.keys(typesConfig).forEach(type => {
-            const iconUrl = typesConfig[type].icon;
-            div.innerHTML += `<i style="background-image: url(${iconUrl}); background-repeat: no-repeat; background-position: center center;"></i><span>${type}</span><br>`;
+        typesConfig.forEach(function (configItem) {
+            div.innerHTML += `<i style="background-image: url(${configItem.icon}); background-repeat: no-repeat; background-position: center center;"></i><span>${configItem.type}</span><br>`;
         });
         return div;
     };
