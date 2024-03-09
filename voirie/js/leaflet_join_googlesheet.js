@@ -158,6 +158,4 @@ loadConfig().then(config => {
                 showOtherToolsModal(unmatchedEntries);
             });
     });
-}).catch(error => {
-    console.error('Erreur lors du chargement de la configuration :', error);
-});
+})
