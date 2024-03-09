@@ -138,24 +138,44 @@ const showOtherToolsModal = (unmatchedEntries) => {
     };
 };
 
-// Fonction pour initialiser la carte
+// Fonction pour initialiser la carte et ajouter les contrôles personnalisés
 const initMap = (config) => {
     const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
     L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
+    
+    // Ajouter le bouton "Autres outils" ici
+    const otherToolsButton = L.control({ position: 'topleft' });
 
-// Charger la configuration, initialiser la carte, puis montrer les entrées non appariées
+    otherToolsButton.onAdd = function(map) {
+        const button = L.DomUtil.create('button', 'btn btn-info');
+        button.innerHTML = 'Autres outils';
+        button.onclick = function() {
+            showOtherToolsModal(unmatchedEntries);
+        };
+        return button;
+    };
+    
+    otherToolsButton.addTo(map);
+    return map;
+};
+
+// Charger la configuration et initialiser la carte
 loadConfig().then(config => {
-    initMap(config); // initMap ne devrait pas avoir .then() après si elle ne retourne pas de promesse.
+    const map = initMap(config);
     loadTypesConfig(config.iconConfigPath).then(typesConfig => {
         loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
-            .then(({
-                sheetData,
-                unmatchedEntries,
-                geojsonData
-            }) => {
+            .then(({ sheetData, unmatchedEntries, geojsonData }) => {
                 createLegend(map, typesConfig);
                 addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
-                showOtherToolsModal(unmatchedEntries);
+                otherToolsButton.onAdd = function(map) {
+                    const button = L.DomUtil.create('button', 'btn btn-info');
+                    button.innerHTML = 'Autres outils';
+                    button.onclick = function() {
+                        showOtherToolsModal(unmatchedEntries);
+                    };
+                    return button;
+                };
+                otherToolsButton.addTo(map);
             });
     });
-})
+});
