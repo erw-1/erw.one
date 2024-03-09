@@ -49,13 +49,13 @@ function getCustomIcon(type) {
             iconUrl = 'img/icone_orange.png';
             break;
         case 'Surveillance':
-            iconUrl = 'img/icon_lila.png';
+            iconUrl = 'img/icone_lila.png';
             break;
         case 'VH':
-            iconUrl = 'img/icon_teal.png.png';
+            iconUrl = 'img/icone_teal.png.png';
             break;
         default:
-            iconUrl = 'img/icon_grisclair.png';
+            iconUrl = 'img/icone_grisclair.png';
     }
     return L.icon({
         iconUrl: iconUrl,
