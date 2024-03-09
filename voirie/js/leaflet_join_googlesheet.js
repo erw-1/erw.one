@@ -143,33 +143,6 @@ const initMap = (config) => {
     const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
     L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
 
-    loadTypesConfig(config.iconConfigPath).then(typesConfig => {
-        loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
-            .then(({
-                sheetData,
-                unmatchedEntries,
-                geojsonData
-            }) => {
-                createLegend(map, typesConfig);
-                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
-            });
-    });
-    const otherToolsButton = L.control({
-        position: 'topleft'
-    });
-
-    otherToolsButton.onAdd = function(map) {
-        const button = L.DomUtil.create('button', 'btn btn-info');
-        button.innerHTML = 'Autres outils';
-        button.onclick = function() {
-            showOtherToolsModal(unmatchedEntries);
-        };
-        return button;
-    };
-
-    otherToolsButton.addTo(map);
-};
-
 // Charger la configuration, initialiser la carte, puis montrer les entrées non appariées
 loadConfig().then(config => {
     initMap(config); // initMap ne devrait pas avoir .then() après si elle ne retourne pas de promesse.
@@ -187,4 +160,9 @@ loadConfig().then(config => {
     });
 }).catch(error => {
     console.error('Erreur lors du chargement de la configuration :', error);
+});
+
+// Charger la configuration, initialiser la carte, puis montrer les entrées non appariées
+loadConfig().then(config => {
+    initMap(config); // initMap ne devrait pas avoir .then() après si elle ne retourne pas de promesse.
 });
