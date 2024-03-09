@@ -47,7 +47,12 @@ function addGeoJsonToMap(sheetsData) {
         .then(response => response.json())
         .then(data => {
             L.geoJson(data, {
-                // ...
+                style: {
+                    color: '#404040',
+                    weight: 1,
+                    fillColor: '#FFF',
+                    fillOpacity: 0.5
+                },
                 onEachFeature: function (feature, layer) {
                     var departmentCode = feature.properties.code;
                     var matches = sheetsData.filter(row => row.code_dep.padStart(2, '0') === departmentCode);
