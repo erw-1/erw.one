@@ -4,8 +4,6 @@ const loadConfig = () => fetch('config/config.json').then(response => response.j
 // Fonction pour charger les types d'icônes
 const loadTypesConfig = (iconConfigPath) => fetch(iconConfigPath).then(response => response.json());
 
-const clusterGroupsByDepartment = {};
-
 // Fonction pour charger les données du Google Sheets
 const loadSheetData = (googleSheetUrl) => {
     return fetch(googleSheetUrl)
@@ -39,6 +37,7 @@ const createPopupContent = (match, config) => {
 };
 
 // Fonction pour ajouter le GeoJSON à la carte avec style personnalisé
+const clusterGroupsByDepartment = {};
 const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
     fetch(config.geojsonFeature)
         .then(response => response.json())
