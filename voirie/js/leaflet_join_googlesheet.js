@@ -86,27 +86,34 @@ const createLegend = (map, typesConfig) => {
     legend.addTo(map);
 };
 
-// Fenêtre modale des autres outils qui n'ont pas match
+// Crée et/ou affiche la fenêtre modale avec les données non appariées
 const showOtherToolsModal = () => {
+    // Rechercher une fenêtre modale existante
     let modal = document.querySelector('.other-tools-modal');
+    // Si elle n'existe pas, créez-en une
     if (!modal) {
         modal = L.DomUtil.create('div', 'other-tools-modal', document.body);
-        const list = L.DomUtil.create('ul', 'other-tools-list', modal);
+        modal.innerHTML = '<h3>Autres outils</h3><ul class="other-tools-list"></ul>';
         
-        unmatchedEntries.forEach(entry => {
-            const listItem = L.DomUtil.create('li', '', list);
-            listItem.innerHTML = `Raison: ${entry.code_dep}, Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
-        });
-
-        // Ajouter un bouton pour fermer la fenêtre modale
-        const closeButton = L.DomUtil.create('button', 'modal-close-btn', modal);
+        // Ajoutez un bouton pour fermer la modale
+        const closeButton = L.DomUtil.create('button', 'modal-close-button', modal);
         closeButton.innerHTML = 'Fermer';
         closeButton.onclick = () => {
             modal.style.display = 'none';
         };
     }
-    
-    // Afficher la fenêtre modale
+
+    // Obtenez la liste dans la modale
+    const list = modal.querySelector('.other-tools-list');
+    list.innerHTML = ''; // Vider la liste existante
+
+    // Ajoutez chaque entrée non appariée à la liste
+    unmatchedEntries.forEach(entry => {
+        const listItem = L.DomUtil.create('li', '', list);
+        listItem.innerHTML = `Raison: ${entry.code_dep}, Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
+    });
+
+    // Affichez la modale
     modal.style.display = 'block';
 };
 
@@ -141,6 +148,8 @@ const initMap = (config) => {
     });
     
     addOtherToolsButton(map);
+    // Préparer la modale (elle restera cachée jusqu'à ce que le bouton soit cliqué)
+    showOtherToolsModal();
 };
 
 // Charger la configuration et initialiser la carte et l'UI
