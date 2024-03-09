@@ -108,6 +108,7 @@ const createLegend = (map, typesConfig) => {
 
 // Fonction pour afficher la modale avec les entrées non appariées
 const showOtherToolsModal = (unmatchedEntries) => {
+    // S'assure que la modale est initialisée avant d'essayer de l'afficher
     const modal = document.getElementById('otherToolsModal');
     const list = document.getElementById('unmatchedList');
     const span = document.getElementsByClassName("close")[0];
@@ -139,7 +140,7 @@ const showOtherToolsModal = (unmatchedEntries) => {
 };
 
 // Fonction pour initialiser la carte et ajouter les contrôles personnalisés
-const initMap = (config) => {
+const initMap = (config, unmatchedEntriesCallback) => {
     const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
     L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
     
@@ -150,7 +151,7 @@ const initMap = (config) => {
         const button = L.DomUtil.create('button', 'btn btn-info');
         button.innerHTML = 'Autres outils';
         button.onclick = function() {
-            showOtherToolsModal(unmatchedEntries);
+            unmatchedEntriesCallback(); // Appelle la fonction de callback avec les entrées non appariées
         };
         return button;
     };
@@ -161,16 +162,12 @@ const initMap = (config) => {
 
 // Charger la configuration et initialiser la carte
 loadConfig().then(config => {
-    const map = initMap(config); // Initialise la carte et la stocke dans la variable map
     loadTypesConfig(config.iconConfigPath).then(typesConfig => {
         loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
             .then(({ sheetData, unmatchedEntries, geojsonData }) => {
-                createLegend(map, typesConfig); // Crée la légende
-                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData); // Ajoute le GeoJSON à la carte
-                
-                // Le bouton otherToolsButton est défini dans initMap, donc aucune nouvelle définition est nécessaire ici
-                // Juste après que toutes les données soient chargées, montrer la modale avec les entrées non appariées
-                showOtherToolsModal(unmatchedEntries);
+                const map = initMap(config, () => showOtherToolsModal(unmatchedEntries)); // Passez un callback pour afficher la modale
+                createLegend(map, typesConfig);
+                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
             });
     });
 });
