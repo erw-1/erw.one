@@ -12,7 +12,7 @@ html, body {
     margin: 10px;
 }
 
-.info.legend, h1 {
+.info.legend, h1, btn {
     padding: 6px 8px;
     background: rgba(255,255,255,0.5); /* blanc semi-transparent plus visible */
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
