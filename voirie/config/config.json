@@ -1,7 +1,8 @@
 {
     "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
     "tileLayerOptions": {
-        "maxZoom": 19
+        "maxZoom": 19,
+        "attribution": "Erwan Vinot 2024"
     },
     "googleSheetUrl": "https://docs.google.com/spreadsheets/d/194dyKaJGB2RPur_vnqCgrnAJDlrhhxyLe4MLAyjb2S0/gviz/tq?tqx=out:json",
     "geojsonFeature": "data/dpt.geojson",
