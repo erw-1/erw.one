@@ -119,7 +119,7 @@ const showOtherToolsModal = (unmatchedEntries) => {
     // Ajoute les entrées non appariées à la liste
     unmatchedEntries.forEach(entry => {
         const listItem = document.createElement('li');
-        listItem.innerHTML = `<strong>Nom:</strong> ${entry.nom}, <strong>Type:</strong> ${entry.type}, <strong>Lien:</strong> <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
+        listItem.innerHTML = `<h3>${entry.nom}</h3>, ${entry.type}, <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
         list.appendChild(listItem);
     });
 
@@ -145,7 +145,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
     L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
     
     // Ajouter le bouton "Autres outils" ici
-    const otherToolsButton = L.control({ position: 'topleft' });
+    const otherToolsButton = L.control({ position: 'topright' });
 
     otherToolsButton.onAdd = function(map) {
         const button = L.DomUtil.create('button', 'btn btn-info');
