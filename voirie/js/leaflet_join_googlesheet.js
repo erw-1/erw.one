@@ -141,7 +141,11 @@ const showOtherToolsModal = (unmatchedEntries) => {
 
 // Fonction pour initialiser la carte et ajouter les contrôles personnalisés
 const initMap = (config, unmatchedEntriesCallback) => {
-    const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
+    const map = L.map('map', {
+        zoomControl: config.mapSettings.zoomControl, // Désactive les contrôles de zoom par défaut
+        center: config.mapSettings.center,
+        zoom: config.mapSettings.zoomLevel
+    });
     L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
     
     // Ajouter le bouton "Autres outils" ici
