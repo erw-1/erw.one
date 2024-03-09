@@ -57,7 +57,7 @@ const createPopupContent = (match, config) => {
 const clusterGroupsByDepartment = {}; // pour stocker les cluster par dpt
 const unmatchedEntries = []; // pour stocker les entrées non appariées
 const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, geojsonData) => {
-    L.geoJson(sheetData.geojsonData, {
+    L.geoJson(geojsonData, {
         style: config.geoJsonStyle,
         onEachFeature: (feature, layer) => {
             const departmentCode = feature.properties.code;
