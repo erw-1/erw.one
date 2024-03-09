@@ -51,13 +51,16 @@ const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
                     const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
 
                     matches.forEach(match => {
-                        const marker = L.marker(layer.getBounds().getCenter(), { icon: getCustomIcon(match.type, typesConfig) })
-                            .bindPopup(createPopupContent(match, config));
+                        const marker = L.marker(layer.getBounds().getCenter(), { 
+                            icon: getCustomIcon(match.type, typesConfig) 
+                        }).bindPopup(createPopupContent(match, config));
                         clusterGroup.addLayer(marker);
                     });
 
-                    clusterGroupsByDepartment[departmentCode] = clusterGroup;
-                    map.addLayer(clusterGroup);
+                    if (matches.length) {
+                        clusterGroupsByDepartment[departmentCode] = clusterGroup;
+                        map.addLayer(clusterGroup);
+                    }
                 }
             }).addTo(map);
         }).catch(error => {
@@ -96,4 +99,8 @@ const initMap = (config) => {
 };
 
 // Charger la configuration et initialiser la carte et l'UI
-loadConfig().then(initMap);
+loadConfig()
+    .then(initMap)
+    .catch(error => {
+        console.error('Erreur lors du chargement de la configuration :', error);
+    });
