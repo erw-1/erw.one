@@ -37,31 +37,3 @@ body {
     font-weight: bold;
     margin-bottom: 8px;
 }
-
-.other-tools-modal {
-    display: none; /* Initialement caché */
-    position: fixed;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: 5px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    z-index: 10000000; /* S'assurer qu'il est au-dessus des autres éléments */
-}
-
-.other-tools-list {
-    list-style: none;
-    padding: 0;
-}
-
-.modal-close-button {
-    display: block;
-    position: absolute;
-    margin: 10px auto;
-    padding: 5px 10px;
-    cursor: pointer;
-    top: 10px;
-    right: 10px;
-}
