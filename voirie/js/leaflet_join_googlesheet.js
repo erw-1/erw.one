@@ -2,9 +2,8 @@
 var map = L.map('map').setView([46.603354, 1.888334], 6);
 
 // Ajouter un calque de tuiles à la carte
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap contributors'
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.jpg', {
+    maxZoom: 19
 }).addTo(map);
 
 // Ajouter le GeoJSON
