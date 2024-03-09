@@ -1,1 +1,12 @@
+html,
+body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
 
+#map {
+    width: calc(100% - 40px); /* Largeur de la fenêtre moins la marge */
+    height: calc(100% - 40px);
+    margin: 20px;
+}
