@@ -11,13 +11,14 @@ function loadTypesConfig(iconConfigPath) {
 // Fonction pour initialiser la carte
 function initMap(config) {
     var map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
-    L.tileLayer(config.tileLayer.url, config.tileLayer.options).addTo(map);
+    L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
 
-    loadTypesConfig(config.iconConfigPath).then(typesConfig => {
-        createLegend(map, typesConfig);
-        loadSheetData(config.googleSheetUrl).then(sheetData => {
-            addGeoJsonToMap(map, sheetData, typesConfig, config);
-        });
+    Promise.all([
+        loadTypesConfig(config.iconConfigPath),
+        loadSheetData(config.googleSheetUrl)
+    ]).then(([typesConfig, sheetData]) => {
+        createLegend(typesConfig, map);
+        addGeoJsonToMap(sheetData, config, typesConfig, map);
     });
 }
 
