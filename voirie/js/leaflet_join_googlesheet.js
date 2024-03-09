@@ -7,21 +7,6 @@ const loadTypesConfig = (iconConfigPath) => fetch(iconConfigPath).then(response 
 const clusterGroupsByDepartment = {};
 const unmatchedEntries = [];
 
-// Fonction pour initialiser la carte
-const initMap = (config) => {
-    const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
-    L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
-
-    Promise.all([
-        loadTypesConfig(config.iconConfigPath),
-        loadSheetData(config.googleSheetUrl)
-    ]).then(([typesConfig, sheetData]) => {
-        createLegend(map, typesConfig);
-        addGeoJsonToMap(map, sheetData, typesConfig, config);
-    });
-    
-    addOtherToolsButton(map);
-};
 
 // Fonction pour charger les données du Google Sheets
 const loadSheetData = (googleSheetUrl) => {
@@ -37,6 +22,17 @@ const loadSheetData = (googleSheetUrl) => {
                 lien: row.c[3] ? row.c[3].v : ''
             })).filter(item => item.code_dep);
         });
+};
+
+// Fonction pour obtenir une icône personnalisée en fonction du type
+const getCustomIcon = (type, typesConfig) => {
+    const iconInfo = typesConfig.find(t => t.type === type) || typesConfig.find(t => t.type === 'Autre');
+    return L.icon({
+        iconUrl: iconInfo.icon,
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+    });
 };
 
 // Créer une fonction pour générer le contenu de la popup
@@ -90,14 +86,14 @@ const createLegend = (map, typesConfig) => {
     legend.addTo(map);
 };
 
-// Fonction pour obtenir une icône personnalisée en fonction du type
-const getCustomIcon = (type, typesConfig) => {
-    const iconInfo = typesConfig.find(t => t.type === type) || typesConfig.find(t => t.type === 'Autre');
-    return L.icon({
-        iconUrl: iconInfo.icon,
-        iconSize: [25, 41],
-        iconAnchor: [12, 41],
-        popupAnchor: [1, -34],
+// Fenêtre modale des autres outils qui n'ont pas match
+const showOtherToolsModal = () => {
+    const modal = L.DomUtil.create('div', 'other-tools-modal');
+    const list = L.DomUtil.create('ul', 'other-tools-list', modal);
+    
+    unmatchedEntries.forEach(entry => {
+        const listItem = L.DomUtil.create('li', '', list);
+        listItem.innerHTML = `Raison: ${entry.code_dep}, Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
     });
 };
 
@@ -118,14 +114,20 @@ const addOtherToolsButton = (map) => {
     otherToolsControl.addTo(map);
 };
 
-const showOtherToolsModal = () => {
-    const modal = L.DomUtil.create('div', 'other-tools-modal');
-    const list = L.DomUtil.create('ul', 'other-tools-list', modal);
-    
-    unmatchedEntries.forEach(entry => {
-        const listItem = L.DomUtil.create('li', '', list);
-        listItem.innerHTML = `Raison: ${entry.code_dep}, Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
+// Fonction pour initialiser la carte
+const initMap = (config) => {
+    const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
+    L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
+
+    Promise.all([
+        loadTypesConfig(config.iconConfigPath),
+        loadSheetData(config.googleSheetUrl)
+    ]).then(([typesConfig, sheetData]) => {
+        createLegend(map, typesConfig);
+        addGeoJsonToMap(map, sheetData, typesConfig, config);
     });
+    
+    addOtherToolsButton(map);
 };
 
 // Charger la configuration et initialiser la carte et l'UI
