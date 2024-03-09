@@ -8,7 +8,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // Ajouter le GeoJSON
-var geojsonFeature = '/data/dpt.geojson'; // Mettez le chemin vers votre fichier GeoJSON
+var geojsonFeature = 'data/dpt.geojson'; // Mettez le chemin vers votre fichier GeoJSON
 
 // Utiliser AJAX pour charger le GeoJSON externe
 var xhr = new XMLHttpRequest();
