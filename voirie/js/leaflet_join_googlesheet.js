@@ -45,7 +45,7 @@ function loadSheetData() {
 function getCustomIcon(type) {
     var iconUrl;
     switch (type) {
-        case 'Condition de conduite':
+        case 'Condition de circulation':
             iconUrl = 'img/icone_orange.png';
             break;
         case 'Surveillance':
