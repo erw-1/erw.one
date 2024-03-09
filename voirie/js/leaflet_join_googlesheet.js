@@ -72,7 +72,9 @@ const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, 
             const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
 
             matches.forEach(match => {
-                const marker = L.marker(layer.getBounds().getCenter(), { icon: getCustomIcon(match.type, typesConfig) })
+                const marker = L.marker(layer.getBounds().getCenter(), {
+                        icon: getCustomIcon(match.type, typesConfig)
+                    })
                     .bindPopup(createPopupContent(match, config));
                 clusterGroup.addLayer(marker);
             });
@@ -88,7 +90,9 @@ const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, 
 
 // Fonction pour créer la légende avec le fichier de configuration
 const createLegend = (map, typesConfig) => {
-    const legend = L.control({ position: 'bottomright' });
+    const legend = L.control({
+        position: 'bottomright'
+    });
 
     legend.onAdd = () => {
         const div = L.DomUtil.create('div', 'info legend');
@@ -102,6 +106,38 @@ const createLegend = (map, typesConfig) => {
     legend.addTo(map);
 };
 
+// Fonction pour afficher la modale avec les entrées non appariées
+const showOtherToolsModal = (unmatchedEntries) => {
+    const modal = document.getElementById('otherToolsModal');
+    const list = document.getElementById('unmatchedList');
+    const span = document.getElementsByClassName("close")[0];
+
+    // Vide la liste précédente
+    list.innerHTML = '';
+
+    // Ajoute les entrées non appariées à la liste
+    unmatchedEntries.forEach(entry => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
+        list.appendChild(listItem);
+    });
+
+    // Affiche la modale
+    modal.style.display = "block";
+
+    // Ferme la modale lorsque l'utilisateur clique sur (x)
+    span.onclick = function() {
+        modal.style.display = "none";
+    };
+
+    // Ferme la modale lorsque l'utilisateur clique n'importe où en dehors de la modale
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
+};
+
 // Fonction pour initialiser la carte
 const initMap = (config) => {
     const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
@@ -109,16 +145,43 @@ const initMap = (config) => {
 
     loadTypesConfig(config.iconConfigPath).then(typesConfig => {
         loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
-            .then(({ sheetData, unmatchedEntries, geojsonData }) => {
+            .then(({
+                sheetData,
+                unmatchedEntries,
+                geojsonData
+            }) => {
                 createLegend(map, typesConfig);
                 addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
             });
     });
-};
-    
-// Charger la configuration et initialiser la carte et l'UI
-loadConfig()
-    .then(initMap)
-    .catch(error => {
-        console.error('Erreur lors du chargement de la configuration :', error);
+    const otherToolsButton = L.control({
+        position: 'topleft'
     });
+
+    otherToolsButton.onAdd = function(map) {
+        const button = L.DomUtil.create('button', 'btn btn-info');
+        button.innerHTML = 'Autres outils';
+        button.onclick = function() {
+            showOtherToolsModal(unmatchedEntries);
+        };
+        return button;
+    };
+
+    otherToolsButton.addTo(map);
+};
+
+// Charger la configuration, initialiser la carte, puis montrer les entrées non appariées
+loadConfig().then(config => {
+    initMap(config).then(() => {
+        loadTypesConfig(config.iconConfigPath).then(typesConfig => {
+            loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
+                .then(({
+                    sheetData,
+                    unmatchedEntries,
+                    geojsonData
+                }) => {
+                    showOtherToolsModal(unmatchedEntries);
+                });
+        });
+    });
+});
