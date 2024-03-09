@@ -105,5 +105,28 @@ function addGeoJsonToMap(sheetsData) {
         });
 }
 
+// Contenu légende
+var types = {
+    'Condition de circulation': 'img/icone_orange.png',
+    'Surveillance': 'img/icone_lila.png',
+    'VH': 'img/icone_teal.png',
+    'Autre': 'img/icone_grisclair.png'
+};
+
+// Fonction pour créer la légende
+var legend = L.control({ position: 'bottomright' });
+
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'info legend');
+    div.innerHTML += "<h4>Fonction des outils</h4>";
+    for (var type in types) {
+        div.innerHTML += '<i style="background-image: url(' + types[type] + '); background-repeat: no-repeat; background-position: center; width: 25px; height: 41px; display: inline-block; margin-right: 5px;"></i>' + type + '<br>';
+    }
+    return div;
+};
+
+// Ajoutez la légende à la carte
+legend.addTo(map);
+
 // add data
 loadSheetData().then(addGeoJsonToMap);
