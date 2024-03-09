@@ -1,6 +1,12 @@
 {
     "googleSheetUrl": "https://docs.google.com/spreadsheets/d/194dyKaJGB2RPur_vnqCgrnAJDlrhhxyLe4MLAyjb2S0/gviz/tq?tqx=out:json",
     "geojsonFeature": "data/dpt.geojson",
+    "geoJsonStyle": {
+        "color": "#666666",
+        "weight": 1, 
+        "fillColor": "#FFFFFF",
+        "fillOpacity": 0.5
+    },
     "joinField": "code_dep",
     "popupFields": ["nom", "type", "lien"],
     "popupTemplate": "<h3>{nom}</h3><p>Type: {type}</p><p><a href='{lien}' target='_blank'>Plus d'infos</a></p>",
