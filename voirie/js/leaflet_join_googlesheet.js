@@ -40,6 +40,9 @@ const createPopupContent = (match, config) => {
 const clusterGroupsByDepartment = {}; // pour stocker les cluster par dpt
 const unmatchedEntries = []; // pour stocker les entrées non appariées
 const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
+    // Marqueurs pour les entrées correspondantes
+    const matchedEntries = new Set();
+
     fetch(config.geojsonFeature)
         .then(response => response.json())
         .then(data => {
@@ -47,7 +50,11 @@ const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
                 style: config.geoJsonStyle,
                 onEachFeature: (feature, layer) => {
                     const departmentCode = feature.properties.code;
-                    const matches = sheetsData.filter(row => row[config.joinField].padStart(2, '0') === departmentCode);
+                    const matches = sheetsData.filter(row => {
+                        const matchCondition = row[config.joinField].padStart(2, '0') === departmentCode;
+                        if (matchCondition) matchedEntries.add(row);
+                        return matchCondition;
+                    });
 
                     if (matches.length > 0) {
                         const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
@@ -65,9 +72,15 @@ const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
                 }
             }).addTo(map);
             
-            // Après avoir traité toutes les fonctionnalités, imprimez les entrées non appariées
+            // Identifier les entrées non appariées après avoir traité tous les départements
+            sheetsData.forEach(row => {
+                if (!matchedEntries.has(row)) {
+                    unmatchedEntries.push(row);
+                }
+            });
+
             if (unmatchedEntries.length > 0) {
-                console.log('Entrées non appariées:', unmatchedEntries);
+                console.log('Entrées non appariées du Google Sheet:', unmatchedEntries);
             }
         }).catch(error => {
             console.error('Erreur lors de l’ajout du GeoJSON à la carte :', error);
