@@ -4,12 +4,20 @@
         "icon": "img/icone_orange.png"
     },
     {
-        "type": "Surveillance",
-        "icon": "img/icone_lila.png"
+        "type": "Conditions de circulation + VH",
+        "icon": "img/icone_orange_teal.png"
     },
     {
         "type": "VH",
         "icon": "img/icone_teal.png"
+    },
+    {
+        "type": "Surveillance",
+        "icon": "img/icone_lila.png"
+    },
+    {
+        "type": "Multi",
+        "icon": "img/icone_rainbow.png"
     },
     {
         "type": "Autre",
