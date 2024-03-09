@@ -19,6 +19,8 @@ const initMap = (config) => {
         createLegend(map, typesConfig);
         addGeoJsonToMap(map, sheetData, typesConfig, config);
     });
+    
+    addOtherToolsButton(map);
 };
 
 // Fonction pour charger les données du Google Sheets
@@ -128,4 +130,3 @@ const showOtherToolsModal = () => {
 
 // Charger la configuration et initialiser la carte et l'UI
 loadConfig().then(initMap);
-addOtherToolsButton(map);
