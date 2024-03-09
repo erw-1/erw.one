@@ -41,6 +41,30 @@ function loadSheetData() {
     });
 }
 
+// Fonction pour obtenir une icône personnalisée en fonction du type
+function getCustomIcon(type) {
+    var iconUrl;
+    switch (type) {
+        case 'Condition de conduite':
+            iconUrl = 'img/icone_orange.png';
+            break;
+        case 'Surveillance':
+            iconUrl = 'img/icon_lila.png';
+            break;
+        case 'VH':
+            iconUrl = 'img/icon_teal.png.png';
+            break;
+        default:
+            iconUrl = 'img/icon_grisclair.png';
+    }
+    return L.icon({
+        iconUrl: iconUrl,
+        iconSize: [25, 41], // Taille de l'icône
+        iconAnchor: [12, 41], // Point de l'icône qui correspondra à la localisation du marqueur
+        popupAnchor: [1, -34], // Point où la popup s'affichera
+    });
+}
+
 // Fonction pour ajouter le GeoJSON à la carte + style personnalisé
 function addGeoJsonToMap(sheetsData) {
     fetch(geojsonFeature)
@@ -58,17 +82,15 @@ function addGeoJsonToMap(sheetsData) {
                     var matches = sheetsData.filter(row => row.code_dep.padStart(2, '0') === departmentCode);
     
                     if (!clusterGroupsByDepartment[departmentCode]) {
-                        clusterGroupsByDepartment[departmentCode] = new L.MarkerClusterGroup({
-                            // mettre des options spécifiques pour les clusters si nécessaire
-                            // Par exemple, maxClusterRadius: 20 pour réduire le rayon de clusterisation
-                        });
+                        clusterGroupsByDepartment[departmentCode] = new L.MarkerClusterGroup();
                         map.addLayer(clusterGroupsByDepartment[departmentCode]);
                     }
     
                     if (matches.length) {
                         var center = layer.getBounds().getCenter();
                         matches.forEach(match => {
-                            var marker = L.marker(center).bindPopup(
+                            var customIcon = getCustomIcon(match.type); // Obtenez l'icône en fonction du type
+                            var marker = L.marker(center, { icon: customIcon }).bindPopup(
                                 `Nom: ${match.nom}<br>Type: ${match.type}<br>` +
                                 `<a href="${match.lien}" target="_blank">Plus d'infos</a>`
                             );
