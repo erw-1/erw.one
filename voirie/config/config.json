@@ -9,7 +9,7 @@
     },
     "joinField": "code_dep",
     "popupFields": ["nom", "type", "lien"],
-    "popupTemplate": "<h3>{nom} ({code_dep})</h3><p>Type: {type}</p><p><a href='{lien}' target='_blank'>Ouvrir l'outil</a></p>",
+    "popupTemplate": "<h3>{nom} ({code_dep})</h3><p>Fonction: {type}</p><p><a href='{lien}' target='_blank'>Ouvrir l'outil</a></p>",
     "iconConfigPath": "config/types.json",
     "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
     "tileLayerOptions": {
