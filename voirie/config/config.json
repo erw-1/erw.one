@@ -1,14 +1,15 @@
 {
+    "googleSheetUrl": "https://docs.google.com/spreadsheets/d/194dyKaJGB2RPur_vnqCgrnAJDlrhhxyLe4MLAyjb2S0/gviz/tq?tqx=out:json",
+    "geojsonFeature": "data/dpt.geojson",
+    "joinField": "code_dep",
+    "popupFields": ["nom", "type", "lien"],
+    "popupTemplate": "<h3>{nom}</h3><p>Type: {type}</p><p><a href='{lien}' target='_blank'>Plus d'infos</a></p>",
+    "iconConfigPath": "config/types.json",
     "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
     "tileLayerOptions": {
         "maxZoom": 19,
         "attribution": "Erwan Vinot 2024"
     },
-    "googleSheetUrl": "https://docs.google.com/spreadsheets/d/194dyKaJGB2RPur_vnqCgrnAJDlrhhxyLe4MLAyjb2S0/gviz/tq?tqx=out:json",
-    "geojsonFeature": "data/dpt.geojson",
-    "iconConfigPath": "config/types.json",
-    "popupFields": ["nom", "type", "lien"],
-    "joinField": "code_dep",
     "mapSettings": {
         "center": [46.603354, 1.888334],
         "zoomLevel": 6
