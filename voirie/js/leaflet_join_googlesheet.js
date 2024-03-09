@@ -10,34 +10,37 @@ const loadSheetDataAndFindUnmatched = (googleSheetUrl, geojsonFeature) => {
         .then(response => response.text())
         .then(data => {
             const jsonText = data.substring(47).slice(0, -2);
-            const sheetData = JSON.parse(jsonText).table.rows.map(row => ({
+            const sheetData = JSON.parse(jsonText).table.rows.map((row, index) => ({
                 nom: row.c[0] ? row.c[0].v : '',
-                code_dep: row.c[1] ? row.c[1].v.toString() : null,
+                code_dep: row.c[1] ? row.c[1].v.toString() : null, // Gardez la valeur incohérente telle quelle
                 type: row.c[2] ? row.c[2].v : '',
                 lien: row.c[3] ? row.c[3].v : ''
             }));
 
+            const unmatchedEntries = []; // Utiliser un tableau pour enregistrer les index des entrées non appariées
+            sheetData.forEach((entry, index) => {
+                unmatchedEntries.push(index); // Commencez par supposer que toutes les entrées sont non appariées
+            });
+
             return fetch(geojsonFeature)
                 .then(response => response.json())
                 .then(geojsonData => {
-                    // Initialiser les entrées non appariées
-                    const unmatchedEntries = new Set(sheetData.map((entry, index) => index)); // Utilisez un Set pour stocker les indices des données non appariées
-
                     geojsonData.features.forEach(feature => {
                         const departmentCode = feature.properties.code;
                         sheetData.forEach((entry, index) => {
-                            if (entry.code_dep.padStart(2, '0') === departmentCode) {
-                                unmatchedEntries.delete(index); // Supprimer l'indice correspondant
+                            if (entry.code_dep && entry.code_dep.padStart(2, '0') === departmentCode) {
+                                const matchedIndex = unmatchedEntries.indexOf(index);
+                                if (matchedIndex !== -1) {
+                                    unmatchedEntries.splice(matchedIndex, 1); // Supprimez cette entrée des non appariées
+                                }
                             }
                         });
                     });
 
-                    // Transformer les indices non appariés en objets de données réelles
-                    const unmatchedData = Array.from(unmatchedEntries).map(index => sheetData[index]);
-
+                    const unmatchedData = unmatchedEntries.map(index => sheetData[index]);
                     return {
                         sheetData,
-                        unmatchedEntries: unmatchedData, // Maintenant un tableau d'objets
+                        unmatchedEntries: unmatchedData,
                         geojsonData
                     };
                 });
