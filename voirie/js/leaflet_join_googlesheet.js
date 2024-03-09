@@ -155,7 +155,17 @@ const initMap = (config, unmatchedEntriesCallback) => {
         };
         return button;
     };
+    // Ajouter l'échelle
+    L.control.scale({ position: 'bottomleft' }).addTo(map);
     
+    // Ajouter le titre
+    const titleControl = L.control({ position: 'topleft' });
+    titleControl.onAdd = function(map) {
+        const div = L.DomUtil.create('div', 'map-title');
+        div.innerHTML = '<h1>Inventaire des outils de voirie départementaux</h1>';
+        return div;
+    };
+    titleControl.addTo(map);
     otherToolsButton.addTo(map);
     return map;
 };
