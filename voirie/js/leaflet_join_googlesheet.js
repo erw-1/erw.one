@@ -117,7 +117,7 @@ function createLegend(typesConfig) {
         div.innerHTML += '<div class="title">Fonction des outils</div>'; // Ajouter un titre à votre légende si nécessaire
         Object.keys(typesConfig).forEach(function (type) {
             var iconUrl = typesConfig[type].icon;
-            div.innerHTML += '<i style="background-image: url(' + iconUrl + '); background-repeat: no-repeat; background-position: center center; width: 25px; height: 41px;"></i><span>' + type + '</span><br>';
+            div.innerHTML += '<i style="background-image: url(' + iconUrl + '); background-repeat: no-repeat; background-position: center center;"></i><span>' + type + '</span><br>';
         });
         return div;
     };
