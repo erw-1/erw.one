@@ -172,16 +172,19 @@ const initMap = (config) => {
 
 // Charger la configuration, initialiser la carte, puis montrer les entrées non appariées
 loadConfig().then(config => {
-    initMap(config).then(() => {
-        loadTypesConfig(config.iconConfigPath).then(typesConfig => {
-            loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
-                .then(({
-                    sheetData,
-                    unmatchedEntries,
-                    geojsonData
-                }) => {
-                    showOtherToolsModal(unmatchedEntries);
-                });
-        });
+    initMap(config); // initMap ne devrait pas avoir .then() après si elle ne retourne pas de promesse.
+    loadTypesConfig(config.iconConfigPath).then(typesConfig => {
+        loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
+            .then(({
+                sheetData,
+                unmatchedEntries,
+                geojsonData
+            }) => {
+                createLegend(map, typesConfig);
+                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
+                showOtherToolsModal(unmatchedEntries);
+            });
     });
+}).catch(error => {
+    console.error('Erreur lors du chargement de la configuration :', error);
 });
