@@ -118,12 +118,13 @@ var legend = L.control({ position: 'bottomright' });
 
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
-    div.innerHTML += "<h4>Fonction des outils</h4>";
+    div.innerHTML += '<div class="title">Fonction des outils</div>'; // Ajouter un titre à votre légende si nécessaire
     for (var type in types) {
-        div.innerHTML += '<i style="background-image: url(' + types[type] + '); background-repeat: no-repeat; background-position: center; width: 25px; height: 41px; display: inline-block; margin-right: 5px;"></i>' + type + '<br>';
+        div.innerHTML += '<i style="background-image: url(' + types[type] + '); background-repeat: no-repeat; background-position: center center;"></i><span>' + type + '</span><br>';
     }
     return div;
 };
+
 
 // Ajoutez la légende à la carte
 legend.addTo(map);
