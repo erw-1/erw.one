@@ -1,0 +1,18 @@
+[
+    {
+        "type": "Conditions de circulation",
+        "icon": "img/icone_orange.png"
+    },
+    {
+        "type": "Surveillance",
+        "icon": "img/icone_lila.png"
+    },
+    {
+        "type": "VH",
+        "icon": "img/icone_teal.png"
+    },
+    {
+        "type": "Autre",
+        "icon": "img/icone_grisclair.png"
+    }
+]
