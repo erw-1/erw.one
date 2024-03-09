@@ -58,7 +58,7 @@ html, body {
     padding: 20px;
     border-radius: 5px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    width: 50%; /* Ajustez la largeur de la modale selon vos besoins */
+    width: 50%;
 }
 
 .modal-header,
@@ -95,10 +95,9 @@ html, body {
 }
 
 .modal-body li {
-    list-style-type: none; /* Enlève les puces */
     padding: 10px 0;
     border-bottom: 1px solid #ddd;
-    overflow: auto; /* Assurez-vous que le contenu ne déborde pas */
+    overflow: auto;
 }
 
 .modal-body li:last-child {
@@ -112,4 +111,8 @@ html, body {
 
 .modal-body a:hover {
     text-decoration: underline;
+}
+
+.modal h3 {
+    margin-bottom: 4px !important;
 }
