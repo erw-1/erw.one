@@ -6,21 +6,24 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
     maxZoom: 19
 }).addTo(map);
 
-// Ajouter le GeoJSON
-var geojsonFeature = 'data/dpt.geojson'; // Mettez le chemin vers votre fichier GeoJSON
+// Chemin vers votre fichier GeoJSON
+var geojsonFeature = 'data/dpt.geojson';
 
-// Utiliser AJAX pour charger le GeoJSON externe
-var xhr = new XMLHttpRequest();
-xhr.open('GET', geojsonFeature, true);
-xhr.responseType = 'json';
-xhr.onload = function() {
-    if (xhr.status === 200) {
-        var data = xhr.response;
+// Ajouter le GeoJSON avec un style personnalisé
+fetch(geojsonFeature)
+    .then(response => response.json())
+    .then(data => {
         L.geoJson(data, {
+            style: {
+                color: '#000',
+                weight: 1,
+                fillColor: '#FFF',
+                fillOpacity: 0.7
+            },
             onEachFeature: function (feature, layer) {
                 layer.bindPopup(feature.properties.nom);
             }
         }).addTo(map);
-    }
-};
-xhr.send();
+    }).catch(error => {
+        console.error('Erreur GeoJSON :', error);
+    });
