@@ -4,19 +4,36 @@ const loadConfig = () => fetch('config/config.json').then(response => response.j
 // Fonction pour charger les types d'icônes
 const loadTypesConfig = (iconConfigPath) => fetch(iconConfigPath).then(response => response.json());
 
-// Fonction pour charger les données du Google Sheets
-const loadSheetData = (googleSheetUrl) => {
+// Fonction pour charger les données du Google Sheets et trouver les entrées non appariées
+const loadSheetDataAndFindUnmatched = (googleSheetUrl, geojsonFeature) => {
     return fetch(googleSheetUrl)
         .then(response => response.text())
         .then(data => {
             const jsonText = data.substring(47).slice(0, -2);
-            const rows = JSON.parse(jsonText).table.rows;
-            return rows.map(row => ({
+            const sheetData = JSON.parse(jsonText).table.rows.map(row => ({
                 nom: row.c[0] ? row.c[0].v : '',
                 code_dep: row.c[1] ? row.c[1].v.toString() : '',
                 type: row.c[2] ? row.c[2].v : '',
                 lien: row.c[3] ? row.c[3].v : ''
-            })).filter(item => item.code_dep);
+            }));
+
+            return fetch(geojsonFeature)
+                .then(response => response.json())
+                .then(geojsonData => {
+                    const unmatchedEntries = sheetData.slice(); // Créer une copie des données de la feuille
+                    geojsonData.features.forEach(feature => {
+                        const departmentCode = feature.properties.code;
+                        const matchedIndex = unmatchedEntries.findIndex(entry => entry.code_dep.padStart(2, '0') === departmentCode);
+                        if (matchedIndex !== -1) {
+                            unmatchedEntries.splice(matchedIndex, 1); // Supprimer l'entrée correspondante
+                        }
+                    });
+                    return {
+                        sheetData,
+                        unmatchedEntries,
+                        geojsonData
+                    };
+                });
         });
 };
 
@@ -39,52 +56,29 @@ const createPopupContent = (match, config) => {
 // Fonction pour ajouter le GeoJSON à la carte avec style personnalisé
 const clusterGroupsByDepartment = {}; // pour stocker les cluster par dpt
 const unmatchedEntries = []; // pour stocker les entrées non appariées
-const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
-    // Marqueurs pour les entrées correspondantes
-    const matchedEntries = new Set();
+const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config) => {
+    L.geoJson(sheetData.geojsonData, {
+        style: config.geoJsonStyle,
+        onEachFeature: (feature, layer) => {
+            const departmentCode = feature.properties.code;
+            const matches = sheetData.filter(row => row[config.joinField].padStart(2, '0') === departmentCode);
+            const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
 
-    fetch(config.geojsonFeature)
-        .then(response => response.json())
-        .then(data => {
-            L.geoJson(data, {
-                style: config.geoJsonStyle,
-                onEachFeature: (feature, layer) => {
-                    const departmentCode = feature.properties.code;
-                    const matches = sheetsData.filter(row => {
-                        const matchCondition = row[config.joinField].padStart(2, '0') === departmentCode;
-                        if (matchCondition) matchedEntries.add(row);
-                        return matchCondition;
-                    });
-
-                    if (matches.length > 0) {
-                        const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
-                        matches.forEach(match => {
-                            const marker = L.marker(layer.getBounds().getCenter(), { icon: getCustomIcon(match.type, typesConfig) })
-                                .bindPopup(createPopupContent(match, config));
-                            clusterGroup.addLayer(marker);
-                        });
-                        clusterGroupsByDepartment[departmentCode] = clusterGroup;
-                        map.addLayer(clusterGroup);
-                    } else {
-                        // S'il n'y a pas de correspondance, ajoutez-le à la liste des entrées non appariées
-                        unmatchedEntries.push({ departmentCode, feature });
-                    }
-                }
-            }).addTo(map);
-            
-            // Identifier les entrées non appariées après avoir traité tous les départements
-            sheetsData.forEach(row => {
-                if (!matchedEntries.has(row)) {
-                    unmatchedEntries.push(row);
-                }
+            matches.forEach(match => {
+                const marker = L.marker(layer.getBounds().getCenter(), { icon: getCustomIcon(match.type, typesConfig) })
+                    .bindPopup(createPopupContent(match, config));
+                clusterGroup.addLayer(marker);
             });
 
-            if (unmatchedEntries.length > 0) {
-                console.log('Entrées non appariées du Google Sheet:', unmatchedEntries);
-            }
-        }).catch(error => {
-            console.error('Erreur lors de l’ajout du GeoJSON à la carte :', error);
-        });
+            clusterGroupsByDepartment[departmentCode] = clusterGroup;
+            map.addLayer(clusterGroup);
+        }
+    }).addTo(map);
+
+    // Log des entrées non appariées
+    if (unmatchedEntries.length > 0) {
+        console.log('Entrées du Google Sheet sans correspondance:', unmatchedEntries);
+    }
 };
 
 // Fonction pour créer la légende avec le fichier de configuration
