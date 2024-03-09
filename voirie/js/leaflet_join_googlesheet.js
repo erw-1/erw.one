@@ -5,6 +5,14 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
     maxZoom: 19
 }).addTo(map);
 
+// Fonction pour charger le fichier de configuration des types
+function loadTypesConfig() {
+    return fetch('config/types.json')
+        .then(response => response.json());
+}
+
+var typesConfig = {};
+
 // les clusters pour regrouper les marqueurs
 var markerClusters = L.markerClusterGroup();
 
@@ -43,22 +51,9 @@ function loadSheetData() {
 
 // Fonction pour obtenir une icône personnalisée en fonction du type
 function getCustomIcon(type) {
-    var iconUrl;
-    switch (type) {
-        case 'Condition de circulation':
-            iconUrl = 'img/icone_orange.png';
-            break;
-        case 'Surveillance':
-            iconUrl = 'img/icone_lila.png';
-            break;
-        case 'VH':
-            iconUrl = 'img/icone_teal.png';
-            break;
-        default:
-            iconUrl = 'img/icone_grisclair.png';
-    }
+    var iconInfo = typesConfig[type] || typesConfig['Autre'];
     return L.icon({
-        iconUrl: iconUrl,
+        iconUrl: iconInfo.icon,
         iconSize: [25, 41], // Taille de l'icône
         iconAnchor: [12, 41], // Point de l'icône qui correspondra à la localisation du marqueur
         popupAnchor: [1, -34], // Point où la popup s'affichera
@@ -113,21 +108,30 @@ var types = {
     'Autre': 'img/icone_grisclair.png'
 };
 
-// Fonction pour créer la légende
-var legend = L.control({ position: 'bottomright' });
+// Fonction pour créer la légende avec le fichier de configuration
+function createLegend(typesConfig) {
+    var legend = L.control({ position: 'bottomright' });
 
-legend.onAdd = function (map) {
-    var div = L.DomUtil.create('div', 'info legend');
-    div.innerHTML += '<div class="title">Fonction des outils</div>'; // Ajouter un titre à votre légende si nécessaire
-    for (var type in types) {
-        div.innerHTML += '<i style="background-image: url(' + types[type] + '); background-repeat: no-repeat; background-position: center center;"></i><span>' + type + '</span><br>';
-    }
-    return div;
-};
+    legend.onAdd = function (map) {
+        var div = L.DomUtil.create('div', 'info legend');
+        div.innerHTML += '<div class="title">Fonction des outils</div>'; // Ajouter un titre à votre légende si nécessaire
+        Object.keys(typesConfig).forEach(function (type) {
+            var iconUrl = typesConfig[type].icon;
+            div.innerHTML += '<i style="background-image: url(' + iconUrl + '); background-repeat: no-repeat; background-position: center center; width: 25px; height: 41px;"></i><span>' + type + '</span><br>';
+        });
+        return div;
+    };
 
+    legend.addTo(map);
+}
 
-// Ajoutez la légende à la carte
-legend.addTo(map);
+// Charger la configuration des types puis créer la légende et charger les données
+loadTypesConfig().then(function (config) {
+    typesConfig = config.reduce(function (acc, typeInfo) {
+        acc[typeInfo.type] = typeInfo;
+        return acc;
+    }, {});
 
-// add data
-loadSheetData().then(addGeoJsonToMap);
+    createLegend(typesConfig);
+    loadSheetData().then(addGeoJsonToMap);
+});
