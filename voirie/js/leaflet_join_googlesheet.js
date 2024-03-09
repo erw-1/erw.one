@@ -44,16 +44,19 @@ function addGeoJsonToMap(sheetsData) {
         .then(response => response.json())
         .then(data => {
             L.geoJson(data, {
-                style: {
-                    color: '#404040',
-                    weight: 1,
-                    fillColor: '#FFF',
-                    fillOpacity: 0.5
-                },
+                // ...
                 onEachFeature: function (feature, layer) {
                     var departmentCode = feature.properties.code;
                     var matches = sheetsData.filter(row => row.code_dep.padStart(2, '0') === departmentCode);
-
+    
+                    if (!clusterGroupsByDepartment[departmentCode]) {
+                        clusterGroupsByDepartment[departmentCode] = new L.MarkerClusterGroup({
+                            // mettre des options spécifiques pour les clusters si nécessaire
+                            // Par exemple, maxClusterRadius: 20 pour réduire le rayon de clusterisation
+                        });
+                        map.addLayer(clusterGroupsByDepartment[departmentCode]);
+                    }
+    
                     if (matches.length) {
                         var center = layer.getBounds().getCenter();
                         matches.forEach(match => {
@@ -61,13 +64,11 @@ function addGeoJsonToMap(sheetsData) {
                                 `Nom: ${match.nom}<br>Type: ${match.type}<br>` +
                                 `<a href="${match.lien}" target="_blank">Plus d'infos</a>`
                             );
-                            markerClusters.addLayer(marker);
+                            clusterGroupsByDepartment[departmentCode].addLayer(marker);
                         });
                     }
                 }
             }).addTo(map);
-
-            map.addLayer(markerClusters);
         })
         .catch(error => {
             console.error('Erreur lors de l’ajout du GeoJSON à la carte :', error);
