@@ -14,7 +14,7 @@ html, body {
 
 .info.legend {
     padding: 6px 8px;
-    background: rgba(255,255,255,0.8); /* blanc semi-transparent plus visible */
+    background: rgba(255,255,255,0.5); /* blanc semi-transparent plus visible */
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
     line-height: 18px; /* Ajustez la hauteur de ligne pour les éléments de légende */
@@ -23,10 +23,12 @@ html, body {
 
 .legend i {
     width: 18px; /* Nouvelle largeur de l'icône */
-    height: 30px; /* Nouvelle hauteur de l'icône */
+    height: 30px; /* Nouvelle hauteur de l'icône, arrondie */
     float: left;
     margin-right: 8px;
-    margin-top: 6px; /* Ajustement pour centrer verticalement */
+    background-size: contain; /* S'assure que l'icône est entièrement visible */
+    background-position: center center;
+    margin-top: -3px; /* Ajustement pour centrer verticalement si nécessaire */
 }
 
 .legend .title {
@@ -45,7 +47,7 @@ html, body {
     width: 100%;
     height: 100%;
     overflow: auto;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(0,0,0,0.5);
     backdrop-filter: blur(10px);
 }
 
