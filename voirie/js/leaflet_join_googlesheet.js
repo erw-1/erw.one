@@ -56,10 +56,10 @@ function addGeoJsonToMap(map, sheetsData, typesConfig, config) {
 
                     matches.forEach(match => {
                         const customIcon = getCustomIcon(match.type, typesConfig);
-                        const marker = L.marker(layer.getBounds().getCenter(), { icon: customIcon }).bindPopup(
-                            config.popupFields.map(field => `${field}: ${match[field]}`).join('<br>') +
-                            `<a href="${match.lien}" target="_blank">Plus d'infos</a>`
-                        );
+                        const popupContent = config.popupTemplate.replace(/\{(\w+)\}/g, function(_, key) {
+                            return match[key] || '';
+                        });
+                        const marker = L.marker(layer.getBounds().getCenter(), { icon: customIcon }).bindPopup(popupContent);
                         clusterGroupsByDepartment[departmentCode].addLayer(marker);
                     });
                 }
