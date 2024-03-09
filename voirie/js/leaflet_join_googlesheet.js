@@ -161,21 +161,17 @@ const initMap = (config) => {
 
 // Charger la configuration et initialiser la carte
 loadConfig().then(config => {
-    const map = initMap(config);
+    const map = initMap(config); // Initialise la carte et la stocke dans la variable map
     loadTypesConfig(config.iconConfigPath).then(typesConfig => {
         loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
             .then(({ sheetData, unmatchedEntries, geojsonData }) => {
-                createLegend(map, typesConfig);
-                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
-                otherToolsButton.onAdd = function(map) {
-                    const button = L.DomUtil.create('button', 'btn btn-info');
-                    button.innerHTML = 'Autres outils';
-                    button.onclick = function() {
-                        showOtherToolsModal(unmatchedEntries);
-                    };
-                    return button;
-                };
-                otherToolsButton.addTo(map);
+                createLegend(map, typesConfig); // Crée la légende
+                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData); // Ajoute le GeoJSON à la carte
+                
+                // Le bouton otherToolsButton est défini dans initMap, donc aucune nouvelle définition est nécessaire ici
+                // Juste après que toutes les données soient chargées, montrer la modale avec les entrées non appariées
+                showOtherToolsModal(unmatchedEntries);
             });
     });
 });
+
