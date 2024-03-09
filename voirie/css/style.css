@@ -1,9 +1,9 @@
-html,
-body {
+html, body {
     height: 100%;
     margin: 0;
     padding: 0;
     overflow: hidden;
+    font-family: Arial, sans-serif; /* Appliquez la même police à toute la page */
 }
 
 #map {
@@ -14,21 +14,18 @@ body {
 
 .info.legend {
     padding: 6px 8px;
-    font: 14px/16px Arial, Helvetica, sans-serif;
-    background: rgba(255,255,255,0.5); /* blanc semi-transparent */
+    background: rgba(255,255,255,0.8); /* blanc semi-transparent plus visible */
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
-    line-height: 30px; /* Ajuster pour centrer le texte verticalement avec les icônes */
+    line-height: 18px; /* Ajustez la hauteur de ligne pour les éléments de légende */
 }
 
 .legend i {
     width: 18px; /* Nouvelle largeur de l'icône */
-    height: 30px; /* Nouvelle hauteur de l'icône, arrondie */
+    height: 30px; /* Nouvelle hauteur de l'icône */
     float: left;
     margin-right: 8px;
-    background-size: contain; /* S'assure que l'icône est entièrement visible */
-    background-position: center center;
-    margin-top: -3px; /* Ajustement pour centrer verticalement si nécessaire */
+    margin-top: 6px; /* Ajustement pour centrer verticalement */
 }
 
 .legend .title {
@@ -39,75 +36,76 @@ body {
 }
 
 .modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0,0,0,0.6);
+    display: none; /* Reste caché jusqu'à ce qu'il soit activé */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
 }
 
 .modal-content {
-  position: relative;
-  background-color: #ffffff;
-  margin: 10% auto;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  width: 80%;
+    position: relative;
+    background-color: #ffffff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: 50%; /* Ajustez la largeur de la modale selon vos besoins */
 }
 
 .modal-header,
 .modal-footer {
-  padding: 10px 20px;
+    padding: 10px 20px;
 }
 
 .modal-title {
-  margin: 0;
-  color: #333333;
+    margin: 0;
+    color: #333333;
 }
 
 .close {
-  color: #aaaaaa;
-  float: right;
-  font-size: 24px;
-  font-weight: bold;
+    color: #aaaaaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
 }
 
 .close:hover,
 .close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
 }
 
 .modal-body {
-  padding: 2px 16px;
+    padding: 2px 16px;
 }
 
 .modal-body ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
+    list-style-type: none; /* Enlève les puces */
+    margin: 0;
+    padding: 0;
 }
 
 .modal-body li {
-  padding: 10px 0;
-  border-bottom: 1px solid #ddd;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+    overflow: auto; /* Assurez-vous que le contenu ne déborde pas */
 }
 
 .modal-body li:last-child {
-  border-bottom: none;
+    border-bottom: none;
 }
 
 .modal-body a {
-  color: #0066cc;
-  text-decoration: none;
+    color: #0066cc;
+    text-decoration: none;
 }
 
 .modal-body a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
 }
