@@ -68,6 +68,7 @@ const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, 
         style: config.geoJsonStyle,
         onEachFeature: (feature, layer) => {
             const departmentCode = feature.properties.code;
+            const departmentName = feature.properties.nom; // Assurez-vous que cette propriété existe dans vos données GeoJSON
             const matches = sheetData.filter(row => row[config.joinField].padStart(2, '0') === departmentCode);
             const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
 
@@ -75,7 +76,7 @@ const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, 
                 const marker = L.marker(layer.getBounds().getCenter(), {
                         icon: getCustomIcon(match.type, typesConfig)
                     })
-                    .bindPopup(createPopupContent(match, config));
+                    .bindPopup(createPopupContent(match, config) + `<p>${departmentName} (${departmentCode})</p>`); // Ajoute le nom et le code du département dans la popup
                 clusterGroup.addLayer(marker);
             });
 
