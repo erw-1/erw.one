@@ -38,30 +38,27 @@ body {
     margin-bottom: 8px;
 }
 
-.other-tools-btn {
-    background-color: #fff;
-    border: none;
-    cursor: pointer;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 4px;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.2);
-}
-
 .other-tools-modal {
+    display: none; /* Initialement caché */
     position: fixed;
-    top: 50%;
     left: 50%;
+    top: 50%;
     transform: translate(-50%, -50%);
-    background-color: #fff;
+    background-color: white;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    display: none; /* Caché par défaut, affiché lors du clic sur le bouton */
-    z-index: 1000;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000; /* S'assurer qu'il est au-dessus des autres éléments */
 }
 
 .other-tools-list {
-    list-style-type: none;
+    list-style: none;
     padding: 0;
+}
+
+.modal-close-btn {
+    display: block;
+    margin: 10px auto;
+    padding: 5px 10px;
+    cursor: pointer;
 }
