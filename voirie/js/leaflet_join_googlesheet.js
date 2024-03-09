@@ -88,13 +88,26 @@ const createLegend = (map, typesConfig) => {
 
 // Fenêtre modale des autres outils qui n'ont pas match
 const showOtherToolsModal = () => {
-    const modal = L.DomUtil.create('div', 'other-tools-modal');
-    const list = L.DomUtil.create('ul', 'other-tools-list', modal);
+    let modal = document.querySelector('.other-tools-modal');
+    if (!modal) {
+        modal = L.DomUtil.create('div', 'other-tools-modal', document.body);
+        const list = L.DomUtil.create('ul', 'other-tools-list', modal);
+        
+        unmatchedEntries.forEach(entry => {
+            const listItem = L.DomUtil.create('li', '', list);
+            listItem.innerHTML = `Raison: ${entry.code_dep}, Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
+        });
+
+        // Ajouter un bouton pour fermer la fenêtre modale
+        const closeButton = L.DomUtil.create('button', 'modal-close-btn', modal);
+        closeButton.innerHTML = 'Fermer';
+        closeButton.onclick = () => {
+            modal.style.display = 'none';
+        };
+    }
     
-    unmatchedEntries.forEach(entry => {
-        const listItem = L.DomUtil.create('li', '', list);
-        listItem.innerHTML = `Raison: ${entry.code_dep}, Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
-    });
+    // Afficher la fenêtre modale
+    modal.style.display = 'block';
 };
 
 // Ajouter le bouton "Autres outils"
