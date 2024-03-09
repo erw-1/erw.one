@@ -50,15 +50,15 @@ const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
                 onEachFeature: (feature, layer) => {
                     const departmentCode = feature.properties.code;
                     const matches = sheetsData.filter(row => row[config.joinField].padStart(2, '0') === departmentCode);
+                    if (matches.length === 0) {
+                        unmatchedEntries.push(match);
+                    }
                     const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
 
                     matches.forEach(match => {
                         const marker = L.marker(layer.getBounds().getCenter(), { icon: getCustomIcon(match.type, typesConfig) })
                             .bindPopup(createPopupContent(match, config));
                         clusterGroup.addLayer(marker);
-                        if (matches.length === 0) {
-                            unmatchedEntries.push(match);
-                        }
                     });
 
                     clusterGroupsByDepartment[departmentCode] = clusterGroup;
