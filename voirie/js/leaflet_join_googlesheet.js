@@ -22,16 +22,20 @@ var googleSheetUrl = 'https://docs.google.com/spreadsheets/d/194dyKaJGB2RPur_vnq
 
 // Fonction pour charger les données du Google Sheets
 function loadSheetData() {
-    return fetch(googleSheetUrl)
-        .then(response => response.text())
-        .then(data => sheetToJson(data).table.rows.map(row => {
-            return {
-                nom: row.c[0].v,
-                code_dep: row.c[1].v.toString(),
-                type: row.c[2].v,
-                lien: row.c[3].v
-            };
-        }));
+  return fetch(googleSheetUrl)
+    .then(response => response.text())
+    .then(data => {
+      // Convertir les données en JSON et les mapper
+      const rows = sheetToJson(data).table.rows;
+      return rows.map(row => {
+        return {
+          nom: row.c[0] ? row.c[0].v : '', // Utiliser un string vide si la valeur est null
+          code_dep: row.c[1] ? row.c[1].v.toString() : '',
+          type: row.c[2] ? row.c[2].v : '',
+          lien: row.c[3] ? row.c[3].v : ''
+        };
+      }).filter(item => item.code_dep); // Filtrer les entrées sans code_dep
+    });
 }
 
 // Fonction pour ajouter le GeoJSON à la carte + style personnalisé
