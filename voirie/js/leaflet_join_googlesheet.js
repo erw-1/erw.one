@@ -4,6 +4,9 @@ const loadConfig = () => fetch('config/config.json').then(response => response.j
 // Fonction pour charger les types d'icônes
 const loadTypesConfig = (iconConfigPath) => fetch(iconConfigPath).then(response => response.json());
 
+const clusterGroupsByDepartment = {};
+const unmatchedEntries = [];
+
 // Fonction pour initialiser la carte
 const initMap = (config) => {
     const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
@@ -55,6 +58,9 @@ const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
                         const marker = L.marker(layer.getBounds().getCenter(), { icon: getCustomIcon(match.type, typesConfig) })
                             .bindPopup(createPopupContent(match, config));
                         clusterGroup.addLayer(marker);
+                        if (matches.length === 0) {
+                            unmatchedEntries.push(match);
+                        }
                     });
 
                     clusterGroupsByDepartment[departmentCode] = clusterGroup;
@@ -93,8 +99,33 @@ const getCustomIcon = (type, typesConfig) => {
     });
 };
 
-// Limite de la clusterisation au département
-const clusterGroupsByDepartment = {};
+// Ajouter le bouton "Autres outils"
+const addOtherToolsButton = (map) => {
+    const otherToolsControl = L.control({ position: 'topright' });
 
-// Charger la configuration et initialiser la carte
+    otherToolsControl.onAdd = () => {
+        const button = L.DomUtil.create('button', 'other-tools-btn');
+        button.innerHTML = 'Autres outils';
+        button.onclick = () => {
+            // Ici, nous devons ouvrir la fenêtre modale
+            showOtherToolsModal();
+        };
+        return button;
+    };
+
+    otherToolsControl.addTo(map);
+};
+
+const showOtherToolsModal = () => {
+    const modal = L.DomUtil.create('div', 'other-tools-modal');
+    const list = L.DomUtil.create('ul', 'other-tools-list', modal);
+    
+    unmatchedEntries.forEach(entry => {
+        const listItem = L.DomUtil.create('li', '', list);
+        listItem.innerHTML = `Raison: ${entry.code_dep}, Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
+    });
+};
+
+// Charger la configuration et initialiser la carte et l'UI
 loadConfig().then(initMap);
+addOtherToolsButton(map);
