@@ -119,7 +119,7 @@ const showOtherToolsModal = (unmatchedEntries) => {
     // Ajoute les entrées non appariées à la liste
     unmatchedEntries.forEach(entry => {
         const listItem = document.createElement('li');
-        listItem.innerHTML = `<h3>${entry.nom}</h3>${entry.type}, <a href="${entry.lien}" target="_blank">Lien</a>`;
+        listItem.innerHTML = `<h3>${entry.nom}</h3>${entry.type}, <a href="${entry.lien}" target="_blank">Ouvrir l'outil</a>`;
         list.appendChild(listItem);
     });
 
