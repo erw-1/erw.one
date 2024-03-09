@@ -5,8 +5,6 @@ const loadConfig = () => fetch('config/config.json').then(response => response.j
 const loadTypesConfig = (iconConfigPath) => fetch(iconConfigPath).then(response => response.json());
 
 const clusterGroupsByDepartment = {};
-const unmatchedEntries = [];
-
 
 // Fonction pour charger les données du Google Sheets
 const loadSheetData = (googleSheetUrl) => {
@@ -50,9 +48,6 @@ const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
                 onEachFeature: (feature, layer) => {
                     const departmentCode = feature.properties.code;
                     const matches = sheetsData.filter(row => row[config.joinField].padStart(2, '0') === departmentCode);
-                    if (matches.length === 0) {
-                        unmatchedEntries.push(match);
-                    }
                     const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
 
                     matches.forEach(match => {
@@ -86,54 +81,6 @@ const createLegend = (map, typesConfig) => {
     legend.addTo(map);
 };
 
-// Crée et/ou affiche la fenêtre modale avec les données non appariées
-const showOtherToolsModal = () => {
-    // Rechercher une fenêtre modale existante
-    let modal = document.querySelector('.other-tools-modal');
-    // Si elle n'existe pas, créez-en une
-    if (!modal) {
-        modal = L.DomUtil.create('div', 'other-tools-modal', document.body);
-        modal.innerHTML = '<h3>Autres outils</h3><ul class="other-tools-list"></ul>';
-        
-        // Ajoutez un bouton pour fermer la modale
-        const closeButton = L.DomUtil.create('button', 'modal-close-button', modal);
-        closeButton.innerHTML = 'Fermer';
-        closeButton.onclick = () => {
-            modal.style.display = 'none';
-        };
-    }
-
-    // Obtenez la liste dans la modale
-    const list = modal.querySelector('.other-tools-list');
-    list.innerHTML = ''; // Vider la liste existante
-
-    // Ajoutez chaque entrée non appariée à la liste
-    unmatchedEntries.forEach(entry => {
-        const listItem = L.DomUtil.create('li', '', list);
-        listItem.innerHTML = `Raison: ${entry.code_dep}, Nom: ${entry.nom}, Type: ${entry.type}, Lien: <a href="${entry.lien}" target="_blank">Plus d'infos</a>`;
-    });
-
-    // Affichez la modale
-    modal.style.display = 'block';
-};
-
-// Ajouter le bouton "Autres outils"
-const addOtherToolsButton = (map) => {
-    const otherToolsControl = L.control({ position: 'topright' });
-
-    otherToolsControl.onAdd = () => {
-        const button = L.DomUtil.create('button', 'other-tools-btn');
-        button.innerHTML = 'Autres outils';
-        button.onclick = () => {
-            // Ici, nous devons ouvrir la fenêtre modale
-            showOtherToolsModal();
-        };
-        return button;
-    };
-
-    otherToolsControl.addTo(map);
-};
-
 // Fonction pour initialiser la carte
 const initMap = (config) => {
     const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
@@ -146,10 +93,6 @@ const initMap = (config) => {
         createLegend(map, typesConfig);
         addGeoJsonToMap(map, sheetData, typesConfig, config);
     });
-    
-    addOtherToolsButton(map);
-    // Préparer la modale (elle restera cachée jusqu'à ce que le bouton soit cliqué)
-    showOtherToolsModal();
 };
 
 // Charger la configuration et initialiser la carte et l'UI
