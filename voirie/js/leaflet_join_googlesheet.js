@@ -20,17 +20,24 @@ const loadSheetDataAndFindUnmatched = (googleSheetUrl, geojsonFeature) => {
             return fetch(geojsonFeature)
                 .then(response => response.json())
                 .then(geojsonData => {
-                    const unmatchedEntries = sheetData.slice(); // Créer une copie des données de la feuille
+                    // Initialiser les entrées non appariées
+                    const unmatchedEntries = new Set(sheetData.map((entry, index) => index)); // Utilisez un Set pour stocker les indices des données non appariées
+
                     geojsonData.features.forEach(feature => {
                         const departmentCode = feature.properties.code;
-                        const matchedIndex = unmatchedEntries.findIndex(entry => entry.code_dep.padStart(2, '0') === departmentCode);
-                        if (matchedIndex !== -1) {
-                            unmatchedEntries.splice(matchedIndex, 1); // Supprimer l'entrée correspondante
-                        }
+                        sheetData.forEach((entry, index) => {
+                            if (entry.code_dep.padStart(2, '0') === departmentCode) {
+                                unmatchedEntries.delete(index); // Supprimer l'indice correspondant
+                            }
+                        });
                     });
+
+                    // Transformer les indices non appariés en objets de données réelles
+                    const unmatchedData = Array.from(unmatchedEntries).map(index => sheetData[index]);
+
                     return {
                         sheetData,
-                        unmatchedEntries,
+                        unmatchedEntries: unmatchedData, // Maintenant un tableau d'objets
                         geojsonData
                     };
                 });
