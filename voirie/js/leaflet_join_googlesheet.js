@@ -52,7 +52,7 @@ function getCustomIcon(type) {
             iconUrl = 'img/icone_lila.png';
             break;
         case 'VH':
-            iconUrl = 'img/icone_teal.png.png';
+            iconUrl = 'img/icone_teal.png';
             break;
         default:
             iconUrl = 'img/icone_grisclair.png';
