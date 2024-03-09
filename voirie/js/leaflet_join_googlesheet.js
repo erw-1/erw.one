@@ -15,10 +15,10 @@ fetch(geojsonFeature)
     .then(data => {
         L.geoJson(data, {
             style: {
-                color: '#000',
+                color: '#404040',
                 weight: 1,
-                fillColor: '#FFF',
-                fillOpacity: 0.7
+                fillColor: '#FAFAF8',
+                fillOpacity: 0.5
             },
             onEachFeature: function (feature, layer) {
                 layer.bindPopup(feature.properties.nom);
