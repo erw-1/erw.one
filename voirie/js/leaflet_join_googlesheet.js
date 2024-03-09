@@ -12,7 +12,7 @@ const loadSheetDataAndFindUnmatched = (googleSheetUrl, geojsonFeature) => {
             const jsonText = data.substring(47).slice(0, -2);
             const sheetData = JSON.parse(jsonText).table.rows.map(row => ({
                 nom: row.c[0] ? row.c[0].v : '',
-                code_dep: row.c[1] ? row.c[1].v.toString(),
+                code_dep: row.c[1].v.toString(),
                 type: row.c[2] ? row.c[2].v : '',
                 lien: row.c[3] ? row.c[3].v : ''
             }));
