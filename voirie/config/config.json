@@ -17,6 +17,7 @@
         "attribution": "Erwan Vinot 2024"
     },
     "mapSettings": {
+        "zoomControl": false,
         "center": [46.603354, 1.888334],
         "zoomLevel": 7
     }
