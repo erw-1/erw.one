@@ -17,8 +17,8 @@ function initMap(config) {
         loadTypesConfig(config.iconConfigPath),
         loadSheetData(config.googleSheetUrl)
     ]).then(([typesConfig, sheetData]) => {
-        createLegend(typesConfig, map);
-        addGeoJsonToMap(sheetData, config, typesConfig, map);
+        createLegend(map, typesConfig);
+        addGeoJsonToMap(map, sheetData, typesConfig, config);
     });
 }
 
