@@ -15,19 +15,20 @@ body {
 .info.legend {
     padding: 6px 8px;
     font: 14px/16px Arial, Helvetica, sans-serif;
-    background: white;
     background: rgba(255,255,255,0.5); /* blanc semi-transparent */
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
     border-radius: 5px;
-    line-height: 24px; /* Ajuster pour centrer le texte verticalement avec les icônes */
+    line-height: 30px; /* Ajuster pour centrer le texte verticalement avec les icônes */
 }
 
 .legend i {
-    width: 18px; /* Réduire la taille de l'icône */
-    float: left; /* Aligner les icônes à gauche */
-    margin-right: 8px; /* Espace entre l'icône et le texte */
-    opacity: 0.7; /* Réduire l'opacité de l'icône si nécessaire */
-    background-size: 18px 18px; /* S'assurer que les icônes couvrent la zone de fond */
+    width: 18px; /* Nouvelle largeur de l'icône */
+    height: 30px; /* Nouvelle hauteur de l'icône, arrondie */
+    float: left;
+    margin-right: 8px;
+    background-size: contain; /* S'assure que l'icône est entièrement visible */
+    background-position: center center;
+    margin-top: -3px; /* Ajustement pour centrer verticalement si nécessaire */
 }
 
 .legend .title {
@@ -35,3 +36,4 @@ body {
     font-weight: bold;
     margin-bottom: 8px;
 }
+
