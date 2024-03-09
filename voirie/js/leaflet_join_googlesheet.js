@@ -37,7 +37,8 @@ const createPopupContent = (match, config) => {
 };
 
 // Fonction pour ajouter le GeoJSON à la carte avec style personnalisé
-const clusterGroupsByDepartment = {};
+const clusterGroupsByDepartment = {}; // pour stocker les cluster par dpt
+const unmatchedEntries = []; // pour stocker les entrées non appariées
 const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
     fetch(config.geojsonFeature)
         .then(response => response.json())
@@ -47,21 +48,27 @@ const addGeoJsonToMap = (map, sheetsData, typesConfig, config) => {
                 onEachFeature: (feature, layer) => {
                     const departmentCode = feature.properties.code;
                     const matches = sheetsData.filter(row => row[config.joinField].padStart(2, '0') === departmentCode);
-                    const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
 
-                    matches.forEach(match => {
-                        const marker = L.marker(layer.getBounds().getCenter(), { 
-                            icon: getCustomIcon(match.type, typesConfig) 
-                        }).bindPopup(createPopupContent(match, config));
-                        clusterGroup.addLayer(marker);
-                    });
-
-                    if (matches.length) {
+                    if (matches.length > 0) {
+                        const clusterGroup = clusterGroupsByDepartment[departmentCode] || new L.MarkerClusterGroup();
+                        matches.forEach(match => {
+                            const marker = L.marker(layer.getBounds().getCenter(), { icon: getCustomIcon(match.type, typesConfig) })
+                                .bindPopup(createPopupContent(match, config));
+                            clusterGroup.addLayer(marker);
+                        });
                         clusterGroupsByDepartment[departmentCode] = clusterGroup;
                         map.addLayer(clusterGroup);
+                    } else {
+                        // S'il n'y a pas de correspondance, ajoutez-le à la liste des entrées non appariées
+                        unmatchedEntries.push({ departmentCode, feature });
                     }
                 }
             }).addTo(map);
+            
+            // Après avoir traité toutes les fonctionnalités, imprimez les entrées non appariées
+            if (unmatchedEntries.length > 0) {
+                console.log('Entrées non appariées:', unmatchedEntries);
+            }
         }).catch(error => {
             console.error('Erreur lors de l’ajout du GeoJSON à la carte :', error);
         });
