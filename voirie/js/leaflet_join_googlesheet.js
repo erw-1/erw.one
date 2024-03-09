@@ -56,7 +56,7 @@ const createPopupContent = (match, config) => {
 // Fonction pour ajouter le GeoJSON à la carte avec style personnalisé
 const clusterGroupsByDepartment = {}; // pour stocker les cluster par dpt
 const unmatchedEntries = []; // pour stocker les entrées non appariées
-const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config) => {
+const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, geojsonData) => {
     L.geoJson(sheetData.geojsonData, {
         style: config.geoJsonStyle,
         onEachFeature: (feature, layer) => {
@@ -102,15 +102,15 @@ const initMap = (config) => {
     const map = L.map('map').setView(config.mapSettings.center, config.mapSettings.zoomLevel);
     L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
 
-    Promise.all([
-        loadTypesConfig(config.iconConfigPath),
-        loadSheetData(config.googleSheetUrl)
-    ]).then(([typesConfig, sheetData]) => {
-        createLegend(map, typesConfig);
-        addGeoJsonToMap(map, sheetData, typesConfig, config);
+    loadTypesConfig(config.iconConfigPath).then(typesConfig => {
+        loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
+            .then(({ sheetData, unmatchedEntries, geojsonData }) => {
+                createLegend(map, typesConfig);
+                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
+            });
     });
 };
-
+    
 // Charger la configuration et initialiser la carte et l'UI
 loadConfig()
     .then(initMap)
