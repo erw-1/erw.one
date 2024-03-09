@@ -161,8 +161,3 @@ loadConfig().then(config => {
 }).catch(error => {
     console.error('Erreur lors du chargement de la configuration :', error);
 });
-
-// Charger la configuration, initialiser la carte, puis montrer les entrées non appariées
-loadConfig().then(config => {
-    initMap(config); // initMap ne devrait pas avoir .then() après si elle ne retourne pas de promesse.
-});
