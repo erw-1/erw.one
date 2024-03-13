@@ -5,4 +5,4 @@ Fait pour mon mémoire de recherche de M1 en géomatique sur l'appropriation des
 Le site utilise les données d'un google sheets et fait une carte avec, si je trouve un outil intéressant qui n'est pas fait pour un département en particulier, ou s'il n'est pas français, je l'ajoute quand même.
 Les outils qui ne sont pas joints à un département sont ajoutés à une liste dans une fenêtre modale que l'on peut afficher avec le bouton "Autres outils" en haut à droite.
 
-Je pense refaire tout le code JS parce que c'est le bazar.
+Je pense refaire tout le code JS parce que c'est le bazar lol.
