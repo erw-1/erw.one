@@ -29,9 +29,17 @@ const fragmentShader = `
   varying vec3 vColor;
 
   void main() {
-    gl_FragColor = vec4(vColor, 1.0);
+    // Calculate the distance of the current fragment from the center of the point sprite.
+    float distanceFromCenter = length(gl_PointCoord - vec2(0.5, 0.5));
+    // Use smoothstep to create a smooth circular gradient.
+    float alpha = 1.0 - smoothstep(0.3, 0.5, distanceFromCenter);
+    // Discard the fragment if it's outside the circular area.
+    if (alpha < 0.1) discard;
+    // Set the color of the fragment, multiplying the alpha for the circular shape.
+    gl_FragColor = vec4(vColor * alpha, alpha);
   }
 `;
+
 
 // Shader material setup
 const shaderMaterial = new THREE.ShaderMaterial({
@@ -39,7 +47,8 @@ const shaderMaterial = new THREE.ShaderMaterial({
   fragmentShader: fragmentShader,
   blending: THREE.AdditiveBlending,
   depthTest: false,
-  transparent: true
+  transparent: true,
+  alphaTest: 0.1
 });
 
 // Create stars and layers
