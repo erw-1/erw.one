@@ -109,12 +109,12 @@ export function addInteraction(layers, renderer) {
         // Increment or decrement the counter based on the delta sign and within allowed bounds
         if (delta > 0 && zoomCounter <= 20) {
             zoomCounter += 1; // Zooming in
-            moveToward = 1 + delta * 0.001;
-            moveAway = 1 - delta * 0.001;
+            moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
+            moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
         } else if (delta < 0 && zoomCounter >= -45) {
             zoomCounter -= 1; // Zooming out
-            moveToward = 1 + delta * 0.001; // This line is not needed, as the delta is negative here
-            moveAway = 1 - delta * 0.001;
+            moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
+            moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
         }
     
         // Log the current counter value
