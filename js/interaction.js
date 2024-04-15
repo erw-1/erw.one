@@ -32,6 +32,7 @@ export function addInteraction(layers, renderer) {
             previousMousePosition.x = event.touches[0].clientX;
             previousMousePosition.y = event.touches[0].clientY;
         } else if (event.touches.length === 2) {
+            isDragging = false; // Ensure dragging is disabled when using two fingers
             previousDistance = calculateDistance(event.touches);
         }
     }
@@ -39,24 +40,33 @@ export function addInteraction(layers, renderer) {
     // Touch move event
     function onTouchMove(event) {
         event.preventDefault(); // Prevent default touch behavior like scrolling
-
-        if (isDragging) {
+        if (event.touches.length === 1 && isDragging) {
             const deltaX = event.touches[0].clientX - previousMousePosition.x;
             const deltaY = event.touches[0].clientY - previousMousePosition.y;
             applyRotation(layers, deltaX, deltaY);
             previousMousePosition.x = event.touches[0].clientX;
             previousMousePosition.y = event.touches[0].clientY;
-        } else if (event.touches.length > 1) {
-            const distance = calculateDistance(event.touches);
-            const delta = previousDistance - distance;
-            adjustStarPositions(delta);
-            previousDistance = distance;
+        } else if (event.touches.length === 2) {
+            const newDistance = calculateDistance(event.touches);
+            if (previousDistance !== 0) {
+                const deltaDistance = newDistance - previousDistance;
+                adjustStarPositions(deltaDistance); // Adjust the star position based on the distance change
+                previousDistance = newDistance; // Update the previousDistance
+            }
         }
     }
-
+    
     // Touch end event
     function onTouchEnd(event) {
-        isDragging = false;
+        if (event.touches.length < 2) {
+            isDragging = false;
+        }
+        if (event.touches.length === 1) {
+            // Reset to drag mode if one finger remains
+            previousMousePosition.x = event.touches[0].clientX;
+            previousMousePosition.y = event.touches[0].clientY;
+            isDragging = true;
+        }
     }
 
     // Add touch event listeners
