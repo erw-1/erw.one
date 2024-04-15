@@ -43,7 +43,7 @@ const shaderMaterial = new THREE.ShaderMaterial({
   alphaTest: 0.1
 });
 
-export function createStars(count, sizeRange, layerDepth) {
+export function createStars(scene, count, sizeRange, layerDepth) {
     const geometry = new THREE.BufferGeometry();
     const positions = [];
     const colors = [];
@@ -78,7 +78,7 @@ export function createStars(count, sizeRange, layerDepth) {
     return stars;
 }
 
-export function createStarsLayers() {
+export function createStarsLayers(scene) {
     const layers = [];
     const sizes = [2, 1, 0.5, 0.25, 0.1]; // These are now the maximum sizes for each layer
     const depths = [50, 150, 300, 450, 600];
@@ -87,7 +87,7 @@ export function createStarsLayers() {
     for (let i = 0; i < sizes.length; i++) {
         // Randomly decide the size for each star in the layer between the maximum size and half of it.
         const sizeRange = { min: sizes[i] / 2, max: sizes[i] };
-        const stars = createStars(counts[i], sizeRange, depths[i]);
+        const stars = createStars(scene, counts[i], sizeRange, depths[i]);
         layers.push(stars);
     }
 
