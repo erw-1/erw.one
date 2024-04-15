@@ -43,7 +43,7 @@ function createStarsLayers() {
 }
 
 function createStars(count, size, layerDepth) {
-    const geometry = new THREE.Geometry();
+    const geometry = new THREE.BufferGeometry();
     const material = new THREE.PointsMaterial({
         color: 0xffffff,
         size: size,
@@ -51,21 +51,33 @@ function createStars(count, size, layerDepth) {
         transparent: true
     });
 
+    const positions = [];
+    const colors = [];
     for (let i = 0; i < count; i++) {
-        const star = new THREE.Vector3();
-        star.x = Math.random() * 2000 - 1000;
-        star.y = Math.random() * 2000 - 1000;
-        star.z = Math.random() * layerDepth - layerDepth / 2; // Random depth within the layer
-        geometry.vertices.push(star);
+        positions.push(Math.random() * 2000 - 1000); // x
+        positions.push(Math.random() * 2000 - 1000); // y
+        positions.push(Math.random() * layerDepth - layerDepth / 2); // z
 
         // Optional: vary size slightly within the same layer
-        material.size = size * (0.5 + Math.random());
+        // This part should actually be handled by the size attribute for each vertex, but PointsMaterial does not support this yet.
+        
+        // Add color variation
+        colors.push(Math.random() + 0.5); // r
+        colors.push(Math.random() + 0.5); // g
+        colors.push(Math.random() + 0.5); // b
     }
+
+    // Add the positions in the form of a Float32Array to the geometry
+    geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+    
+    material.vertexColors = true; // This line enables the use of colors in the material
 
     const stars = new THREE.Points(geometry, material);
     scene.add(stars);
     return stars;
 }
+
 
 function updateLayers(layers) {
     layers.forEach(layer => {
