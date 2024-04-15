@@ -28,22 +28,6 @@ function animate() {
 
 animate();
 
-function createStarsLayers() {
-    const layers = [];
-    const sizes = [0.5, 0.3, 0.2, 0.1, 0.05]; // These are now the maximum sizes for each layer
-    const depths = [50, 150, 300, 450, 600];
-    const counts = [500, 800, 1200, 1600, 2000];
-
-    for (let i = 0; i < sizes.length; i++) {
-        // Randomly decide the size for each star in the layer between the maximum size and half of it.
-        const sizeRange = { min: sizes[i] / 2, max: sizes[i] };
-        const stars = createStars(counts[i], sizeRange, depths[i]);
-        layers.push(stars);
-    }
-
-    return layers;
-}
-
 // Create the shader material here with custom attributes for size and color
 // Vertex shader
 const vertexShader = `
@@ -69,6 +53,18 @@ const fragmentShader = `
   }
 `;
 
+// Shader material setup
+const shaderMaterial = new THREE.ShaderMaterial({
+  uniforms: {
+    color: { value: new THREE.Color(0xffffff) }
+  },
+  vertexShader: vertexShader,
+  fragmentShader: fragmentShader,
+  blending: THREE.AdditiveBlending,
+  depthTest: false,
+  transparent: true,
+  vertexColors: true
+});
 
 function createStars(count, sizeRange, layerDepth) {
     const geometry = new THREE.BufferGeometry();
@@ -98,19 +94,6 @@ function createStars(count, sizeRange, layerDepth) {
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
-    
-    // Shader material setup
-    const shaderMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        color: { value: new THREE.Color(0xffffff) }
-      },
-      vertexShader: vertexShader,
-      fragmentShader: fragmentShader,
-      blending: THREE.AdditiveBlending,
-      depthTest: false,
-      transparent: true,
-      vertexColors: true
-    });
 
     // Use the shader material for the points
     const stars = new THREE.Points(geometry, shaderMaterial);
@@ -118,7 +101,21 @@ function createStars(count, sizeRange, layerDepth) {
     return stars;
 }
 
+function createStarsLayers() {
+    const layers = [];
+    const sizes = [0.5, 0.3, 0.2, 0.1, 0.05]; // These are now the maximum sizes for each layer
+    const depths = [50, 150, 300, 450, 600];
+    const counts = [500, 800, 1200, 1600, 2000];
 
+    for (let i = 0; i < sizes.length; i++) {
+        // Randomly decide the size for each star in the layer between the maximum size and half of it.
+        const sizeRange = { min: sizes[i] / 2, max: sizes[i] };
+        const stars = createStars(counts[i], sizeRange, depths[i]);
+        layers.push(stars);
+    }
+
+    return layers;
+}
 
 function updateLayers(layers) {
     layers.forEach(layer => {
