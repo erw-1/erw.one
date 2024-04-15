@@ -98,7 +98,7 @@ function createStars(count, sizeRange, layerDepth) {
 
 function createStarsLayers() {
     const layers = [];
-    const sizes = [0.5, 0.3, 0.2, 0.1, 0.05]; // These are now the maximum sizes for each layer
+    const sizes = [10, 10, 10, 10, 10]; // These are now the maximum sizes for each layer
     const depths = [50, 150, 300, 450, 600];
     const counts = [500, 800, 1200, 1600, 2000];
 
@@ -114,6 +114,6 @@ function createStarsLayers() {
 
 function updateLayers(layers) {
     layers.forEach(layer => {
-        layer.rotation.y += 0.00002 * (layer.position.z + 300); // Simple parallax effect
+        layer.rotation.y += 0.000005 * (layer.position.z + 300); // Simple parallax effect
     });
 }
