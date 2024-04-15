@@ -50,7 +50,9 @@ export function addInteraction(layers, renderer) {
             const newDistance = calculateDistance(event.touches);
             if (previousDistance !== 0) {
                 const deltaDistance = newDistance - previousDistance;
-                adjustStarPositions(deltaDistance * 3); // Adjust the star position based on the distance change
+                adjustStarPositions(deltaDistance);
+                adjustStarPositions(deltaDistance);
+                adjustStarPositions(deltaDistance);
                 previousDistance = newDistance; // Update the previousDistance
             }
         }
