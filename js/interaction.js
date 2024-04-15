@@ -107,11 +107,11 @@ export function addInteraction(layers, renderer) {
         let moveToward = 1.0, moveAway = 1.0;
     
         // Increment or decrement the counter based on the delta sign and within allowed bounds
-        if (delta > 0 && zoomCounter <= 20) {
+        if (delta > 0 && zoomCounter <= 25) {
             zoomCounter += 1; // Zooming in
             moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
             moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-        } else if (delta < 0 && zoomCounter >= -45) {
+        } else if (delta < 0 && zoomCounter >= -50) {
             zoomCounter -= 1; // Zooming out
             moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
             moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
