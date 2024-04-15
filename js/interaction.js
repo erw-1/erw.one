@@ -105,9 +105,9 @@ export function addInteraction(layers, renderer) {
     
     function adjustStarPositions(delta) {
         // Increment or decrement the counter based on the delta sign
-        if (delta > 0 and zoomCounter > -40 and zoomCounter < 20) {
+        if (delta > 0 && zoomCounter > -40 && zoomCounter < 20) {
             zoomCounter += 1; // Zooming in
-        } else if (delta < 0 and zoomCounter > -40 and zoomCounter < 20) {
+        } else if (delta < 0 && zoomCounter > -40 && zoomCounter < 20) {
             zoomCounter -= 1; // Zooming out
         }
     
