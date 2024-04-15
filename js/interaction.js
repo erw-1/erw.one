@@ -4,7 +4,7 @@ function toRadians(angleInDegrees) {
     return angleInDegrees * Math.PI / 180;
 }
 
-const scale = 50; // Scale up the dodecahedron size
+const scale = 75; // Scale up the dodecahedron size
 const phi = (1 + Math.sqrt(5)) / 2;
 const dodecahedronVertices = [
     [1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1],
