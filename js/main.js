@@ -61,6 +61,6 @@ function createStars(count, size, layerDepth) {
 
 function updateLayers(layers) {
     layers.forEach(layer => {
-        layer.rotation.y += 0.0005 * (layer.position.z + 300); // Simple parallax effect
+        layer.rotation.y += 0.00002 * (layer.position.z + 300); // Simple parallax effect
     });
 }
