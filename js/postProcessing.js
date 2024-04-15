@@ -9,7 +9,7 @@ export function setupPostProcessing(renderer, scene, camera) {
     composer.addPass(renderPass);
     const bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth, window.innerHeight), // resolution
-        8, // strength
+        7, // strength
         0.1, // radius
         0 // threshold
     );
