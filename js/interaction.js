@@ -15,31 +15,56 @@ const dodecahedronVertices = [
 ].map(coord => coord.map(v => v * scale));
 
 export function addInteraction(layers, renderer) {
-let isDragging = false;
+    let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-
-    const onTouchStart = (event) => {
-        isDragging = true;
-        const touch = event.touches[0];
-        previousMousePosition.x = touch.clientX;
-        previousMousePosition.y = touch.clientY;
-    };
-
-    const onTouchEnd = () => {
-        isDragging = false;
-    };
-
-    const onTouchMove = (event) => {
-        if (isDragging) {
-            const touch = event.touches[0];
-            const deltaX = touch.clientX - previousMousePosition.x;
-            const deltaY = touch.clientY - previousMousePosition.y;
-            applyRotation(layers, deltaX, deltaY);
-            previousMousePosition.x = touch.clientX;
-            previousMousePosition.y = touch.clientY;
+    let previousDistance = 0;
+    
+    // Function to calculate distance between two touch points
+    function calculateDistance(touches) {
+        const dx = touches[0].clientX - touches[1].clientX;
+        const dy = touches[0].clientY - touches[1].clientY;
+        return Math.sqrt(dx * dx + dy * dy);
+    }
+    // Touch start event
+    function onTouchStart(event) {
+        if (event.touches.length === 1) {
+            isDragging = true;
+            previousMousePosition.x = event.touches[0].clientX;
+            previousMousePosition.y = event.touches[0].clientY;
+        } else if (event.touches.length === 2) {
+            previousDistance = calculateDistance(event.touches);
         }
-    };
+    }
 
+    // Touch move event
+    function onTouchMove(event) {
+        event.preventDefault(); // Prevent default touch behavior like scrolling
+
+        if (isDragging) {
+            const deltaX = event.touches[0].clientX - previousMousePosition.x;
+            const deltaY = event.touches[0].clientY - previousMousePosition.y;
+            applyRotation(layers, deltaX, deltaY);
+            previousMousePosition.x = event.touches[0].clientX;
+            previousMousePosition.y = event.touches[0].clientY;
+        } else if (event.touches.length === 2) {
+            const distance = calculateDistance(event.touches);
+            const delta = previousDistance - distance;
+            adjustStarPositions(delta);
+            previousDistance = distance;
+        }
+    }
+
+    // Touch end event
+    function onTouchEnd(event) {
+        isDragging = false;
+    }
+
+    // Add touch event listeners
+    renderer.domElement.addEventListener('touchstart', onTouchStart, { passive: false });
+    renderer.domElement.addEventListener('touchmove', onTouchMove, { passive: false });
+    renderer.domElement.addEventListener('touchend', onTouchEnd);
+
+    
     renderer.domElement.addEventListener('mousedown', (e) => {
         isDragging = true;
         previousMousePosition.x = e.offsetX;
@@ -55,14 +80,10 @@ let isDragging = false;
             const deltaX = e.offsetX - previousMousePosition.x;
             const deltaY = e.offsetY - previousMousePosition.y;
             applyRotation(layers, deltaX, deltaY);
-            previousMousePosition.x = e.offsetX;
-            previousMousePosition.y = e.offsetY;
         }
+        previousMousePosition.x = e.offsetX;
+        previousMousePosition.y = e.offsetY;
     });
-
-    renderer.domElement.addEventListener('touchstart', onTouchStart);
-    renderer.domElement.addEventListener('touchend', onTouchEnd);
-    renderer.domElement.addEventListener('touchmove', onTouchMove);
 
     renderer.domElement.addEventListener('wheel', (e) => {
         const delta = e.deltaY;
