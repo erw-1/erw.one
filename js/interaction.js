@@ -1,5 +1,8 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.module.js';
 
+const minDistance = 50;
+const maxDistance = 150;
+
 function toRadians(angleInDegrees) {
     return angleInDegrees * Math.PI / 180;
 }
