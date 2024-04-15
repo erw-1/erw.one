@@ -11,7 +11,7 @@ const { scene, camera, renderer } = initScene();
 const composer = setupPostProcessing(renderer, scene, camera);
 
 // Create stars and layers
-const layers = createStarsLayers();
+const layers = createStarsLayers(scene);
 
 // Add mouse interaction
 addInteraction(layers, renderer);
