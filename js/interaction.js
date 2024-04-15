@@ -99,27 +99,12 @@ export function addInteraction(layers, renderer) {
         const delta = e.deltaY;
         adjustStarPositions(delta);
     });
-
-    // Initialize a global zoom counter
-    let zoomCounter = 0;
     
     function adjustStarPositions(delta) {
-        let moveToward = 1.0, moveAway = 1.0;
-    
-        // Increment or decrement the counter based on the delta sign and within allowed bounds
-        if (delta > 0 && zoomCounter <= 25) {
-            zoomCounter += 1; // Zooming in
-            moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
-            moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-        } else if (delta < 0 && zoomCounter >= -55) {
-            zoomCounter -= 1; // Zooming out
-            moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
-            moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-        }
-    
-        // Log the current counter value
-        console.log(`Zoom Counter: ${zoomCounter}`);
-        
+                
+        const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
+        const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
+
         layers.forEach(layer => {
             layer.geometry.attributes.position.array.forEach((value, index, array) => {
                 const vertexIndex = Math.floor(index / 3) % 20;
