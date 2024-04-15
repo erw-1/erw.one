@@ -101,14 +101,18 @@ export function addInteraction(layers, renderer) {
     });
 
     // Initialize a global scaling factor
-    let currentScaleFactor = 1.0;
+    let zoomLvl = 0;
     
     function adjustStarPositions(delta) {
-        const scaleIncrement = delta * 0.001; // Define how much each delta value should adjust the scale
-        currentScaleFactor *= (delta > 0 ? 1 + scaleIncrement : 1 - scaleIncrement);
-
-        // Log current scale factor to monitor changes and decide on bounds
-        console.log(`Current Scale Factor: ${currentScaleFactor}`);
+        // Increment or decrement the counter based on the delta sign
+        if (delta > 0) {
+            zoomCounter += 1; // Zooming in
+        } else if (delta < 0) {
+            zoomCounter -= 1; // Zooming out
+        }
+    
+        // Log the current counter value
+        console.log(`Zoom Counter: ${zoomCounter}`);
         
         const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
         const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
