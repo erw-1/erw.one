@@ -29,16 +29,19 @@ const fragmentShader = `
   varying vec3 vColor;
 
   void main() {
-    // Calculate the distance of the current fragment from the center of the point sprite.
-    float distanceFromCenter = length(gl_PointCoord - vec2(0.5, 0.5));
-    // Use smoothstep to create a smooth circular gradient.
-    float alpha = 1.0 - smoothstep(0.3, 0.5, distanceFromCenter);
+    // Coordinates within the point sprite, ranging from 0.0 to 1.0
+    vec2 coords = gl_PointCoord - vec2(0.5, 0.5);
+    // Distance from the center of the sprite
+    float distance = length(coords);
+    // Use a step function to create a sharp circle. Adjust the 0.5 value to change size of the circle.
+    float alpha = 1.0 - step(0.5, distance);
     // Discard the fragment if it's outside the circular area.
     if (alpha < 0.1) discard;
-    // Set the color of the fragment, multiplying the alpha for the circular shape.
-    gl_FragColor = vec4(vColor * alpha, alpha);
+    // Set the color of the fragment, including the alpha.
+    gl_FragColor = vec4(vColor, alpha);
   }
 `;
+
 
 
 // Shader material setup
