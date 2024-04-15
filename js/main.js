@@ -7,14 +7,14 @@ import { createStarsLayers } from './stars.js';
 // Initialize the scene, camera, and renderer
 const { scene, camera, renderer } = initScene();
 
+// Set up post-processing effects
+const composer = setupPostProcessing(renderer, scene, camera);
+
 // Create stars and layers
 const layers = createStarsLayers();
 
 // Add mouse interaction
 addInteraction(layers, renderer);
-
-// Set up post-processing effects
-const composer = setupPostProcessing(renderer, scene, camera);
 
 // Animation loop
 function animate() {
