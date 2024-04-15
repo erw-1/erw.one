@@ -46,7 +46,7 @@ export function addInteraction(layers, renderer) {
             applyRotation(layers, deltaX, deltaY);
             previousMousePosition.x = event.touches[0].clientX;
             previousMousePosition.y = event.touches[0].clientY;
-        } else if (event.touches.length === 2) {
+        } else if (event.touches.length > 1) {
             const distance = calculateDistance(event.touches);
             const delta = previousDistance - distance;
             adjustStarPositions(delta);
