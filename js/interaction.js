@@ -101,21 +101,41 @@ export function addInteraction(layers, renderer) {
     });
 
     function adjustStarPositions(delta) {
-        const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
-        const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-    
+        const scaleFactor = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
+        
         layers.forEach(layer => {
             layer.geometry.attributes.position.array.forEach((value, index, array) => {
                 const vertexIndex = Math.floor(index / 3) % 20;
                 const target = dodecahedronVertices[vertexIndex];
-                // Adjust position based on the direction of the scroll
-                array[index * 3] = array[index * 3] * (delta > 0 ? moveToward : moveAway) + target[0] * (1 - (delta > 0 ? moveToward : moveAway));
-                array[index * 3 + 1] = array[index * 3 + 1] * (delta > 0 ? moveToward : moveAway) + target[1] * (1 - (delta > 0 ? moveToward : moveAway));
-                array[index * 3 + 2] = array[index * 3 + 2] * (delta > 0 ? moveToward : moveAway) + target[2] * (1 - (delta > 0 ? moveToward : moveAway));
+                
+                let newX = array[index * 3] * scaleFactor + target[0] * (1 - scaleFactor);
+                let newY = array[index * 3 + 1] * scaleFactor + target[1] * (1 - scaleFactor);
+                let newZ = array[index * 3 + 2] * scaleFactor + target[2] * (1 - scaleFactor);
+    
+                // Calculate the current distance to the vertex
+                const currentDistance = Math.sqrt(Math.pow(newX - target[0], 2) + Math.pow(newY - target[1], 2) + Math.pow(newZ - target[2], 2));
+    
+                // Adjust if the distance is less than the minimum distance or greater than the maximum distance
+                if (currentDistance < minDistance) {
+                    const correctionFactor = minDistance / currentDistance;
+                    newX = target[0] + (newX - target[0]) * correctionFactor;
+                    newY = target[1] + (newY - target[1]) * correctionFactor;
+                    newZ = target[2] + (newZ - target[2]) * correctionFactor;
+                } else if (currentDistance > maxDistance) {
+                    const correctionFactor = maxDistance / currentDistance;
+                    newX = target[0] + (newX - target[0]) * correctionFactor;
+                    newY = target[1] + (newY - target[1]) * correctionFactor;
+                    newZ = target[2] + (newZ - target[2]) * correctionFactor;
+                }
+    
+                array[index * 3] = newX;
+                array[index * 3 + 1] = newY;
+                array[index * 3 + 2] = newZ;
             });
             layer.geometry.attributes.position.needsUpdate = true;
         });
     }
+
     function applyRotation(layers, deltaX, deltaY) {
         const deltaRotationQuaternion = new THREE.Quaternion()
             .setFromEuler(new THREE.Euler(
