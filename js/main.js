@@ -54,31 +54,30 @@ function createStars(count, size, layerDepth) {
     const positions = [];
     const colors = [];
     for (let i = 0; i < count; i++) {
-        // Use spherical or radial distribution instead of linear
-        let vertex = new THREE.Vector3();
-        vertex.x = Math.random() * 4000 - 2000; // Increase the range
-        vertex.y = Math.random() * 4000 - 2000; // Increase the range
-        vertex.z = Math.random() * layerDepth - layerDepth / 2; // z-position within the layer's depth
-        
-        vertex.toArray(positions, i * 3);
+        // Spherical distribution
+        const phi = Math.acos(2 * Math.random() - 1) - Math.PI / 2; // latitude
+        const theta = 2 * Math.PI * Math.random(); // longitude
+
+        const radius = Math.random() * layerDepth + (500 - layerDepth / 2); // distance from the center
+        const x = radius * Math.cos(phi) * Math.cos(theta);
+        const y = radius * Math.sin(phi);
+        const z = radius * Math.cos(phi) * Math.sin(theta);
+
+        positions.push(x, y, z);
+
+        // Color variation
+        colors.push(Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5, Math.random() * 0.5 + 0.5);
     }
 
-        // Add color variation
-        colors.push(Math.random() + 0.5); // r
-        colors.push(Math.random() + 0.5); // g
-        colors.push(Math.random() + 0.5); // b
-    }
-
-    // Add the positions in the form of a Float32Array to the geometry
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
-    
-    material.vertexColors = true; // This line enables the use of colors in the material
+    material.vertexColors = true;
 
     const stars = new THREE.Points(geometry, material);
     scene.add(stars);
     return stars;
 }
+
 
 
 function updateLayers(layers) {
