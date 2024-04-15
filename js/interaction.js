@@ -4,7 +4,7 @@ function toRadians(angleInDegrees) {
     return angleInDegrees * Math.PI / 180;
 }
 
-const scale = 100; // Scale up the dodecahedron size
+const scale = 50; // Scale up the dodecahedron size
 const phi = (1 + Math.sqrt(5)) / 2;
 const dodecahedronVertices = [
     [1, 1, 1], [1, 1, -1], [1, -1, 1], [1, -1, -1],
@@ -111,7 +111,7 @@ export function addInteraction(layers, renderer) {
             zoomCounter += 1; // Zooming in
             moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
             moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-        } else if (delta < 0 && zoomCounter >= -50) {
+        } else if (delta < 0 && zoomCounter >= -55) {
             zoomCounter -= 1; // Zooming out
             moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
             moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
