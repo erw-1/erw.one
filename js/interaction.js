@@ -17,14 +17,6 @@ const dodecahedronVertices = [
 export function addInteraction(layers, renderer) {
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-    let rotationSpeed = { x: 0, y: 0 }; // Define rotationSpeed here
-    let initialPositions = [];
-
-    // Store initial positions
-    layers.forEach(layer => {
-        let positions = layer.geometry.attributes.position.array;
-        initialPositions.push(positions.slice()); // Copy positions
-    });
 
     renderer.domElement.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -38,8 +30,9 @@ export function addInteraction(layers, renderer) {
 
     renderer.domElement.addEventListener('mousemove', (e) => {
         if (isDragging) {
-            rotationSpeed.x = (e.offsetX - previousMousePosition.x) * 0.002;
-            rotationSpeed.y = (e.offsetY - previousMousePosition.y) * 0.002;
+            const deltaX = e.offsetX - previousMousePosition.x;
+            const deltaY = e.offsetY - previousMousePosition.y;
+            applyRotation(layers, deltaX, deltaY);
         }
         previousMousePosition.x = e.offsetX;
         previousMousePosition.y = e.offsetY;
@@ -53,24 +46,23 @@ export function addInteraction(layers, renderer) {
     function adjustStarPositions(delta) {
         const moveToward = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
 
-        layers.forEach((layer, i) => {
-            const positions = layer.geometry.attributes.position.array;
-            const initial = initialPositions[i];
-            positions.forEach((value, index) => {
-                const vertexIndex = Math.floor(index / 3) % 20;
+        layers.forEach(layer => {
+            layer.geometry.attributes.position.array.forEach((value, index, array) => {
+                const vertexIndex = Math.floor(index / 3) % 20; // Chaque étoile se rapproche du sommet correspondant
                 const target = dodecahedronVertices[vertexIndex];
-                const base = initial[index];
-                positions[index] = base * moveToward + target[index % 3] * (1 - moveToward);
+                array[index * 3] = array[index * 3] * moveToward + target[0] * (1 - moveToward);
+                array[index * 3 + 1] = array[index * 3 + 1] * moveToward + target[1] * (1 - moveToward);
+                array[index * 3 + 2] = array[index * 3 + 2] * moveToward + target[2] * (1 - moveToward);
             });
             layer.geometry.attributes.position.needsUpdate = true;
         });
     }
 
-    function applyRotation(layers) {
+    function applyRotation(layers, deltaX, deltaY) {
         const deltaRotationQuaternion = new THREE.Quaternion()
             .setFromEuler(new THREE.Euler(
-                toRadians(rotationSpeed.y),
-                toRadians(rotationSpeed.x),
+                toRadians(deltaY * 0.1),
+                toRadians(deltaX * 0.1),
                 0,
                 'XYZ'
             ));
@@ -79,19 +71,4 @@ export function addInteraction(layers, renderer) {
             layer.quaternion.multiplyQuaternions(deltaRotationQuaternion, layer.quaternion);
         });
     }
-
-    function updateMomentum() {
-        if (!isDragging) {
-            const decay = 0.95;
-            rotationSpeed.x *= decay;
-            rotationSpeed.y *= decay;
-
-            if (Math.abs(rotationSpeed.x) > 0.01 || Math.abs(rotationSpeed.y) > 0.01) {
-                applyRotation(layers);
-            }
-        }
-        requestAnimationFrame(updateMomentum);
-    }
-
-    updateMomentum();
 }
