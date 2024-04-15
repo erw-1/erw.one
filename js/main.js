@@ -17,14 +17,14 @@ const layers = createStarsLayers(scene);
 const nebula = createNebula(scene, 1000);
 
 // Add mouse interaction
-addInteraction(layers, renderer);
+addInteraction(layers, renderer, nebula);
 
 // Animation loop
 function animate() {
     requestAnimationFrame(animate);
 
     // Parallax effect and other animations
-    updateLayers(layers);
+    updateLayers(layers, nebula);
 
     // Render the scene with post-processing
     composer.render();
@@ -32,8 +32,9 @@ function animate() {
 
 animate();
 
-function updateLayers(layers) {
+function updateLayers(layers, nebula) {
     layers.forEach(layer => {
-        layer.rotation.y += 0.000001 * (layer.position.z + 300); // Simple parallax effect
+        layer.rotation.y += 0.000001 * (layer.position.z + 300);
     });
+    nebula.rotation.y += 0.000001 * (nebula.position.z + 300);
 }
