@@ -7,35 +7,27 @@ function toRadians(angleInDegrees) {
 export function addInteraction(layers, renderer) {
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-    let lastInteractionTime = Date.now();
-    let momentum = { x: 0, y: 0 };
+    let rotationSpeed = { x: 0, y: 0 };
 
     renderer.domElement.addEventListener('mousedown', (e) => {
         isDragging = true;
         previousMousePosition.x = e.offsetX;
         previousMousePosition.y = e.offsetY;
-        lastInteractionTime = Date.now();
     });
 
-    renderer.domElement.addEventListener('mouseup', () => {
+    renderer.domElement.addEventListener('mouseup', (e) => {
         isDragging = false;
     });
 
     renderer.domElement.addEventListener('mousemove', (e) => {
-        const currentTime = Date.now();
-        const timeDelta = currentTime - lastInteractionTime;
-        lastInteractionTime = currentTime;
-
         const deltaMove = {
             x: e.offsetX - previousMousePosition.x,
             y: e.offsetY - previousMousePosition.y
         };
 
         if (isDragging) {
-            // Adjust rotation speed based on time and distance of the mouse movement
-            const speedScale = 0.005; // Adjust this value to control the influence of swipe speed
-            momentum.x = (deltaMove.x / timeDelta) * speedScale;
-            momentum.y = (deltaMove.y / timeDelta) * speedScale;
+            rotationSpeed.x = deltaMove.x * 0.1;
+            rotationSpeed.y = deltaMove.y * 0.1;
 
             applyRotation(layers);
         }
@@ -49,8 +41,8 @@ export function addInteraction(layers, renderer) {
     function applyRotation(layers) {
         const deltaRotationQuaternion = new THREE.Quaternion()
             .setFromEuler(new THREE.Euler(
-                toRadians(momentum.y),
-                toRadians(momentum.x),
+                toRadians(rotationSpeed.y),
+                toRadians(rotationSpeed.x),
                 0,
                 'XYZ'
             ));
@@ -60,15 +52,13 @@ export function addInteraction(layers, renderer) {
         });
     }
 
-    // Apply momentum effect
+    // Momentum effect
     function updateMomentum() {
         if (!isDragging) {
-            // Decrease the momentum over time, simulating friction
-            momentum.x *= 0.95;
-            momentum.y *= 0.95;
+            rotationSpeed.x *= 0.95;
+            rotationSpeed.y *= 0.95;
 
-            // If momentum is above a certain threshold, apply rotation
-            if (Math.abs(momentum.x) > 0.001 || Math.abs(momentum.y) > 0.001) {
+            if (Math.abs(rotationSpeed.x) > 0.01 || Math.abs(rotationSpeed.y) > 0.01) {
                 applyRotation(layers);
             }
         }
