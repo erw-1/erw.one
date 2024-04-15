@@ -108,8 +108,10 @@ export function addInteraction(layers, renderer) {
         if (delta > 0 && zoomCounter >= -45 && zoomCounter <= 20) {
             zoomCounter += 1; // Zooming in
             const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
+            const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
         } else if (delta < 0 && zoomCounter >= -45 && zoomCounter <= 20) {
             zoomCounter -= 1; // Zooming out
+            const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
             const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
         }
     
