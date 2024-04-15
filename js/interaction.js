@@ -104,28 +104,16 @@ export function addInteraction(layers, renderer) {
                 
         const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
         const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-        const MIN_SCALE = 0.5; // The stars can't be closer than half their initial distances
-        const MAX_SCALE = 2.0;
 
         layers.forEach(layer => {
-            // Calculate the new scale for this layer based on the proposed moveToward or moveAway factor
-            const currentScale = layer.userData.scale || 1; // If no scale is set, assume it's 1
-            const proposedScale = delta > 0 ? currentScale * moveToward : currentScale * moveAway;
-            
-            // Clamp the new scale to our min and max values
-            const clampedScale = Math.max(MIN_SCALE, Math.min(proposedScale, MAX_SCALE));
-            
-            // Determine the scaling factor needed to reach the clamped scale from the current scale
-            const scaleFactor = clampedScale / currentScale;
-            
-            // Now apply this scaleFactor to the positions, instead of moveToward or moveAway
             layer.geometry.attributes.position.array.forEach((value, index, array) => {
-                // Adjust positions as before, but using scaleFactor...
+                const vertexIndex = Math.floor(index / 3) % 20;
+                const target = dodecahedronVertices[vertexIndex];
+                // Adjust position based on the direction of the scroll
+                array[index * 3] = array[index * 3] * (delta > 0 ? moveToward : moveAway) + target[0] * (1 - (delta > 0 ? moveToward : moveAway));
+                array[index * 3 + 1] = array[index * 3 + 1] * (delta > 0 ? moveToward : moveAway) + target[1] * (1 - (delta > 0 ? moveToward : moveAway));
+                array[index * 3 + 2] = array[index * 3 + 2] * (delta > 0 ? moveToward : moveAway) + target[2] * (1 - (delta > 0 ? moveToward : moveAway));
             });
-            
-            // Update the layer's scale
-            layer.userData.scale = clampedScale;
-            
             layer.geometry.attributes.position.needsUpdate = true;
         });
     }
