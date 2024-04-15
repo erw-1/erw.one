@@ -14,7 +14,7 @@ const composer = setupPostProcessing(renderer, scene, camera);
 const layers = createStarsLayers(scene);
 
 // Add mouse interaction
-addInteraction(layers, renderer, nebula);
+addInteraction(layers, renderer);
 
 // Animation loop
 function animate() {
