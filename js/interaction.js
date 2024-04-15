@@ -15,8 +15,30 @@ const dodecahedronVertices = [
 ].map(coord => coord.map(v => v * scale));
 
 export function addInteraction(layers, renderer) {
-    let isDragging = false;
+let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
+
+    const onTouchStart = (event) => {
+        isDragging = true;
+        const touch = event.touches[0];
+        previousMousePosition.x = touch.clientX;
+        previousMousePosition.y = touch.clientY;
+    };
+
+    const onTouchEnd = () => {
+        isDragging = false;
+    };
+
+    const onTouchMove = (event) => {
+        if (isDragging) {
+            const touch = event.touches[0];
+            const deltaX = touch.clientX - previousMousePosition.x;
+            const deltaY = touch.clientY - previousMousePosition.y;
+            applyRotation(layers, deltaX, deltaY);
+            previousMousePosition.x = touch.clientX;
+            previousMousePosition.y = touch.clientY;
+        }
+    };
 
     renderer.domElement.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -33,10 +55,14 @@ export function addInteraction(layers, renderer) {
             const deltaX = e.offsetX - previousMousePosition.x;
             const deltaY = e.offsetY - previousMousePosition.y;
             applyRotation(layers, deltaX, deltaY);
+            previousMousePosition.x = e.offsetX;
+            previousMousePosition.y = e.offsetY;
         }
-        previousMousePosition.x = e.offsetX;
-        previousMousePosition.y = e.offsetY;
     });
+
+    renderer.domElement.addEventListener('touchstart', onTouchStart);
+    renderer.domElement.addEventListener('touchend', onTouchEnd);
+    renderer.domElement.addEventListener('touchmove', onTouchMove);
 
     renderer.domElement.addEventListener('wheel', (e) => {
         const delta = e.deltaY;
