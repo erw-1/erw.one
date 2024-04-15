@@ -100,8 +100,15 @@ export function addInteraction(layers, renderer) {
         adjustStarPositions(delta);
     });
 
+    // Initialize a global scaling factor
+    let currentScaleFactor = 1.0;
+    
     function adjustStarPositions(delta) {
-        console.log(`Delta value: ${delta}`); // Log the delta value to observe the scroll/pinch amount
+        const scaleIncrement = delta * 0.001; // Define how much each delta value should adjust the scale
+        currentScaleFactor *= (delta > 0 ? 1 + scaleIncrement : 1 - scaleIncrement);
+
+        // Log current scale factor to monitor changes and decide on bounds
+        console.log(`Current Scale Factor: ${currentScaleFactor}`);
         
         const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
         const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
