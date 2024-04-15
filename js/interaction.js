@@ -100,19 +100,21 @@ export function addInteraction(layers, renderer) {
         adjustStarPositions(delta);
     });
 
-    // Initialize a global scaling factor
+    // Initialize a global zoom counter
     let zoomCounter = 0;
     
     function adjustStarPositions(delta) {
-        // Increment or decrement the counter based on the delta sign
-        if (delta > 0 && zoomCounter >= -45 && zoomCounter <= 20) {
+        let moveToward = 1.0, moveAway = 1.0;
+    
+        // Increment or decrement the counter based on the delta sign and within allowed bounds
+        if (delta > 0 && zoomCounter <= 20) {
             zoomCounter += 1; // Zooming in
-            let moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
-            let moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-        } else if (delta < 0 && zoomCounter >= -45 && zoomCounter <= 20) {
+            moveToward = 1 + delta * 0.001;
+            moveAway = 1 - delta * 0.001;
+        } else if (delta < 0 && zoomCounter >= -45) {
             zoomCounter -= 1; // Zooming out
-            let moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
-            let moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
+            moveToward = 1 + delta * 0.001; // This line is not needed, as the delta is negative here
+            moveAway = 1 - delta * 0.001;
         }
     
         // Log the current counter value
