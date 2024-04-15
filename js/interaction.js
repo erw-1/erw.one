@@ -105,17 +105,19 @@ export function addInteraction(layers, renderer) {
     
     function adjustStarPositions(delta) {
         // Increment or decrement the counter based on the delta sign
-        if (delta > 0 && zoomCounter > -40 && zoomCounter < 20) {
+        if (delta > 0 && zoomCounter >= -45 && zoomCounter <= 20) {
             zoomCounter += 1; // Zooming in
-        } else if (delta < 0 && zoomCounter > -40 && zoomCounter < 20) {
+            const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
+        } else if (delta < 0 && zoomCounter >= -45 && zoomCounter <= 20) {
             zoomCounter -= 1; // Zooming out
+            const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
         }
     
         // Log the current counter value
         console.log(`Zoom Counter: ${zoomCounter}`);
         
-        const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
-        const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
+
+        
         
         layers.forEach(layer => {
             layer.geometry.attributes.position.array.forEach((value, index, array) => {
