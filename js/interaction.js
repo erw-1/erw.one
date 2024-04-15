@@ -4,23 +4,6 @@ function toRadians(angleInDegrees) {
     return angleInDegrees * Math.PI / 180;
 }
 
-renderer.domElement.addEventListener('wheel', onScroll, false);
-
-function adjustStarPositions(delta) {
-    layers.forEach(layer => {
-        layer.geometry.attributes.position.array.forEach((value, index, array) => {
-            array[index] = value * (1 - delta * 0.001);
-        });
-        layer.geometry.attributes.position.needsUpdate = true;
-    });
-}
-
-function onScroll(e) {
-    const delta = e.deltaY;
-    adjustStarPositions(delta);
-}
-
-
 export function addInteraction(layers, renderer) {
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
@@ -54,6 +37,22 @@ export function addInteraction(layers, renderer) {
             y: e.offsetY
         };
     });
+
+    renderer.domElement.addEventListener('wheel', onScroll, false);
+
+    function onScroll(e) {
+        const delta = e.deltaY;
+        adjustStarPositions(delta);
+    }
+
+    function adjustStarPositions(delta) {
+        layers.forEach(layer => {
+            layer.geometry.attributes.position.array.forEach((value, index, array) => {
+                array[index] = value * (1 - delta * 0.001);
+            });
+            layer.geometry.attributes.position.needsUpdate = true;
+        });
+    }
 
     function applyRotation(layers) {
         const deltaRotationQuaternion = new THREE.Quaternion()
