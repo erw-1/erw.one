@@ -8,7 +8,12 @@ import { createStarsLayers } from './stars.js';
 const { scene, camera, renderer } = initScene();
 
 // Set up post-processing effects
-const composer = setupPostProcessing(renderer, scene, camera);
+const { composer, updateSize } = setupPostProcessing(renderer, scene, camera);
+
+// Handle resize for post-processing
+window.addEventListener('resize', () => {
+    updateSize();
+}, false);
 
 // Create stars and layers
 const layers = createStarsLayers(scene);
