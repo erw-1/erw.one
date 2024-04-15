@@ -28,7 +28,7 @@ export function addInteraction(layers, renderer) {
         if (isDragging) {
             const deltaRotationQuaternion = new THREE.Quaternion()
                 .setFromEuler(new THREE.Euler(
-                    toRadians(deltaMove.y * 0.1), // Convert to radians if necessary
+                    toRadians(deltaMove.y * 0.1),
                     toRadians(deltaMove.x * 0.1),
                     0,
                     'XYZ'
@@ -37,10 +37,6 @@ export function addInteraction(layers, renderer) {
             layers.forEach(layer => {
                 layer.quaternion.multiplyQuaternions(deltaRotationQuaternion, layer.quaternion);
             });
-
-            // Apply the same rotation to the nebula
-            nebula.quaternion.multiplyQuaternions(deltaRotationQuaternion, nebula.quaternion);
-        }
 
         previousMousePosition = {
             x: e.offsetX,
