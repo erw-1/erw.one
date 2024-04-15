@@ -13,11 +13,11 @@ const composer = setupPostProcessing(renderer, scene, camera);
 // Vertex shader
 const vertexShader = `
   attribute float size;
-  attribute vec3 customColor;
+  attribute vec3 color;
   varying vec3 vColor;
 
   void main() {
-    vColor = customColor;
+    vColor = color;
     vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
     gl_PointSize = size * (300.0 / -mvPosition.z);
     gl_Position = projectionMatrix * mvPosition;
@@ -26,7 +26,6 @@ const vertexShader = `
 
 // Fragment shader
 const fragmentShader = `
-  uniform vec3 color;
   varying vec3 vColor;
 
   void main() {
@@ -36,15 +35,11 @@ const fragmentShader = `
 
 // Shader material setup
 const shaderMaterial = new THREE.ShaderMaterial({
-  uniforms: {
-    color: { value: new THREE.Color(0xffffff) }
-  },
   vertexShader: vertexShader,
   fragmentShader: fragmentShader,
   blending: THREE.AdditiveBlending,
   depthTest: false,
-  transparent: true,
-  vertexColors: true
+  transparent: true
 });
 
 // Create stars and layers
