@@ -101,7 +101,7 @@ export function addInteraction(layers, renderer) {
     });
 
     // Initialize a global scaling factor
-    let zoomLvl = 0;
+    let zoomCounter = 0;
     
     function adjustStarPositions(delta) {
         // Increment or decrement the counter based on the delta sign
