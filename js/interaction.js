@@ -17,6 +17,7 @@ const dodecahedronVertices = [
 export function addInteraction(layers, renderer) {
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
+    let rotationSpeed = { x: 0, y: 0 }; // Define rotationSpeed here
     let initialPositions = [];
 
     // Store initial positions
@@ -37,9 +38,8 @@ export function addInteraction(layers, renderer) {
 
     renderer.domElement.addEventListener('mousemove', (e) => {
         if (isDragging) {
-            const deltaX = e.offsetX - previousMousePosition.x;
-            const deltaY = e.offsetY - previousMousePosition.y;
-            applyRotation(layers, deltaX, deltaY);
+            rotationSpeed.x = (e.offsetX - previousMousePosition.x) * 0.002;
+            rotationSpeed.y = (e.offsetY - previousMousePosition.y) * 0.002;
         }
         previousMousePosition.x = e.offsetX;
         previousMousePosition.y = e.offsetY;
@@ -66,11 +66,11 @@ export function addInteraction(layers, renderer) {
         });
     }
 
-    function applyRotation(layers, deltaX, deltaY) {
+    function applyRotation(layers) {
         const deltaRotationQuaternion = new THREE.Quaternion()
             .setFromEuler(new THREE.Euler(
-                toRadians(deltaY * 0.1),
-                toRadians(deltaX * 0.1),
+                toRadians(rotationSpeed.y),
+                toRadians(rotationSpeed.x),
                 0,
                 'XYZ'
             ));
