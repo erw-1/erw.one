@@ -44,6 +44,31 @@ function createStarsLayers() {
     return layers;
 }
 
+// Create the shader material here with custom attributes for size and color
+// Vertex shader
+const vertexShader = `
+  attribute float size;
+  attribute vec3 customColor;
+  varying vec3 vColor;
+
+  void main() {
+    vColor = customColor;
+    vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
+    gl_PointSize = size * (300.0 / -mvPosition.z);
+    gl_Position = projectionMatrix * mvPosition;
+  }
+`;
+
+// Fragment shader
+const fragmentShader = `
+  uniform vec3 color;
+  varying vec3 vColor;
+
+  void main() {
+    gl_FragColor = vec4(vColor, 1.0);
+  }
+`;
+
 
 function createStars(count, sizeRange, layerDepth) {
     const geometry = new THREE.BufferGeometry();
@@ -73,31 +98,6 @@ function createStars(count, sizeRange, layerDepth) {
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
     geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
     geometry.setAttribute('size', new THREE.Float32BufferAttribute(sizes, 1));
-
-    // Create the shader material here with custom attributes for size and color
-    // Vertex shader
-    const vertexShader = `
-      attribute float size;
-      attribute vec3 customColor;
-      varying vec3 vColor;
-    
-      void main() {
-        vColor = customColor;
-        vec4 mvPosition = modelViewMatrix * vec4(position, 1.0);
-        gl_PointSize = size * (300.0 / -mvPosition.z);
-        gl_Position = projectionMatrix * mvPosition;
-      }
-    `;
-    
-    // Fragment shader
-    const fragmentShader = `
-      uniform vec3 color;
-      varying vec3 vColor;
-    
-      void main() {
-        gl_FragColor = vec4(vColor, 1.0);
-      }
-    `;
     
     // Shader material setup
     const shaderMaterial = new THREE.ShaderMaterial({
