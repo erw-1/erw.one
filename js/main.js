@@ -30,9 +30,9 @@ animate();
 
 function createStarsLayers() {
     const layers = [];
-    const sizes = [0.5, 0.3, 0.2];
-    const depths = [50, 150, 300];
-    const counts = [100, 200, 300];
+    const sizes = [0.5, 0.3, 0.2, 0.1, 0.05];
+    const depths = [50, 150, 300, 450, 600];
+    const counts = [500, 800, 1200, 1600, 2000];
 
     for (let i = 0; i < sizes.length; i++) {
         const stars = createStars(counts[i], sizes[i], depths[i]);
@@ -54,13 +54,15 @@ function createStars(count, size, layerDepth) {
     const positions = [];
     const colors = [];
     for (let i = 0; i < count; i++) {
-        positions.push(Math.random() * 2000 - 1000); // x
-        positions.push(Math.random() * 2000 - 1000); // y
-        positions.push(Math.random() * layerDepth - layerDepth / 2); // z
-
-        // Optional: vary size slightly within the same layer
-        // This part should actually be handled by the size attribute for each vertex, but PointsMaterial does not support this yet.
+        // Use spherical or radial distribution instead of linear
+        let vertex = new THREE.Vector3();
+        vertex.x = Math.random() * 4000 - 2000; // Increase the range
+        vertex.y = Math.random() * 4000 - 2000; // Increase the range
+        vertex.z = Math.random() * layerDepth - layerDepth / 2; // z-position within the layer's depth
         
+        vertex.toArray(positions, i * 3);
+    }
+
         // Add color variation
         colors.push(Math.random() + 0.5); // r
         colors.push(Math.random() + 0.5); // g
