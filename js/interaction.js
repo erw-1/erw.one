@@ -17,7 +17,6 @@ const dodecahedronVertices = [
 export function addInteraction(layers, renderer) {
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
-    let rotationSpeed = { x: 0, y: 0 };
 
     renderer.domElement.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -30,22 +29,13 @@ export function addInteraction(layers, renderer) {
     });
 
     renderer.domElement.addEventListener('mousemove', (e) => {
-        const deltaMove = {
-            x: e.offsetX - previousMousePosition.x,
-            y: e.offsetY - previousMousePosition.y
-        };
-
         if (isDragging) {
-            rotationSpeed.x = deltaMove.x * 0.1;
-            rotationSpeed.y = deltaMove.y * 0.1;
-
-            applyRotation(layers);
+            const deltaX = e.offsetX - previousMousePosition.x;
+            const deltaY = e.offsetY - previousMousePosition.y;
+            applyRotation(layers, deltaX, deltaY);
         }
-
-        previousMousePosition = {
-            x: e.offsetX,
-            y: e.offsetY
-        };
+        previousMousePosition.x = e.offsetX;
+        previousMousePosition.y = e.offsetY;
     });
 
     renderer.domElement.addEventListener('wheel', (e) => {
@@ -55,16 +45,14 @@ export function addInteraction(layers, renderer) {
 
     function adjustStarPositions(delta) {
         const moveToward = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-        const moveAway = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001; // Define moveAway factor
-    
+
         layers.forEach(layer => {
             layer.geometry.attributes.position.array.forEach((value, index, array) => {
-                const vertexIndex = Math.floor(index / 3) % 20;
+                const vertexIndex = Math.floor(index / 3) % 20; // Chaque étoile se rapproche du sommet correspondant
                 const target = dodecahedronVertices[vertexIndex];
-                // Adjust position based on the direction of the scroll
-                array[index * 3] = array[index * 3] * (delta > 0 ? moveToward : moveAway) + target[0] * (1 - (delta > 0 ? moveToward : moveAway));
-                array[index * 3 + 1] = array[index * 3 + 1] * (delta > 0 ? moveToward : moveAway) + target[1] * (1 - (delta > 0 ? moveToward : moveAway));
-                array[index * 3 + 2] = array[index * 3 + 2] * (delta > 0 ? moveToward : moveAway) + target[2] * (1 - (delta > 0 ? moveToward : moveAway));
+                array[index * 3] = array[index * 3] * moveToward + target[0] * (1 - moveToward);
+                array[index * 3 + 1] = array[index * 3 + 1] * moveToward + target[1] * (1 - moveToward);
+                array[index * 3 + 2] = array[index * 3 + 2] * moveToward + target[2] * (1 - moveToward);
             });
             layer.geometry.attributes.position.needsUpdate = true;
         });
@@ -83,19 +71,4 @@ export function addInteraction(layers, renderer) {
             layer.quaternion.multiplyQuaternions(deltaRotationQuaternion, layer.quaternion);
         });
     }
-    // Momentum effect
-    function updateMomentum() {
-        if (!isDragging) {
-            rotationSpeed.x *= 0.95;
-            rotationSpeed.y *= 0.95;
-
-            if (Math.abs(rotationSpeed.x) > 0.01 || Math.abs(rotationSpeed.y) > 0.01) {
-                applyRotation(layers);
-            }
-        }
-        requestAnimationFrame(updateMomentum);
-    }
-
-    updateMomentum();
-
 }
