@@ -29,7 +29,7 @@ export function createNebula(scene, count) {
     const geometry = new THREE.BufferGeometry();
     const material = new THREE.ShaderMaterial({
         uniforms: {
-            pointTexture: { value: new THREE.TextureLoader().load('textures/sprite.png') }
+            pointTexture: { value: new THREE.TextureLoader().load('img/nebula.png') }
         },
         vertexShader,
         fragmentShader,
