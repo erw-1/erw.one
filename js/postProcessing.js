@@ -11,7 +11,7 @@ export function setupPostProcessing(renderer, scene, camera) {
         new THREE.Vector2(window.innerWidth, window.innerHeight), // resolution
         10, // strength
         5, // radius
-        0.02 // threshold
+        0.1 // threshold
     );
     composer.addPass(bloomPass);
 
