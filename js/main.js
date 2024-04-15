@@ -43,18 +43,26 @@ function createStarsLayers() {
 }
 
 function createStars(count, size, layerDepth) {
-    const geometry = new THREE.SphereGeometry(size, 32, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    const stars = new THREE.Group();
+    const geometry = new THREE.Geometry();
+    const material = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: size,
+        sizeAttenuation: true,
+        transparent: true
+    });
 
     for (let i = 0; i < count; i++) {
-        const star = new THREE.Mesh(geometry, material);
-        star.position.x = Math.random() * 2000 - 1000;
-        star.position.y = Math.random() * 2000 - 1000;
-        star.position.z = -layerDepth;
-        stars.add(star);
+        const star = new THREE.Vector3();
+        star.x = Math.random() * 2000 - 1000;
+        star.y = Math.random() * 2000 - 1000;
+        star.z = Math.random() * layerDepth - layerDepth / 2; // Random depth within the layer
+        geometry.vertices.push(star);
+
+        // Optional: vary size slightly within the same layer
+        material.size = size * (0.5 + Math.random());
     }
 
+    const stars = new THREE.Points(geometry, material);
     scene.add(stars);
     return stars;
 }
