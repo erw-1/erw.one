@@ -17,6 +17,7 @@ const dodecahedronVertices = [
 export function addInteraction(layers, renderer) {
     let isDragging = false;
     let previousMousePosition = { x: 0, y: 0 };
+    let rotationSpeed = { x: 0, y: 0 };
 
     renderer.domElement.addEventListener('mousedown', (e) => {
         isDragging = true;
@@ -29,13 +30,22 @@ export function addInteraction(layers, renderer) {
     });
 
     renderer.domElement.addEventListener('mousemove', (e) => {
+        const deltaMove = {
+            x: e.offsetX - previousMousePosition.x,
+            y: e.offsetY - previousMousePosition.y
+        };
+
         if (isDragging) {
-            const deltaX = e.offsetX - previousMousePosition.x;
-            const deltaY = e.offsetY - previousMousePosition.y;
-            applyRotation(layers, deltaX, deltaY);
+            rotationSpeed.x = deltaMove.x * 0.1;
+            rotationSpeed.y = deltaMove.y * 0.1;
+
+            applyRotation(layers);
         }
-        previousMousePosition.x = e.offsetX;
-        previousMousePosition.y = e.offsetY;
+
+        previousMousePosition = {
+            x: e.offsetX,
+            y: e.offsetY
+        };
     });
 
     renderer.domElement.addEventListener('wheel', (e) => {
@@ -71,4 +81,20 @@ export function addInteraction(layers, renderer) {
             layer.quaternion.multiplyQuaternions(deltaRotationQuaternion, layer.quaternion);
         });
     }
+    // Momentum effect
+    function updateMomentum() {
+        if (!isDragging) {
+            rotationSpeed.x *= 0.95;
+            rotationSpeed.y *= 0.95;
+
+            if (Math.abs(rotationSpeed.x) > 0.01 || Math.abs(rotationSpeed.y) > 0.01) {
+                applyRotation(layers);
+            }
+        }
+        requestAnimationFrame(updateMomentum);
+    }
+
+    updateMomentum();
+}
+
 }
