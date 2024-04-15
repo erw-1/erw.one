@@ -45,19 +45,20 @@ export function addInteraction(layers, renderer) {
 
     function adjustStarPositions(delta) {
         const moveToward = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-
+        const moveAway = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001; // Define moveAway factor
+    
         layers.forEach(layer => {
             layer.geometry.attributes.position.array.forEach((value, index, array) => {
-                const vertexIndex = Math.floor(index / 3) % 20; // Chaque étoile se rapproche du sommet correspondant
+                const vertexIndex = Math.floor(index / 3) % 20;
                 const target = dodecahedronVertices[vertexIndex];
-                array[index * 3] = array[index * 3] * moveToward + target[0] * (1 - moveToward);
-                array[index * 3 + 1] = array[index * 3 + 1] * moveToward + target[1] * (1 - moveToward);
-                array[index * 3 + 2] = array[index * 3 + 2] * moveToward + target[2] * (1 - moveToward);
+                // Adjust position based on the direction of the scroll
+                array[index * 3] = array[index * 3] * (delta > 0 ? moveToward : moveAway) + target[0] * (1 - (delta > 0 ? moveToward : moveAway));
+                array[index * 3 + 1] = array[index * 3 + 1] * (delta > 0 ? moveToward : moveAway) + target[1] * (1 - (delta > 0 ? moveToward : moveAway));
+                array[index * 3 + 2] = array[index * 3 + 2] * (delta > 0 ? moveToward : moveAway) + target[2] * (1 - (delta > 0 ? moveToward : moveAway));
             });
             layer.geometry.attributes.position.needsUpdate = true;
         });
     }
-
     function applyRotation(layers, deltaX, deltaY) {
         const deltaRotationQuaternion = new THREE.Quaternion()
             .setFromEuler(new THREE.Euler(
