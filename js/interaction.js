@@ -44,8 +44,8 @@ export function addInteraction(layers, renderer) {
     });
 
     function adjustStarPositions(delta) {
-        const moveToward = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
-        const moveAway = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001; // Define moveAway factor
+        const moveToward = delta > 0 ? 1 + delta * 0.001 : 1 - delta * 0.001;
+        const moveAway = delta > 0 ? 1 - delta * 0.001 : 1 + delta * 0.001;
     
         layers.forEach(layer => {
             layer.geometry.attributes.position.array.forEach((value, index, array) => {
