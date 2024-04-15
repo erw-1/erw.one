@@ -18,11 +18,10 @@ const fragmentShader = `
   varying vec3 vColor;
 
   void main() {
-    // Create a circular particle
     float r = distance(gl_PointCoord, vec2(0.5));
-    float alpha = 1.0 - smoothstep(0.45, 0.5, r);
+    float alpha = (1.0 - smoothstep(0.45, 0.5, r)) * 0.1; // Adjust the multiplier to reduce brightness
 
-    gl_FragColor = vec4(vColor, alpha);
+    gl_FragColor = vec4(vColor * alpha, alpha);
   }
 `;
 
