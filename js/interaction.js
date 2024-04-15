@@ -42,5 +42,5 @@ export function addInteraction(layers, renderer) {
             x: e.offsetX,
             y: e.offsetY
         };
-    });
-}
+    };
+})}
