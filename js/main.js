@@ -3,6 +3,7 @@ import { initScene } from './setupScene.js';
 import { setupPostProcessing } from './postProcessing.js';
 import { addInteraction } from './interaction.js';
 import { createStarsLayers } from './stars.js';
+import { createNebula } from './nebulas.js';
 
 // Initialize the scene, camera, and renderer
 const { scene, camera, renderer } = initScene();
@@ -12,6 +13,8 @@ const composer = setupPostProcessing(renderer, scene, camera);
 
 // Create stars and layers
 const layers = createStarsLayers(scene);
+
+const nebula = createNebula(scene, 1000);
 
 // Add mouse interaction
 addInteraction(layers, renderer);
