@@ -9,25 +9,6 @@ const { scene, camera, renderer } = initScene();
 // Set up post-processing effects
 const composer = setupPostProcessing(renderer, scene, camera);
 
-// Create stars and layers
-const layers = createStarsLayers();
-
-// Add mouse interaction
-addInteraction(layers, renderer);
-
-// Animation loop
-function animate() {
-    requestAnimationFrame(animate);
-
-    // Parallax effect and other animations
-    updateLayers(layers);
-
-    // Render the scene with post-processing
-    composer.render();
-}
-
-animate();
-
 // Create the shader material here with custom attributes for size and color
 // Vertex shader
 const vertexShader = `
@@ -65,6 +46,25 @@ const shaderMaterial = new THREE.ShaderMaterial({
   transparent: true,
   vertexColors: true
 });
+
+// Create stars and layers
+const layers = createStarsLayers();
+
+// Add mouse interaction
+addInteraction(layers, renderer);
+
+// Animation loop
+function animate() {
+    requestAnimationFrame(animate);
+
+    // Parallax effect and other animations
+    updateLayers(layers);
+
+    // Render the scene with post-processing
+    composer.render();
+}
+
+animate();
 
 function createStars(count, sizeRange, layerDepth) {
     const geometry = new THREE.BufferGeometry();
