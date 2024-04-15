@@ -1,7 +1,7 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.126.1/build/three.module.js';
 
-const minDistance = 50;
-const maxDistance = 150;
+const minDistance = 1;
+const maxDistance = 1500;
 
 function toRadians(angleInDegrees) {
     return angleInDegrees * Math.PI / 180;
@@ -118,7 +118,10 @@ export function addInteraction(layers, renderer) {
                 // Calculate the current distance to the vertex
                 const currentDistance = Math.sqrt(Math.pow(newX - target[0], 2) + Math.pow(newY - target[1], 2) + Math.pow(newZ - target[2], 2));
     
-                // Adjust if the distance is less than the minimum distance or greater than the maximum distance
+                // Log the current distance to the console
+                console.log(`Distance to vertex ${vertexIndex}: ${currentDistance.toFixed(2)}`);
+    
+                // Apply the correction for minDistance and maxDistance
                 if (currentDistance < minDistance) {
                     const correctionFactor = minDistance / currentDistance;
                     newX = target[0] + (newX - target[0]) * correctionFactor;
@@ -138,6 +141,7 @@ export function addInteraction(layers, renderer) {
             layer.geometry.attributes.position.needsUpdate = true;
         });
     }
+
 
     function applyRotation(layers, deltaX, deltaY) {
         const deltaRotationQuaternion = new THREE.Quaternion()
