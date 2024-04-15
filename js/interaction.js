@@ -75,6 +75,3 @@ export function addInteraction(layers, renderer) {
         });
     }
 }
-
-    updateMomentum();
-}
