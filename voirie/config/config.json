@@ -15,7 +15,7 @@
     "tileLayerOptions": {
         "maxZoom": 10,
         "minZoom": 6,
-        "attribution": "Erwan Vinot 2024 | Fond par Cartodb"
+        "attribution": "Erwan Vinot 2024 | Fond par Cartodb | ⮙Nord"
     },
     "mapSettings": {
         "zoomControl": false,
