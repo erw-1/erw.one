@@ -15,7 +15,7 @@
     "tileLayerOptions": {
         "maxZoom": 10,
         "minZoom": 6,
-        "attribution": "Erwan Vinot 2024 | Fond par Cartodb | ⮙Nord"
+        "attribution": "<a href="https://github.com/erw-1/erw.one/tree/main/voirie">Erwan Vinot<a> 2024 | Fond par Cartodb | ⮙Nord"
     },
     "mapSettings": {
         "zoomControl": false,
