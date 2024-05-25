@@ -7,9 +7,9 @@ html, body {
 }
 
 #map {
-    width: calc(100% - 20px); /* Largeur de la fenêtre moins la marge */
-    height: calc(100% - 20px);
-    margin: 10px;
+    width: calc(100% - 6px); /* Largeur de la fenêtre moins la marge */
+    height: calc(100% - 6px);
+    margin: 3px;
 }
 
 .info.legend, h1, .btn {
