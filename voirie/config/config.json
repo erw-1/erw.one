@@ -14,7 +14,7 @@
     "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
     "tileLayerOptions": {
         "maxZoom": 19,
-        "attribution": "Erwan Vinot 2024"
+        "attribution": "Erwan Vinot 2024 | Fond par Cartodb"
     },
     "mapSettings": {
         "zoomControl": false,
