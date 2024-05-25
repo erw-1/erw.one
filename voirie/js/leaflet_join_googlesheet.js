@@ -182,7 +182,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
 
 // Fonction pour afficher une alerte d'aide
 const displayHelpAlert = () => {
-    alert("Cliquez sur les points de la carte pour plus d'informations et pour afficher le lien de la carte. Cliquez sur un département pour voir son nom et son code.\n\nJ'ai fait cette carte pour mon mémoire de recherche sur l'appropriation des outils de communication sur la voirie pour dresser le contexte départemental.\nCette page est open source : https://github.com/erw-1/erw.one/tree/main/voirie");
+    alert("Cliquez sur les points de la carte pour plus d'informations et pour afficher le lien de la carte. Cliquez sur un département pour voir son nom et son code.\n\nJ'ai fait cette carte pour mon mémoire de recherche sur l'appropriation des outils de communication sur la voirie pour dresser le contexte départemental.\nCode source disponible en cliquant sur mon nom en bas de la carte.");
 };
 
 // Fonction pour ajouter le bouton "Aide" sur la carte
