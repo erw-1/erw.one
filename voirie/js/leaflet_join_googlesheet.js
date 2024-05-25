@@ -206,7 +206,7 @@ loadConfig().then(config => {
             .then(({ sheetData, unmatchedEntries, geojsonData }) => {
                 const map = initMap(config, () => showOtherToolsModal(unmatchedEntries)); // Passez un callback pour afficher la modale
                 createLegend(map, typesConfig);
-                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesToConfig, config, geojsonData);
+                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
                 addHelpButton(map); // Ajouter le bouton "Aide" après que la carte soit complètement initialisée
             });
     });
