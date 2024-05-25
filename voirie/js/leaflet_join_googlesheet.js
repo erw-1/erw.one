@@ -180,14 +180,34 @@ const initMap = (config, unmatchedEntriesCallback) => {
     return map;
 };
 
-// Charger la configuration et initialiser la carte
+// Fonction pour afficher une alerte d'aide
+const displayHelpAlert = () => {
+    alert("Cliquez sur les points de la carte pour plus d'information et pour afficher le lien de la carte.");
+};
+
+// Fonction pour ajouter le bouton "Aide" sur la carte
+const addHelpButton = (map) => {
+    const helpButton = L.control({ position: 'topright' }); // Positionnez selon le besoin
+
+    helpButton.onAdd = function(map) {
+        const button = L.DomUtil.create('button', 'btn btn-primary');
+        button.innerHTML = 'Aide';
+        button.onclick = displayHelpAlert; // Déclencher l'alerte d'aide
+        return button;
+    };
+
+    helpButton.addTo(map);
+};
+
+// initialisation de la carte
 loadConfig().then(config => {
     loadTypesConfig(config.iconConfigPath).then(typesConfig => {
         loadSheetDataAndFindUnmatched(config.googleSheetUrl, config.geojsonFeature)
             .then(({ sheetData, unmatchedEntries, geojsonData }) => {
                 const map = initMap(config, () => showOtherToolsModal(unmatchedEntries)); // Passez un callback pour afficher la modale
                 createLegend(map, typesConfig);
-                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesConfig, config, geojsonData);
+                addGeoJsonToMap(map, sheetData, unmatchedEntries, typesToConfig, config, geojsonData);
+                addHelpButton(map); // Ajouter le bouton "Aide" après que la carte soit complètement initialisée
             });
     });
 });
