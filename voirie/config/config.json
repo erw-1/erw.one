@@ -13,7 +13,7 @@
     "iconConfigPath": "config/types.json",
     "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
     "tileLayerOptions": {
-        "maxZoom": 10,
+        "maxZoom": 9,
         "minZoom": 6,
         "attribution": "<a href='https://github.com/erw-1/erw.one/tree/main/voirie'>Erwan Vinot<a> 2024 | Fond par Cartodb | ⮙Nord"
     },
