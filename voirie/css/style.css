@@ -128,3 +128,7 @@ html, body {
 button.btn.btn-info.leaflet-control {
     font-size: 16px;
 }
+
+.leaflet-top.leaflet-right {
+    padding-top: 15px;
+}
