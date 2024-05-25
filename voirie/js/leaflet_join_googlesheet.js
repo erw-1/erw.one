@@ -102,7 +102,7 @@ const createLegend = (map, typesConfig) => {
 
     legend.onAdd = () => {
         const div = L.DomUtil.create('div', 'info legend');
-        div.innerHTML += '<div class="title">Fonction des cartes interactives</div>';
+        div.innerHTML += '<div class="title">Thème des cartes interactives</div>';
         typesConfig.forEach(configItem => {
             div.innerHTML += `<i style="background-image: url(${configItem.icon}); background-repeat: no-repeat; background-position: center center;"></i><span>${configItem.type}</span><br>`;
         });
