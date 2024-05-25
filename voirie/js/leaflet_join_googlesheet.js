@@ -46,7 +46,7 @@ const loadSheetDataAndFindUnmatched = (googleSheetUrl, geojsonFeature) => {
 
 // Fonction pour obtenir une icône personnalisée en fonction du type
 const getCustomIcon = (type, typesConfig) => {
-    const iconInfo = typesConfig.find(t => t.type === type) || typesConfig.find(t => t.type === 'Travaux');
+    const iconInfo = typesConfig.find(t => t.type === type) || typesConfig.find(t => t.type === 'Localisation des travaux');
     return L.icon({
         iconUrl: iconInfo.icon,
         iconSize: [25, 41],
