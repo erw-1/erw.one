@@ -112,52 +112,63 @@ const createLegend = (map, typesConfig) => {
     legend.addTo(map);
 };
 
-// Fonction pour afficher une alerte d'aide
-const showHelpAlert = () => {
-    alert("Cliquez sur les points de la carte pour plus d'information et pour afficher le lien de la carte.");
-};
+// Fonction pour afficher la modale avec les entrées non appariées
+const showOtherToolsModal = (unmatchedEntries) => {
+    // S'assure que la modale est initialisée avant d'essayer de l'afficher
+    const modal = document.getElementById('otherToolsModal');
+    const list = document.getElementById('unmatchedList');
+    const span = document.getElementsByClassName("close")[0];
 
-// Ajouter les contrôles de bouton "Autres outils" et "Aide"
-const addCustomControls = (map, unmatchedEntriesCallback) => {
-    const otherToolsButton = L.control({ position: 'topright' });
+    // Vide la liste précédente
+    list.innerHTML = '';
 
-    otherToolsButton.onAdd = function(map) {
-        const container = L.DomUtil.create('div');
+    // Ajoute les entrées non appariées à la liste
+    unmatchedEntries.forEach(entry => {
+        const listItem = document.createElement('li');
+        listItem.innerHTML = `<h3>${entry.nom}</h3>${entry.type}, <a href="${entry.lien}" target="_blank">Ouvrir l'outil</a>`;
+        list.appendChild(listItem);
+    });
 
-        // Bouton pour les autres outils
-        const buttonOtherTools = L.DomUtil.create('button', 'btn btn-info', container);
-        buttonOtherTools.innerHTML = 'Outils non cartographiques et cartes non départementales';
-        buttonOtherTools.onclick = function() {
-            unmatchedEntriesCallback(); // Appelle la fonction de callback avec les entrées non appariées
-        };
+    // Affiche la modale
+    modal.style.display = "block";
 
-        // Bouton d'aide
-        const buttonHelp = L.DomUtil.create('button', 'btn btn-secondary', container);
-        buttonHelp.innerHTML = 'Aide';
-        buttonHelp.style.marginTop = '10px'; // Espacement entre les boutons
-        buttonHelp.onclick = function() {
-            showHelpAlert(); // Fonction pour afficher l'alerte d'aide
-        };
-
-        return container;
+    // Ferme la modale lorsque l'utilisateur clique sur (x)
+    span.onclick = function() {
+        modal.style.display = "none";
     };
 
-    otherTools.comparisonb.addTop(map);
+    // Ferme la modale lorsque l'utilisateur clique n'importe où en dehors de la modale
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    };
 };
 
-// Modifier la fonction initMap pour inclure addCustomControls
+// Fonction pour initialiser la carte et ajouter les contrôles personnalisés
 const initMap = (config, unmatchedEntriesCallback) => {
     const map = L.map('map', {
-        zoomControl: config.mapSettings.zoomControl,
+        zoomControl: config.mapSettings.zoomControl, // Désactive les contrôles de zoom par défaut
         center: config.mapSettings.center,
         zoom: config.mapSettings.zoomLevel
     });
     L.tileLayer(config.tileLayerUrl, config.tileLayerOptions).addTo(map);
     
-    addCustomControls(map, unmatchedEntriesCallback); // Ajouter les boutons personnalisés
+    // Ajouter le bouton "Autres outils" ici
+    const otherToolsButton = L.control({ position: 'topright' });
 
+    otherToolsButton.onAdd = function(map) {
+        const button = L.DomUtil.create('button', 'btn btn-info');
+        button.innerHTML = 'Outils non cartographiques et cartes non départementales';
+        button.onclick = function() {
+            unmatchedEntriesCallback(); // Appelle la fonction de callback avec les entrées non appariées
+        };
+        return button;
+    };
+    // Ajouter l'échelle
     L.control.scale({ position: 'bottomleft' }).addTo(map);
-
+    
+    // Ajouter le titre
     const titleControl = L.control({ position: 'topleft' });
     titleControl.onAdd = function(map) {
         const div = L.DomUtil.create('div', 'map-title');
@@ -165,7 +176,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
         return div;
     };
     titleControl.addTo(map);
-    
+    otherToolsButton.addTo(map);
     return map;
 };
 
@@ -180,4 +191,3 @@ loadConfig().then(config => {
             });
     });
 });
-
