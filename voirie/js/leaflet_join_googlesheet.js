@@ -191,7 +191,7 @@ const addHelpButton = (map) => {
 
     helpButton.onAdd = function(map) {
         const button = L.DomUtil.create('button', 'btn btn-primary');
-        button.innerHTML = 'Aide';
+        button.innerHTML = 'Aide et info';
         button.onclick = displayHelpAlert; // Déclencher l'alerte d'aide
         return button;
     };
