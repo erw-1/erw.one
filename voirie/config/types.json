@@ -4,7 +4,7 @@
         "icon": "img/icone_orange.png"
     },
     {
-        "type": "VH",
+        "type": "Viabilité hivernale (VH)",
         "icon": "img/icone_teal.png"
     },
     {
@@ -12,7 +12,7 @@
         "icon": "img/icone_orange_teal.png"
     },
     {
-        "type": "Multi",
+        "type": "Multifonction",
         "icon": "img/icone_rainbow.png"
     },
     {
