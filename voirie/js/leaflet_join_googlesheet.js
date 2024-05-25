@@ -97,7 +97,7 @@ const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, 
 // Fonction pour créer la légende avec le fichier de configuration
 const createLegend = (map, typesConfig) => {
     const legend = L.control({
-        position: 'bottomleft'
+        position: 'topleft'
     });
 
     legend.onAdd = () => {
