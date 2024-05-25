@@ -182,7 +182,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
 
 // Fonction pour afficher une alerte d'aide
 const displayHelpAlert = () => {
-    alert("Cliquez sur les points de la carte pour plus d'information et pour afficher le lien de la carte.");
+    alert("Cliquez sur les points de la carte pour plus d'informations et pour afficher le lien de la carte.");
 };
 
 // Fonction pour ajouter le bouton "Aide" sur la carte
