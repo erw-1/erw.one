@@ -13,12 +13,13 @@
     "iconConfigPath": "config/types.json",
     "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
     "tileLayerOptions": {
-        "maxZoom": 19,
+        "maxZoom": 10,
+        "minZoom": 6,
         "attribution": "Erwan Vinot 2024 | Fond par Cartodb"
     },
     "mapSettings": {
         "zoomControl": false,
         "center": [46.603354, 1.888334],
-        "zoomLevel": 7
+        "zoomLevel": 6
     }
 }
