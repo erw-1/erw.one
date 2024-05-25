@@ -97,12 +97,12 @@ const addGeoJsonToMap = (map, sheetData, unmatchedEntries, typesConfig, config, 
 // Fonction pour créer la légende avec le fichier de configuration
 const createLegend = (map, typesConfig) => {
     const legend = L.control({
-        position: 'bottomright'
+        position: 'bottomleft'
     });
 
     legend.onAdd = () => {
         const div = L.DomUtil.create('div', 'info legend');
-        div.innerHTML += '<div class="title">Fonction des outils</div>';
+        div.innerHTML += '<div class="title">Fonction des cartes</div>';
         typesConfig.forEach(configItem => {
             div.innerHTML += `<i style="background-image: url(${configItem.icon}); background-repeat: no-repeat; background-position: center center;"></i><span>${configItem.type}</span><br>`;
         });
@@ -159,7 +159,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
 
     otherToolsButton.onAdd = function(map) {
         const button = L.DomUtil.create('button', 'btn btn-info');
-        button.innerHTML = 'Autres outils';
+        button.innerHTML = 'Outils non cartographiques et cartes non départementales';
         button.onclick = function() {
             unmatchedEntriesCallback(); // Appelle la fonction de callback avec les entrées non appariées
         };
@@ -172,7 +172,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
     const titleControl = L.control({ position: 'topleft' });
     titleControl.onAdd = function(map) {
         const div = L.DomUtil.create('div', 'map-title');
-        div.innerHTML = '<h1>Inventaire des outils de voirie départementaux</h1>';
+        div.innerHTML = '<h1>Inventaire des cartes départementales de communication sur les routes</h1>';
         return div;
     };
     titleControl.addTo(map);
