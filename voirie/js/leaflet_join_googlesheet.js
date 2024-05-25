@@ -182,7 +182,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
 
 // Fonction pour afficher une alerte d'aide
 const displayHelpAlert = () => {
-    alert("Cliquez sur les points de la carte pour plus d'informations et pour un lien. Cliquez sur un département pour voir son nom et son code.\n\nJ'ai fait cette carte pour mon mémoire de recherche sur l'appropriation des outils de communication sur la voirie pour dresser le contexte départemental.\nCode source disponible en cliquant sur mon nom en bas de la carte.");
+    alert("Cliquez sur les points de la carte pour plus d'informations et pour voir le lien de l'outil. Cliquez sur un département pour voir son nom et son code.\n\nJ'ai fait cette carte pour mon mémoire de recherche sur l'appropriation des outils de communication sur la voirie pour dresser le contexte départemental.\nCode source disponible en cliquant sur mon nom en bas de la carte.");
 };
 
 // Fonction pour ajouter le bouton "Aide" sur la carte
