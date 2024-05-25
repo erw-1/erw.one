@@ -172,7 +172,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
     const titleControl = L.control({ position: 'topleft' });
     titleControl.onAdd = function(map) {
         const div = L.DomUtil.create('div', 'map-title');
-        div.innerHTML = '<h1>Inventaire des cartes départementales de communication sur les routes</h1>';
+        div.innerHTML = '<h1>Inventaire des cartes départementales publiques de communication sur les routes</h1>';
         return div;
     };
     titleControl.addTo(map);
