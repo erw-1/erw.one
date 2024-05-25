@@ -1,4 +1,4 @@
-# Outil d'inventaire des outils de communication et de gestion de la voirie, à l'échelle départementale
+# Outil d'inventaire des cartes départementales de communication sur les routes
 
 [erw.one/voirie](https://erw.one/voirie)
 
