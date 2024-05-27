@@ -3,7 +3,7 @@ var map = L.map('map').setView([47.6205, 6.3498], 10);  // Latitude and Longitud
 
 // Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Données de la carte © Contributeurs d’OpenStreetMap'
+    attribution: 'HSN | OSM'
 }).addTo(map);
 
 // Function to convert lat-lng to Lambert93 (approximate)
