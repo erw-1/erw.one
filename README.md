@@ -2,7 +2,7 @@
 
 I do geomatics (GIS) and cartography. Don't expect my code to be flawless, it's mainly a hobby because coding is fun and useful :D 
 
-Plans for the future : 
+Uses and plans for the future : 
 --
 - Homepage
   - Personal portolio (GIS stuff, maps, etc, ...)
