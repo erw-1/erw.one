@@ -42,7 +42,7 @@ function convertToLambert93(lat, lng) {
 // Handle map click event
 map.on('click', function(e) {
     var latlng = e.latlng;
-    var [x, y] = convertToLambert93(latlon.lat, latlon.lng);
+    var [x, y] = convertToLambert93(latlng.lat, latlng.lng);
     var content = `Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}`;
 
     // Show popup
