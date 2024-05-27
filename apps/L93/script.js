@@ -13,7 +13,7 @@ var map = L.map('map', {
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'HSN | OSM',
     maxNativeZoom: 19,
-    maxZoom: 22,
+    maxZoom: 22
 }).addTo(map);
 
 // Handle map click event to display and copy Lambert93 coordinates
