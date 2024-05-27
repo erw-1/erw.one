@@ -7,14 +7,14 @@ var map = L.map('map').setView([47.6205, 6.3498], 10);  // Centered on Haute-Sa�
 
 // Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Données de la carte © Contributeurs d’OpenStreetMap'
+    attribution: 'HSN | OSM'
 }).addTo(map);
 
 // Handle map click event
 map.on('click', function(e) {
     var latlng = e.latlng;
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [latlng.lng, latlng.lat]);
-    var content = `Coords. Lambert 93: ${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
+    var content = `Coords. en Lambert 93 : ${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}\n(copiées dans le presse-papiers)`;
 
     L.popup()
         .setLatLng(latlng)
