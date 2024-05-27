@@ -43,7 +43,7 @@ function convertToLambert93(lat, lng) {
 map.on('click', function(e) {
     var latlng = e.latlng;
     var [x, y] = convertToLambert93(latlng.lat, latlng.lng);
-    var content = `Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}. Coords. en Lambert93 copiées, Ctrl+V pour les coller.`;
+    var content = `Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}.\nCoords. en Lambert 93 copiées, Ctrl+V pour les coller.`;
 
     // Show popup and notify user
     L.popup()
@@ -51,6 +51,10 @@ map.on('click', function(e) {
         .setContent(content)
         .openOn(map);
 
-    // Copy to clipboard
-    navigator.clipboard.writeHey(content);  // No error handling needed, simplicity for user notification
+    // Copy to clipboard and update popup content with confirmation
+    navigator.clipboard.writeText(popupContent).then(function() {
+        popup.setContent(`Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}. Copied to clipboard, press Ctrl+V to paste.`);
+    }, function(err) {
+        popup.setContent(`Failed to copy coordinates. Error: ${err}`);
+    });
 });
