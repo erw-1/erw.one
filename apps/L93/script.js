@@ -21,7 +21,7 @@ map.on('click', function(e) {
     var latlng = e.latlng;
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [latlng.lng, latlng.lat]);
     var coords = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
-    var content = `Coords. en Lambert 93 : <b>${coords}</b>\n\nCopiées dans le presse-papiers`;
+    var content = `Coords. en Lambert 93 : <b>${coords}</b><br/>Copiées dans le presse-papiers`;
 
     L.popup()
         .setLatLng(latlng)
@@ -61,7 +61,7 @@ map.on('locationfound', function(e) {
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [location.lng, location.lat]);
     var coordsLambert93Formatted = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
 
-    const content = `Vous êtes à moins de ${radius} mètres de ce point: ${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}<br/>Coord. Lambert 93: <b>${coordsLambert93Formatted}</b>`;
+    const content = `Vous êtes à moins de ${radius} mètres de ce point<br/>Coord. Lambert 93: <b>${coordsLambert93Formatted}</b>`;
 
     L.marker(location).addTo(map)
         .bindPopup(content)
