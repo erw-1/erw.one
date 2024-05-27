@@ -1,43 +1,33 @@
-// Définition de la projection Lambert93
-proj4.defs("EPSG:2154","+proj=lcc +lat_1=44.100000 +lat_2=49.200000 +lat_0=46.800000 +lon_0=3.000000 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-var lambert93 = new L.Proj.CRS('EPSG:2154',
-    proj4.defs("EPSG:2154"),
-    {
-        resolutions: [8192, 4096, 2048, 1024, 512, 256, 128],
-        origin: [0, 0]
-    }
-);
+document.addEventListener('DOMContentLoaded', function() {
+    // Define the map
+    var map = L.map('map').setView([48.8566, 2.3522], 13); // Centered on Paris
 
-// Initialisation de la carte avec la projection personnalisée
-var map = L.map('map', {
-    crs: lambert93,
-    continuousWorld: true,
-    worldCopyJump: false,
-});
+    // Add CartoDB basemap
+    L.tileLayer('https://{s}.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://carto.com/attributions">CARTO</a>',
+        subdomains: 'abcd',
+        maxZoom: 19
+    }).addTo(map);
 
-// Définition de la vue initiale (ajuster selon le besoin)
-map.setView([46.52863469527167, 2.43896484375], 5);
+    // Initialize Proj4
+    proj4.defs("EPSG:2154","+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
+    var lambert93 = new proj4.Proj('EPSG:2157');
 
-// Couche de base CartoDB sans étiquettes
-var baseLayer = L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-    attribution: 'Map data © OpenStreetMap contributors, CartoDB'
-}).addTo(map);
+    // Event listener for map clicks
+    map.on('click', function(e) {
+        var latlng = e.latlng;
+        var transformed = proj4(proj4.WGS84, lambert93, [latlng.lng, latlng.lat]);
+        var popupContent = `Coordonnées Lambert93 : ${transformed[0].toFixed(2)}, ${transformed[1].toFixed(2)}`;
 
-// Gestion des événements de clic sur la carte
-map.on('click', function(e) {
-    var coords = e.latlng;
-    var transformedCoords = proj4('EPSG:4326', 'EPSG:2154', [coords.lng, coords.lat]);
+        // Show popup
+        L.popup()
+            .setLatLng(latlng)
+            .setContent(popupContent)
+            .openOn(map);
 
-    // Création d'un popup au point de clic
-    L.popup()
-        .setLatLng(coords)
-        .setContent("Coordonnées Lambert93 : " + transformedCoords.join(', '))
-        .openOn(map);
-
-    // Copie des coordonnées dans le presse-papiers
-    navigator.clipboard.writeText(transformedCoords.join(', ')).then(function() {
-        console.log('Coordonnées copiées avec succès !');
-    }, function(err) {
-        console.error('Erreur lors de la copie des coordonnées : ', err);
+        // Copy coordinates to clipboard
+        navigator.clipboard.writeText(`${transformed[0].toFixed(2)}, ${transformed[1].toFixed(2)}`)
+            .then(() => alert('Coordonnées copiées dans le presse-papier!'))
+            .catch(err => console.error('Erreur lors de la copie: ', err));
     });
 });
