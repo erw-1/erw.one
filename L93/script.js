@@ -43,7 +43,7 @@ function convertToLambert93(lat, lng) {
 map.on('click', function(e) {
     var latlng = e.latlng;
     var [x, y] = convertToLambert93(latlng.lat, latlng.lng);
-    var content = `Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}. Copied to clipboard, press Ctrl+V to paste.`;
+    var content = `Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}. Coords. en Lambert93 copiées, Ctrl+V pour les coller.`;
 
     // Show popup and notify user
     L.popup()
