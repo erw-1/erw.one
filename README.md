@@ -8,7 +8,7 @@ Plans for the future :
   - Personal portolio (GIS stuff, maps, etc, ...)
   - A page for my CV
   - Maybe I'll add a photography section since I like to take pictures
-- hosting random web projects (voirie, cacp)
   
-- URL shortener with redirects (wc)
+- hosting random web projects in the "apps" folder
+- URL shortener with redirects in the "r" folder
 - more random stuff
