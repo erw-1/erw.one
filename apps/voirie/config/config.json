@@ -15,7 +15,7 @@
     "tileLayerOptions": {
         "maxZoom": 9,
         "minZoom": 6,
-        "attribution": "<a href='https://github.com/erw-1/erw.one/tree/main/voirie' target='_blank'>Erwan Vinot 2024</a> | Fond par <a href='https://github.com/CartoDB/basemap-styles' target='_blank'>Cartodb</a> |&#8198⮙&#8198ᴺᵒʳᵈ"
+        "attribution": "<a href='https://github.com/erw-1/erw.one/tree/main/apps/voirie' target='_blank'>Erwan Vinot 2024</a> | Fond par <a href='https://github.com/CartoDB/basemap-styles' target='_blank'>Cartodb</a> |&#8198⮙&#8198ᴺᵒʳᵈ"
     },
     "mapSettings": {
         "zoomControl": false,
