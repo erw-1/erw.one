@@ -2,8 +2,8 @@
 var map = L.map('map').setView([47.6205, 6.3498], 10);  // Latitude and Longitude of Haute-Saône with a zoom level that shows the region
 
 // Add the CartoDB tiles
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-    attribution: 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'HSN'
 }).addTo(map);
 
 // Function to convert lat-lng to Lambert93 (approximate)
