@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Erwan Vinot">
+    <meta name="keywords" content="Erwan Vinot, GIS Engineer, Geographic Information Systems, GIS, Data Analysis, Mapping, Géomatique, SIG, Cartographie">
+    <meta name="google-site-verification" content="CArYbUVj_S83myJhXaK4R7OK0kJtxdii16XyR-liruQ" />
+    
+    <title>Cartes départementales de communication sur les routes</title>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/MarkerCluster.Default.css" />
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.4.1/leaflet.markercluster.js"></script>
+</head>
+<body>
+    <div id="map"></div>
+    <!-- Modale pour les autres outils -->
+    <div id="otherToolsModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Autres outils</h2>
+        <ul id="unmatchedList"></ul>
+      </div>
+    </div>
+    
+    <script src="js/leaflet_join_googlesheet.js"></script>
+</body>
+</html>

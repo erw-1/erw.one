@@ -1,0 +1,22 @@
+[
+    {
+        "type": "Conditions de circulation",
+        "icon": "img/icone_orange.png"
+    },
+    {
+        "type": "Viabilité hivernale (VH)",
+        "icon": "img/icone_teal.png"
+    },
+    {
+        "type": "Conditions de circulation et VH",
+        "icon": "img/icone_orange_teal.png"
+    },
+    {
+        "type": "Localisation des travaux",
+        "icon": "img/icone_grisclair.png"
+    },
+    {
+        "type": "Plus de deux thèmes",
+        "icon": "img/icone_rainbow.png"
+    }
+]
