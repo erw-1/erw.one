@@ -3,13 +3,17 @@ proj4.defs("EPSG:2154", "+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0
 var lambert93 = proj4("EPSG:2154");
 
 // Initialize the map
-var map = L.map('map').setView([47.6205, 6.3498], 10);  // Centered on Haute-Saône
+var map = L.map('map', {
+    center: [47.6205, 6.3498], // Set to the desired center coordinates
+    zoom: 10,                  // Set to the desired initial zoom level
+    zoomControl: false         // Disables the default zoom controls
+}).setView([47.6205, 6.3498], 10);
 
 // Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'HSN | OSM',
     maxNativeZoom: 19,
-    maxZoom: 22
+    maxZoom: 22,
 }).addTo(map);
 
 // Handle map click event to display and copy Lambert93 coordinates
