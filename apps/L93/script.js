@@ -16,7 +16,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 map.on('click', function(e) {
     var latlng = e.latlng;
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [latlng.lng, latlng.lat]);
-    var content = `Coords. en Lambert 93 : ${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}\n\n Copiées dans le presse-papiers`;
+    var content = `Coords. en Lambert 93 : <b>${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}</b>\n\n Copiées dans le presse-papiers`;
     var coords = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
     
     L.popup()
