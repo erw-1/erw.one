@@ -1,5 +1,5 @@
-// Initialize the map
-var map = L.map('map').setView([48.8566, 2.3522], 12);
+// Initialize the map centered on Haute-Saône
+var map = L.map('map').setView([47.6205, 6.3498], 10);  // Latitude and Longitude of Haute-Saône with a zoom level that shows the region
 
 // Add the CartoDB tiles
 L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
@@ -43,18 +43,14 @@ function convertToLambert93(lat, lng) {
 map.on('click', function(e) {
     var latlng = e.latlng;
     var [x, y] = convertToLambert93(latlng.lat, latlng.lng);
-    var content = `Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}`;
+    var content = `Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}. Copied to clipboard, press Ctrl+V to paste.`;
 
-    // Show popup
+    // Show popup and notify user
     L.popup()
         .setLatLng(latlng)
         .setContent(content)
         .openOn(map);
-    
+
     // Copy to clipboard
-    navigator.clipboard.writeText(content).then(function() {
-        alert('Coordinates copied to clipboard!');
-    }, function(err) {
-        alert('Failed to copy coordinates: ', err);
-    });
+    navigator.clipboard.writeHey(content);  // No error handling needed, simplicity for user notification
 });
