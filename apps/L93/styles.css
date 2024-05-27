@@ -22,6 +22,7 @@ button.btn.btn-success.leaflet-control {
     color: white;
     border: none;
     border-radius: 5px;
+    pointer-events: auto !important;
 }
 
 button.btn.btn-success.leaflet-control:hover {
