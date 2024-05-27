@@ -1,6 +1,6 @@
 # Personal website
 
-I do geomatics (GIS) and cartography. Don't expect my code to be flawless, it's mainly a hobby because coding is fun :D 
+I do geomatics (GIS) and cartography. Don't expect my code to be flawless, it's mainly a hobby because coding is fun and useful :D 
 
 Plans for the future : 
 --
