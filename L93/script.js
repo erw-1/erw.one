@@ -15,14 +15,15 @@ map.on('click', function(e) {
     var latlng = e.latlng;
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [latlng.lng, latlng.lat]);
     var content = `Coords. en Lambert 93 : ${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}\n(copiées dans le presse-papiers, CTRL+V pour les coller)`;
-
+    var coords = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
+    
     L.popup()
         .setLatLng(latlng)
         .setContent(content)
         .openOn(map);
 
     // Copy to clipboard
-    navigator.clipboard.writeText('${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}').then(() => {
+    navigator.clipboard.writeText(coords).then(() => {
         console.log("Coordinates copied to clipboard.");
     }).catch(err => {
         console.error("Failed to copy coordinates: ", err);
