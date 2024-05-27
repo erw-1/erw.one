@@ -14,7 +14,7 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 map.on('click', function(e) {
     var latlng = e.latlng;
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [latlng.lng, latlng.lat]);
-    var content = `Coords. en Lambert 93 : ${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}\n(copiées dans le presse-papiers)`;
+    var content = `Coords. en Lambert 93 : ${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}\n(copiées dans le presse-papiers, CTRL+V pour les coller)`;
 
     L.popup()
         .setLatLng(latlng)
@@ -22,7 +22,7 @@ map.on('click', function(e) {
         .openOn(map);
 
     // Copy to clipboard
-    navigator.clipboard.writeText(content).then(() => {
+    navigator.clipboard.writeText('${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}').then(() => {
         console.log("Coordinates copied to clipboard.");
     }).catch(err => {
         console.error("Failed to copy coordinates: ", err);
