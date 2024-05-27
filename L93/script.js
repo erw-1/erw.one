@@ -7,7 +7,9 @@ var map = L.map('map').setView([47.6205, 6.3498], 10);  // Centered on Haute-Sa√
 
 // Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'HSN | OSM'
+    attribution: 'HSN | OSM',
+    maxNativeZoom: 19, // OSM max available zoom is at 19.
+    maxZoom: 22
 }).addTo(map);
 
 // Handle map click event
