@@ -1,6 +1,6 @@
 # Outil d'inventaire des cartes départementales de communication sur les routes
 
-[erw.one/voirie](https://erw.one/voirie)
+[erw.one/apps/voirie](https://erw.one/apps/voirie)
 
 Fait pour mon mémoire de recherche de M1 en géomatique sur l'appropriation des outils de gestion de la voirie, pour dresser le contexte des départements par rapport à ces outils.
 
