@@ -3,7 +3,7 @@ var map = L.map('map').setView([47.6205, 6.3498], 10);  // Latitude and Longitud
 
 // Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'HSN | OSM'
+    attribution: 'Données de la carte © Contributeurs d’OpenStreetMap'
 }).addTo(map);
 
 // Function to convert lat-lng to Lambert93 (approximate)
@@ -37,7 +37,7 @@ function convertToLambert93(lat, lng) {
 map.on('click', function(e) {
     var latlng = e.latlng;
     var [x, y] = convertToLambert93(latlng.lat, latlng.lng);
-    var popupContent = `Coords. : ${x.toFixed(2)}, ${y.toFixed(2)}\nCoords. en Lambert 93 copiées, Ctrl+V pour les coller.`;
+    var popupContent = `Coords. : ${x.toFixed(3)}, ${y.toFixed(3)}\nCoords. en Lambert 93 copiées, Ctrl+V pour les coller.`;
 
     // Show popup
     var popup = L.popup()
@@ -46,8 +46,8 @@ map.on('click', function(e) {
         .openOn(map);
 
     // Copy to clipboard and update popup content
-    navigator.clipboard.writeText(`Coords. : ${x.toFixed(2)}, ${y.toFixed(2)}`).then(function() {
-        popup.setContent(popupContent); // No need to change content since it is set before the copying
+    navigator.clipboard.writeText(`Coords. : ${x.toFixed(3)}, ${y.toFixed(3)}`).then(function() {
+        popup.setContent(popupContent); // Confirming the copy action in the same content
     }, function(err) {
         popup.setContent(`Échec de la copie des coordonnées. Erreur : ${err}`);
     });
