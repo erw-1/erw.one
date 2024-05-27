@@ -19,8 +19,8 @@ var map = L.map('map', {
 map.setView([46.52863469527167, 2.43896484375], 5);
 
 // Base Layer
-var osm = L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: 'Map data © OpenStreetbook contributors'
+var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: 'Map data © OpenStreetMap contributors'
 }).addTo(map);
 
 // Function to handle click events on the map
