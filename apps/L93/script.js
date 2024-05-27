@@ -82,28 +82,3 @@ map.on('locationerror', function(e) {
 
 // Add the geolocation button to the map
 addLocationButton(map);
-
-// JavaScript Code to Handle touchstart Event
-document.addEventListener('DOMContentLoaded', function() {
-    const locationButton = document.querySelector('.button.btn.btn-success.leaflet-control');
-    if (locationButton) {
-        locationButton.addEventListener('touchstart', function(event) {
-            event.preventDefault(); // Prevent the default touch behavior like scrolling
-
-            console.log('Button was touched'); // Debug: log to console when touched
-
-            // You can add any function call or event handling logic here
-            // For example, if this button is supposed to trigger a map function:
-            map.locate({setView: true, maxZoom: 16});  // Example of triggering geolocation
-
-            // Optionally add feedback for touch interaction
-            locationButton.style.backgroundColor = '#45a049'; // Change color on touch
-        });
-
-        // Optional: Reset the button color on touch end
-        locationButton.addEventListener('touchend', function(event) {
-            locationButton.style.backgroundColor = '#4CAF50'; // Reset color after touch
-        });
-    }
-});
-
