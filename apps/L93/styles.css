@@ -10,20 +10,12 @@ body, html {
 }
 
 button.btn.btn-success.leaflet-control {
-    position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
     font-size: 50px;
-    z-index: 2000;
     width: 400px;
     height: 100px;
     background-color: #4CAF50;
     color: white;
-    border: none;
     border-radius: 5px;
-    pointer-events: auto !important;
-    touch-action: manipulation !important;
 }
 
 button.btn.btn-success.leaflet-control:hover {
