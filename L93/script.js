@@ -1,7 +1,3 @@
-// Define the Lambert93 projection
-proj4.defs("EPSG:2154","+proj=lcc +lat_1=49 +lat_2=44 +lat_0=46.5 +lon_0=3 +x_0=700000 +y_0=6600000 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");
-var lambert93 = new L.Proj.CRS('EPSG:2154', proj4.defs('EPSG:2154'));
-
 // Initialize the map
 var map = L.map('map', {
     crs: L.CRS.EPSG3857, // Using the default Web Mercator first
