@@ -52,7 +52,7 @@ map.on('click', function(e) {
         .openOn(map);
 
     // Copy to clipboard and update popup content with confirmation
-    navigator.clipboard.writeText(popupContent).then(function() {
+    navigator.clipboard.writeText(content).then(function() {
         popup.setContent(`Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}. Copied to clipboard, press Ctrl+V to paste.`);
     }, function(err) {
         popup.setContent(`Failed to copy coordinates. Error: ${err}`);
