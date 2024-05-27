@@ -23,6 +23,7 @@ button.btn.btn-success.leaflet-control {
     border: none;
     border-radius: 5px;
     pointer-events: auto !important;
+    touch-action: manipulation !important;
 }
 
 button.btn.btn-success.leaflet-control:hover {
