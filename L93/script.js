@@ -29,3 +29,4 @@ map.on('click', function(e) {
         console.error("Failed to copy coordinates: ", err);
     });
 });
+ 
