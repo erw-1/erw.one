@@ -10,5 +10,27 @@ body, html {
 }
 
 button.btn.btn-success.leaflet-control {
-    font-size: large;
+    position: fixed;        /* Fixe le bouton par rapport au viewport */
+    bottom: 20px;           /* Espace du bas */
+    left: 50%;              /* Position de départ à 50% de la largeur à gauche */
+    transform: translateX(-50%); /* Décale le bouton de 50% de sa propre largeur vers la gauche */
+    font-size: 50px;        /* Augmente la taille de la police */
+    z-index: 1000;          /* S'assure que le bouton reste au-dessus des autres éléments de la carte */
+    padding: 10px 20px;     /* Ajoute de l'espace intérieur pour un meilleur visuel et une meilleure réactivité */
+    background-color: #4CAF50; /* Couleur de fond (optionnel) */
+    color: white;           /* Couleur du texte (optionnel) */
+    border: none;           /* Supprime la bordure (optionnel) */
+    border-radius: 5px;     /* Arrondit les coins (optionnel) */
+}
+
+button.btn.btn-success.leaflet-control:hover {
+    background-color: #45a049; /* Couleur de fond au survol (optionnel) */
+}
+
+.leaflet-popup-content {
+    font-size: 18px;
+}
+
+.leaflet-popup-content-wrapper,.leaflet-popup-content {
+    width: 450px !important
 }
