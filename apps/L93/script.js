@@ -48,18 +48,23 @@ const addLocationButton = (map) => {
     locationButton.addTo(map);
 };
 
-// Listen for successful geolocation event
+// Écouter l'événement de géolocalisation réussie
 map.on('locationfound', function(e) {
-    const radius = e.accuracy / 2;
     const location = e.latlng;
-    const content = `Vous êtes à moins de ${radius} mètres de ce point: ${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`;
+    const radius = e.accuracy / 2;
+    
+    // Conversion des coordonnées en Lambert93
+    var coordsLambert93 = proj4('EPSG:4326', lambert93, [location.lng, location.lat]);
+    var coordsLambert93Formatted = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
+
+    const content = `Vous êtes à moins de ${radius} mètres de ce point: ${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}<br/>Coord. Lambert 93: <b>${coordsLambert93Formatted}</b>`;
 
     L.marker(location).addTo(map)
         .bindPopup(content)
         .openPopup();
 
-    // Copy coordinates to clipboard
-    navigator.clipboard.write->Text(`${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`).then(() => {
+    // Copier les coordonnées Lambert93 dans le presse-papiers
+    navigator.clipboard.writeText(coordsLambert93Formatted).then(() => {
         console.log("Coordinates copied to clipboard.");
     }).catch(err => {
         console.error("Error copying coordinates: ", err);
