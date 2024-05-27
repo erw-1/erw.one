@@ -1,28 +1,50 @@
 // Initialize the map
-var map = L.map('map', {
-    crs: L.CRS.EPSG3857, // Using the default Web Mercator first
-}).setView([48.8566, 2.3522], 12);
+var map = L.map('map').setView([48.8566, 2.3522], 12);
 
 // Add the CartoDB tiles
 L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
     attribution: 'Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL.'
 }).addTo(map);
 
-// Function to copy text to clipboard
-function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(function() {
-        alert('Coordinates copied to clipboard!');
-    }, function(err) {
-        alert('Failed to copy coordinates: ', err);
-    });
+// Function to convert lat-lng to Lambert93 (approximate)
+function convertToLambert93(lat, lng) {
+    // Constants for Lambert93 projection
+    const lambda0 = 3; // Central meridian in degrees
+    const phi0 = 46.5; // Latitude of origin in degrees
+    const x0 = 700000; // False easting
+    const y0 = 6600000; // False northing
+    const phi1 = 44; // First standard parallel
+    const phi2 = 49; // Second standard parallel
+
+    // Convert degrees to radians
+    const rad = (deg) => deg * (Math.PI / 180);
+
+    // Geodetic constants for WGS84
+    const a = 6378137; // Semi-major axis
+    const b = 6356752.314; // Semi-minor axis
+    const f = 1/298.257223563; // Flattening
+
+    // Compute parameters
+    const n = (Math.log((a * Math.cos(rad(phi1))) / (a * Math.cos(rad(phi2)))) /
+               Math.log(Math.tan(rad(90 + phi2) / 2) / Math.tan(rad(90 + phi1) / 2)));
+    const F = (a * Math.cos(rad(phi1)) * Math.exp(n * Math.log(Math.tan(rad(90 + phi1) / 2)))) / n;
+    const rho0 = F / Math.exp(n * Math.log(Math.tan(rad(90 + phi0) / 2)));
+
+    // Convert
+    const rho = F / Math.exp(n * Math.log(Math.tan(rad(90 + lat) / 2)));
+    const theta = n * (rad(lng) - rad(lambda0));
+    const x = x0 + rho * Math.sin(theta);
+    const y = y0 + rho0 - rho * Math.cos(theta);
+
+    return [x, y];
 }
 
 // Handle map click event
 map.on('click', function(e) {
     var latlng = e.latlng;
-    var projected = proj4('EPSG:4326', 'EPSG:2154', [latlng.lng, latlng.lat]);
-    var content = `Coordinates: ${projected[0].toFixed(2)}, ${projected[1].toFixed(2)}`;
-    
+    var [x, y] = convertToLambert93(latlon.lat, latlon.lng);
+    var content = `Coordinates: ${x.toFixed(2)}, ${y.toFixed(2)}`;
+
     // Show popup
     L.popup()
         .setLatLng(latlng)
@@ -30,5 +52,9 @@ map.on('click', function(e) {
         .openOn(map);
     
     // Copy to clipboard
-    copyToClipboard(content);
+    navigator.clipboard.writeText(content).then(function() {
+        alert('Coordinates copied to clipboard!');
+    }, function(err) {
+        alert('Failed to copy coordinates: ', err);
+    });
 });
