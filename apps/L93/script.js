@@ -8,17 +8,17 @@ var map = L.map('map').setView([47.6205, 6.3498], 10);  // Centered on Haute-Sa�
 // Add OpenStreetMap tiles
 L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: 'HSN | OSM',
-    maxNativeZoom: 19, // OSM max available zoom is at 19.
+    maxNativeZoom: 19,
     maxZoom: 22
 }).addTo(map);
 
-// Handle map click event
+// Handle map click event to display and copy Lambert93 coordinates
 map.on('click', function(e) {
     var latlng = e.latlng;
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [latlng.lng, latlng.lat]);
     var coords = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
-    var content = `Coords. en Lambert 93 : <b>${coords}</b>\n\n Copiées dans le presse-papiers`;
-    
+    var content = `Coords. en Lambert 93 : <b>${coords}</b>\n\nCopiées dans le presse-papiers`;
+
     L.popup()
         .setLatLng(latlng)
         .setContent(content)
@@ -31,4 +31,45 @@ map.on('click', function(e) {
         console.error("Failed to copy coordinates: ", err);
     });
 });
- 
+
+// Function to add the geolocation button
+const addLocationButton = (map) => {
+    const locationButton = L.control({ position: 'topright' });
+
+    locationButton.onAdd = function(map) {
+        const button = L.DomUtil.create('button', 'btn btn-success');
+        button.innerHTML = 'Ma Position';
+        button.onclick = function() {
+            map.locate({setView: true, maxZoom: 16});
+        };
+        return button;
+    };
+
+    locationButton.addTo(map);
+};
+
+// Listen for successful geolocation event
+map.on('locationfound', function(e) {
+    const radius = e.accuracy / 2;
+    const location = e.latlng;
+    const content = `Vous êtes à moins de ${radius} mètres de ce point: ${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`;
+
+    L.marker(location).addTo(map)
+        .bindPopup(content)
+        .openPopup();
+
+    // Copy coordinates to clipboard
+    navigator.clipboard.write->Text(`${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`).then(() => {
+        console.log("Coordinates copied to clipboard.");
+    }).catch(err => {
+        console.error("Error copying coordinates: ", err);
+    });
+});
+
+// Listen for failed geolocation event
+map.on('locationerror', function(e) {
+    alert(e.message);
+});
+
+// Add the geolocation button to the map
+addLocationButton(map);
