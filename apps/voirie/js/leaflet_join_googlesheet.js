@@ -166,7 +166,7 @@ const initMap = (config, unmatchedEntriesCallback) => {
         return button;
     };
     // Ajouter l'échelle
-    L.control.scale({ position: 'bottomleft' }).addTo(map);
+    L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map);
     
     // Ajouter le titre
     const titleControl = L.control({ position: 'topleft' });
