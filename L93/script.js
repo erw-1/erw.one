@@ -19,7 +19,7 @@ var map = L.map('map', {
 map.setView([46.52863469527167, 2.43896484375], 5);
 
 // Base Layer
-var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+var osm = L.tileLayer('https://tiles.stadiamaps.com/tiles/osm_bright/{z}/{x}/{y}.jpg', {
     attribution: 'Map data © OpenStreetMap contributors'
 }).addTo(map);
 
