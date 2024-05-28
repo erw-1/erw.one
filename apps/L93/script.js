@@ -36,56 +36,20 @@ map.on('click', function(e) {
     });
 });
 
-// Function to add the geolocation button
-const addLocationButton = (map) => {
-    const locationButton = L.control({ position: 'bottomright' });
+document.getElementById('locateButton').addEventListener('click', function() {
+    map.locate({setView: true, maxZoom: 16});
+});
 
-    locationButton.onAdd = function(map) {
-        const button = L.DomUtil.create('button', 'btn btn-success');
-        button.innerHTML = 'Ma Position';
-        button.onclick = function(e) {
-            L.DomEvent.stopPropagation(e); // Ajouté pour éviter la propagation de l'événement
-            map.locate({setView: true, maxZoom: 16});
-        };
-        
-        // Ajouter un gestionnaire pour stopper la propagation des événements mousedown
-        L.DomEvent.on(button, 'mousedown', function(e) {
-            L.DomEvent.stopPropagation(e);
-        });
-
-        return button;
-    };
-
-    locationButton.addTo(map);
-};
-
-// Écouter l'événement de géolocalisation réussie
 map.on('locationfound', function(e) {
     const location = e.latlng;
     const radius = e.accuracy / 2;
-    
-    // Conversion des coordonnées en Lambert93
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [location.lng, location.lat]);
     var coordsLambert93Formatted = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
-
-    const content = `Précision du GPS : ${radius} mètres<br/>Coord. Lambert 93: <b>${coordsLambert93Formatted}</b>\n Copiées dans le presse-papiers`;
-
-    L.marker(location).addTo(map)
-        .bindPopup(content)
-        .openPopup();
-
-    // Copier les coordonnées Lambert93 dans le presse-papiers
-    navigator.clipboard.writeText(coordsLambert93Formatted).then(() => {
-        console.log("Coordinates copied to clipboard.");
-    }).catch(err => {
-        console.error("Error copying coordinates: ", err);
-    });
+    
+    const content = `Précision du GPS : ${radius} mètres<br/>Coord. Lambert 93: <b>${coordsLambert93Formatted}</b>`;
+    L.marker(location).addTo(map).bindPopup(content).openPopup();
 });
 
-// Listen for failed geolocation event
 map.on('locationerror', function(e) {
-    alert(e.message);
+    alert('Erreur de géolocalisation: ' + e.message);
 });
-
-// Add the geolocation button to the map
-addLocationButton(map);
