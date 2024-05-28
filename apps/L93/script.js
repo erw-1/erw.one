@@ -37,10 +37,13 @@ map.on('click', function(e) {
 });
 
 document.getElementById('locateButton').addEventListener('click', function() {
-    map.locate({setView: true, maxZoom: 18});
+    document.getElementById('loading').style.display = 'block'; // Afficher l'indicateur de chargement
+    map.locate({setView: true, maxZoom: 16});
 });
 
 map.on('locationfound', function(e) {
+    document.getElementById('loading').style.display = 'none'; // Masquer l'indicateur de chargement
+
     const location = e.latlng;
     const radius = e.accuracy / 2;
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [location.lng, location.lat]);
@@ -51,5 +54,6 @@ map.on('locationfound', function(e) {
 });
 
 map.on('locationerror', function(e) {
+    document.getElementById('loading').style.display = 'none'; // Assurez-vous de masquer le chargement même en cas d'erreur
     alert('Erreur de géolocalisation: ' + e.message);
 });
