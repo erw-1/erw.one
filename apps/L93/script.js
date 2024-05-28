@@ -49,6 +49,7 @@ map.on('locationfound', function(e) {
     const content = `Précision du GPS : ${radius} mètres<br/>Coord. Lambert 93: <b>${coordsLambert93Formatted}</b>`;
     
     document.getElementById('loading').style.display = 'none'; // Masquer l'indicateur de chargement
+    navigator.clipboard.writeText(`${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`)
     L.marker(location).addTo(map).bindPopup(content).openPopup();
 });
 
