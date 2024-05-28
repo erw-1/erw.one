@@ -37,7 +37,7 @@ map.on('click', function(e) {
 });
 
 document.getElementById('locateButton').addEventListener('click', function() {
-    map.locate({setView: true, maxZoom: 16});
+    map.locate({setView: true, maxZoom: 18});
 });
 
 map.on('locationfound', function(e) {
