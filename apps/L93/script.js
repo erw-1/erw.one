@@ -29,7 +29,7 @@ map.on('click', function(e) {
         .openOn(map);
 
     // Copy coordinates to clipboard
-    navigator.clipboard.writeText(`${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`).then(() => {
+    navigator.clipboard.writeText(`${coords}`).then(() => {
         console.log("Coordinates copied to clipboard.");
     }).catch(err => {
         console.error("Error copying coordinates: ", err);
