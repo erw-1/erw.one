@@ -16,6 +16,26 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 22
 }).addTo(map);
 
+// Handle map click event to display and copy Lambert93 coordinates
+map.on('click', function(e) {
+    var latlng = e.latlng;
+    var coordsLambert93 = proj4('EPSG:4326', lambert93, [latlng.lng, latlng.lat]);
+    var coords = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
+    var content = `Coords. en Lambert 93 : <b>${coords}</b><br/>Copiées dans le presse-papiers`;
+
+    L.popup()
+        .setLatLng(latlng)
+        .setContent(content)
+        .openOn(map);
+
+    // Copy coordinates to clipboard
+    navigator.clipboard.writeText(`${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`).then(() => {
+        console.log("Coordinates copied to clipboard.");
+    }).catch(err => {
+        console.error("Error copying coordinates: ", err);
+    });
+});
+
 // Function to add the geolocation button
 const addLocationButton = (map) => {
     const locationButton = L.control({ position: 'bottomright' });
@@ -58,26 +78,6 @@ map.on('locationfound', function(e) {
 // Listen for failed geolocation event
 map.on('locationerror', function(e) {
     alert(e.message);
-});
-
-// Handle map click event to display and copy Lambert93 coordinates
-map.on('mouseup', function(e) {
-    var latlng = e.latlng;
-    var coordsLambert93 = proj4('EPSG:4326', lambert93, [latlng.lng, latlng.lat]);
-    var coords = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
-    var content = `Coords. en Lambert 93 : <b>${coords}</b><br/>Copiées dans le presse-papiers`;
-
-    L.popup()
-        .setLatLng(latlng)
-        .setContent(content)
-        .openOn(map);
-
-    // Copy coordinates to clipboard
-    navigator.clipboard.writeText(`${location.lat.toFixed(5)}, ${location.lng.toFixed(5)}`).then(() => {
-        console.log("Coordinates copied to clipboard.");
-    }).catch(err => {
-        console.error("Error copying coordinates: ", err);
-    });
 });
 
 // Add the geolocation button to the map
