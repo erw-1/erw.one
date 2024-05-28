@@ -38,7 +38,7 @@ map.on('click', function(e) {
 
 // Function to add the geolocation button
 const addLocationButton = (map) => {
-    const locationButton = L.control({ position: 'topright' });
+    const locationButton = L.control({ position: 'bottomright' });
 
     locationButton.onAdd = function(map) {
         const button = L.DomUtil.create('button', 'btn btn-success');
