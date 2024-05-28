@@ -9,16 +9,22 @@ body, html {
     height: 100%;
 }
 
-button.btn.btn-success.leaflet-control {
+#locateButton {
     font-size: 50px;
     width: 400px;
     height: 100px;
     background-color: #4CAF50;
     color: white;
     border-radius: 5px;
+    position: fixed;        /* Fixe le bouton par rapport au viewport */
+    bottom: 20px;           /* Espace du bas */
+    left: 50%;              /* Position de départ à 50% de la largeur à gauche */
+    transform: translateX(-50%); /* Décale le bouton de 50% de sa propre largeur vers la gauche */
+    z-index: 1000;          /* S'assure que le bouton reste au-dessus des autres éléments de la carte */
+    padding: 10px 20px;     /* Ajoute de l'espace intérieur pour un meilleur visuel et une meilleure réactivité */
 }
 
-button.btn.btn-success.leaflet-control:hover {
+#locateButton:hover {
     background-color: #45a049; /* Couleur de fond au survol (optionnel) */
 }
 
