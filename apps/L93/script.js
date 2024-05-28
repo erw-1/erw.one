@@ -42,14 +42,13 @@ document.getElementById('locateButton').addEventListener('click', function() {
 });
 
 map.on('locationfound', function(e) {
-    document.getElementById('loading').style.display = 'none'; // Masquer l'indicateur de chargement
-
     const location = e.latlng;
     const radius = e.accuracy / 2;
     var coordsLambert93 = proj4('EPSG:4326', lambert93, [location.lng, location.lat]);
     var coordsLambert93Formatted = `${coordsLambert93[0].toFixed(3)}, ${coordsLambert93[1].toFixed(3)}`;
-    
     const content = `Précision du GPS : ${radius} mètres<br/>Coord. Lambert 93: <b>${coordsLambert93Formatted}</b>`;
+    
+    document.getElementById('loading').style.display = 'none'; // Masquer l'indicateur de chargement
     L.marker(location).addTo(map).bindPopup(content).openPopup();
 });
 
