@@ -43,9 +43,16 @@ const addLocationButton = (map) => {
     locationButton.onAdd = function(map) {
         const button = L.DomUtil.create('button', 'btn btn-success');
         button.innerHTML = 'Ma Position';
-        button.onclick = function() {
+        button.onclick = function(e) {
+            L.DomEvent.stopPropagation(e); // Ajouté pour éviter la propagation de l'événement
             map.locate({setView: true, maxZoom: 16});
         };
+        
+        // Ajouter un gestionnaire pour stopper la propagation des événements mousedown
+        L.DomEvent.on(button, 'mousedown', function(e) {
+            L.DomEvent.stopPropagation(e);
+        });
+
         return button;
     };
 
