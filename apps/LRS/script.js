@@ -7,15 +7,21 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
     attribution: 'HSN | OSM', maxNativeZoom: 19, maxZoom: 22
 }).addTo(map);
 
+// Create Panes
+map.createPane('routesPane').style.zIndex = 400;
+map.createPane('pointsPane').style.zIndex = 500;
+map.createPane('previewPane').style.zIndex = 600;
+
 // Layer Groups
 let routesLayer, pointsLayer, previewPoint, highlightedLayer, highlightedTooltip, originalData;
 let closestPrLayer = L.layerGroup().addTo(map), clickedPointsLayer = L.layerGroup().addTo(map);
 
 // Styles
 const styles = {
-    route: { color: "#4d4d4d", weight: 2, opacity: 0.8 },
-    highlight: { color: "#2d2d2d", weight: 3, opacity: 1 },
-    point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1 })
+    route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
+    highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
+    point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
+    preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' }
 };
 
 // Utility Functions
@@ -117,7 +123,7 @@ const handleMouseMove = throttle((e) => {
     });
 
     if (previewPoint) previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
-    else previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.point("#ffff00")).addTo(map);
+    else previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.preview).addTo(map);
 }, 100);
 
 const handleMapClick = (e) => {
@@ -143,9 +149,6 @@ const handleZoomEnd = () => {
     }
     map.removeLayer(routesLayer);
     routesLayer = L.geoJson(data, { style: styles.route }).addTo(map);
-    if (map.hasLayer(pointsLayer)) pointsLayer.bringToFront();
-    if (map.hasLayer(clickedPointsLayer)) clickedPointsLayer.bringToFront();
-    if (map.hasLayer(closestPrLayer)) closestPrLayer.bringToFront();
 };
 
 // Fetch Data and Initialize Layers
