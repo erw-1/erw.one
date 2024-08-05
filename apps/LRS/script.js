@@ -67,11 +67,22 @@ const findClosestPRs = (previewPoint, routeId) => {
     return [closestAhead, closestBehind].filter(Boolean);
 };
 
-const calculateDistanceAlongRoad = (startPoint, endPoint, line) => {
+const calculateDistanceAlongRoad = (startPoint, endPoint, multiLine) => {
     const start = turf.point([startPoint.lng, startPoint.lat]);
     const end = turf.point([endPoint.lng, endPoint.lat]);
-    const slicedLine = turf.lineSlice(start, end, line);
-    return turf.length(slicedLine, { units: 'meters' });
+
+    let totalDistance = 0;
+    if (multiLine.type === 'LineString') {
+        const slicedLine = turf.lineSlice(start, end, multiLine);
+        totalDistance = turf.length(slicedLine, { units: 'meters' });
+    } else if (multiLine.type === 'MultiLineString') {
+        multiLine.coordinates.forEach(line => {
+            const lineString = turf.lineString(line);
+            const slicedLine = turf.lineSlice(start, end, lineString);
+            totalDistance += turf.length(slicedLine, { units: 'meters' });
+        });
+    }
+    return totalDistance;
 };
 
 const throttle = (func, limit) => {
@@ -126,12 +137,12 @@ const handleMouseMove = throttle((e) => {
         .addTo(map);
 
     const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
-    const line = turf.feature(nearestLayer.feature.geometry);
+    const multiLine = nearestLayer.feature.geometry;
 
     closestPRs.forEach(pr => {
         const prLatLng = pr.layer.getLatLng();
         const previewLatLng = previewPoint ? previewPoint.getLatLng() : { lng: nearestPoint.geometry.coordinates[0], lat: nearestPoint.geometry.coordinates[1] };
-        const distance = calculateDistanceAlongRoad(previewLatLng, prLatLng, line);
+        const distance = calculateDistanceAlongRoad(previewLatLng, prLatLng, multiLine);
         const tooltipContent = `<b>PR${pr.properties.num_pr}</b><br>${distance.toFixed(1)} m`;
         const prMarker = L.circleMarker(prLatLng, styles.point("#ffa500")).addTo(closestPrLayer);
         const prTooltip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' })
