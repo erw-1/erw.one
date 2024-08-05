@@ -89,6 +89,10 @@ fetch('data/routes70.geojson')
         }).addTo(map);
         tree = createTree(data);
         console.log('Tree initialized', tree);
+
+        // Add event listeners after everything is initialized
+        map.on('mousemove', debounce(handleMouseMove, 50));
+        map.on('click', handleMapClick);
     })
     .then(() => {
         // Fetch and add the first layer (pr70.geojson) with red dot styling
@@ -106,11 +110,6 @@ fetch('data/routes70.geojson')
                 return L.circleMarker(latlng, pr70Style(feature));
             }
         }).addTo(map);
-    })
-    .then(() => {
-        // Add event listeners after everything is initialized
-        map.on('mousemove', debounce(handleMouseMove, 50));
-        map.on('click', handleMapClick);
     })
     .catch(error => console.error('Error fetching geojson:', error));
 
@@ -176,6 +175,8 @@ function handleMouseMove(e) {
     const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
 
     if (nearestPoint) {
+        console.log('Nearest point found:', nearestPoint);
+
         // Highlight the nearest road segment
         if (highlightedLayer && highlightedLayer !== nearestLayer) {
             routesLayer.resetStyle(highlightedLayer);
@@ -210,6 +211,7 @@ function handleMouseMove(e) {
 function handleMapClick(e) {
     const { nearestPoint } = getNearestPoint(e.latlng);
     if (nearestPoint) {
+        console.log('Point clicked:', nearestPoint);
         L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(map);
         if (previewPoint) {
             map.removeLayer(previewPoint);
