@@ -192,7 +192,7 @@ function highlightRoadSection(roadLayer, clickLatLng, prLatLngs) {
 
     for (var i = 0; i < latlngs.length; i++) {
         if (Array.isArray(latlngs[i])) {
-            for (var j = 0; j < latlngs[i].length; j++) {
+            for (var j = 0; j < latlngs[i].length - 1; j++) {
                 if (collectSegment(L.latLng(latlngs[i][j]), L.latLng(latlngs[i][j + 1]))) {
                     break;
                 }
