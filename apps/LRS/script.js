@@ -26,7 +26,7 @@ function pr70Style(feature) {
     return {
         radius: 2,
         fillColor: "#ff0000",
-        color: none,
+        color: "none",
         weight: 0,
         opacity: 1,
         fillOpacity: 0.8
