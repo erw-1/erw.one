@@ -10,8 +10,8 @@ function routes70Style(feature) {
 // Style function for highlighted route
 function highlightStyle(feature) {
     return {
-        color: "#000000",
-        weight: 5, // Reduced weight for highlight
+        color: "#2d2d2d",
+        weight: 3,
         opacity: 1
     };
 }
@@ -29,20 +29,20 @@ function pr70Style(feature) {
 // Style for the future point preview
 function previewPointStyle() {
     return {
-        radius: 4,
+        radius: 3,
         fillColor: "#0000ff", // Blue color
         color: "none",
-        fillOpacity: 0.8
+        fillOpacity: 1
     };
 }
 
 // Style for the points created by a click
 function clickPointStyle() {
     return {
-        radius: 4,
+        radius: 3,
         fillColor: "#00ff00", // Green color
         color: "none",
-        fillOpacity: 0.8
+        fillOpacity: 1
     };
 }
 
@@ -120,8 +120,30 @@ function getNearestPoint(latlng) {
     return { nearestPoint, nearestLayer };
 }
 
+// Throttle function to limit the frequency of updates
+function throttle(func, limit) {
+    let lastFunc;
+    let lastRan;
+    return function() {
+        const context = this;
+        const args = arguments;
+        if (!lastRan) {
+            func.apply(context, args);
+            lastRan = Date.now();
+        } else {
+            clearTimeout(lastFunc);
+            lastFunc = setTimeout(function() {
+                if ((Date.now() - lastRan) >= limit) {
+                    func.apply(context, args);
+                    lastRan = Date.now();
+                }
+            }, limit - (Date.now() - lastRan));
+        }
+    };
+}
+
 // Add move event listener to the map for hover effect
-map.on('mousemove', function(e) {
+map.on('mousemove', throttle(function(e) {
     const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
 
     if (nearestPoint) {
@@ -153,7 +175,7 @@ map.on('mousemove', function(e) {
     }
 
     map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
-});
+}, 100)); // Update every 100ms
 
 // Add click event listener to the map
 map.on('click', function(e) {
