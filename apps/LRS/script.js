@@ -61,6 +61,7 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 }).addTo(map);
 
 let routesLayer;
+let pointsLayer;
 let previewPoint;
 let highlightedLayer;
 let originalData; // Store the original data for reloading
@@ -98,7 +99,7 @@ fetch('data/routes70.geojson')
         return response.json();
     })
     .then(data => {
-        L.geoJson(data, {
+        pointsLayer = L.geoJson(data, {
             pointToLayer: function (feature, latlng) {
                 return L.circleMarker(latlng, pr70Style(feature));
             }
@@ -218,4 +219,7 @@ function handleZoomEnd() {
     routesLayer = L.geoJson(data, {
         style: routes70Style
     }).addTo(map);
+    // Ensure pointsLayer is always on top
+    map.removeLayer(pointsLayer);
+    pointsLayer.addTo(map);
 }
