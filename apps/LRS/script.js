@@ -113,10 +113,12 @@ function createKdTree(data) {
     data.features.forEach(feature => {
         const coords = feature.geometry.coordinates;
         coords.forEach(coord => {
-            points.push({
-                point: turf.point(coord),
-                feature
-            });
+            if (Array.isArray(coord) && coord.length === 2 && typeof coord[0] === 'number' && typeof coord[1] === 'number') {
+                points.push({
+                    point: turf.point(coord),
+                    feature
+                });
+            }
         });
     });
     return new kdTree(points, (a, b) => turf.distance(a.point, b.point, { units: 'meters' }), ['point']);
