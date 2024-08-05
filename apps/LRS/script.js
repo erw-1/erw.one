@@ -12,12 +12,39 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
     maxZoom: 22
 }).addTo(map);
 
-// Fetch and add the first layer (pr70.json)
+// Style function for pr70 layer (simple red dots)
+function pr70Style(feature) {
+    return {
+        radius: 5,
+        fillColor: "#ff0000",
+        color: "#ff0000",
+        weight: 1,
+        opacity: 1,
+        fillOpacity: 0.8
+    };
+}
+
+// Style function for routes70 layer (dark grey lines)
+function routes70Style(feature) {
+    return {
+        color: "#4d4d4d",
+        weight: 2,
+        opacity: 0.8
+    };
+}
+
+// Fetch and add the first layer (pr70.geojson) with red dot styling
 fetch('data/pr70.geojson')
     .then(response => response.json())
-    .then(data => L.geoJson(data).addTo(map));
+    .then(data => L.geoJson(data, {
+        pointToLayer: function (feature, latlng) {
+            return L.circleMarker(latlng, pr70Style(feature));
+        }
+    }).addTo(map));
 
-// Fetch and add the second layer (routes70.json)
+// Fetch and add the second layer (routes70.geojson) with dark grey line styling
 fetch('data/routes70.geojson')
     .then(response => response.json())
-    .then(data => L.geoJson(data).addTo(map));
+    .then(data => L.geoJson(data, {
+        style: routes70Style
+    }).addTo(map));
