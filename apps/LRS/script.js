@@ -174,11 +174,11 @@ function getNearestPoint(latlng) {
 
 // Function to find the two closest PR points matching the route
 function findClosestPRs(previewPoint, routeId) {
-    const point = turf.point([previewPoint.lng, previewPoint.lat]);
+    const point = turf.point([previewPoint[0], previewPoint[1]]);
     const prPoints = [];
     pointsLayer.eachLayer(layer => {
         if (layer.feature.properties.route_pr === routeId) {
-            const prPoint = turf.point(layer.getLatLng());
+            const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
             prPoints.push({
                 layer: layer,
                 distance: turf.distance(point, prPoint, { units: 'meters' }),
@@ -235,7 +235,7 @@ function handleMouseMove(e) {
                     })
                     .setContent(pr.properties.num_pr)
                     .setLatLng(pr.layer.getLatLng())
-                    .addTo(map);
+                    .addTo(prMarker);
                 });
             }
 
