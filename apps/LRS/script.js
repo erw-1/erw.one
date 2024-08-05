@@ -46,6 +46,16 @@ function clickPointStyle() {
     };
 }
 
+// Style for the closest PR points
+function closestPrStyle() {
+    return {
+        radius: 3,
+        fillColor: "#ffa500", // Orange color
+        color: "none",
+        fillOpacity: 1
+    };
+}
+
 // Initialize the map
 var map = L.map('map', {
     center: [47.6205, 6.3498],
@@ -63,6 +73,7 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 let routesLayer;
 let pointsLayer;
 let previewPoint;
+let closestPrLayer = L.layerGroup().addTo(map);
 let clickedPointsLayer = L.layerGroup().addTo(map); // Layer group for clicked points
 let highlightedLayer;
 let highlightedTooltip;
@@ -107,7 +118,7 @@ fetch('data/routes70.geojson')
             pointToLayer: function (feature, latlng) {
                 return L.circleMarker(latlng, pr70Style(feature));
             }
-        });
+        }).addTo(map);
         console.log("PR layer added");
 
         // Add event listeners after everything is initialized
@@ -161,6 +172,24 @@ function getNearestPoint(latlng) {
     return { nearestPoint, nearestLayer };
 }
 
+// Function to find the two closest PR points matching the route
+function findClosestPRs(previewPoint, routeId) {
+    const point = turf.point([previewPoint.lng, previewPoint.lat]);
+    const prPoints = [];
+    pointsLayer.eachLayer(layer => {
+        if (layer.feature.properties.route_pr === routeId) {
+            const prPoint = turf.point(layer.getLatLng());
+            prPoints.push({
+                layer: layer,
+                distance: turf.distance(point, prPoint, { units: 'meters' }),
+                properties: layer.feature.properties
+            });
+        }
+    });
+    prPoints.sort((a, b) => a.distance - b.distance);
+    return prPoints.slice(0, 2);
+}
+
 // Function to handle mouse move event
 function handleMouseMove(e) {
     if (map.getZoom() >= zoomRequirement) {
@@ -173,6 +202,7 @@ function handleMouseMove(e) {
                 if (highlightedTooltip) {
                     map.removeLayer(highlightedTooltip);
                 }
+                closestPrLayer.clearLayers();
             }
             if (nearestLayer) {
                 nearestLayer.setStyle(highlightStyle());
@@ -192,6 +222,21 @@ function handleMouseMove(e) {
                 .setContent(roadName)
                 .setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]])
                 .addTo(map);
+
+                // Highlight the two closest PR points with matching route_pr
+                const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
+                closestPRs.forEach(pr => {
+                    const prMarker = L.circleMarker(pr.layer.getLatLng(), closestPrStyle()).addTo(closestPrLayer);
+                    L.tooltip({
+                        permanent: true,
+                        direction: 'top',
+                        offset: [0, -10],
+                        className: 'pr-tooltip'
+                    })
+                    .setContent(pr.properties.num_pr)
+                    .setLatLng(pr.layer.getLatLng())
+                    .addTo(map);
+                });
             }
 
             // Preview the future point
@@ -214,6 +259,7 @@ function handleMouseMove(e) {
                 map.removeLayer(previewPoint);
                 previewPoint = null;
             }
+            closestPrLayer.clearLayers();
         }
 
         map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
@@ -243,17 +289,19 @@ function handleZoomEnd() {
         data = originalData;
         pointsLayer.addTo(map); // Add points layer when zoomed in
         clickedPointsLayer.addTo(map); // Add clicked points layer when zoomed in
+        closestPrLayer.addTo(map); // Add closest PR layer when zoomed in
     } else {
         // Simplify geometry when zoom level is low
         data = simplifyGeometry(originalData, currentZoom);
         map.removeLayer(pointsLayer); // Remove points layer when zoomed out
         map.removeLayer(clickedPointsLayer); // Remove clicked points layer when zoomed out
+        map.removeLayer(closestPrLayer); // Remove closest PR layer when zoomed out
     }
     map.removeLayer(routesLayer);
     routesLayer = L.geoJson(data, {
         style: routes70Style
     }).addTo(map);
-    // Ensure pointsLayer and clickedPointsLayer are always on top
+    // Ensure pointsLayer, clickedPointsLayer, and closestPrLayer are always on top
     if (map.hasLayer(pointsLayer)) {
         map.removeLayer(pointsLayer);
         pointsLayer.addTo(map);
@@ -261,5 +309,9 @@ function handleZoomEnd() {
     if (map.hasLayer(clickedPointsLayer)) {
         map.removeLayer(clickedPointsLayer);
         clickedPointsLayer.addTo(map);
+    }
+    if (map.hasLayer(closestPrLayer)) {
+        map.removeLayer(closestPrLayer);
+        closestPrLayer.addTo(map);
     }
 }
