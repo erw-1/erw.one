@@ -22,7 +22,7 @@ var map = L.map('map', {
     center: [47.6205, 6.3498], // Set to the desired center coordinates
     zoom: 10,                  // Set to the desired initial zoom level
     zoomControl: false         // Disables the default zoom controls
-}).setView([47.6205, 6.3498], 10);
+});
 
 // Add cartodb tiles
 L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
@@ -33,17 +33,29 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 
 // Fetch and add the second layer (routes70.geojson) with dark grey line styling
 fetch('data/routes70.geojson')
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => L.geoJson(data, {
         style: routes70Style
     }).addTo(map))
     .then(() => {
         // Fetch and add the first layer (pr70.geojson) with red dot styling
         fetch('data/pr70.geojson')
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => L.geoJson(data, {
                 pointToLayer: function (feature, latlng) {
                     return L.circleMarker(latlng, pr70Style(feature));
                 }
-            }).addTo(map));
-    });
+            }).addTo(map))
+            .catch(error => console.error('Error fetching pr70.geojson:', error));
+    })
+    .catch(error => console.error('Error fetching routes70.geojson:', error));
