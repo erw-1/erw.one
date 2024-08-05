@@ -24,12 +24,10 @@ function routes70Style(feature) {
 // Style function for pr70 layer (simple red dots)
 function pr70Style(feature) {
     return {
-        radius: 2,
+        radius: 3,
         fillColor: "#ff0000",
         color: "none",
-        weight: 0,
-        opacity: 1,
-        fillOpacity: 0.8
+        fillOpacity: 1
     };
 }
 
