@@ -17,11 +17,11 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // Fetch and add the first layer (pr70.json)
-fetch('/data/pr70.json')
+fetch('data/pr70.json')
     .then(response => response.json())
     .then(data => L.geoJson(data).addTo(map));
 
 // Fetch and add the second layer (routes70.json)
-fetch('/data/routes70.json')
+fetch('data/routes70.json')
     .then(response => response.json())
     .then(data => L.geoJson(data).addTo(map));
