@@ -67,10 +67,11 @@ let highlightedLayer;
 let originalData; // Store the original data for reloading
 const simplificationThreshold = 0.01; // Simplification threshold for zoom levels
 const magnetismRange = 600; // Reduced range to 600 meters
+const zoomRequirement = 12; // Zoom level requirement for enabling dot layers and magnetism
 
 // Function to simplify geometry based on zoom level
 function simplifyGeometry(data, zoom) {
-    const tolerance = zoom < 12 ? simplificationThreshold : 0; // Simplify more at lower zoom levels
+    const tolerance = zoom < zoomRequirement ? simplificationThreshold : 0; // Simplify more at lower zoom levels
     return turf.simplify(data, { tolerance, highQuality: true });
 }
 
@@ -160,7 +161,7 @@ function getNearestPoint(latlng) {
 
 // Function to handle mouse move event
 function handleMouseMove(e) {
-    if (map.getZoom() >= 12) {
+    if (map.getZoom() >= zoomRequirement) {
         const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
 
         if (nearestPoint) {
@@ -197,7 +198,7 @@ function handleMouseMove(e) {
 
 // Function to handle map click event
 function handleMapClick(e) {
-    if (map.getZoom() >= 12) {
+    if (map.getZoom() >= zoomRequirement) {
         const { nearestPoint } = getNearestPoint(e.latlng);
         if (nearestPoint) {
             L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(map);
@@ -213,7 +214,7 @@ function handleMapClick(e) {
 function handleZoomEnd() {
     const currentZoom = map.getZoom();
     let data;
-    if (currentZoom >= 12) {
+    if (currentZoom >= zoomRequirement) {
         // Use original data when zoom level is high
         data = originalData;
         pointsLayer.addTo(map); // Add points layer when zoomed in
@@ -226,4 +227,9 @@ function handleZoomEnd() {
     routesLayer = L.geoJson(data, {
         style: routes70Style
     }).addTo(map);
+    // Ensure pointsLayer is always on top
+    if (map.hasLayer(pointsLayer)) {
+        map.removeLayer(pointsLayer);
+        pointsLayer.addTo(map);
+    }
 }
