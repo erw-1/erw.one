@@ -65,6 +65,7 @@ let pointsLayer;
 let previewPoint;
 let clickedPointsLayer = L.layerGroup().addTo(map); // Layer group for clicked points
 let highlightedLayer;
+let highlightedTooltip;
 let originalData; // Store the original data for reloading
 const simplificationThreshold = 0.01; // Simplification threshold for zoom levels
 const magnetismRange = 600; // Reduced range to 600 meters
@@ -169,10 +170,24 @@ function handleMouseMove(e) {
             // Highlight the nearest road segment
             if (highlightedLayer && highlightedLayer !== nearestLayer) {
                 routesLayer.resetStyle(highlightedLayer);
+                if (highlightedTooltip) {
+                    map.removeLayer(highlightedTooltip);
+                }
             }
             if (nearestLayer) {
                 nearestLayer.setStyle(highlightStyle());
                 highlightedLayer = nearestLayer;
+
+                // Display road name tooltip
+                const roadName = nearestLayer.feature.properties.nom_route;
+                highlightedTooltip = L.tooltip({
+                    permanent: true,
+                    direction: 'center',
+                    className: 'highlighted-tooltip'
+                })
+                .setContent(roadName)
+                .setLatLng(nearestPoint.geometry.coordinates.reverse())
+                .addTo(map);
             }
 
             // Preview the future point
@@ -186,6 +201,10 @@ function handleMouseMove(e) {
             if (highlightedLayer) {
                 routesLayer.resetStyle(highlightedLayer);
                 highlightedLayer = null;
+            }
+            if (highlightedTooltip) {
+                map.removeLayer(highlightedTooltip);
+                highlightedTooltip = null;
             }
             if (previewPoint) {
                 map.removeLayer(previewPoint);
