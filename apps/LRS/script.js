@@ -68,7 +68,7 @@ const findClosestPRs = (previewPoint, routeId) => {
 };
 
 const calculateDistanceAlongRoad = (startPoint, endPoint, line) => {
-    if (line.geometry.type !== 'LineString') {
+    if (!line || line.type !== 'LineString') {
         console.error('Line must be a LineString:', line);
         return 0;
     }
