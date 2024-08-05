@@ -106,11 +106,33 @@ fetch('data/routes70.geojson')
         console.log("PR layer added");
 
         // Add event listeners after everything is initialized
-        map.on('mousemove', handleMouseMove);
+        map.on('mousemove', throttle(handleMouseMove, 100)); // Throttle to 100ms
         map.on('click', handleMapClick);
         map.on('zoomend', handleZoomEnd); // Simplify geometry on zoom
     })
     .catch(error => console.error('Error fetching geojson:', error));
+
+// Throttle function to limit the frequency of updates
+function throttle(func, limit) {
+    let lastFunc;
+    let lastRan;
+    return function() {
+        const context = this;
+        const args = arguments;
+        if (!lastRan) {
+            func.apply(context, args);
+            lastRan = Date.now();
+        } else {
+            clearTimeout(lastFunc);
+            lastFunc = setTimeout(function() {
+                if ((Date.now() - lastRan) >= limit) {
+                    func.apply(context, args);
+                    lastRan = Date.now();
+                }
+            }, limit - (Date.now() - lastRan));
+        }
+    };
+}
 
 // Function to find the nearest point on the line within 1000 meters
 function getNearestPoint(latlng) {
