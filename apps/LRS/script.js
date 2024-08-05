@@ -88,24 +88,31 @@ fetch('data/routes70.geojson')
             style: routes70Style
         }).addTo(map);
         tree = createTree(data);
+        console.log('Tree initialized', tree);
     })
     .then(() => {
         // Fetch and add the first layer (pr70.geojson) with red dot styling
-        fetch('data/pr70.geojson')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => L.geoJson(data, {
-                pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, pr70Style(feature));
-                }
-            }).addTo(map))
-            .catch(error => console.error('Error fetching pr70.geojson:', error));
+        return fetch('data/pr70.geojson');
     })
-    .catch(error => console.error('Error fetching routes70.geojson:', error));
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        L.geoJson(data, {
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, pr70Style(feature));
+            }
+        }).addTo(map);
+    })
+    .then(() => {
+        // Add event listeners after everything is initialized
+        map.on('mousemove', debounce(handleMouseMove, 50));
+        map.on('click', handleMapClick);
+    })
+    .catch(error => console.error('Error fetching geojson:', error));
 
 // Create a spatial index tree for the routes data
 function createTree(data) {
@@ -133,6 +140,11 @@ function createTree(data) {
 
 // Function to find the nearest point on the line within 100 meters
 function getNearestPoint(latlng) {
+    if (!tree) {
+        console.error('Spatial index tree is not initialized');
+        return { nearestPoint: null, nearestLayer: null };
+    }
+
     const point = turf.point([latlng.lng, latlng.lat]);
     const nearest = tree.search({
         minX: latlng.lng - 0.001,
@@ -159,8 +171,8 @@ function getNearestPoint(latlng) {
     return { nearestPoint, nearestLayer };
 }
 
-// Add move event listener to the map for hover effect
-map.on('mousemove', debounce(function(e) {
+// Handle mouse move event
+function handleMouseMove(e) {
     const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
 
     if (nearestPoint) {
@@ -192,10 +204,10 @@ map.on('mousemove', debounce(function(e) {
     }
 
     map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
-}, 50));
+}
 
-// Add click event listener to the map
-map.on('click', function(e) {
+// Handle map click event
+function handleMapClick(e) {
     const { nearestPoint } = getNearestPoint(e.latlng);
     if (nearestPoint) {
         L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(map);
@@ -204,4 +216,4 @@ map.on('click', function(e) {
             previewPoint = null;
         }
     }
-});
+}
