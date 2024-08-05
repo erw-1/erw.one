@@ -15,3 +15,13 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxNativeZoom: 19,
     maxZoom: 22
 }).addTo(map);
+
+// Fetch and add the first layer (pr70.json)
+fetch('https://erw.one/apps/LRS/data/pr70.json')
+    .then(response => response.json())
+    .then(data => L.geoJson(data).addTo(map));
+
+// Fetch and add the second layer (routes70.json)
+fetch('https://erw.one/apps/LRS/data/routes70.json')
+    .then(response => response.json())
+    .then(data => L.geoJson(data).addTo(map));
