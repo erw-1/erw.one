@@ -127,9 +127,11 @@ const handleMouseMove = throttle((e) => {
 
     const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
     const line = turf.feature(nearestLayer.feature.geometry);
+
     closestPRs.forEach(pr => {
         const prLatLng = pr.layer.getLatLng();
-        const distance = calculateDistanceAlongRoad({lng: previewPoint.getLatLng().lng, lat: previewPoint.getLatLng().lat}, {lng: prLatLng.lng, lat: prLatLng.lat}, line);
+        const previewLatLng = previewPoint ? previewPoint.getLatLng() : { lng: nearestPoint.geometry.coordinates[0], lat: nearestPoint.geometry.coordinates[1] };
+        const distance = calculateDistanceAlongRoad(previewLatLng, prLatLng, line);
         const tooltipContent = `<b>PR${pr.properties.num_pr}</b><br>${distance.toFixed(1)} m`;
         const prMarker = L.circleMarker(prLatLng, styles.point("#ffa500")).addTo(closestPrLayer);
         const prTooltip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' })
