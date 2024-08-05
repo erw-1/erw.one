@@ -2,7 +2,7 @@
 function routes70Style(feature) {
     return {
         color: "#4d4d4d",
-        weight: 2,
+        weight: 2, // Normal weight
         opacity: 0.8
     };
 }
@@ -10,8 +10,8 @@ function routes70Style(feature) {
 // Style function for highlighted route
 function highlightStyle(feature) {
     return {
-        color: "#2d2d2d",
-        weight: 3, // Increased weight for highlight
+        color: "#000000",
+        weight: 5, // Reduced weight for highlight
         opacity: 1
     };
 }
@@ -63,17 +63,6 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 let routesLayer;
 let previewPoint;
 let highlightedLayer;
-let tree;
-const maxDistance = 100; // 100 meters
-
-// Debounce function to limit the rate of function calls
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
-}
 
 // Fetch and add the second layer (routes70.geojson) with dark grey line styling
 fetch('data/routes70.geojson')
@@ -87,12 +76,7 @@ fetch('data/routes70.geojson')
         routesLayer = L.geoJson(data, {
             style: routes70Style
         }).addTo(map);
-        tree = createTree(data);
-        console.log('Tree initialized', tree);
-
-        // Add event listeners after everything is initialized
-        map.on('mousemove', debounce(handleMouseMove, 50));
-        map.on('click', handleMapClick);
+        console.log("Routes layer added");
     })
     .then(() => {
         // Fetch and add the first layer (pr70.geojson) with red dot styling
@@ -110,73 +94,37 @@ fetch('data/routes70.geojson')
                 return L.circleMarker(latlng, pr70Style(feature));
             }
         }).addTo(map);
+        console.log("PR layer added");
     })
     .catch(error => console.error('Error fetching geojson:', error));
 
-// Create a spatial index tree for the routes data
-function createTree(data) {
-    const tree = rbush();
-    const items = [];
-
-    data.features.forEach(feature => {
-        const coords = feature.geometry.coordinates;
-        coords.forEach(coord => {
-            if (Array.isArray(coord) && coord.length === 2 && typeof coord[0] === 'number' && typeof coord[1] === 'number') {
-                items.push({
-                    minX: coord[0],
-                    minY: coord[1],
-                    maxX: coord[0],
-                    maxY: coord[1],
-                    feature
-                });
-            }
-        });
-    });
-
-    tree.load(items);
-    return tree;
-}
-
 // Function to find the nearest point on the line within 100 meters
 function getNearestPoint(latlng) {
-    if (!tree) {
-        console.error('Spatial index tree is not initialized');
-        return { nearestPoint: null, nearestLayer: null };
-    }
-
     const point = turf.point([latlng.lng, latlng.lat]);
-    const nearest = tree.search({
-        minX: latlng.lng - 0.001,
-        minY: latlng.lat - 0.001,
-        maxX: latlng.lng + 0.001,
-        maxY: latlng.lat + 0.001
-    });
-
-    let minDistance = maxDistance;
     let nearestPoint = null;
+    let minDistance = 100; // 100 meters
     let nearestLayer = null;
 
-    nearest.forEach(item => {
-        const snapped = turf.nearestPointOnLine(item.feature, point);
+    routesLayer.eachLayer(layer => {
+        const line = turf.feature(layer.feature.geometry);
+        const snapped = turf.nearestPointOnLine(line, point);
         const distance = turf.distance(point, snapped, { units: 'meters' });
 
         if (distance < minDistance) {
             minDistance = distance;
             nearestPoint = snapped;
-            nearestLayer = item.feature;
+            nearestLayer = layer;
         }
     });
 
     return { nearestPoint, nearestLayer };
 }
 
-// Handle mouse move event
-function handleMouseMove(e) {
+// Add move event listener to the map for hover effect
+map.on('mousemove', function(e) {
     const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
 
     if (nearestPoint) {
-        console.log('Nearest point found:', nearestPoint);
-
         // Highlight the nearest road segment
         if (highlightedLayer && highlightedLayer !== nearestLayer) {
             routesLayer.resetStyle(highlightedLayer);
@@ -205,17 +153,16 @@ function handleMouseMove(e) {
     }
 
     map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
-}
+});
 
-// Handle map click event
-function handleMapClick(e) {
+// Add click event listener to the map
+map.on('click', function(e) {
     const { nearestPoint } = getNearestPoint(e.latlng);
     if (nearestPoint) {
-        console.log('Point clicked:', nearestPoint);
         L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(map);
         if (previewPoint) {
             map.removeLayer(previewPoint);
             previewPoint = null;
         }
     }
-}
+});
