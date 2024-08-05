@@ -63,11 +63,13 @@ function onRoadClick(e, roadFeature, roadLayer) {
     var distances = prPoints.map(function (prLayer) {
         var prLatLng = prLayer.getLatLng();
         var prPoint = turf.point([prLatLng.lng, prLatLng.lat]);
-        var distance = turf.pointToLineDistance(prPoint, roadLine, { units: 'meters' });
+        var snapped = turf.nearestPointOnLine(roadLine, prPoint);
+        var distance = snapped.properties.dist;
         return {
             layer: prLayer,
             distance: distance,
-            num_pr: prLayer.feature.properties.num_pr
+            num_pr: prLayer.feature.properties.num_pr,
+            snapped: snapped
         };
     });
 
@@ -87,7 +89,7 @@ function onRoadClick(e, roadFeature, roadLayer) {
     closest2.layer.setStyle({ fillColor: "#00ff00" });
     var label1 = addLabelToPR(closest1);
     var label2 = addLabelToPR(closest2);
-    var polyline = highlightRoadSection(roadLine, clickLatLng, [closest1.layer.getLatLng(), closest2.layer.getLatLng()]);
+    var polyline = highlightRoadSection(roadLine, closest1.snapped, closest2.snapped);
 
     // Save the selections for resetting
     previousSelections.push({ layer: closest1.layer, originalStyle: pr70Style(closest1.layer.feature), label: label1 });
@@ -108,20 +110,13 @@ function addLabelToPR(pr) {
 }
 
 // Function to highlight the road section between two points
-function highlightRoadSection(roadLine, clickLatLng, prLatLngs) {
-    var clickPoint = turf.point([clickLatLng.lng, clickLatLng.lat]);
-    var prPoint1 = turf.point([prLatLngs[0].lng, prLatLngs[0].lat]);
-    var prPoint2 = turf.point([prLatLngs[1].lng, prLatLngs[1].lat]);
-
-    var nearest1 = turf.nearestPointOnLine(roadLine, prPoint1);
-    var nearest2 = turf.nearestPointOnLine(roadLine, prPoint2);
-
-    var nearestClick = turf.nearestPointOnLine(roadLine, clickPoint);
-
-    var start = nearestClick.properties.index < nearest1.properties.index ? nearestClick : nearest1;
-    var end = nearestClick.properties.index > nearest2.properties.index ? nearestClick : nearest2;
-
-    var segmentCoords = roadLine.geometry.coordinates.slice(start.properties.index, end.properties.index + 1);
+function highlightRoadSection(roadLine, startSnapped, endSnapped) {
+    var startIndex = startSnapped.properties.index;
+    var endIndex = endSnapped.properties.index;
+    if (startIndex > endIndex) {
+        [startIndex, endIndex] = [endIndex, startIndex];
+    }
+    var segmentCoords = roadLine.geometry.coordinates.slice(startIndex, endIndex + 1);
     var segment = turf.lineString(segmentCoords);
 
     var polyline = L.geoJson(segment, {
