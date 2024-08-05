@@ -117,12 +117,15 @@ function getDistanceAlongRoad(roadLayer, point1, point2) {
     var point2Found = false;
 
     for (var i = 0; i < latlngs.length - 1; i++) {
-        var segmentDistance = latlngs[i].distanceTo(latlngs[i + 1]);
-        if (!point1Found && isPointOnSegment(point1, latlngs[i], latlngs[i + 1])) {
-            distance += latlngs[i].distanceTo(point1);
+        var segmentStart = L.latLng(latlngs[i]);
+        var segmentEnd = L.latLng(latlngs[i + 1]);
+        var segmentDistance = segmentStart.distanceTo(segmentEnd);
+
+        if (!point1Found && isPointOnSegment(point1, segmentStart, segmentEnd)) {
+            distance += segmentStart.distanceTo(point1);
             point1Found = true;
-        } else if (point1Found && !point2Found && isPointOnSegment(point2, latlngs[i], latlngs[i + 1])) {
-            distance += point2.distanceTo(latlngs[i]);
+        } else if (point1Found && !point2Found && isPointOnSegment(point2, segmentStart, segmentEnd)) {
+            distance += point2.distanceTo(segmentEnd);
             point2Found = true;
             break;
         } else if (point1Found && !point2Found) {
@@ -162,12 +165,14 @@ function highlightRoadSection(roadLayer, clickLatLng, prLatLngs) {
     var collecting = false;
 
     for (var i = 0; i < latlngs.length; i++) {
-        if (isPointOnSegment(clickLatLng, latlngs[i], latlngs[i + 1]) || collecting) {
+        var currentLatLng = L.latLng(latlngs[i]);
+
+        if (isPointOnSegment(clickLatLng, currentLatLng, L.latLng(latlngs[i + 1])) || collecting) {
             collecting = true;
-            segmentLatlngs.push(latlngs[i]);
+            segmentLatlngs.push(currentLatLng);
         }
-        if (isPointOnSegment(prLatLngs[1], latlngs[i], latlngs[i + 1])) {
-            segmentLatlngs.push(prLatlngs[1]);
+        if (isPointOnSegment(prLatLngs[1], currentLatLng, L.latLng(latlngs[i + 1]))) {
+            segmentLatlngs.push(prLatLngs[1]);
             break;
         }
     }
