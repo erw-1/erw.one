@@ -63,7 +63,7 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 let routesLayer;
 let previewPoint;
 let highlightedLayer;
-let kdTree;
+let tree;
 const maxDistance = 100; // 100 meters
 
 // Debounce function to limit the rate of function calls
@@ -87,7 +87,7 @@ fetch('data/routes70.geojson')
         routesLayer = L.geoJson(data, {
             style: routes70Style
         }).addTo(map);
-        kdTree = createKdTree(data);
+        tree = createTree(data);
     })
     .then(() => {
         // Fetch and add the first layer (pr70.geojson) with red dot styling
@@ -107,35 +107,56 @@ fetch('data/routes70.geojson')
     })
     .catch(error => console.error('Error fetching routes70.geojson:', error));
 
-// Create a kd-tree for the routes data
-function createKdTree(data) {
-    const points = [];
+// Create a spatial index tree for the routes data
+function createTree(data) {
+    const tree = rbush();
+    const items = [];
+
     data.features.forEach(feature => {
         const coords = feature.geometry.coordinates;
         coords.forEach(coord => {
             if (Array.isArray(coord) && coord.length === 2 && typeof coord[0] === 'number' && typeof coord[1] === 'number') {
-                points.push({
-                    point: turf.point(coord),
+                items.push({
+                    minX: coord[0],
+                    minY: coord[1],
+                    maxX: coord[0],
+                    maxY: coord[1],
                     feature
                 });
             }
         });
     });
-    return new kdTree(points, (a, b) => turf.distance(a.point, b.point, { units: 'meters' }), ['point']);
+
+    tree.load(items);
+    return tree;
 }
 
 // Function to find the nearest point on the line within 100 meters
 function getNearestPoint(latlng) {
     const point = turf.point([latlng.lng, latlng.lat]);
-    const nearest = kdTree.nearest({ point }, 1, maxDistance);
-    if (nearest.length > 0) {
-        const nearestPoint = turf.nearestPointOnLine(nearest[0][0].feature, point);
-        return {
-            nearestPoint,
-            nearestLayer: nearest[0][0].feature
-        };
-    }
-    return { nearestPoint: null, nearestLayer: null };
+    const nearest = tree.search({
+        minX: latlng.lng - 0.001,
+        minY: latlng.lat - 0.001,
+        maxX: latlng.lng + 0.001,
+        maxY: latlng.lat + 0.001
+    });
+
+    let minDistance = maxDistance;
+    let nearestPoint = null;
+    let nearestLayer = null;
+
+    nearest.forEach(item => {
+        const snapped = turf.nearestPointOnLine(item.feature, point);
+        const distance = turf.distance(point, snapped, { units: 'meters' });
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestPoint = snapped;
+            nearestLayer = item.feature;
+        }
+    });
+
+    return { nearestPoint, nearestLayer };
 }
 
 // Add move event listener to the map for hover effect
