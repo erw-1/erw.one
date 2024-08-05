@@ -6,7 +6,7 @@ var map = L.map('map', {
 }).setView([47.6205, 6.3498], 10);
 
 // Add OpenStreetMap tiles
-L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
     attribution: 'HSN | OSM',
     maxNativeZoom: 19,
     maxZoom: 22
