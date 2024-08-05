@@ -67,6 +67,13 @@ const findClosestPRs = (previewPoint, routeId) => {
     return [closestAhead, closestBehind].filter(Boolean);
 };
 
+const calculateDistanceAlongRoad = (startPoint, endPoint, line) => {
+    const start = turf.point([startPoint.lng, startPoint.lat]);
+    const end = turf.point([endPoint.lng, endPoint.lat]);
+    const slicedLine = turf.lineSlice(start, end, line);
+    return turf.length(slicedLine, { units: 'meters' });
+};
+
 const throttle = (func, limit) => {
     let lastFunc, lastRan;
     return function() {
@@ -119,11 +126,15 @@ const handleMouseMove = throttle((e) => {
         .addTo(map);
 
     const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
+    const line = turf.feature(nearestLayer.feature.geometry);
     closestPRs.forEach(pr => {
-        const prMarker = L.circleMarker(pr.layer.getLatLng(), styles.point("#ffa500")).addTo(closestPrLayer);
+        const prLatLng = pr.layer.getLatLng();
+        const distance = calculateDistanceAlongRoad({lng: previewPoint.getLatLng().lng, lat: previewPoint.getLatLng().lat}, {lng: prLatLng.lng, lat: prLatLng.lat}, line);
+        const tooltipContent = `<b>PR${pr.properties.num_pr}</b><br>${distance.toFixed(1)} m`;
+        const prMarker = L.circleMarker(prLatLng, styles.point("#ffa500")).addTo(closestPrLayer);
         const prTooltip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' })
-            .setContent(String(pr.properties.num_pr))
-            .setLatLng(pr.layer.getLatLng())
+            .setContent(tooltipContent)
+            .setLatLng(prLatLng)
             .addTo(map);
         closestPrTooltips.push(prTooltip);
     });
