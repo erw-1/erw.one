@@ -2,7 +2,7 @@
 function routes70Style(feature) {
     return {
         color: "#4d4d4d",
-        weight: 5, // Reduced weight for smaller hitbox
+        weight: 2,
         opacity: 0.8
     };
 }
@@ -10,8 +10,8 @@ function routes70Style(feature) {
 // Style function for highlighted route
 function highlightStyle(feature) {
     return {
-        color: "#000000",
-        weight: 8, // Increased weight for highlight
+        color: "#2d2d2d",
+        weight: 3, // Increased weight for highlight
         opacity: 1
     };
 }
@@ -63,6 +63,17 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 let routesLayer;
 let previewPoint;
 let highlightedLayer;
+let kdTree;
+const maxDistance = 100; // 100 meters
+
+// Debounce function to limit the rate of function calls
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => func.apply(this, args), wait);
+    };
+}
 
 // Fetch and add the second layer (routes70.geojson) with dark grey line styling
 fetch('data/routes70.geojson')
@@ -76,6 +87,7 @@ fetch('data/routes70.geojson')
         routesLayer = L.geoJson(data, {
             style: routes70Style
         }).addTo(map);
+        kdTree = createKdTree(data);
     })
     .then(() => {
         // Fetch and add the first layer (pr70.geojson) with red dot styling
@@ -95,30 +107,37 @@ fetch('data/routes70.geojson')
     })
     .catch(error => console.error('Error fetching routes70.geojson:', error));
 
+// Create a kd-tree for the routes data
+function createKdTree(data) {
+    const points = [];
+    data.features.forEach(feature => {
+        const coords = feature.geometry.coordinates;
+        coords.forEach(coord => {
+            points.push({
+                point: turf.point(coord),
+                feature
+            });
+        });
+    });
+    return new kdTree(points, (a, b) => turf.distance(a.point, b.point, { units: 'meters' }), ['point']);
+}
+
 // Function to find the nearest point on the line within 100 meters
 function getNearestPoint(latlng) {
     const point = turf.point([latlng.lng, latlng.lat]);
-    let nearestPoint = null;
-    let minDistance = 100; // 100 meters
-    let nearestLayer = null;
-
-    routesLayer.eachLayer(layer => {
-        const line = turf.feature(layer.feature.geometry);
-        const snapped = turf.nearestPointOnLine(line, point);
-        const distance = turf.distance(point, snapped, { units: 'meters' });
-
-        if (distance < minDistance) {
-            minDistance = distance;
-            nearestPoint = snapped;
-            nearestLayer = layer;
-        }
-    });
-
-    return { nearestPoint, nearestLayer };
+    const nearest = kdTree.nearest({ point }, 1, maxDistance);
+    if (nearest.length > 0) {
+        const nearestPoint = turf.nearestPointOnLine(nearest[0][0].feature, point);
+        return {
+            nearestPoint,
+            nearestLayer: nearest[0][0].feature
+        };
+    }
+    return { nearestPoint: null, nearestLayer: null };
 }
 
 // Add move event listener to the map for hover effect
-map.on('mousemove', function(e) {
+map.on('mousemove', debounce(function(e) {
     const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
 
     if (nearestPoint) {
@@ -150,7 +169,7 @@ map.on('mousemove', function(e) {
     }
 
     map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
-});
+}, 50));
 
 // Add click event listener to the map
 map.on('click', function(e) {
