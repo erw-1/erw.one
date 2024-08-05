@@ -89,26 +89,24 @@ const throttle = (func, limit) => {
 // Event Handlers
 const handleMouseMove = throttle((e) => {
     if (map.getZoom() < zoomRequirement) return;
+
+    // Remove existing tooltips
+    if (highlightedTooltip) map.removeLayer(highlightedTooltip);
+    closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
+    closestPrTooltips = [];
+
     const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
     if (!nearestPoint) {
         if (highlightedLayer) routesLayer.resetStyle(highlightedLayer);
-        if (highlightedTooltip) map.removeLayer(highlightedTooltip);
         if (previewPoint) map.removeLayer(previewPoint);
         closestPrLayer.clearLayers();
-        closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
-        closestPrTooltips = [];
-        highlightedLayer = highlightedTooltip = previewPoint = null;
+        highlightedLayer = previewPoint = null;
         map.getContainer().style.cursor = '';
         return;
     }
 
     if (highlightedLayer && highlightedLayer !== nearestLayer) routesLayer.resetStyle(highlightedLayer);
-    if (highlightedTooltip) map.removeLayer(highlightedTooltip);
-    if (highlightedLayer !== nearestLayer) {
-        closestPrLayer.clearLayers();
-        closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
-        closestPrTooltips = [];
-    }
+    if (highlightedLayer !== nearestLayer) closestPrLayer.clearLayers();
 
     nearestLayer.setStyle(styles.highlight);
     highlightedLayer = nearestLayer;
