@@ -55,10 +55,15 @@ function onRoadClick(e, roadFeature, roadLayer) {
         }
     });
 
+    // Convert road to Turf.js line string
+    var roadCoords = roadLayer.feature.geometry.coordinates;
+    var roadLine = turf.lineString(roadCoords);
+
     // Find distances along the road to each PR point
     var distances = prPoints.map(function (prLayer) {
         var prLatLng = prLayer.getLatLng();
-        var distance = getDistanceAlongRoad(roadLayer, clickLatLng, prLatLng);
+        var prPoint = turf.point([prLatLng.lng, prLatLng.lat]);
+        var distance = turf.pointToLineDistance(prPoint, roadLine, { units: 'meters' });
         return {
             layer: prLayer,
             distance: distance,
@@ -82,62 +87,12 @@ function onRoadClick(e, roadFeature, roadLayer) {
     closest2.layer.setStyle({ fillColor: "#00ff00" });
     var label1 = addLabelToPR(closest1);
     var label2 = addLabelToPR(closest2);
-    var polyline = highlightRoadSection(roadLayer, clickLatLng, [closest1.layer.getLatLng(), closest2.layer.getLatLng()]);
+    var polyline = highlightRoadSection(roadLine, clickLatLng, [closest1.layer.getLatLng(), closest2.layer.getLatLng()]);
 
     // Save the selections for resetting
     previousSelections.push({ layer: closest1.layer, originalStyle: pr70Style(closest1.layer.feature), label: label1 });
     previousSelections.push({ layer: closest2.layer, originalStyle: pr70Style(closest2.layer.feature), label: label2 });
     previousSelections.push({ polyline: polyline });
-}
-
-// Function to get distance along the road between two points
-function getDistanceAlongRoad(roadLayer, point1, point2) {
-    var latlngs = roadLayer.getLatLngs();
-    var distance = 0;
-    var point1Found = false;
-    var point2Found = false;
-
-    function calculateDistance(segmentStart, segmentEnd) {
-        var segmentDistance = segmentStart.distanceTo(segmentEnd);
-
-        if (!point1Found && isPointOnSegment(point1, segmentStart, segmentEnd)) {
-            distance += segmentStart.distanceTo(point1);
-            point1Found = true;
-        } else if (point1Found && !point2Found && isPointOnSegment(point2, segmentStart, segmentEnd)) {
-            distance += point2.distanceTo(segmentEnd);
-            point2Found = true;
-            return true; // Stop further processing
-        } else if (point1Found && !point2Found) {
-            distance += segmentDistance;
-        }
-
-        return false; // Continue processing
-    }
-
-    for (var i = 0; i < latlngs.length; i++) {
-        if (Array.isArray(latlngs[i])) {
-            for (var j = 0; j < latlngs[i].length - 1; j++) {
-                if (calculateDistance(L.latLng(latlngs[i][j]), L.latLng(latlngs[i][j + 1]))) {
-                    break;
-                }
-            }
-        } else {
-            if (i < latlngs.length - 1 && calculateDistance(L.latLng(latlngs[i]), L.latLng(latlngs[i + 1]))) {
-                break;
-            }
-        }
-    }
-
-    return distance;
-}
-
-// Function to check if a point is on a line segment
-function isPointOnSegment(point, segmentStart, segmentEnd) {
-    var d1 = point.distanceTo(segmentStart);
-    var d2 = point.distanceTo(segmentEnd);
-    var lineLength = segmentStart.distanceTo(segmentEnd);
-    var buffer = 0.1; // Buffer to account for floating point imprecision
-    return Math.abs((d1 + d2) - lineLength) < buffer;
 }
 
 // Function to add labels to PR points
@@ -153,42 +108,26 @@ function addLabelToPR(pr) {
 }
 
 // Function to highlight the road section between two points
-function highlightRoadSection(roadLayer, clickLatLng, prLatLngs) {
-    var latlngs = roadLayer.getLatLngs();
-    var segmentLatlngs = [];
-    var collecting = false;
+function highlightRoadSection(roadLine, clickLatLng, prLatLngs) {
+    var clickPoint = turf.point([clickLatLng.lng, clickLatLng.lat]);
+    var prPoint1 = turf.point([prLatLngs[0].lng, prLatLngs[0].lat]);
+    var prPoint2 = turf.point([prLatLngs[1].lng, prLatLngs[1].lat]);
 
-    function collectSegment(segmentStart, segmentEnd) {
-        if (isPointOnSegment(clickLatLng, segmentStart, segmentEnd) || collecting) {
-            collecting = true;
-            segmentLatlngs.push(segmentStart);
-        }
-        if (isPointOnSegment(prLatLngs[1], segmentStart, segmentEnd)) {
-            segmentLatlngs.push(prLatLngs[1]);
-            return true; // Stop further processing
-        }
-        return false; // Continue processing
-    }
+    var nearest1 = turf.nearestPointOnLine(roadLine, prPoint1);
+    var nearest2 = turf.nearestPointOnLine(roadLine, prPoint2);
 
-    for (var i = 0; i < latlngs.length; i++) {
-        if (Array.isArray(latlngs[i])) {
-            for (var j = 0; j < latlngs[i].length; j++) {
-                if (collectSegment(L.latLng(latlngs[i][j]), L.latLng(latlngs[i][j + 1]))) {
-                    break;
-                }
-            }
-        } else {
-            if (i < latlngs.length - 1 && collectSegment(L.latLng(latlngs[i]), L.latLng(latlngs[i + 1]))) {
-                break;
-            }
-        }
-    }
+    var nearestClick = turf.nearestPointOnLine(roadLine, clickPoint);
 
-    var polyline = L.polyline(segmentLatlngs, {
-        color: "#00ff00",
-        weight: 3,
-        opacity: 1
+    var start = nearestClick.properties.index < nearest1.properties.index ? nearestClick : nearest1;
+    var end = nearestClick.properties.index > nearest2.properties.index ? nearestClick : nearest2;
+
+    var segmentCoords = roadLine.geometry.coordinates.slice(start.properties.index, end.properties.index + 1);
+    var segment = turf.lineString(segmentCoords);
+
+    var polyline = L.geoJson(segment, {
+        style: { color: "#00ff00", weight: 3, opacity: 1 }
     }).addTo(map);
+
     return polyline;
 }
 
