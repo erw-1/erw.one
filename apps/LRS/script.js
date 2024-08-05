@@ -109,7 +109,7 @@ const handleMouseMove = throttle((e) => {
 
     const roadName = nearestLayer.feature.properties.nom_route;
     highlightedTooltip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' })
-        .setContent(roadName)
+        .setContent(String(roadName))
         .setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]])
         .addTo(map);
 
@@ -117,9 +117,9 @@ const handleMouseMove = throttle((e) => {
     closestPRs.forEach(pr => {
         const prMarker = L.circleMarker(pr.layer.getLatLng(), styles.point("#ffa500")).addTo(closestPrLayer);
         L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' })
-            .setContent(pr.properties.num_pr)
+            .setContent(String(pr.properties.num_pr))
             .setLatLng(pr.layer.getLatLng())
-            .addTo(map);
+            .addTo(prMarker);
     });
 
     if (previewPoint) previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
