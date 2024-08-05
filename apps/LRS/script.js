@@ -2,8 +2,17 @@
 function routes70Style(feature) {
     return {
         color: "#4d4d4d",
-        weight: 10, // Increased weight for bigger hitbox
+        weight: 5, // Reduced weight for smaller hitbox
         opacity: 0.8
+    };
+}
+
+// Style function for highlighted route
+function highlightStyle(feature) {
+    return {
+        color: "#000000",
+        weight: 8, // Increased weight for highlight
+        opacity: 1
     };
 }
 
@@ -14,6 +23,16 @@ function pr70Style(feature) {
         fillColor: "#ff0000",
         color: "none",
         fillOpacity: 1
+    };
+}
+
+// Style for the future point preview
+function previewPointStyle() {
+    return {
+        radius: 4,
+        fillColor: "#0000ff", // Blue color
+        color: "none",
+        fillOpacity: 0.8
     };
 }
 
@@ -32,6 +51,8 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 }).addTo(map);
 
 let routesLayer;
+let previewPoint;
+let highlightedLayer;
 
 // Fetch and add the second layer (routes70.geojson) with dark grey line styling
 fetch('data/routes70.geojson')
@@ -69,6 +90,7 @@ function getNearestPoint(latlng) {
     const point = turf.point([latlng.lng, latlng.lat]);
     let nearestPoint = null;
     let minDistance = Infinity;
+    let nearestLayer = null;
 
     routesLayer.eachLayer(layer => {
         const line = turf.feature(layer.feature.geometry);
@@ -78,16 +100,46 @@ function getNearestPoint(latlng) {
         if (distance < minDistance) {
             minDistance = distance;
             nearestPoint = snapped;
+            nearestLayer = layer;
         }
     });
 
-    return nearestPoint;
+    return { nearestPoint, nearestLayer };
 }
+
+// Add move event listener to the map for hover effect
+map.on('mousemove', function(e) {
+    const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
+
+    if (nearestPoint) {
+        // Highlight the nearest road segment
+        if (highlightedLayer && highlightedLayer !== nearestLayer) {
+            routesLayer.resetStyle(highlightedLayer);
+        }
+        if (nearestLayer) {
+            nearestLayer.setStyle(highlightStyle());
+            highlightedLayer = nearestLayer;
+        }
+
+        // Preview the future point
+        if (previewPoint) {
+            previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
+        } else {
+            previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], previewPointStyle()).addTo(map);
+        }
+    }
+
+    map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
+});
 
 // Add click event listener to the map
 map.on('click', function(e) {
-    const nearestPoint = getNearestPoint(e.latlng);
+    const { nearestPoint } = getNearestPoint(e.latlng);
     if (nearestPoint) {
         L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], pr70Style()).addTo(map);
+        if (previewPoint) {
+            map.removeLayer(previewPoint);
+            previewPoint = null;
+        }
     }
 });
