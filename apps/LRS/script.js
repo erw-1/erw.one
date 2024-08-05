@@ -116,9 +116,7 @@ function getDistanceAlongRoad(roadLayer, point1, point2) {
     var point1Found = false;
     var point2Found = false;
 
-    for (var i = 0; i < latlngs.length - 1; i++) {
-        var segmentStart = L.latLng(latlngs[i]);
-        var segmentEnd = L.latLng(latlngs[i + 1]);
+    function calculateDistance(segmentStart, segmentEnd) {
         var segmentDistance = segmentStart.distanceTo(segmentEnd);
 
         if (!point1Found && isPointOnSegment(point1, segmentStart, segmentEnd)) {
@@ -127,9 +125,25 @@ function getDistanceAlongRoad(roadLayer, point1, point2) {
         } else if (point1Found && !point2Found && isPointOnSegment(point2, segmentStart, segmentEnd)) {
             distance += point2.distanceTo(segmentEnd);
             point2Found = true;
-            break;
+            return true; // Stop further processing
         } else if (point1Found && !point2Found) {
             distance += segmentDistance;
+        }
+
+        return false; // Continue processing
+    }
+
+    for (var i = 0; i < latlngs.length; i++) {
+        if (Array.isArray(latlngs[i])) {
+            for (var j = 0; j < latlngs[i].length - 1; j++) {
+                if (calculateDistance(L.latLng(latlngs[i][j]), L.latLng(latlngs[i][j + 1]))) {
+                    break;
+                }
+            }
+        } else {
+            if (i < latlngs.length - 1 && calculateDistance(L.latLng(latlngs[i]), L.latLng(latlngs[i + 1]))) {
+                break;
+            }
         }
     }
 
@@ -164,16 +178,29 @@ function highlightRoadSection(roadLayer, clickLatLng, prLatLngs) {
     var segmentLatlngs = [];
     var collecting = false;
 
-    for (var i = 0; i < latlngs.length; i++) {
-        var currentLatLng = L.latLng(latlngs[i]);
-
-        if (isPointOnSegment(clickLatLng, currentLatLng, L.latLng(latlngs[i + 1])) || collecting) {
+    function collectSegment(segmentStart, segmentEnd) {
+        if (isPointOnSegment(clickLatLng, segmentStart, segmentEnd) || collecting) {
             collecting = true;
-            segmentLatlngs.push(currentLatLng);
+            segmentLatlngs.push(segmentStart);
         }
-        if (isPointOnSegment(prLatLngs[1], currentLatLng, L.latLng(latlngs[i + 1]))) {
+        if (isPointOnSegment(prLatLngs[1], segmentStart, segmentEnd)) {
             segmentLatlngs.push(prLatLngs[1]);
-            break;
+            return true; // Stop further processing
+        }
+        return false; // Continue processing
+    }
+
+    for (var i = 0; i < latlngs.length; i++) {
+        if (Array.isArray(latlngs[i])) {
+            for (var j = 0; j < latlngs[i].length; j++) {
+                if (collectSegment(L.latLng(latlngs[i][j]), L.latLng(latlngs[i][j + 1]))) {
+                    break;
+                }
+            }
+        } else {
+            if (i < latlngs.length - 1 && collectSegment(L.latLng(latlngs[i]), L.latLng(latlngs[i + 1]))) {
+                break;
+            }
         }
     }
 
