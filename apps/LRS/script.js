@@ -63,6 +63,7 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 let routesLayer;
 let previewPoint;
 let highlightedLayer;
+let originalData; // Store the original data for reloading
 const simplificationThreshold = 0.01; // Simplification threshold for zoom levels
 
 // Function to simplify geometry based on zoom level
@@ -80,6 +81,7 @@ fetch('data/routes70.geojson')
         return response.json();
     })
     .then(data => {
+        originalData = data; // Store the original data
         const simplifiedData = simplifyGeometry(data, map.getZoom());
         routesLayer = L.geoJson(simplifiedData, {
             style: routes70Style
@@ -182,10 +184,16 @@ function handleMapClick(e) {
 // Function to handle zoom end event
 function handleZoomEnd() {
     const currentZoom = map.getZoom();
-    const data = routesLayer.toGeoJSON();
-    const simplifiedData = simplifyGeometry(data, currentZoom);
+    let data;
+    if (currentZoom >= 12) {
+        // Use original data when zoom level is high
+        data = originalData;
+    } else {
+        // Simplify geometry when zoom level is low
+        data = simplifyGeometry(originalData, currentZoom);
+    }
     map.removeLayer(routesLayer);
-    routesLayer = L.geoJson(simplifiedData, {
+    routesLayer = L.geoJson(data, {
         style: routes70Style
     }).addTo(map);
 }
