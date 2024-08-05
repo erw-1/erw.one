@@ -2,7 +2,7 @@
 function routes70Style(feature) {
     return {
         color: "#4d4d4d",
-        weight: 2,
+        weight: 10, // Increased weight for bigger hitbox
         opacity: 0.8
     };
 }
@@ -31,6 +31,8 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
     maxZoom: 22
 }).addTo(map);
 
+let routesLayer;
+
 // Fetch and add the second layer (routes70.geojson) with dark grey line styling
 fetch('data/routes70.geojson')
     .then(response => {
@@ -39,9 +41,11 @@ fetch('data/routes70.geojson')
         }
         return response.json();
     })
-    .then(data => L.geoJson(data, {
-        style: routes70Style
-    }).addTo(map))
+    .then(data => {
+        routesLayer = L.geoJson(data, {
+            style: routes70Style
+        }).addTo(map);
+    })
     .then(() => {
         // Fetch and add the first layer (pr70.geojson) with red dot styling
         fetch('data/pr70.geojson')
@@ -59,3 +63,31 @@ fetch('data/routes70.geojson')
             .catch(error => console.error('Error fetching pr70.geojson:', error));
     })
     .catch(error => console.error('Error fetching routes70.geojson:', error));
+
+// Function to find the nearest point on the line
+function getNearestPoint(latlng) {
+    const point = turf.point([latlng.lng, latlng.lat]);
+    let nearestPoint = null;
+    let minDistance = Infinity;
+
+    routesLayer.eachLayer(layer => {
+        const line = turf.feature(layer.feature.geometry);
+        const snapped = turf.nearestPointOnLine(line, point);
+        const distance = turf.distance(point, snapped);
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            nearestPoint = snapped;
+        }
+    });
+
+    return nearestPoint;
+}
+
+// Add click event listener to the map
+map.on('click', function(e) {
+    const nearestPoint = getNearestPoint(e.latlng);
+    if (nearestPoint) {
+        L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], pr70Style()).addTo(map);
+    }
+});
