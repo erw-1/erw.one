@@ -11,7 +11,7 @@ function routes70Style(feature) {
 function highlightStyle(feature) {
     return {
         color: "#2d2d2d",
-        weight: 3, // Increased weight for highlight
+        weight: 3,
         opacity: 1
     };
 }
@@ -29,28 +29,28 @@ function pr70Style(feature) {
 // Style for the future point preview
 function previewPointStyle() {
     return {
-        radius: 4,
-        fillColor: "#0000ff", // Blue color
+        radius: 3,
+        fillColor: "#ffff00", // Yellow color
         color: "none",
-        fillOpacity: 0.8
+        fillOpacity: 1
     };
 }
 
 // Style for the points created by a click
 function clickPointStyle() {
     return {
-        radius: 4,
-        fillColor: "#00ff00", // Green color
+        radius: 3,
+        fillColor: "#00ff00",
         color: "none",
-        fillOpacity: 0.8
+        fillOpacity: 1
     };
 }
 
 // Initialize the map
 var map = L.map('map', {
-    center: [47.6205, 6.3498], // Set to the desired center coordinates
-    zoom: 10,                  // Set to the desired initial zoom level
-    zoomControl: false         // Disables the default zoom controls
+    center: [47.6205, 6.3498],
+    zoom: 10,
+    zoomControl: false
 });
 
 // Add cartodb tiles
@@ -61,18 +61,17 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 }).addTo(map);
 
 let routesLayer;
+let pointsLayer;
 let previewPoint;
 let highlightedLayer;
-let tree;
-const maxDistance = 100; // 100 meters
+let originalData; // Store the original data for reloading
+const simplificationThreshold = 0.01; // Simplification threshold for zoom levels
+const magnetismRange = 600; // Reduced range to 600 meters
 
-// Debounce function to limit the rate of function calls
-function debounce(func, wait) {
-    let timeout;
-    return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-    };
+// Function to simplify geometry based on zoom level
+function simplifyGeometry(data, zoom) {
+    const tolerance = zoom < 12 ? simplificationThreshold : 0; // Simplify more at lower zoom levels
+    return turf.simplify(data, { tolerance, highQuality: true });
 }
 
 // Fetch and add the second layer (routes70.geojson) with dark grey line styling
@@ -84,124 +83,147 @@ fetch('data/routes70.geojson')
         return response.json();
     })
     .then(data => {
-        routesLayer = L.geoJson(data, {
+        originalData = data; // Store the original data
+        const simplifiedData = simplifyGeometry(data, map.getZoom());
+        routesLayer = L.geoJson(simplifiedData, {
             style: routes70Style
         }).addTo(map);
-        tree = createTree(data);
-    })
-    .then(() => {
+        console.log("Routes layer added");
+
         // Fetch and add the first layer (pr70.geojson) with red dot styling
-        fetch('data/pr70.geojson')
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(data => L.geoJson(data, {
-                pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, pr70Style(feature));
-                }
-            }).addTo(map))
-            .catch(error => console.error('Error fetching pr70.geojson:', error));
+        return fetch('data/pr70.geojson');
     })
-    .catch(error => console.error('Error fetching routes70.geojson:', error));
-
-// Create a spatial index tree for the routes data
-function createTree(data) {
-    const tree = rbush();
-    const items = [];
-
-    data.features.forEach(feature => {
-        const coords = feature.geometry.coordinates;
-        coords.forEach(coord => {
-            if (Array.isArray(coord) && coord.length === 2 && typeof coord[0] === 'number' && typeof coord[1] === 'number') {
-                items.push({
-                    minX: coord[0],
-                    minY: coord[1],
-                    maxX: coord[0],
-                    maxY: coord[1],
-                    feature
-                });
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        pointsLayer = L.geoJson(data, {
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, pr70Style(feature));
             }
         });
-    });
+        console.log("PR layer added");
 
-    tree.load(items);
-    return tree;
+        // Add event listeners after everything is initialized
+        map.on('mousemove', throttle(handleMouseMove, 100)); // Throttle to 100ms
+        map.on('click', handleMapClick);
+        map.on('zoomend', handleZoomEnd); // Simplify geometry on zoom
+    })
+    .catch(error => console.error('Error fetching geojson:', error));
+
+// Throttle function to limit the frequency of updates
+function throttle(func, limit) {
+    let lastFunc;
+    let lastRan;
+    return function() {
+        const context = this;
+        const args = arguments;
+        if (!lastRan) {
+            func.apply(context, args);
+            lastRan = Date.now();
+        } else {
+            clearTimeout(lastFunc);
+            lastFunc = setTimeout(function() {
+                if ((Date.now() - lastRan) >= limit) {
+                    func.apply(context, args);
+                    lastRan = Date.now();
+                }
+            }, limit - (Date.now() - lastRan));
+        }
+    };
 }
 
-// Function to find the nearest point on the line within 100 meters
+// Function to find the nearest point on the line within the specified range
 function getNearestPoint(latlng) {
     const point = turf.point([latlng.lng, latlng.lat]);
-    const nearest = tree.search({
-        minX: latlng.lng - 0.001,
-        minY: latlng.lat - 0.001,
-        maxX: latlng.lng + 0.001,
-        maxY: latlng.lat + 0.001
-    });
-
-    let minDistance = maxDistance;
     let nearestPoint = null;
+    let minDistance = magnetismRange; // Use the specified magnetism range
     let nearestLayer = null;
 
-    nearest.forEach(item => {
-        const snapped = turf.nearestPointOnLine(item.feature, point);
+    routesLayer.eachLayer(layer => {
+        const line = turf.feature(layer.feature.geometry);
+        const snapped = turf.nearestPointOnLine(line, point);
         const distance = turf.distance(point, snapped, { units: 'meters' });
 
         if (distance < minDistance) {
             minDistance = distance;
             nearestPoint = snapped;
-            nearestLayer = item.feature;
+            nearestLayer = layer;
         }
     });
 
     return { nearestPoint, nearestLayer };
 }
 
-// Add move event listener to the map for hover effect
-map.on('mousemove', debounce(function(e) {
-    const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
+// Function to handle mouse move event
+function handleMouseMove(e) {
+    if (map.getZoom() >= 12) {
+        const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
 
-    if (nearestPoint) {
-        // Highlight the nearest road segment
-        if (highlightedLayer && highlightedLayer !== nearestLayer) {
-            routesLayer.resetStyle(highlightedLayer);
-        }
-        if (nearestLayer) {
-            nearestLayer.setStyle(highlightStyle());
-            highlightedLayer = nearestLayer;
-        }
+        if (nearestPoint) {
+            // Highlight the nearest road segment
+            if (highlightedLayer && highlightedLayer !== nearestLayer) {
+                routesLayer.resetStyle(highlightedLayer);
+            }
+            if (nearestLayer) {
+                nearestLayer.setStyle(highlightStyle());
+                highlightedLayer = nearestLayer;
+            }
 
-        // Preview the future point
-        if (previewPoint) {
-            previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
+            // Preview the future point
+            if (previewPoint) {
+                previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
+            } else {
+                previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], previewPointStyle()).addTo(map);
+            }
         } else {
-            previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], previewPointStyle()).addTo(map);
+            // Remove the highlight and preview point if not within the specified range
+            if (highlightedLayer) {
+                routesLayer.resetStyle(highlightedLayer);
+                highlightedLayer = null;
+            }
+            if (previewPoint) {
+                map.removeLayer(previewPoint);
+                previewPoint = null;
+            }
         }
+
+        map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
+    }
+}
+
+// Function to handle map click event
+function handleMapClick(e) {
+    if (map.getZoom() >= 12) {
+        const { nearestPoint } = getNearestPoint(e.latlng);
+        if (nearestPoint) {
+            L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(map);
+            if (previewPoint) {
+                map.removeLayer(previewPoint);
+                previewPoint = null;
+            }
+        }
+    }
+}
+
+// Function to handle zoom end event
+function handleZoomEnd() {
+    const currentZoom = map.getZoom();
+    let data;
+    if (currentZoom >= 12) {
+        // Use original data when zoom level is high
+        data = originalData;
+        pointsLayer.addTo(map); // Add points layer when zoomed in
     } else {
-        // Remove the highlight and preview point if not within 100 meters
-        if (highlightedLayer) {
-            routesLayer.resetStyle(highlightedLayer);
-            highlightedLayer = null;
-        }
-        if (previewPoint) {
-            map.removeLayer(previewPoint);
-            previewPoint = null;
-        }
+        // Simplify geometry when zoom level is low
+        data = simplifyGeometry(originalData, currentZoom);
+        map.removeLayer(pointsLayer); // Remove points layer when zoomed out
     }
-
-    map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
-}, 50));
-
-// Add click event listener to the map
-map.on('click', function(e) {
-    const { nearestPoint } = getNearestPoint(e.latlng);
-    if (nearestPoint) {
-        L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(map);
-        if (previewPoint) {
-            map.removeLayer(previewPoint);
-            previewPoint = null;
-        }
-    }
-});
+    map.removeLayer(routesLayer);
+    routesLayer = L.geoJson(data, {
+        style: routes70Style
+    }).addTo(map);
+}
