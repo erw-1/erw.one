@@ -63,6 +63,7 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 let routesLayer;
 let pointsLayer;
 let previewPoint;
+let clickedPointsLayer = L.layerGroup().addTo(map); // Layer group for clicked points
 let highlightedLayer;
 let originalData; // Store the original data for reloading
 const simplificationThreshold = 0.01; // Simplification threshold for zoom levels
@@ -201,7 +202,7 @@ function handleMapClick(e) {
     if (map.getZoom() >= zoomRequirement) {
         const { nearestPoint } = getNearestPoint(e.latlng);
         if (nearestPoint) {
-            L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(map);
+            L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(clickedPointsLayer);
             if (previewPoint) {
                 map.removeLayer(previewPoint);
                 previewPoint = null;
@@ -218,18 +219,24 @@ function handleZoomEnd() {
         // Use original data when zoom level is high
         data = originalData;
         pointsLayer.addTo(map); // Add points layer when zoomed in
+        clickedPointsLayer.addTo(map); // Add clicked points layer when zoomed in
     } else {
         // Simplify geometry when zoom level is low
         data = simplifyGeometry(originalData, currentZoom);
         map.removeLayer(pointsLayer); // Remove points layer when zoomed out
+        map.removeLayer(clickedPointsLayer); // Remove clicked points layer when zoomed out
     }
     map.removeLayer(routesLayer);
     routesLayer = L.geoJson(data, {
         style: routes70Style
     }).addTo(map);
-    // Ensure pointsLayer is always on top
+    // Ensure pointsLayer and clickedPointsLayer are always on top
     if (map.hasLayer(pointsLayer)) {
         map.removeLayer(pointsLayer);
         pointsLayer.addTo(map);
+    }
+    if (map.hasLayer(clickedPointsLayer)) {
+        map.removeLayer(clickedPointsLayer);
+        clickedPointsLayer.addTo(map);
     }
 }
