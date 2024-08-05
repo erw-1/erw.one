@@ -130,7 +130,7 @@ const handleMouseMove = throttle((e) => {
         .addTo(map);
 
     const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
-    const line = turf.feature(nearestLayer.feature.geometry);
+    const line = nearestLayer.feature.geometry;
 
     closestPRs.forEach(pr => {
         const prLatLng = pr.layer.getLatLng();
