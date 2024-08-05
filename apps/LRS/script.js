@@ -68,10 +68,6 @@ const findClosestPRs = (previewPoint, routeId) => {
 };
 
 const calculateDistanceAlongRoad = (startPoint, endPoint, line) => {
-    if (!line || line.type !== 'LineString') {
-        console.error('Line must be a LineString:', line);
-        return 0;
-    }
     const start = turf.point([startPoint.lng, startPoint.lat]);
     const end = turf.point([endPoint.lng, endPoint.lat]);
     const slicedLine = turf.lineSlice(start, end, line);
@@ -130,7 +126,7 @@ const handleMouseMove = throttle((e) => {
         .addTo(map);
 
     const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
-    const line = nearestLayer.feature.geometry;
+    const line = turf.feature(nearestLayer.feature.geometry);
 
     closestPRs.forEach(pr => {
         const prLatLng = pr.layer.getLatLng();
