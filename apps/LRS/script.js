@@ -68,6 +68,10 @@ const findClosestPRs = (previewPoint, routeId) => {
 };
 
 const calculateDistanceAlongRoad = (startPoint, endPoint, line) => {
+    if (line.geometry.type !== 'LineString') {
+        console.error('Line must be a LineString:', line);
+        return 0;
+    }
     const start = turf.point([startPoint.lng, startPoint.lat]);
     const end = turf.point([endPoint.lng, endPoint.lat]);
     const slicedLine = turf.lineSlice(start, end, line);
