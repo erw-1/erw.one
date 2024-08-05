@@ -36,6 +36,16 @@ function previewPointStyle() {
     };
 }
 
+// Style for the points created by a click
+function clickPointStyle() {
+    return {
+        radius: 4,
+        fillColor: "#00ff00", // Green color
+        color: "none",
+        fillOpacity: 0.8
+    };
+}
+
 // Initialize the map
 var map = L.map('map', {
     center: [47.6205, 6.3498], // Set to the desired center coordinates
@@ -85,17 +95,17 @@ fetch('data/routes70.geojson')
     })
     .catch(error => console.error('Error fetching routes70.geojson:', error));
 
-// Function to find the nearest point on the line
+// Function to find the nearest point on the line within 100 meters
 function getNearestPoint(latlng) {
     const point = turf.point([latlng.lng, latlng.lat]);
     let nearestPoint = null;
-    let minDistance = Infinity;
+    let minDistance = 100; // 100 meters
     let nearestLayer = null;
 
     routesLayer.eachLayer(layer => {
         const line = turf.feature(layer.feature.geometry);
         const snapped = turf.nearestPointOnLine(line, point);
-        const distance = turf.distance(point, snapped);
+        const distance = turf.distance(point, snapped, { units: 'meters' });
 
         if (distance < minDistance) {
             minDistance = distance;
@@ -127,6 +137,16 @@ map.on('mousemove', function(e) {
         } else {
             previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], previewPointStyle()).addTo(map);
         }
+    } else {
+        // Remove the highlight and preview point if not within 100 meters
+        if (highlightedLayer) {
+            routesLayer.resetStyle(highlightedLayer);
+            highlightedLayer = null;
+        }
+        if (previewPoint) {
+            map.removeLayer(previewPoint);
+            previewPoint = null;
+        }
     }
 
     map.getContainer().style.cursor = nearestPoint ? 'pointer' : '';
@@ -136,7 +156,7 @@ map.on('mousemove', function(e) {
 map.on('click', function(e) {
     const { nearestPoint } = getNearestPoint(e.latlng);
     if (nearestPoint) {
-        L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], pr70Style()).addTo(map);
+        L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], clickPointStyle()).addTo(map);
         if (previewPoint) {
             map.removeLayer(previewPoint);
             previewPoint = null;
