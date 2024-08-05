@@ -15,6 +15,7 @@ map.createPane('previewPane').style.zIndex = 600;
 // Layer Groups
 let routesLayer, pointsLayer, previewPoint, highlightedLayer, highlightedTooltip, originalData;
 let closestPrLayer = L.layerGroup().addTo(map), clickedPointsLayer = L.layerGroup().addTo(map);
+let closestPrTooltips = [];
 
 // Styles
 const styles = {
@@ -94,6 +95,8 @@ const handleMouseMove = throttle((e) => {
         if (highlightedTooltip) map.removeLayer(highlightedTooltip);
         if (previewPoint) map.removeLayer(previewPoint);
         closestPrLayer.clearLayers();
+        closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
+        closestPrTooltips = [];
         highlightedLayer = highlightedTooltip = previewPoint = null;
         map.getContainer().style.cursor = '';
         return;
@@ -101,7 +104,11 @@ const handleMouseMove = throttle((e) => {
 
     if (highlightedLayer && highlightedLayer !== nearestLayer) routesLayer.resetStyle(highlightedLayer);
     if (highlightedTooltip) map.removeLayer(highlightedTooltip);
-    if (highlightedLayer !== nearestLayer) closestPrLayer.clearLayers();
+    if (highlightedLayer !== nearestLayer) {
+        closestPrLayer.clearLayers();
+        closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
+        closestPrTooltips = [];
+    }
 
     nearestLayer.setStyle(styles.highlight);
     highlightedLayer = nearestLayer;
@@ -116,10 +123,11 @@ const handleMouseMove = throttle((e) => {
     const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
     closestPRs.forEach(pr => {
         const prMarker = L.circleMarker(pr.layer.getLatLng(), styles.point("#ffa500")).addTo(closestPrLayer);
-        L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' })
+        const prTooltip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' })
             .setContent(String(pr.properties.num_pr))
             .setLatLng(pr.layer.getLatLng())
             .addTo(map);
+        closestPrTooltips.push(prTooltip);
     });
 
     if (previewPoint) previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
