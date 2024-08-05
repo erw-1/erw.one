@@ -119,7 +119,7 @@ const handleMouseMove = throttle((e) => {
         L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' })
             .setContent(pr.properties.num_pr)
             .setLatLng(pr.layer.getLatLng())
-            .addTo(prMarker);
+            .addTo(map);
     });
 
     if (previewPoint) previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
