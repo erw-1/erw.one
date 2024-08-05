@@ -63,12 +63,58 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 let routesLayer;
 let previewPoint;
 let highlightedLayer;
+const simplificationThreshold = 0.01; // Simplification threshold for zoom levels
 
-// Function to find the nearest point on the line within 100 meters
+// Function to simplify geometry based on zoom level
+function simplifyGeometry(data, zoom) {
+    const tolerance = zoom < 12 ? simplificationThreshold : 0; // Simplify more at lower zoom levels
+    return turf.simplify(data, { tolerance, highQuality: true });
+}
+
+// Fetch and add the second layer (routes70.geojson) with dark grey line styling
+fetch('data/routes70.geojson')
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        const simplifiedData = simplifyGeometry(data, map.getZoom());
+        routesLayer = L.geoJson(simplifiedData, {
+            style: routes70Style
+        }).addTo(map);
+        console.log("Routes layer added");
+
+        // Fetch and add the first layer (pr70.geojson) with red dot styling
+        return fetch('data/pr70.geojson');
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        L.geoJson(data, {
+            pointToLayer: function (feature, latlng) {
+                return L.circleMarker(latlng, pr70Style(feature));
+            }
+        }).addTo(map);
+        console.log("PR layer added");
+
+        // Add event listeners after everything is initialized
+        map.on('mousemove', handleMouseMove);
+        map.on('click', handleMapClick);
+        map.on('zoomend', handleZoomEnd); // Simplify geometry on zoom
+    })
+    .catch(error => console.error('Error fetching geojson:', error));
+
+// Function to find the nearest point on the line within 1000 meters
 function getNearestPoint(latlng) {
     const point = turf.point([latlng.lng, latlng.lat]);
     let nearestPoint = null;
-    let minDistance = 100; // 100 meters
+    let minDistance = 1000; // 1000 meters
     let nearestLayer = null;
 
     routesLayer.eachLayer(layer => {
@@ -84,28 +130,6 @@ function getNearestPoint(latlng) {
     });
 
     return { nearestPoint, nearestLayer };
-}
-
-// Throttle function to limit the frequency of updates
-function throttle(func, limit) {
-    let lastFunc;
-    let lastRan;
-    return function() {
-        const context = this;
-        const args = arguments;
-        if (!lastRan) {
-            func.apply(context, args);
-            lastRan = Date.now();
-        } else {
-            clearTimeout(lastFunc);
-            lastFunc = setTimeout(function() {
-                if ((Date.now() - lastRan) >= limit) {
-                    func.apply(context, args);
-                    lastRan = Date.now();
-                }
-            }, limit - (Date.now() - lastRan));
-        }
-    };
 }
 
 // Function to handle mouse move event
@@ -129,7 +153,7 @@ function handleMouseMove(e) {
             previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], previewPointStyle()).addTo(map);
         }
     } else {
-        // Remove the highlight and preview point if not within 100 meters
+        // Remove the highlight and preview point if not within 1000 meters
         if (highlightedLayer) {
             routesLayer.resetStyle(highlightedLayer);
             highlightedLayer = null;
@@ -155,39 +179,13 @@ function handleMapClick(e) {
     }
 }
 
-// Fetch and add the second layer (routes70.geojson) with dark grey line styling
-fetch('data/routes70.geojson')
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        routesLayer = L.geoJson(data, {
-            style: routes70Style
-        }).addTo(map);
-        console.log("Routes layer added");
-
-        // Fetch and add the first layer (pr70.geojson) with red dot styling
-        return fetch('data/pr70.geojson');
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        L.geoJson(data, {
-            pointToLayer: function(feature, latlng) {
-                return L.circleMarker(latlng, pr70Style(feature));
-            }
-        }).addTo(map);
-        console.log("PR layer added");
-
-        // Add event listeners after everything is initialized
-        map.on('mousemove', throttle(handleMouseMove, 100)); // Update every 100ms
-        map.on('click', handleMapClick);
-    })
-    .catch(error => console.error('Error fetching geojson:', error));
+// Function to handle zoom end event
+function handleZoomEnd() {
+    const currentZoom = map.getZoom();
+    const data = routesLayer.toGeoJSON();
+    const simplifiedData = simplifyGeometry(data, currentZoom);
+    map.removeLayer(routesLayer);
+    routesLayer = L.geoJson(simplifiedData, {
+        style: routes70Style
+    }).addTo(map);
+}
