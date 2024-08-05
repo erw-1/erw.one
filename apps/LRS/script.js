@@ -180,13 +180,17 @@ function handleMouseMove(e) {
 
                 // Display road name tooltip
                 const roadName = nearestLayer.feature.properties.nom_route;
+                if (highlightedTooltip) {
+                    map.removeLayer(highlightedTooltip);
+                }
                 highlightedTooltip = L.tooltip({
                     permanent: true,
-                    direction: 'center',
+                    direction: 'top',
+                    offset: [0, -10],
                     className: 'highlighted-tooltip'
                 })
                 .setContent(roadName)
-                .setLatLng(nearestPoint.geometry.coordinates.reverse())
+                .setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]])
                 .addTo(map);
             }
 
