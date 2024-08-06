@@ -49,35 +49,30 @@ const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
 
-// Function to find the closest PR distances from the previewed point along the road
-const findClosestPRs = (previewPoint, roadLine, routeId) => {
-  const prPoints = [];
-  window.pointsLayer.eachLayer(layer => {
-    if (layer.feature.properties.route_pr === routeId) {
-      const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-      prPoints.push({ layer, point: prPoint, properties: layer.feature.properties });
-    }
-  });
-
+// Function to find the closest PR points ahead and behind
+const findClosestPRs = (point, roadLine, routeId) => {
   let closestAhead = null;
   let closestBehind = null;
   let minDistanceAhead = Infinity;
   let minDistanceBehind = Infinity;
 
-  prPoints.forEach(pr => {
-    const prPoint = pr.point;
-    const prLayer = pr.layer;
-    const distanceAhead = turf.length(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
-    const distanceBehind = turf.length(turf.lineSlice(prPoint, previewPoint, roadLine), { units: 'meters' });
+  window.pointsLayer.eachLayer(layer => {
+    if (layer.feature.properties.route_pr === routeId) {
+      const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
+      const lineSliceAhead = turf.lineSlice(point, prPoint, roadLine);
+      const lineSliceBehind = turf.lineSlice(prPoint, point, roadLine);
+      const distanceAhead = turf.length(lineSliceAhead, { units: 'meters' });
+      const distanceBehind = turf.length(lineSliceBehind, { units: 'meters' });
 
-    if (distanceAhead < minDistanceAhead) {
-      minDistanceAhead = distanceAhead;
-      closestAhead = { prLayer, properties: pr.properties, distance: distanceAhead };
-    }
+      if (distanceAhead < minDistanceAhead) {
+        minDistanceAhead = distanceAhead;
+        closestAhead = { prLayer: layer, distance: distanceAhead };
+      }
 
-    if (distanceBehind < minDistanceBehind) {
-      minDistanceBehind = distanceBehind;
-      closestBehind = { prLayer, properties: pr.properties, distance: distanceBehind };
+      if (distanceBehind < minDistanceBehind) {
+        minDistanceBehind = distanceBehind;
+        closestBehind = { prLayer: layer, distance: distanceBehind };
+      }
     }
   });
 
@@ -86,8 +81,15 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
 
 // Function to update the preview marker with a tooltip
 let previewMarker;
+let prTooltips = [];
+let highlightedPRs = []; // Track currently highlighted PRs
+
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
+  prTooltips.forEach(tooltip => map.removeLayer(tooltip));
+  prTooltips = [];
+  highlightedPRs.forEach(pr => map.removeLayer(pr));
+  highlightedPRs = [];
 
   const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
   if (!roadsLayer) return;
@@ -121,15 +123,19 @@ const updatePreviewMarker = (e) => {
     previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
 
     if (closestAhead) {
-      L.circleMarker(closestAhead.prLayer.getLatLng(), styles.highlight)
-        .bindTooltip(htmlContent.prTooltipContent(closestAhead.properties.num_pr, closestAhead.distance), styles.prTooltip)
+      const prMarkerAhead = L.circleMarker(closestAhead.prLayer.getLatLng(), styles.highlight)
+        .bindTooltip(htmlContent.prTooltipContent(closestAhead.prLayer.feature.properties.num_pr, closestAhead.distance), styles.prTooltip)
         .addTo(map);
+      prTooltips.push(prMarkerAhead);
+      highlightedPRs.push(prMarkerAhead);
     }
 
     if (closestBehind) {
-      L.circleMarker(closestBehind.prLayer.getLatLng(), styles.highlight)
-        .bindTooltip(htmlContent.prTooltipContent(closestBehind.properties.num_pr, closestBehind.distance), styles.prTooltip)
+      const prMarkerBehind = L.circleMarker(closestBehind.prLayer.getLatLng(), styles.highlight)
+        .bindTooltip(htmlContent.prTooltipContent(closestBehind.prLayer.feature.properties.num_pr, closestBehind.distance), styles.prTooltip)
         .addTo(map);
+      prTooltips.push(prMarkerBehind);
+      highlightedPRs.push(prMarkerBehind);
     }
   } else {
     map.getContainer().style.cursor = ''; // Reset cursor
