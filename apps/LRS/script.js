@@ -2,14 +2,23 @@
 const SIMPLIFICATION_THRESHOLD = 0.01;
 const MAGNETISM_RANGE = 600;
 const ZOOM_REQUIREMENT = 12;
+const DEBOUNCE_DELAY = 100;
 
 // Map Initialization
-const map = L.map('map', { center: [47.6205, 6.3498], zoom: 10, zoomControl: false });
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', { attribution: 'Erwan Vinot | HSN | OSM', maxNativeZoom: 19, maxZoom: 22 }).addTo(map);
+const map = L.map('map', {
+  center: [47.6205, 6.3498],
+  zoom: 10,
+  zoomControl: false
+});
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+  attribution: 'Erwan Vinot | HSN | OSM',
+  maxNativeZoom: 19,
+  maxZoom: 22
+}).addTo(map);
 
 // Create Panes
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
-    map.createPane(pane).style.zIndex = 400 + (index * 100);
+  map.createPane(pane).style.zIndex = 400 + (index * 100);
 });
 
 // Layer Groups
@@ -20,169 +29,179 @@ let closestPrTooltips = [];
 
 // Styles and HTML content
 const styles = {
-    route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
-    highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
-    point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
-    preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
-    tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
-    prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' },
-    popup: { closeButton: true }
+  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
+  highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
+  point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
+  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
+  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
+  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' },
+  popup: { closeButton: true }
 };
 
 const htmlContent = {
-    roadName: (roadName) => String(roadName),
-    prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
-    popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
+  roadName: (roadName) => String(roadName),
+  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
 };
 
 // Utility Functions
 const simplifyGeometry = (data, zoom) => turf.simplify(data, { tolerance: zoom < ZOOM_REQUIREMENT ? SIMPLIFICATION_THRESHOLD : 0, highQuality: true });
 
 const getNearestPoint = (latlng) => {
-    const point = turf.point([latlng.lng, latlng.lat]);
-    let nearestPoint = null, minDistance = MAGNETISM_RANGE, nearestLayer = null;
+  const point = turf.point([latlng.lng, latlng.lat]);
+  let nearestPoint = null, minDistance = MAGNETISM_RANGE, nearestLayer = null;
 
-    routesLayer.eachLayer(layer => {
-        const line = turf.feature(layer.feature.geometry);
-        const snapped = turf.nearestPointOnLine(line, point);
-        const distance = turf.distance(point, snapped, { units: 'meters' });
+  routesLayer.eachLayer(layer => {
+    const line = turf.feature(layer.feature.geometry);
+    const snapped = turf.nearestPointOnLine(line, point);
+    const distance = turf.distance(point, snapped, { units: 'meters' });
 
-        if (distance < minDistance) {
-            minDistance = distance;
-            nearestPoint = snapped;
-            nearestLayer = layer;
-        }
-    });
+    if (distance < minDistance) {
+      minDistance = distance;
+      nearestPoint = snapped;
+      nearestLayer = layer;
+    }
+  });
 
-    return { nearestPoint, nearestLayer };
+  return { nearestPoint, nearestLayer };
 };
 
 const findClosestPRs = (point, routeId) => {
-    const prPoints = [];
-    pointsLayer.eachLayer(layer => {
-        if (layer.feature.properties.route_pr === routeId) {
-            const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-            prPoints.push({ layer, distance: turf.distance(point, prPoint, { units: 'meters' }), properties: layer.feature.properties });
-        }
-    });
-    prPoints.sort((a, b) => a.distance - b.distance);
+  const prPoints = [];
+  pointsLayer.eachLayer(layer => {
+    if (layer.feature.properties.route_pr === routeId) {
+      const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
+      prPoints.push({ layer, distance: turf.distance(point, prPoint, { units: 'meters' }), properties: layer.feature.properties });
+    }
+  });
+  prPoints.sort((a, b) => a.distance - b.distance);
 
-    return [
-        prPoints.find(pr => pr.layer.getLatLng().lng > point[0]),
-        prPoints.find(pr => pr.layer.getLatLng().lng < point[0])
-    ].filter(Boolean);
+  return [
+    prPoints.find(pr => pr.layer.getLatLng().lng > point[0]),
+    prPoints.find(pr => pr.layer.getLatLng().lng < point[0])
+  ].filter(Boolean);
+};
+
+// Debounce Function
+const debounce = (func, delay) => {
+  let debounceTimer;
+  return function() {
+    const context = this, args = arguments;
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(context, args), delay);
+  };
 };
 
 // Event Handlers
-const handleMouseMove = (e) => {
-    if (map.getZoom() < ZOOM_REQUIREMENT) return;
+const handleMouseMove = debounce((e) => {
+  if (map.getZoom() < ZOOM_REQUIREMENT) return;
 
-    // Remove existing tooltips
-    if (highlightedTooltip) map.removeLayer(highlightedTooltip);
-    closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
-    closestPrTooltips = [];
+  // Remove existing tooltips
+  if (highlightedTooltip) map.removeLayer(highlightedTooltip);
+  closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
+  closestPrTooltips = [];
 
-    const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
-    if (!nearestPoint) {
-        if (highlightedLayer) routesLayer.resetStyle(highlightedLayer);
-        if (previewPoint) map.removeLayer(previewPoint);
-        closestPrLayer.clearLayers();
-        highlightedLayer = previewPoint = null;
-        map.getContainer().style.cursor = '';
-        return;
-    }
+  const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
+  if (!nearestPoint) {
+    if (highlightedLayer) routesLayer.resetStyle(highlightedLayer);
+    if (previewPoint) map.removeLayer(previewPoint);
+    closestPrLayer.clearLayers();
+    highlightedLayer = previewPoint = null;
+    map.getContainer().style.cursor = '';
+    return;
+  }
 
-    if (highlightedLayer && highlightedLayer !== nearestLayer) routesLayer.resetStyle(highlightedLayer);
-    if (highlightedLayer !== nearestLayer) closestPrLayer.clearLayers();
+  if (highlightedLayer && highlightedLayer !== nearestLayer) routesLayer.resetStyle(highlightedLayer);
+  if (highlightedLayer !== nearestLayer) closestPrLayer.clearLayers();
 
-    nearestLayer.setStyle(styles.highlight);
-    highlightedLayer = nearestLayer;
-    map.getContainer().style.cursor = 'pointer';
+  nearestLayer.setStyle(styles.highlight);
+  highlightedLayer = nearestLayer;
+  map.getContainer().style.cursor = 'pointer';
 
-    highlightedTooltip = L.tooltip(styles.tooltip)
-        .setContent(htmlContent.roadName(nearestLayer.feature.properties.nom_route))
-        .setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]])
-        .addTo(map);
+  highlightedTooltip = L.tooltip(styles.tooltip)
+    .setContent(htmlContent.roadName(nearestLayer.feature.properties.nom_route))
+    .setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]])
+    .addTo(map);
 
-    const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, nearestLayer.feature.properties.nom_route);
-    closestPRs.forEach(pr => {
-        const prLatLng = pr.layer.getLatLng();
-        const tooltipContent = htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance);
-        L.circleMarker(prLatLng, styles.point("#ffa500")).addTo(closestPrLayer);
-        closestPrTooltips.push(
-            L.tooltip(styles.prTooltip)
-                .setContent(tooltipContent)
-                .setLatLng(prLatLng)
-                .addTo(map)
-        );
-    });
+  const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, nearestLayer.feature.properties.nom_route);
+  closestPRs.forEach(pr => {
+    const prLatLng = pr.layer.getLatLng();
+    const tooltipContent = htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance);
+    L.circleMarker(prLatLng, styles.point("#ffa500")).addTo(closestPrLayer);
+    closestPrTooltips.push(
+      L.tooltip(styles.prTooltip)
+        .setContent(tooltipContent)
+        .setLatLng(prLatLng)
+        .addTo(map)
+    );
+  });
 
-    if (!previewPoint) {
-        previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.preview).addTo(map);
-    } else {
-        previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
-    }
-};
+  if (!previewPoint) {
+    previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.preview).addTo(map);
+  } else {
+    previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
+  }
+}, DEBOUNCE_DELAY);
 
 const handleMapClick = (e) => {
-    if (map.getZoom() < ZOOM_REQUIREMENT) return;
-    const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
-    if (nearestPoint) {
-        const clickedPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.point("#00ff00")).addTo(clickedPointsLayer);
+  if (map.getZoom() < ZOOM_REQUIREMENT) return;
+  const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
+  if (nearestPoint) {
+    const clickedPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.point("#00ff00")).addTo(clickedPointsLayer);
 
-        const roadName = nearestLayer.feature.properties.nom_route;
-        const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
+    const roadName = nearestLayer.feature.properties.nom_route;
+    const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
 
-        if (closestPRs.length === 2) {
-            const popupContent = htmlContent.popupContent(
-                roadName,
-                closestPRs[0].distance,
-                closestPRs[0].properties.num_pr,
-                closestPRs[1].distance,
-                closestPRs[1].properties.num_pr
-            );
-            const popup = L.popup(styles.popup)
-                .setContent(popupContent)
-                .setLatLng(clickedPoint.getLatLng())
-                .openOn(map);
+    if (closestPRs.length === 2) {
+      const popupContent = htmlContent.popupContent(
+        roadName,
+        closestPRs[0].distance,
+        closestPRs[0].properties.num_pr,
+        closestPRs[1].distance,
+        closestPRs[1].properties.num_pr
+      );
+      const popup = L.popup(styles.popup)
+        .setContent(popupContent)
+        .setLatLng(clickedPoint.getLatLng())
+        .openOn(map);
 
-            popup.on('remove', () => clickedPointsLayer.removeLayer(clickedPoint));
-        }
+      popup.on('remove', () => clickedPointsLayer.removeLayer(clickedPoint));
     }
+  }
 };
 
 const handleZoomEnd = () => {
-    const currentZoom = map.getZoom();
-    const data = currentZoom >= ZOOM_REQUIREMENT ? originalData : simplifyGeometry(originalData, currentZoom);
-    
-    if (currentZoom < ZOOM_REQUIREMENT) {
-        [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => map.removeLayer(layer));
-    } else {
-        [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => {
-            if (!map.hasLayer(layer)) layer.addTo(map);
-        });
-    }
+  const currentZoom = map.getZoom();
+  const data = currentZoom >= ZOOM_REQUIREMENT ? originalData : simplifyGeometry(originalData, currentZoom);
 
-    map.removeLayer(routesLayer);
-    routesLayer = L.geoJson(data, { style: styles.route, renderer: L.canvas() }).addTo(map);
+  if (currentZoom < ZOOM_REQUIREMENT) {
+    [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => map.removeLayer(layer));
+  } else {
+    [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => {
+      if (!map.hasLayer(layer)) layer.addTo(map);
+    });
+  }
+
+  map.removeLayer(routesLayer);
+  routesLayer = L.geoJson(data, { style: styles.route, renderer: L.canvas() }).addTo(map);
 };
 
 // Fetch Data and Initialize Layers
 const initializeMap = async () => {
-    const [routesResponse, prResponse] = await Promise.all([
-        fetch('data/routes70.geojson'),
-        fetch('data/pr70.geojson')
-    ]);
+  const [routesResponse, prResponse] = await Promise.all([
+    fetch('data/routes70.geojson'),
+    fetch('data/pr70.geojson')
+  ]);
 
-    originalData = await routesResponse.json();
-    routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route, renderer: L.canvas() }).addTo(map);
+  originalData = await routesResponse.json();
+  routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route, renderer: L.canvas() }).addTo(map);
 
-    const prData = await prResponse.json();
-    pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
+  const prData = await prResponse.json();
+  pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
 
-    map.on('mousemove', handleMouseMove);
-    map.on('click', handleMapClick);
-    map.on('zoomend', handleZoomEnd);
+  map.on('mousemove', handleMouseMove);
+  map.on('click', handleMapClick);
+  map.on('zoomend', handleZoomEnd);
 };
 
 initializeMap();
