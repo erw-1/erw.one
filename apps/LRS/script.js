@@ -1,37 +1,27 @@
 // Constants
-const SIMPLIFICATION_MIN_THRESHOLD = 0.001;
-const SIMPLIFICATION_MAX_THRESHOLD = 0.05;
-const ZOOM_REQUIREMENT = 14;
-const MOUSEMOVE_THROTTLE_MS = 100;
-const MAGNETISM_RANGE = 300;
+const SIMPLIFICATION_THRESHOLD = 0.01;
+const MAGNETISM_RANGE = 600;
+const ZOOM_REQUIREMENT = 12;
 
 // Map Initialization
-const map = L.map('map', {
-  center: [47.6205, 6.3498],
-  zoom: 10,
-  zoomControl: false
-});
+const map = L.map('map', {center: [47.6205, 6.3498],zoom: 10,zoomControl: false});
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot | HSN | OSM',maxNativeZoom: 19,maxZoom: 22}).addTo(map);
 
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-  attribution: 'Erwan Vinot | HSN | OSM',
-  maxNativeZoom: 19,
-  maxZoom: 22
-}).addTo(map);
-
-// Create Panes with increasing zIndex
+// Create Panes
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
   map.createPane(pane).style.zIndex = 400 + (index * 100);
 });
 
 // Layer Groups
-let routesLayer, pointsLayer, previewPoint, highlightedLayer, highlightedTooltip, originalData;
+let routesLayer, pointsLayer, previewPoint, highlightedLayer, highlightedTooltip;
+let originalData;
 const closestPrLayer = L.layerGroup().addTo(map);
 const clickedPointsLayer = L.layerGroup().addTo(map);
 let closestPrTooltips = [];
 
 // Styles and HTML content
 const styles = {
-  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane', renderer: L.canvas() },
+  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
   highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
   point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
   preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
@@ -43,26 +33,20 @@ const styles = {
 const htmlContent = {
   roadName: (roadName) => String(roadName),
   prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
-  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `
-    <b>${roadName}</b><br>
-    Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>
-    Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
 };
 
 // Utility Functions
-const calculateSimplificationTolerance = (zoom) => {
-  const zoomFactor = (map.getMaxZoom() - zoom) / (map.getMaxZoom() - map.getMinZoom());
-  return SIMPLIFICATION_MIN_THRESHOLD + (SIMPLIFICATION_MAX_THRESHOLD - SIMPLIFICATION_MIN_THRESHOLD) * zoomFactor;
-};
-
 const simplifyGeometry = (data, zoom) => {
-  const tolerance = calculateSimplificationTolerance(zoom);
+  const tolerance = zoom < ZOOM_REQUIREMENT ? SIMPLIFICATION_THRESHOLD : 0;
   return turf.simplify(data, { tolerance, highQuality: true });
 };
 
 const getNearestPoint = (latlng) => {
   const point = turf.point([latlng.lng, latlng.lat]);
-  let nearestPoint = null, minDistance = MAGNETISM_RANGE, nearestLayer = null;
+  let nearestPoint = null;
+  let minDistance = MAGNETISM_RANGE;
+  let nearestLayer = null;
 
   routesLayer.eachLayer(layer => {
     const line = turf.feature(layer.feature.geometry);
@@ -84,33 +68,15 @@ const findClosestPRs = (point, routeId) => {
   pointsLayer.eachLayer(layer => {
     if (layer.feature.properties.route_pr === routeId) {
       const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-      prPoints.push({
-        layer,
-        distance: turf.distance(point, prPoint, { units: 'meters' }),
-        properties: layer.feature.properties
-      });
+      prPoints.push({ layer, distance: turf.distance(point, prPoint, { units: 'meters' }), properties: layer.feature.properties });
     }
   });
   prPoints.sort((a, b) => a.distance - b.distance);
 
-  return [
-    prPoints.find(pr => pr.layer.getLatLng().lng > point[0]),
-    prPoints.find(pr => pr.layer.getLatLng().lng < point[0])
-  ].filter(Boolean);
-};
+  const closestAhead = prPoints.find(pr => pr.layer.getLatLng().lng > point[0]);
+  const closestBehind = prPoints.find(pr => pr.layer.getLatLng().lng < point[0]);
 
-// Simple Throttle Function
-const throttle = (func, limit) => {
-  let inThrottle;
-  return function() {
-    const context = this;
-    const args = arguments;
-    if (!inThrottle) {
-      func.apply(context, args);
-      inThrottle = true;
-      setTimeout(() => inThrottle = false, limit);
-    }
-  };
+  return [closestAhead, closestBehind].filter(Boolean);
 };
 
 // Event Handlers
@@ -118,10 +84,7 @@ const handleMouseMove = (e) => {
   if (map.getZoom() < ZOOM_REQUIREMENT) return;
 
   // Remove existing tooltips
-  if (highlightedTooltip) {
-    map.removeLayer(highlightedTooltip);
-    highlightedTooltip = null;
-  }
+  if (highlightedTooltip) map.removeLayer(highlightedTooltip);
   closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
   closestPrTooltips = [];
 
@@ -142,46 +105,47 @@ const handleMouseMove = (e) => {
   highlightedLayer = nearestLayer;
   map.getContainer().style.cursor = 'pointer';
 
+  const roadName = nearestLayer.feature.properties.nom_route;
   highlightedTooltip = L.tooltip(styles.tooltip)
-    .setContent(htmlContent.roadName(nearestLayer.feature.properties.nom_route))
+    .setContent(htmlContent.roadName(roadName))
     .setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]])
     .addTo(map);
 
-  const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, nearestLayer.feature.properties.nom_route);
+  const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
   closestPRs.forEach(pr => {
     const prLatLng = pr.layer.getLatLng();
     const tooltipContent = htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance);
-    L.circleMarker(prLatLng, styles.point("#ffa500")).addTo(closestPrLayer);
-    closestPrTooltips.push(
-      L.tooltip(styles.prTooltip)
-        .setContent(tooltipContent)
-        .setLatLng(prLatLng)
-        .addTo(map)
-    );
+    const prMarker = L.circleMarker(prLatLng, styles.point("#ffa500")).addTo(closestPrLayer);
+    const prTooltip = L.tooltip(styles.prTooltip)
+      .setContent(tooltipContent)
+      .setLatLng(prLatLng)
+      .addTo(map);
+    closestPrTooltips.push(prTooltip);
   });
 
-  if (!previewPoint) {
-    previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.preview).addTo(map);
-  } else {
-    previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
-  }
+  if (previewPoint) previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
+  else previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.preview).addTo(map);
 };
 
 const handleMapClick = (e) => {
   if (map.getZoom() < ZOOM_REQUIREMENT) return;
   const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
   if (nearestPoint) {
-    const clickedPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.point("#00ff00")).addTo(clickedPointsLayer);
+    const clickedPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.point("#00ff00"))
+      .addTo(clickedPointsLayer);
 
     const roadName = nearestLayer.feature.properties.nom_route;
     const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
 
     if (closestPRs.length === 2) {
+      const distanceAhead = closestPRs[0].distance;
+      const distanceBehind = closestPRs[1].distance;
+
       const popupContent = htmlContent.popupContent(
         roadName,
-        closestPRs[0].distance,
+        distanceAhead,
         closestPRs[0].properties.num_pr,
-        closestPRs[1].distance,
+        distanceBehind,
         closestPRs[1].properties.num_pr
       );
       const popup = L.popup(styles.popup)
@@ -189,23 +153,21 @@ const handleMapClick = (e) => {
         .setLatLng(clickedPoint.getLatLng())
         .openOn(map);
 
-      popup.on('remove', () => clickedPointsLayer.removeLayer(clickedPoint));
+      popup.on('remove', () => {
+        clickedPointsLayer.removeLayer(clickedPoint);
+      });
     }
   }
 };
 
 const handleZoomEnd = () => {
   const currentZoom = map.getZoom();
-  const data = simplifyGeometry(originalData, currentZoom);
-  
+  const data = currentZoom >= ZOOM_REQUIREMENT ? originalData : simplifyGeometry(originalData, currentZoom);
   if (currentZoom < ZOOM_REQUIREMENT) {
     [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => map.removeLayer(layer));
   } else {
-    [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => {
-      if (!map.hasLayer(layer)) layer.addTo(map);
-    });
+    [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => layer.addTo(map));
   }
-
   map.removeLayer(routesLayer);
   routesLayer = L.geoJson(data, { style: styles.route }).addTo(map);
 };
@@ -223,7 +185,7 @@ const initializeMap = async () => {
   const prData = await prResponse.json();
   pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
 
-  map.on('mousemove', throttle(handleMouseMove, MOUSEMOVE_THROTTLE_MS));
+  map.on('mousemove', handleMouseMove);
   map.on('click', handleMapClick);
   map.on('zoomend', handleZoomEnd);
 };
