@@ -4,25 +4,38 @@ const map = L.map('map', { center: [47.6205, 6.3498], zoom: 10, zoomControl: fal
 L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot - HSN | OSM', maxNativeZoom: 19, maxZoom: 22}).addTo(map);
 
 // Create Panes
-['routesPane', 'pointsPane'].forEach((pane, index) => {
+['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
   map.createPane(pane).style.zIndex = 400 + index;
 });
 
 // Define styles
 const styles = {
   route: { color: "#4d4d4d", weight: 2, opacity: 1, pane: 'routesPane', renderer: L.canvas() },
-  point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPane' }
+  point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPane' },
+  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' }
 };
 
-//// Functions
-// Geometry simplification function
+//// Optimization Functions
+// Geometry simplification
 const simplifyGeometry = (geojson, tolerance) => turf.simplify(geojson, { tolerance: tolerance, highQuality: false });
+
+// Debounce utility
+const debounce = (func, delay) => {
+  let timeoutId;
+  return (...args) => {
+    if (timeoutId) clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => {
+      func(...args);
+    }, delay);
+  };
+};
 
 // Function to toggle pane visibility based on zoom level
 const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
 
+//// Map content Functions
 // GeoJSON layer addition function
 const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) => {
   fetch(url)
@@ -32,7 +45,33 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
       const layer = L.geoJson(data, { style, pointToLayer }).addTo(map);
       if (layerVar && window[layerVar]) map.removeLayer(window[layerVar]); // Remove duplicates
       window[layerVar] = layer;
-    })
+    });
+};
+
+// Function to update the preview marker
+let previewMarker;
+const updatePreviewMarker = (e) => {
+  if (previewMarker) {
+    map.removeLayer(previewMarker);
+  }
+
+  const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
+  if (!roadsLayer) return;
+
+  let closestPoint = null;
+  let closestDistance = Infinity;
+  roadsLayer.eachLayer(layer => {
+    const latlng = L.GeometryUtil.closest(map, layer, e.latlng);
+    const distance = e.latlng.distanceTo(latlng);
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestPoint = latlng;
+    }
+  });
+
+  if (closestDistance <= 50) {
+    previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
+  }
 };
 
 // Function to initialize the map with data
@@ -52,3 +91,6 @@ map.on('zoomend', () => {
     togglePaneVisibility('pointsPane', 14);  // Handle points pane visibility only when necessary
   }
 });
+
+// Add debounced mousemove event to update the preview marker
+map.on('mousemove', debounce(updatePreviewMarker, 100));
