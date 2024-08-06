@@ -87,10 +87,14 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
 // Function to update the preview marker with a tooltip
 let previewMarker;
 let prTooltips = [];
+let highlightedPRs = []; // Track currently highlighted PRs
+
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
   prTooltips.forEach(tooltip => map.removeLayer(tooltip));
   prTooltips = [];
+  highlightedPRs.forEach(pr => map.removeLayer(pr));
+  highlightedPRs = [];
 
   const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
   if (!roadsLayer) return;
@@ -128,6 +132,7 @@ const updatePreviewMarker = (e) => {
         .bindTooltip(htmlContent.prTooltipContent(closestAhead.properties.num_pr, closestAhead.distance), styles.prTooltip)
         .addTo(map);
       prTooltips.push(prMarkerAhead);
+      highlightedPRs.push(prMarkerAhead);
     }
 
     if (closestBehind) {
@@ -135,6 +140,7 @@ const updatePreviewMarker = (e) => {
         .bindTooltip(htmlContent.prTooltipContent(closestBehind.properties.num_pr, closestBehind.distance), styles.prTooltip)
         .addTo(map);
       prTooltips.push(prMarkerBehind);
+      highlightedPRs.push(prMarkerBehind);
     }
   } else {
     map.getContainer().style.cursor = ''; // Reset cursor
