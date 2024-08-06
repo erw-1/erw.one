@@ -1,13 +1,22 @@
 // Constants
-const SIMPLIFICATION_THRESHOLD = 0.01;
-const MAGNETISM_RANGE = 300;
+const SIMPLIFICATION_MIN_THRESHOLD = 0.001;
+const SIMPLIFICATION_MAX_THRESHOLD = 0.05;
 const ZOOM_REQUIREMENT = 14;
 
 // Map Initialization
-const map = L.map('map', {center: [47.6205, 6.3498],zoom: 10,zoomControl: false});
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot | HSN | OSM',maxNativeZoom: 19,maxZoom: 22}).addTo(map);
+const map = L.map('map', {
+  center: [47.6205, 6.3498],
+  zoom: 10,
+  zoomControl: false
+});
 
-// Create Panes
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+  attribution: 'Erwan Vinot | HSN | OSM',
+  maxNativeZoom: 19,
+  maxZoom: 22
+}).addTo(map);
+
+// Create Panes with increasing zIndex
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
   map.createPane(pane).style.zIndex = 400 + (index * 100);
 });
@@ -32,11 +41,22 @@ const styles = {
 const htmlContent = {
   roadName: (roadName) => String(roadName),
   prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
-  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `
+    <b>${roadName}</b><br>
+    Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>
+    Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
 };
 
 // Utility Functions
-const simplifyGeometry = (data, zoom) => turf.simplify(data, { tolerance: zoom < ZOOM_REQUIREMENT ? SIMPLIFICATION_THRESHOLD : 0, highQuality: true });
+const calculateSimplificationTolerance = (zoom) => {
+  const zoomFactor = (map.getMaxZoom() - zoom) / (map.getMaxZoom() - map.getMinZoom());
+  return SIMPLIFICATION_MIN_THRESHOLD + (SIMPLIFICATION_MAX_THRESHOLD - SIMPLIFICATION_MIN_THRESHOLD) * zoomFactor;
+};
+
+const simplifyGeometry = (data, zoom) => {
+  const tolerance = calculateSimplificationTolerance(zoom);
+  return turf.simplify(data, { tolerance, highQuality: true });
+};
 
 const getNearestPoint = (latlng) => {
   const point = turf.point([latlng.lng, latlng.lat]);
@@ -62,7 +82,11 @@ const findClosestPRs = (point, routeId) => {
   pointsLayer.eachLayer(layer => {
     if (layer.feature.properties.route_pr === routeId) {
       const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-      prPoints.push({ layer, distance: turf.distance(point, prPoint, { units: 'meters' }), properties: layer.feature.properties });
+      prPoints.push({
+        layer,
+        distance: turf.distance(point, prPoint, { units: 'meters' }),
+        properties: layer.feature.properties
+      });
     }
   });
   prPoints.sort((a, b) => a.distance - b.distance);
@@ -71,6 +95,20 @@ const findClosestPRs = (point, routeId) => {
     prPoints.find(pr => pr.layer.getLatLng().lng > point[0]),
     prPoints.find(pr => pr.layer.getLatLng().lng < point[0])
   ].filter(Boolean);
+};
+
+// Simple Throttle Function
+const throttle = (func, limit) => {
+  let inThrottle;
+  return function() {
+    const context = this;
+    const args = arguments;
+    if (!inThrottle) {
+      func.apply(context, args);
+      inThrottle = true;
+      setTimeout(() => inThrottle = false, limit);
+    }
+  };
 };
 
 // Event Handlers
@@ -156,7 +194,7 @@ const handleMapClick = (e) => {
 
 const handleZoomEnd = () => {
   const currentZoom = map.getZoom();
-  const data = currentZoom >= ZOOM_REQUIREMENT ? originalData : simplifyGeometry(originalData, currentZoom);
+  const data = simplifyGeometry(originalData, currentZoom);
   
   if (currentZoom < ZOOM_REQUIREMENT) {
     [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => map.removeLayer(layer));
@@ -183,7 +221,7 @@ const initializeMap = async () => {
   const prData = await prResponse.json();
   pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
 
-  map.on('mousemove', handleMouseMove);
+  map.on('mousemove', throttle(handleMouseMove, MOUSEMOVE_THROTTLE_MS));
   map.on('click', handleMapClick);
   map.on('zoomend', handleZoomEnd);
 };
