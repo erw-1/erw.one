@@ -59,10 +59,8 @@ const findClosestPRs = (point, roadLine, routeId) => {
   window.pointsLayer.eachLayer(layer => {
     if (layer.feature.properties.route_pr === routeId) {
       const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-      const lineSliceAhead = turf.lineSlice(point, prPoint, roadLine);
-      const lineSliceBehind = turf.lineSlice(prPoint, point, roadLine);
-      const distanceAhead = turf.length(lineSliceAhead, { units: 'meters' });
-      const distanceBehind = turf.length(lineSliceBehind, { units: 'meters' });
+      const distanceAhead = turf.pointToLineDistance(prPoint, roadLine, { units: 'meters' });
+      const distanceBehind = turf.pointToLineDistance(point, roadLine, { units: 'meters' });
 
       if (distanceAhead < minDistanceAhead) {
         minDistanceAhead = distanceAhead;
@@ -75,6 +73,9 @@ const findClosestPRs = (point, roadLine, routeId) => {
       }
     }
   });
+
+  console.log("Closest Ahead:", closestAhead);
+  console.log("Closest Behind:", closestBehind);
 
   return { closestAhead, closestBehind };
 };
