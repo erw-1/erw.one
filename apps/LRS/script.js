@@ -24,8 +24,8 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 
 // Layer Groups
 let routesLayer, pointsLayer, previewPoint, highlightedLayer, highlightedTooltip, originalData;
-const closestPrLayer = L.layerGroup().addTo(map);
-const clickedPointsLayer = L.layerGroup().addTo(map);
+const closestPrLayer = L.layerGroup();
+const clickedPointsLayer = L.layerGroup();
 let closestPrTooltips = [];
 
 // Styles and HTML content
@@ -192,13 +192,14 @@ const initializeMap = async () => {
 
   const prData = await prResponse.json();
   pointsLayer = L.geoJson(prData, {
-    pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")),
-    renderer: L.canvas() // Use Canvas renderer
-  }).addTo(map);
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000"))
+  });
 
   map.on('mousemove', handleMouseMove);
   map.on('click', handleMapClick);
   map.on('zoomend', handleZoomEnd);
+
+  handleZoomEnd(); // Initial check to set visibility of layers based on initial zoom level
 };
 
 initializeMap();
