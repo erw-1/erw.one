@@ -1,7 +1,11 @@
 //// Config
 // Initialize the map
 const map = L.map('map', { center: [47.6205, 6.3498], zoom: 10, zoomControl: false });
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot - HSN | OSM', maxNativeZoom: 19, maxZoom: 22}).addTo(map);
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+  attribution: 'Erwan Vinot - HSN | OSM',
+  maxNativeZoom: 19,
+  maxZoom: 22
+}).addTo(map);
 
 // Create Panes
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
@@ -58,18 +62,23 @@ const updatePreviewMarker = (e) => {
   const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
   if (!roadsLayer) return;
 
+  const maxDistance = 50; // in pixels
   let closestPoint = null;
   let closestDistance = Infinity;
   roadsLayer.eachLayer(layer => {
-    const latlng = L.GeometryUtil.closest(map, layer, e.latlng);
-    const distance = e.latlng.distanceTo(latlng);
-    if (distance < closestDistance) {
-      closestDistance = distance;
-      closestPoint = latlng;
-    }
+    const latlngs = layer.getLatLngs();
+    latlngs.forEach(latlng => {
+      const point = map.latLngToContainerPoint(latlng);
+      const cursor = map.latLngToContainerPoint(e.latlng);
+      const distance = point.distanceTo(cursor);
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestPoint = latlng;
+      }
+    });
   });
 
-  if (closestDistance <= 50) {
+  if (closestDistance <= maxDistance) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
   }
 };
