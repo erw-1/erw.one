@@ -2,6 +2,7 @@
 const SIMPLIFICATION_MIN_THRESHOLD = 0.001;
 const SIMPLIFICATION_MAX_THRESHOLD = 0.05;
 const ZOOM_REQUIREMENT = 14;
+const MOUSEMOVE_THROTTLE_MS = 100;
 
 // Map Initialization
 const map = L.map('map', {
