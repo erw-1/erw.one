@@ -78,7 +78,10 @@ const handleMouseMove = (e) => {
   if (map.getZoom() < ZOOM_REQUIREMENT) return;
 
   // Remove existing tooltips
-  if (highlightedTooltip) map.removeLayer(highlightedTooltip);
+  if (highlightedTooltip) {
+    map.removeLayer(highlightedTooltip);
+    highlightedTooltip = null;
+  }
   closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
   closestPrTooltips = [];
 
@@ -117,8 +120,11 @@ const handleMouseMove = (e) => {
     );
   });
 
-  if (previewPoint) previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
-  else previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.preview).addTo(map);
+  if (!previewPoint) {
+    previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.preview).addTo(map);
+  } else {
+    previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
+  }
 };
 
 const handleMapClick = (e) => {
@@ -155,7 +161,9 @@ const handleZoomEnd = () => {
   if (currentZoom < ZOOM_REQUIREMENT) {
     [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => map.removeLayer(layer));
   } else {
-    [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => layer.addTo(map));
+    [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => {
+      if (!map.hasLayer(layer)) layer.addTo(map);
+    });
   }
 
   map.removeLayer(routesLayer);
