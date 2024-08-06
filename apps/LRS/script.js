@@ -31,6 +31,8 @@ const simplifyGeometry = (data, zoom) => {
     return turf.simplify(data, { tolerance, highQuality: true });
 };
 
+const isValidCoord = (coord) => typeof coord === 'number' && !isNaN(coord);
+
 const getNearestPoint = (latlng) => {
     const point = turf.point([latlng.lng, latlng.lat]);
     let nearestPoint = null, minDistance = magnetismRange, nearestLayer = null;
@@ -67,6 +69,11 @@ const findClosestPRs = (point, routeId) => {
 };
 
 const calculateDistanceAlongRoad = (startPoint, endPoint, multiLine) => {
+    if (!isValidCoord(startPoint.lng) || !isValidCoord(startPoint.lat) || !isValidCoord(endPoint.lng) || !isValidCoord(endPoint.lat)) {
+        console.error('Invalid coordinates for distance calculation:', startPoint, endPoint);
+        return 0;
+    }
+
     const start = turf.point([startPoint.lng, startPoint.lat]);
     const end = turf.point([endPoint.lng, endPoint.lat]);
 
