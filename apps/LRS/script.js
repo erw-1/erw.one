@@ -99,5 +99,7 @@ map.on('zoomend', () => {
   }
   if (map.getZoom() >= 14) {
     map.on('mousemove', debounce(updatePreviewMarker, 50));
+  } else {
+    map.off('mousemove', debounce(updatePreviewMarker, 50));
   }
 });
