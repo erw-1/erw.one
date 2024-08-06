@@ -50,7 +50,7 @@ const togglePaneVisibility = (paneName, zoomLevel) => {
 };
 
 // Function to find the closest PR distances from the previewed point along the road
-const findClosestPRs = (previewPoint, roadLine, routeId) => {
+const findClosestPRs = (point, routeId) => {
   const prPoints = [];
   window.pointsLayer.eachLayer(layer => {
     if (layer.feature.properties.route_pr === routeId) {
@@ -67,8 +67,8 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
   prPoints.forEach(pr => {
     const prPoint = pr.point;
     const prLayer = pr.layer;
-    const distanceAhead = turf.length(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
-    const distanceBehind = turf.length(turf.lineSlice(prPoint, previewPoint, roadLine), { units: 'meters' });
+    const distanceAhead = turf.length(turf.lineSlice(point, prPoint, routeId), { units: 'meters' });
+    const distanceBehind = turf.length(turf.lineSlice(prPoint, point, routeId), { units: 'meters' });
 
     if (distanceAhead < minDistanceAhead) {
       minDistanceAhead = distanceAhead;
