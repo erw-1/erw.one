@@ -1,11 +1,7 @@
 //// Config
 // Initialize the map
 const map = L.map('map', { center: [47.6205, 6.3498], zoom: 10, zoomControl: false });
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-  attribution: 'Erwan Vinot - HSN | OSM',
-  maxNativeZoom: 19,
-  maxZoom: 22
-}).addTo(map);
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot - HSN | OSM', maxNativeZoom: 19, maxZoom: 22}).addTo(map);
 
 // Create Panes, bottom to top
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
@@ -17,7 +13,13 @@ const styles = {
   route: { color: "#4d4d4d", weight: 2, opacity: 1, pane: 'routesPane', renderer: L.canvas() },
   point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPane' },
   preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
-  selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' }
+  selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
+  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' }
+};
+
+// Define HTML content for tooltips
+const htmlContent = {
+  tooltip: (roadName) => `<b>${roadName}</b>`
 };
 
 //// Optimization Functions
@@ -53,7 +55,7 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
     });
 };
 
-// Function to update the preview marker with a tooltip
+// Function to update the preview marker when mouse is close to a road with a tooltip
 let previewMarker;
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
@@ -82,7 +84,7 @@ const updatePreviewMarker = (e) => {
   if (closestPoint) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
-    previewMarker.bindTooltip(`<b>${roadName}</b>`).openTooltip(); // Add tooltip with road name
+    previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip(); // Add tooltip with road name
   } else {
     map.getContainer().style.cursor = ''; // Reset cursor
   }
