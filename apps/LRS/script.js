@@ -92,14 +92,12 @@ const initializeMap = () => {
 initializeMap(); // Load initial layers
 
 // Update routes layer and pane visibility on zoom end
-if (map.getZoom() >= 14) { map.on('zoomend', () => {
+map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and update routes layer
   if (map.getZoom() >= 13 && map.getZoom() <= 15) {
     togglePaneVisibility('pointsPane', 14);  // Handle points pane visibility only when necessary
   }
-}});
+});
 
 // Add debounced mousemove event to update the preview marker
-if (map.getZoom() >= 14) {
-  map.on('mousemove', debounce(updatePreviewMarker, 100));
-};
+if (map.getZoom() >= 14) {map.on('mousemove', debounce(updatePreviewMarker, 100));};
