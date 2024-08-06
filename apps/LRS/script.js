@@ -33,7 +33,7 @@ const styles = {
   route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
   highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
   point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
-  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' }),
+  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
   tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
   prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' },
   popup: { closeButton: true }
@@ -191,23 +191,17 @@ const handleZoomEnd = () => {
 
 // Fetch Data and Initialize Layers
 const initializeMap = async () => {
-  try {
-    const routesResponse = await fetch('data/routes70.geojson');
-    if (!routesResponse.ok) throw new Error('Network response was not ok');
-    originalData = await routesResponse.json();
-    routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route }).addTo(map);
+  const routesResponse = await fetch('data/routes70.geojson');
+  originalData = await routesResponse.json();
+  routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route }).addTo(map);
 
-    const prResponse = await fetch('data/pr70.geojson');
-    if (!prResponse.ok) throw new Error('Network response was not ok');
-    const prData = await prResponse.json();
-    pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
+  const prResponse = await fetch('data/pr70.geojson');
+  const prData = await prResponse.json();
+  pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
 
-    map.on('mousemove', handleMouseMove);
-    map.on('click', handleMapClick);
-    map.on('zoomend', handleZoomEnd);
-  } catch (error) {
-    console.error('Error fetching geojson:', error);
-  }
+  map.on('mousemove', handleMouseMove);
+  map.on('click', handleMapClick);
+  map.on('zoomend', handleZoomEnd);
 };
 
 initializeMap();
