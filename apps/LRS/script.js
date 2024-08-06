@@ -47,8 +47,7 @@ const getNearestPoint = (latlng) => {
     return { nearestPoint, nearestLayer };
 };
 
-const findClosestPRs = (previewPoint, routeId) => {
-    const point = turf.point([previewPoint[0], previewPoint[1]]);
+const findClosestPRs = (point, routeId) => {
     const prPoints = [];
     pointsLayer.eachLayer(layer => {
         if (layer.feature.properties.route_pr === routeId) {
@@ -61,8 +60,8 @@ const findClosestPRs = (previewPoint, routeId) => {
     let closestAhead = null, closestBehind = null;
     prPoints.forEach(pr => {
         const prLatLng = pr.layer.getLatLng();
-        if (prLatLng.lng > previewPoint[0] && !closestAhead) closestAhead = pr;
-        else if (prLatLng.lng < previewPoint[0] && !closestBehind) closestBehind = pr;
+        if (prLatLng.lng > point[0] && !closestAhead) closestAhead = pr;
+        else if (prLatLng.lng < point[0] && !closestBehind) closestBehind = pr;
     });
     return [closestAhead, closestBehind].filter(Boolean);
 };
@@ -158,10 +157,33 @@ const handleMouseMove = throttle((e) => {
 
 const handleMapClick = (e) => {
     if (map.getZoom() < zoomRequirement) return;
-    const { nearestPoint } = getNearestPoint(e.latlng);
+    const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
     if (nearestPoint) {
-        L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.point("#00ff00")).addTo(clickedPointsLayer);
-        if (previewPoint) map.removeLayer(previewPoint);
+        const clickedPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.point("#00ff00"))
+            .addTo(clickedPointsLayer);
+
+        const roadName = nearestLayer.feature.properties.nom_route;
+        const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
+        const multiLine = nearestLayer.feature.geometry;
+
+        if (closestPRs.length === 2) {
+            const distanceAhead = calculateDistanceAlongRoad(nearestPoint.geometry.coordinates, closestPRs[0].layer.getLatLng(), multiLine);
+            const distanceBehind = calculateDistanceAlongRoad(nearestPoint.geometry.coordinates, closestPRs[1].layer.getLatLng(), multiLine);
+
+            const popupContent = `
+                <b>${roadName}</b><br>
+                Point à ${distanceAhead.toFixed(1)} m du PR ${closestPRs[0].properties.num_pr}.<br>
+                Et à ${distanceBehind.toFixed(1)} m du PR ${closestPRs[1].properties.num_pr}.
+            `;
+            const popup = L.popup({ closeButton: true })
+                .setContent(popupContent)
+                .setLatLng(clickedPoint.getLatLng())
+                .openOn(map);
+
+            popup.on('remove', () => {
+                clickedPointsLayer.removeLayer(clickedPoint);
+            });
+        }
     }
 };
 
