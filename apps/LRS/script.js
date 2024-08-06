@@ -66,8 +66,8 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
 
   prPoints.forEach(pr => {
     const prPoint = pr.point;
-    const distanceAhead = turf.lineDistance(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
-    const distanceBehind = turf.lineDistance(turf.lineSlice(prPoint, previewPoint, roadLine), { units: 'meters' });
+    const distanceAhead = turf.length(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
+    const distanceBehind = turf.length(turf.lineSlice(prPoint, previewPoint, roadLine), { units: 'meters' });
 
     if (distanceAhead < minDistanceAhead) {
       minDistanceAhead = distanceAhead;
