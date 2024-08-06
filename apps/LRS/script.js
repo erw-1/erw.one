@@ -65,17 +65,18 @@ const updatePreviewMarker = (e) => {
   const maxDistance = 50; // in pixels
   let closestPoint = null;
   let closestDistance = Infinity;
+
   roadsLayer.eachLayer(layer => {
-    const latlngs = layer.getLatLngs();
-    latlngs.forEach(latlng => {
-      const point = map.latLngToContainerPoint(latlng);
-      const cursor = map.latLngToContainerPoint(e.latlng);
-      const distance = point.distanceTo(cursor);
-      if (distance < closestDistance) {
-        closestDistance = distance;
-        closestPoint = latlng;
-      }
-    });
+    const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
+    const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
+    const snapped = turf.nearestPointOnLine(line, cursorPoint);
+    const snappedLatLng = L.latLng(snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]);
+    const distance = map.latLngToContainerPoint(snappedLatLng).distanceTo(map.latLngToContainerPoint(e.latlng));
+
+    if (distance < closestDistance) {
+      closestDistance = distance;
+      closestPoint = snappedLatLng;
+    }
   });
 
   if (closestDistance <= maxDistance) {
