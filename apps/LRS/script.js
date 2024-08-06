@@ -1,11 +1,21 @@
 // Constants
-const SIMPLIFICATION_THRESHOLD = 0.1;
+const SIMPLIFICATION_THRESHOLD = 0.01;
 const MAGNETISM_RANGE = 600;
 const ZOOM_REQUIREMENT = 12;
 
 // Map Initialization
-const map = L.map('map', {center: [47.6205, 6.3498],zoom: 10,zoomControl: false});
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot | HSN | OSM',maxNativeZoom: 19,maxZoom: 22}).addTo(map);
+const map = L.map('map', {
+  center: [47.6205, 6.3498],
+  zoom: 10,
+  zoomControl: false,
+  preferCanvas: true // Use Canvas renderer
+});
+
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+  attribution: 'Erwan Vinot | HSN | OSM',
+  maxNativeZoom: 19,
+  maxZoom: 22
+}).addTo(map);
 
 // Create Panes
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
@@ -167,7 +177,7 @@ const handleZoomEnd = () => {
   }
 
   map.removeLayer(routesLayer);
-  routesLayer = L.geoJson(data, { style: styles.route }).addTo(map);
+  routesLayer = L.geoJson(data, { style: styles.route, renderer: L.canvas() }).addTo(map); // Use Canvas renderer
 };
 
 // Fetch Data and Initialize Layers
@@ -178,10 +188,13 @@ const initializeMap = async () => {
   ]);
 
   originalData = await routesResponse.json();
-  routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route }).addTo(map);
+  routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route, renderer: L.canvas() }).addTo(map); // Use Canvas renderer
 
   const prData = await prResponse.json();
-  pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
+  pointsLayer = L.geoJson(prData, {
+    pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")),
+    renderer: L.canvas() // Use Canvas renderer
+  }).addTo(map);
 
   map.on('mousemove', handleMouseMove);
   map.on('click', handleMapClick);
