@@ -79,29 +79,8 @@ const findClosestPRs = (point, routeId) => {
   return [closestAhead, closestBehind].filter(Boolean);
 };
 
-const throttle = (func, limit) => {
-  let lastFunc;
-  let lastRan;
-  return function() {
-    const context = this;
-    const args = arguments;
-    if (!lastRan) {
-      func.apply(context, args);
-      lastRan = Date.now();
-    } else {
-      clearTimeout(lastFunc);
-      lastFunc = setTimeout(() => {
-        if ((Date.now() - lastRan) >= limit) {
-          func.apply(context, args);
-          lastRan = Date.now();
-        }
-      }, limit - (Date.now() - lastRan));
-    }
-  };
-};
-
 // Event Handlers
-const handleMouseMove = throttle((e) => {
+const handleMouseMove = (e) => {
   if (map.getZoom() < ZOOM_REQUIREMENT) return;
 
   // Remove existing tooltips
@@ -146,7 +125,7 @@ const handleMouseMove = throttle((e) => {
 
   if (previewPoint) previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
   else previewPoint = L.circleMarker([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]], styles.preview).addTo(map);
-}, 100);
+};
 
 const handleMapClick = (e) => {
   if (map.getZoom() < ZOOM_REQUIREMENT) return;
