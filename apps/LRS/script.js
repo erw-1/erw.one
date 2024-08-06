@@ -1,11 +1,7 @@
 //// Config
 // Initialize the map
 const map = L.map('map', { center: [47.6205, 6.3498], zoom: 10, zoomControl: false });
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-  attribution: 'HSN | OSM',
-  maxNativeZoom: 19,
-  maxZoom: 22
-}).addTo(map);
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot - HSN | OSM', maxNativeZoom: 19, maxZoom: 22}).addTo(map);
 
 // Create Panes
 ['routesPane', 'pointsPane'].forEach((pane, index) => {
