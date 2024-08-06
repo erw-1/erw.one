@@ -149,6 +149,18 @@ const selectPreviewMarker = (e) => {
   }
 };
 
+// GeoJSON layer addition function
+const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) => {
+  fetch(url)
+    .then(response => response.json())
+    .then(data => {
+      if (simplify) data = simplifyGeometry(data, 1 / Math.pow(2, map.getZoom())); // Simplify geometry if needed
+      const layer = L.geoJson(data, { style, pointToLayer }).addTo(map);
+      if (layerVar && window[layerVar]) map.removeLayer(window[layerVar]); // Remove duplicates
+      window[layerVar] = layer;
+    });
+};
+
 // Function to initialize the map with data
 const initializeMap = () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and add routes layer
