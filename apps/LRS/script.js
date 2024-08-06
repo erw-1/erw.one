@@ -23,7 +23,7 @@ const styles = {
 
 // Define HTML content for tooltips
 const htmlContent = {
-  tooltip: (roadName, prDistance) => `<b>${roadName}</b><br>Closest PR Distance: ${prDistance} meters`
+  tooltip: (roadName, prDistances) => `<b>${roadName}</b><br>${prDistances}`
 };
 
 //// Optimization Functions
@@ -59,23 +59,32 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
     });
 };
 
-// Function to find the closest pr70 point distance from the previewed point
-const findClosestPrPointDistance = (previewPoint, roadName, prLayer) => {
-  let closestDistance = Infinity;
+// Function to find the closest PR distances from the previewed point along the road
+const findPrDistancesAlongRoad = (previewPoint, roadLine, prLayer) => {
+  let closestPRs = { before: null, after: null };
+  let closestDistances = { before: Infinity, after: Infinity };
 
   prLayer.eachLayer(layer => {
     const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
     const route_pr = layer.feature.properties.route_pr;
 
-    if (route_pr === roadName) {
-      const distance = turf.distance(previewPoint, prPoint, { units: 'meters' });
-      if (distance < closestDistance) {
-        closestDistance = distance;
+    const pointOnLine = turf.nearestPointOnLine(roadLine, prPoint);
+    const distanceAlongLine = turf.lineDistance(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
+
+    if (route_pr === roadLine.properties.nom_route) {
+      const prDistance = turf.distance(previewPoint, prPoint, { units: 'meters' });
+
+      if (pointOnLine.geometry.coordinates[0] < previewPoint.geometry.coordinates[0] && prDistance < closestDistances.before) {
+        closestDistances.before = prDistance;
+        closestPRs.before = layer;
+      } else if (pointOnLine.geometry.coordinates[0] > previewPoint.geometry.coordinates[0] && prDistance < closestDistances.after) {
+        closestDistances.after = prDistance;
+        closestPRs.after = layer;
       }
     }
   });
 
-  return closestDistance;
+  return closestDistances;
 };
 
 // Function to update the preview marker with a tooltip
@@ -106,10 +115,13 @@ const updatePreviewMarker = (e) => {
   });
 
   if (closestPoint) {
-    const prDistance = findClosestPrPointDistance(turf.point([closestPoint.lng, closestPoint.lat]), roadName, prLayer);
+    const roadLine = turf.lineString(roadsLayer.getLayers()[0].getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
+    const prDistances = findPrDistancesAlongRoad(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, prLayer);
+    const prDistancesString = `Before: ${prDistances.before} meters, After: ${prDistances.after} meters`;
+
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
-    previewMarker.bindTooltip(htmlContent.tooltip(roadName, prDistance), styles.tooltip).openTooltip(); // Add tooltip with road name and PR distance
+    previewMarker.bindTooltip(htmlContent.tooltip(roadName, prDistancesString), styles.tooltip).openTooltip(); // Add tooltip with road name and PR distances
   } else {
     map.getContainer().style.cursor = ''; // Reset cursor
   }
