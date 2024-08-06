@@ -9,7 +9,7 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 
 // Define styles
 const styles = {
-  route: { color: "#4d4d4d", weight: 2, opacity: 1, pane: 'routesPane' },
+  route: { color: "#4d4d4d", weight: 2, opacity: 1, pane: 'routesPane', renderer: L.canvas() },
   point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPane' }
 };
 
@@ -18,8 +18,8 @@ const simplifyGeometry = (geojson, tolerance) => {
   return turf.simplify(geojson, { tolerance: tolerance, highQuality: false });
 };
 
-// Function to add GeoJSON layers to the map with optional canvas rendering
-const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, useCanvas = false) => {
+// Function to add GeoJSON layers to the map
+const addGeoJsonLayer = (url, style, pointToLayer, simplify = false) => {
   fetch(url)
     .then(response => response.json())
     .then(data => {
@@ -27,29 +27,30 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, useCanvas =
         const tolerance = 1 / Math.pow(2, map.getZoom()); // Adjust tolerance based on zoom level
         data = simplifyGeometry(data, tolerance);
       }
-      const options = { style, pointToLayer };
-      if (useCanvas) {
-        options.renderer = L.canvas();
-      }
-      L.geoJson(data, options).addTo(map);
+      L.geoJson(data, { style, pointToLayer }).addTo(map);
     })
     .catch(error => console.error('Error loading GeoJSON data:', error));
 };
 
-// Initialize the map with data
-const initializeMap = () => {
-  addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, true); // true = simplify the routes layer, useCanvas = true
-  addGeoJsonLayer('data/pr70.geojson', null, (feature, latlng) => L.circleMarker(latlng, styles.point));
-};
-
-// Update routes layer on zoom end to simplify geometries
-map.on('zoomend', () => {
+// Function to remove existing routes layer
+const removeRoutesLayer = () => {
   map.eachLayer((layer) => {
     if (layer.options && layer.options.pane === 'routesPane') {
       map.removeLayer(layer);
     }
   });
-  addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, true); // Simplify the routes layer on zoom end, useCanvas = true
+};
+
+// Initialize the map with data
+const initializeMap = () => {
+  addGeoJsonLayer('data/routes70.geojson', styles.route, null, true); // true = simplify the routes layer
+  addGeoJsonLayer('data/pr70.geojson', null, (feature, latlng) => L.circleMarker(latlng, styles.point));
+};
+
+// Update routes layer on zoom end to simplify geometries
+map.on('zoomend', () => {
+  removeRoutesLayer(); // Remove existing routes layer
+  addGeoJsonLayer('data/routes70.geojson', styles.route, null, true); // Simplify the routes layer on zoom end
 });
 
 // Call the initialize function
