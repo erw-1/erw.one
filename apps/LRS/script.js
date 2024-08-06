@@ -49,40 +49,48 @@ const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
 
-//// Map content Functions
-// GeoJSON layer addition function
-const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) => {
-  fetch(url)
-    .then(response => response.json())
-    .then(data => {
-      if (simplify) data = simplifyGeometry(data, 1 / Math.pow(2, map.getZoom())); // Simplify geometry if needed
-      const layer = L.geoJson(data, { style, pointToLayer }).addTo(map);
-      if (layerVar && window[layerVar]) map.removeLayer(window[layerVar]); // Remove duplicates
-      window[layerVar] = layer;
-    });
-};
-
 // Function to find the closest PR distances from the previewed point along the road
-const findClosestPRs = (point, routeId) => {
+const findClosestPRs = (previewPoint, roadLine, routeId) => {
   const prPoints = [];
   window.pointsLayer.eachLayer(layer => {
     if (layer.feature.properties.route_pr === routeId) {
       const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-      prPoints.push({ layer, distance: turf.distance(point, prPoint, { units: 'meters' }), properties: layer.feature.properties });
+      prPoints.push({ layer, point: prPoint, properties: layer.feature.properties });
     }
   });
-  prPoints.sort((a, b) => a.distance - b.distance);
 
-  const closestAhead = prPoints.find(pr => pr.layer.getLatLng().lng > point.geometry.coordinates[0]);
-  const closestBehind = prPoints.find(pr => pr.layer.getLatLng().lng < point.geometry.coordinates[0]);
+  let closestAhead = null;
+  let closestBehind = null;
+  let minDistanceAhead = Infinity;
+  let minDistanceBehind = Infinity;
 
-  return [closestAhead, closestBehind].filter(Boolean);
+  prPoints.forEach(pr => {
+    const prPoint = pr.point;
+    const prLayer = pr.layer;
+    const distanceAhead = turf.length(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
+    const distanceBehind = turf.length(turf.lineSlice(prPoint, previewPoint, roadLine), { units: 'meters' });
+
+    if (distanceAhead < minDistanceAhead) {
+      minDistanceAhead = distanceAhead;
+      closestAhead = { prLayer, properties: pr.properties, distance: distanceAhead };
+    }
+
+    if (distanceBehind < minDistanceBehind) {
+      minDistanceBehind = distanceBehind;
+      closestBehind = { prLayer, properties: pr.properties, distance: distanceBehind };
+    }
+  });
+
+  return { closestAhead, closestBehind };
 };
 
 // Function to update the preview marker with a tooltip
 let previewMarker;
+let prTooltips = [];
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
+  prTooltips.forEach(tooltip => map.removeLayer(tooltip));
+  prTooltips = [];
 
   const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
   if (!roadsLayer) return;
@@ -92,6 +100,7 @@ const updatePreviewMarker = (e) => {
   let closestPoint = null;
   let closestDistance = Infinity;
   let roadName = '';
+  let roadLine = null;
 
   roadsLayer.eachLayer(layer => {
     const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
@@ -102,6 +111,7 @@ const updatePreviewMarker = (e) => {
       closestDistance = distance;
       closestPoint = L.latLng(snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]);
       roadName = layer.feature.properties.nom_route; // Road name field
+      roadLine = line;
     }
   });
 
@@ -109,15 +119,23 @@ const updatePreviewMarker = (e) => {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
 
-    const closestPRs = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadName);
+    const { closestAhead, closestBehind } = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, roadName);
 
     previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
 
-    closestPRs.forEach(pr => {
-      L.circleMarker(pr.layer.getLatLng(), styles.highlight)
-        .bindTooltip(htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance), styles.prTooltip)
+    if (closestAhead) {
+      const prMarkerAhead = L.circleMarker(closestAhead.prLayer.getLatLng(), styles.highlight)
+        .bindTooltip(htmlContent.prTooltipContent(closestAhead.properties.num_pr, closestAhead.distance), styles.prTooltip)
         .addTo(map);
-    });
+      prTooltips.push(prMarkerAhead);
+    }
+
+    if (closestBehind) {
+      const prMarkerBehind = L.circleMarker(closestBehind.prLayer.getLatLng(), styles.highlight)
+        .bindTooltip(htmlContent.prTooltipContent(closestBehind.properties.num_pr, closestBehind.distance), styles.prTooltip)
+        .addTo(map);
+      prTooltips.push(prMarkerBehind);
+    }
   } else {
     map.getContainer().style.cursor = ''; // Reset cursor
   }
