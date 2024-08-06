@@ -8,7 +8,8 @@ const DEBOUNCE_DELAY = 100;
 const map = L.map('map', {
   center: [47.6205, 6.3498],
   zoom: 10,
-  zoomControl: false
+  zoomControl: false,
+  renderer: L.canvas() // Ensure the map itself uses canvas rendering
 });
 L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
   attribution: 'Erwan Vinot | HSN | OSM',
@@ -23,16 +24,16 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 
 // Layer Groups
 let routesLayer, pointsLayer, previewPoint, highlightedLayer, highlightedTooltip, originalData;
-const closestPrLayer = L.layerGroup().addTo(map);
-const clickedPointsLayer = L.layerGroup().addTo(map);
+const closestPrLayer = L.layerGroup({ renderer: L.canvas() }).addTo(map);
+const clickedPointsLayer = L.layerGroup({ renderer: L.canvas() }).addTo(map);
 let closestPrTooltips = [];
 
 // Styles and HTML content
 const styles = {
-  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
-  highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
-  point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
-  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
+  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane', renderer: L.canvas() },
+  highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane', renderer: L.canvas() },
+  point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane', renderer: L.canvas() }),
+  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane', renderer: L.canvas() },
   tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
   prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' },
   popup: { closeButton: true }
@@ -197,7 +198,7 @@ const initializeMap = async () => {
   routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route, renderer: L.canvas() }).addTo(map);
 
   const prData = await prResponse.json();
-  pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
+  pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")), renderer: L.canvas() }).addTo(map);
 
   map.on('mousemove', handleMouseMove);
   map.on('click', handleMapClick);
