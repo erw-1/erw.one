@@ -4,17 +4,8 @@ const MAGNETISM_RANGE = 600;
 const ZOOM_REQUIREMENT = 12;
 
 // Map Initialization
-const map = L.map('map', {
-  center: [47.6205, 6.3498],
-  zoom: 10,
-  zoomControl: false
-});
-
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-  attribution: 'HSN | OSM',
-  maxNativeZoom: 19,
-  maxZoom: 22
-}).addTo(map);
+const map = L.map('map', {center: [47.6205, 6.3498],zoom: 10,zoomControl: false});
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot | HSN | OSM',maxNativeZoom: 19,maxZoom: 22}).addTo(map);
 
 // Create Panes
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
@@ -42,11 +33,7 @@ const styles = {
 const htmlContent = {
   roadName: (roadName) => String(roadName),
   prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
-  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `
-    <b>${roadName}</b><br>
-    Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>
-    Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.
-  `
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
 };
 
 // Utility Functions
