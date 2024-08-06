@@ -30,10 +30,9 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
     .then(data => {
       if (simplify) data = simplifyGeometry(data, 1 / Math.pow(2, map.getZoom())); // Simplify geometry if needed
       const layer = L.geoJson(data, { style, pointToLayer }).addTo(map);
-      if (layerVar && window[layerVar]) map.removeLayer(window[layerVar]);
+      if (layerVar && window[layerVar]) map.removeLayer(window[layerVar]); // Remove duplicates
       window[layerVar] = layer;
     })
-    .catch(console.error);
 };
 
 // Function to initialize the map with data
@@ -49,7 +48,7 @@ initializeMap(); // Load initial layers
 // Update routes layer and pane visibility on zoom end
 map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and update routes layer
-  if (currentZoom >= 13 && currentZoom <= 15) {
+  if (map.getZoom() >= 13 && map.getZoom() <= 15) {
     togglePaneVisibility('pointsPane', 14);  // Handle points pane visibility only when necessary
   }
 });
