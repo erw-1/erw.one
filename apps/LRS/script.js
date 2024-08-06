@@ -18,15 +18,18 @@ const styles = {
   point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPane' },
   preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
   selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
-  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' }
+  highlight: { radius: 3, fillColor: "#ffa500", color: "none", fillOpacity: 1, pane: 'previewPane' },
+  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
+  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' }
 };
 
 // Define HTML content for tooltips
 const htmlContent = {
-  tooltip: (roadName, prDistances) => `<b>${roadName}</b><br>${prDistances}`
+  tooltip: (roadName) => `<b>${roadName}</b>`,
+  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`
 };
 
-//// Optimization Functions
+// Utility Functions
 // Geometry simplification
 const simplifyGeometry = (geojson, tolerance) => turf.simplify(geojson, { tolerance: tolerance, highQuality: false });
 
@@ -60,30 +63,20 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
 };
 
 // Function to find the closest PR distances from the previewed point along the road
-const findPrDistancesAlongRoad = (previewPoint, roadLine, prLayer) => {
-  let closestDistances = { before: Infinity, after: Infinity };
-
-  prLayer.eachLayer(layer => {
-    const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-    const route_pr = layer.feature.properties.route_pr;
-
-    if (route_pr === roadLine.properties.nom_route) {
-      const lineSliceBefore = turf.lineSlice(previewPoint, prPoint, roadLine);
-      const lineSliceAfter = turf.lineSlice(prPoint, previewPoint, roadLine);
-      const distanceBefore = turf.length(lineSliceBefore, { units: 'meters' });
-      const distanceAfter = turf.length(lineSliceAfter, { units: 'meters' });
-
-      if (distanceBefore < closestDistances.before) {
-        closestDistances.before = distanceBefore;
-      }
-
-      if (distanceAfter < closestDistances.after) {
-        closestDistances.after = distanceAfter;
-      }
+const findClosestPRs = (point, routeId) => {
+  const prPoints = [];
+  window.pointsLayer.eachLayer(layer => {
+    if (layer.feature.properties.route_pr === routeId) {
+      const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
+      prPoints.push({ layer, distance: turf.distance(point, prPoint, { units: 'meters' }), properties: layer.feature.properties });
     }
   });
+  prPoints.sort((a, b) => a.distance - b.distance);
 
-  return closestDistances;
+  const closestAhead = prPoints.find(pr => pr.layer.getLatLng().lng > point.geometry.coordinates[0]);
+  const closestBehind = prPoints.find(pr => pr.layer.getLatLng().lng < point.geometry.coordinates[0]);
+
+  return [closestAhead, closestBehind].filter(Boolean);
 };
 
 // Function to update the preview marker with a tooltip
@@ -92,8 +85,7 @@ const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
 
   const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
-  const prLayer = window.pointsLayer; // Assuming pointsLayer is the layer with pr70 data
-  if (!roadsLayer || !prLayer) return;
+  if (!roadsLayer) return;
 
   const maxDistance = 200; // in meters
   const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
@@ -114,13 +106,18 @@ const updatePreviewMarker = (e) => {
   });
 
   if (closestPoint) {
-    const roadLine = turf.lineString(roadsLayer.getLayers()[0].getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
-    const prDistances = findPrDistancesAlongRoad(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, prLayer);
-    const prDistancesString = `Before: ${prDistances.before.toFixed(1)} meters, After: ${prDistances.after.toFixed(1)} meters`;
-
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
-    previewMarker.bindTooltip(htmlContent.tooltip(roadName, prDistancesString), styles.tooltip).openTooltip(); // Add tooltip with road name and PR distances
+
+    const closestPRs = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadName);
+
+    previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
+
+    closestPRs.forEach(pr => {
+      L.circleMarker(pr.layer.getLatLng(), styles.highlight)
+        .bindTooltip(htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance), styles.prTooltip)
+        .addTo(map);
+    });
   } else {
     map.getContainer().style.cursor = ''; // Reset cursor
   }
