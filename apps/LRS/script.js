@@ -14,16 +14,21 @@ const styles = {
   point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPane' }
 };
 
+
 //// Functions
 // Geometry simplification function
 const simplifyGeometry = (geojson, tolerance) => {
   return turf.simplify(geojson, { tolerance: tolerance, highQuality: false });
 };
 
-// Function to toggle points pane visibility based on zoom level
-const togglePointsPaneVisibility = () => {
-  const pointsPane = map.getPane('pointsPane');
-  pointsPane.style.display = map.getZoom() >= 14 ? 'block' : 'none';
+// Function to toggle pane visibility based on zoom level
+const togglePaneVisibility = (paneName, zoomLevel) => {
+  const pane = map.getPane(paneName);
+  if (map.getZoom() >= zoomLevel) {
+    pane.style.display = 'block'; // Show pane if zoom level is equal or higher
+  } else {
+    pane.style.display = 'none'; // Hide pane if zoom level is lower
+  }
 };
 
 // GeoJSON layer addition function
@@ -37,7 +42,7 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
       }
       // Add new layer to the map
       const layer = L.geoJson(data, { style, pointToLayer }).addTo(map);
-      // Manage global layer reference : if already exists, remove the old one
+      // Manage global layer reference: if already exists, remove the old one
       if (layerVar) {
         if (window[layerVar]) {
           map.removeLayer(window[layerVar]);
@@ -45,25 +50,23 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
         window[layerVar] = layer;
       }
     })
+    .catch(error => console.error('Error loading GeoJSON data:', error));
 };
 
 // Function to initialize the map with data
 const initializeMap = () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and add routes layer
+  addGeoJsonLayer('data/pr70.geojson', null, (feature, latlng) => L.circleMarker(latlng, styles.point), false, 'pointsLayer'); // Add points layer
+  togglePaneVisibility('pointsPane', 14); // Handle points pane visibility based on initial zoom level
 };
 
+
+//// Interactions
 // Call the initialize function to load initial layers
 initializeMap();
 
-//// Interactions
-// Ensure correct initial visibility of points pane on map load
-map.on('load', togglePointsPaneVisibility);
-
-// Update routes layer and points pane visibility on zoom end
+// Update routes layer and pane visibility on zoom end
 map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and update routes layer
-  togglePointsPaneVisibility(); // Toggle points pane visibility
-  if (map.getZoom() >= 14 && !window.pointsLayer) {
-    addGeoJsonLayer('data/pr70.geojson', null, (feature, latlng) => L.circleMarker(latlng, styles.point), false, 'pointsLayer'); // Add points layer if not already added
-  }
+  togglePaneVisibility('pointsPane', 14); // Handle points pane visibility
 });
