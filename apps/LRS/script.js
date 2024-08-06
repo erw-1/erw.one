@@ -1,14 +1,14 @@
 // Constants
-const SIMPLIFICATION_THRESHOLD = 0.01;
+const SIMPLIFICATION_THRESHOLD = 1;
 const MAGNETISM_RANGE = 600;
-const ZOOM_REQUIREMENT = 12;
+const ZOOM_REQUIREMENT = 15;
 
 // Map Initialization
 const map = L.map('map', {
   center: [47.6205, 6.3498],
   zoom: 10,
   zoomControl: false,
-  preferCanvas: true // Use Canvas renderer
+  // preferCanvas: true // Use Canvas renderer
 });
 
 L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
