@@ -46,6 +46,7 @@ const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
 
+// Function to find the closest PRs from the previewed point along the road
 const findClosestPRs = (previewPoint, roadLine, routeId) => {
   const prPoints = [];
   window.pointsLayer.eachLayer(layer => {
@@ -55,31 +56,18 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
     }
   });
 
-  let closestAhead = null;
-  let closestBehind = null;
-  let minDistanceAhead = Infinity;
-  let minDistanceBehind = Infinity;
+  const distances = prPoints.map(pr => ({
+    prLayer: pr.layer,
+    distance: turf.length(turf.lineSlice(previewPoint, pr.point, roadLine), { units: 'meters' }),
+    properties: pr.properties
+  }));
 
-  prPoints.forEach(pr => {
-    const prPoint = pr.point;
-    const prLayer = pr.layer;
-    const distanceAhead = turf.length(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
-    const distanceBehind = turf.length(turf.lineSlice(prPoint, previewPoint, roadLine), { units: 'meters' });
+  distances.sort((a, b) => a.distance - b.distance);
 
-    if (distanceAhead < minDistanceAhead) {
-      minDistanceAhead = distanceAhead;
-      closestAhead = { prLayer, distance: distanceAhead, properties: pr.properties };
-    }
-
-    if (distanceBehind < minDistanceBehind) {
-      minDistanceBehind = distanceBehind;
-      closestBehind = { prLayer, distance: distanceBehind, properties: pr.properties };
-    }
-  });
-
-  return { closestAhead, closestBehind };
+  return distances.slice(0, 2); // Return the two closest PRs
 };
 
+// Function to update the preview marker with a tooltip
 let previewMarker;
 let prTooltips = [];
 let highlightedPRs = [];
@@ -91,10 +79,10 @@ const updatePreviewMarker = (e) => {
   highlightedPRs.forEach(pr => map.removeLayer(pr));
   highlightedPRs = [];
 
-  const roadsLayer = window.routesLayer;
+  const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
   if (!roadsLayer) return;
 
-  const maxDistance = 200;
+  const maxDistance = 200; // in meters
   const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
   let closestPoint = null;
   let closestDistance = Infinity;
@@ -109,39 +97,32 @@ const updatePreviewMarker = (e) => {
     if (distance < closestDistance && distance <= maxDistance) {
       closestDistance = distance;
       closestPoint = L.latLng(snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]);
-      roadName = layer.feature.properties.nom_route;
+      roadName = layer.feature.properties.nom_route; // Road name field
       roadLine = line;
     }
   });
 
   if (closestPoint) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
-    map.getContainer().style.cursor = 'pointer';
+    map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
 
-    const { closestAhead, closestBehind } = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, roadName);
+    const closestPRs = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, roadName);
 
     previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
 
-    if (closestAhead) {
-      const prMarkerAhead = L.circleMarker(closestAhead.prLayer.getLatLng(), styles.highlight)
-        .bindTooltip(htmlContent.prTooltipContent(closestAhead.properties.num_pr, closestAhead.distance), styles.prTooltip)
+    closestPRs.forEach(pr => {
+      const prMarker = L.circleMarker(pr.prLayer.getLatLng(), styles.highlight)
+        .bindTooltip(htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance), styles.prTooltip)
         .addTo(map);
-      prTooltips.push(prMarkerAhead);
-      highlightedPRs.push(prMarkerAhead);
-    }
-
-    if (closestBehind) {
-      const prMarkerBehind = L.circleMarker(closestBehind.prLayer.getLatLng(), styles.highlight)
-        .bindTooltip(htmlContent.prTooltipContent(closestBehind.properties.num_pr, closestBehind.distance), styles.prTooltip)
-        .addTo(map);
-      prTooltips.push(prMarkerBehind);
-      highlightedPRs.push(prMarkerBehind);
-    }
+      prTooltips.push(prMarker);
+      highlightedPRs.push(prMarker);
+    });
   } else {
-    map.getContainer().style.cursor = '';
+    map.getContainer().style.cursor = ''; // Reset cursor
   }
 };
 
+// Function to handle click event to place the previewed marker
 const selectPreviewMarker = (e) => {
   if (previewMarker) {
     const latlng = previewMarker.getLatLng();
