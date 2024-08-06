@@ -98,4 +98,6 @@ map.on('zoomend', () => {
 });
 
 // Add debounced mousemove event to update the preview marker
-map.on('mousemove',  if (map.getZoom() >= 14) debounce(updatePreviewMarker, 100)});
+map.on('mousemove', () => {
+  if (map.getZoom() >= 14) debounce(updatePreviewMarker, 100);
+});
