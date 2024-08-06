@@ -98,6 +98,6 @@ map.on('zoomend', () => {
     togglePaneVisibility('pointsPane', 14);  // Handle points pane visibility only when necessary
   }
   if (map.getZoom() >= 14) {
-    map.on('mousemove', debounce(updatePreviewMarker, 100));
+    map.on('mousemove', debounce(updatePreviewMarker, 50));
   }
 });
