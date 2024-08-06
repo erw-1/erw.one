@@ -1,7 +1,7 @@
 // Constants
 const SIMPLIFICATION_THRESHOLD = 0.01;
-const MAGNETISM_RANGE = 600;
-const ZOOM_REQUIREMENT = 12;
+const MAGNETISM_RANGE = 300;
+const ZOOM_REQUIREMENT = 14;
 
 // Map Initialization
 const map = L.map('map', {center: [47.6205, 6.3498],zoom: 10,zoomControl: false});
