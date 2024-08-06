@@ -23,7 +23,7 @@ const styles = {
     route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
     highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
     point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
-    preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' }),
+    preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
     tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
     prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' },
     popup: { closeButton: true }
