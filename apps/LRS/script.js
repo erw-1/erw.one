@@ -57,7 +57,7 @@ let previewMarker;
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
 
-  const roadsLayer = window.routesLayer;
+  const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
   if (!roadsLayer) return;
 
   const maxDistance = 200; // in meters
@@ -67,12 +67,12 @@ const updatePreviewMarker = (e) => {
   roadsLayer.eachLayer(layer => {
     const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
     const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
-    const snapped = turf.nearestPointOnLine(line, cursorPoint, { units: 'meters' });
-    const distance = snapped.properties.dist;
+    const snapped = turf.nearestPointOnLine(line, cursorPoint);
+    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' });
 
     if (distance < closestDistance) {
       closestDistance = distance;
-      closestPoint = [snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]];
+      closestPoint = L.latLng(snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]);
     }
   });
 
