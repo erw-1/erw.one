@@ -20,7 +20,6 @@ const styles = {
   selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' }
 };
 
-
 //// Optimization Functions
 // Geometry simplification
 const simplifyGeometry = (geojson, tolerance) => turf.simplify(geojson, { tolerance: tolerance, highQuality: false });
@@ -41,7 +40,6 @@ const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
 
-
 //// Map content Functions
 // GeoJSON layer addition function
 const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) => {
@@ -55,7 +53,7 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
     });
 };
 
-// Function to update the preview marker
+// Function to update the preview marker with a tooltip
 let previewMarker;
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
@@ -64,30 +62,33 @@ const updatePreviewMarker = (e) => {
   if (!roadsLayer) return;
 
   const maxDistance = 200; // in meters
+  const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
   let closestPoint = null;
   let closestDistance = Infinity;
+  let roadName = '';
 
   roadsLayer.eachLayer(layer => {
     const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
-    const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
     const snapped = turf.nearestPointOnLine(line, cursorPoint);
     const distance = turf.distance(cursorPoint, snapped, { units: 'meters' });
 
-    if (distance < closestDistance) {
+    if (distance < closestDistance && distance <= maxDistance) {
       closestDistance = distance;
       closestPoint = L.latLng(snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]);
+      roadName = layer.feature.properties.nom_route; // Road name field
     }
   });
 
-  if (closestDistance <= maxDistance) {
+  if (closestPoint) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
+    previewMarker.bindTooltip(`<b>${roadName}</b>`).openTooltip(); // Add tooltip with road name
   } else {
     map.getContainer().style.cursor = ''; // Reset cursor
   }
 };
 
-// Function to handle click event
+// Function to handle click event to place the previewed marker
 const selectPreviewMarker = (e) => {
   if (previewMarker) {
     const latlng = previewMarker.getLatLng();
@@ -101,7 +102,6 @@ const initializeMap = () => {
   addGeoJsonLayer('data/pr70.geojson', null, (feature, latlng) => L.circleMarker(latlng, styles.point), false, 'pointsLayer'); // Add points layer
   togglePaneVisibility('pointsPane', 14); // Handle points pane visibility based on initial zoom level
 };
-
 
 //// Interactions
 // Load initial layers
@@ -117,4 +117,3 @@ map.on('zoomend', () => {
     map.on('click', selectPreviewMarker);
   }
 });
-
