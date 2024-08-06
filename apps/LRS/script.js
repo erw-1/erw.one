@@ -1,7 +1,11 @@
 //// Config
 // Initialize the map
 const map = L.map('map', { center: [47.6205, 6.3498], zoom: 10, zoomControl: false });
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot - HSN | OSM', maxNativeZoom: 19, maxZoom: 22}).addTo(map);
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
+  attribution: 'Erwan Vinot - HSN | OSM',
+  maxNativeZoom: 19,
+  maxZoom: 22
+}).addTo(map);
 
 // Create Panes, bottom to top
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
@@ -19,7 +23,7 @@ const styles = {
 
 // Define HTML content for tooltips
 const htmlContent = {
-  tooltip: (roadName) => `<b>${roadName}</b>`
+  tooltip: (roadName, prDistance) => `<b>${roadName}</b><br>Closest PR Distance: ${prDistance} meters`
 };
 
 //// Optimization Functions
@@ -55,13 +59,33 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
     });
 };
 
-// Function to update the preview marker when mouse is close to a road with a tooltip
+// Function to find the closest pr70 point distance from the previewed point
+const findClosestPrPointDistance = (previewPoint, roadName, prLayer) => {
+  let closestDistance = Infinity;
+
+  prLayer.eachLayer(layer => {
+    const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
+    const route_pr = layer.feature.properties.route_pr;
+
+    if (route_pr === roadName) {
+      const distance = turf.distance(previewPoint, prPoint, { units: 'meters' });
+      if (distance < closestDistance) {
+        closestDistance = distance;
+      }
+    }
+  });
+
+  return closestDistance;
+};
+
+// Function to update the preview marker with a tooltip
 let previewMarker;
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
 
   const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
-  if (!roadsLayer) return;
+  const prLayer = window.pointsLayer; // Assuming pointsLayer is the layer with pr70 data
+  if (!roadsLayer || !prLayer) return;
 
   const maxDistance = 200; // in meters
   const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
@@ -82,9 +106,10 @@ const updatePreviewMarker = (e) => {
   });
 
   if (closestPoint) {
+    const prDistance = findClosestPrPointDistance(turf.point([closestPoint.lng, closestPoint.lat]), roadName, prLayer);
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
-    previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip(); // Add tooltip with road name
+    previewMarker.bindTooltip(htmlContent.tooltip(roadName, prDistance), styles.tooltip).openTooltip(); // Add tooltip with road name and PR distance
   } else {
     map.getContainer().style.cursor = ''; // Reset cursor
   }
