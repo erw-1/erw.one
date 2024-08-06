@@ -16,8 +16,10 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 const styles = {
   route: { color: "#4d4d4d", weight: 2, opacity: 1, pane: 'routesPane', renderer: L.canvas() },
   point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPane' },
-  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' }
+  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
+  selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' }
 };
+
 
 //// Optimization Functions
 // Geometry simplification
@@ -38,6 +40,7 @@ const debounce = (func, delay) => {
 const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
+
 
 //// Map content Functions
 // GeoJSON layer addition function
@@ -78,6 +81,17 @@ const updatePreviewMarker = (e) => {
 
   if (closestDistance <= maxDistance) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
+    map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
+  } else {
+    map.getContainer().style.cursor = ''; // Reset cursor
+  }
+};
+
+// Function to handle click event
+const selectPreviewMarker = (e) => {
+  if (previewMarker) {
+    const latlng = previewMarker.getLatLng();
+    L.circleMarker(latlng, styles.selected).addTo(map);
   }
 };
 
@@ -88,8 +102,10 @@ const initializeMap = () => {
   togglePaneVisibility('pointsPane', 14); // Handle points pane visibility based on initial zoom level
 };
 
+
 //// Interactions
-initializeMap(); // Load initial layers
+// Load initial layers
+initializeMap();
 
 // Update routes layer and pane visibility on zoom end
 map.on('zoomend', () => {
@@ -98,5 +114,7 @@ map.on('zoomend', () => {
   togglePaneVisibility('previewPane', 14);
   if (map.getZoom() >= 14) {
     map.on('mousemove', debounce(updatePreviewMarker, 50));
+    map.on('click', selectPreviewMarker);
   }
 });
+
