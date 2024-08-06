@@ -17,9 +17,9 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 }).addTo(map);
 
 // Create Panes
-map.createPane('routesPane').style.zIndex = 400;
-map.createPane('pointsPane').style.zIndex = 500;
-map.createPane('previewPane').style.zIndex = 600;
+['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
+  map.createPane(pane).style.zIndex = 400 + (index * 100);
+});
 
 // Layer Groups
 let routesLayer, pointsLayer, previewPoint, highlightedLayer, highlightedTooltip;
@@ -177,13 +177,9 @@ const handleZoomEnd = () => {
   const currentZoom = map.getZoom();
   const data = currentZoom >= ZOOM_REQUIREMENT ? originalData : simplifyGeometry(originalData, currentZoom);
   if (currentZoom < ZOOM_REQUIREMENT) {
-    map.removeLayer(pointsLayer);
-    map.removeLayer(clickedPointsLayer);
-    map.removeLayer(closestPrLayer);
+    [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => map.removeLayer(layer));
   } else {
-    pointsLayer.addTo(map);
-    clickedPointsLayer.addTo(map);
-    closestPrLayer.addTo(map);
+    [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => layer.addTo(map));
   }
   map.removeLayer(routesLayer);
   routesLayer = L.geoJson(data, { style: styles.route }).addTo(map);
@@ -191,11 +187,14 @@ const handleZoomEnd = () => {
 
 // Fetch Data and Initialize Layers
 const initializeMap = async () => {
-  const routesResponse = await fetch('data/routes70.geojson');
+  const [routesResponse, prResponse] = await Promise.all([
+    fetch('data/routes70.geojson'),
+    fetch('data/pr70.geojson')
+  ]);
+
   originalData = await routesResponse.json();
   routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route }).addTo(map);
 
-  const prResponse = await fetch('data/pr70.geojson');
   const prData = await prResponse.json();
   pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
 
