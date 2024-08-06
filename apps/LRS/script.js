@@ -2,20 +2,10 @@
 const SIMPLIFICATION_THRESHOLD = 0.01;
 const MAGNETISM_RANGE = 600;
 const ZOOM_REQUIREMENT = 12;
-const DEBOUNCE_DELAY = 100;
 
 // Map Initialization
-const map = L.map('map', {
-  center: [47.6205, 6.3498],
-  zoom: 10,
-  zoomControl: false,
-  renderer: L.canvas() // Ensure the map itself uses canvas rendering
-});
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-  attribution: 'Erwan Vinot | HSN | OSM',
-  maxNativeZoom: 19,
-  maxZoom: 22
-}).addTo(map);
+const map = L.map('map', {center: [47.6205, 6.3498],zoom: 10,zoomControl: false});
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot | HSN | OSM',maxNativeZoom: 19,maxZoom: 22}).addTo(map);
 
 // Create Panes
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
@@ -24,16 +14,16 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
 
 // Layer Groups
 let routesLayer, pointsLayer, previewPoint, highlightedLayer, highlightedTooltip, originalData;
-const closestPrLayer = L.layerGroup({ renderer: L.canvas() }).addTo(map);
-const clickedPointsLayer = L.layerGroup({ renderer: L.canvas() }).addTo(map);
+const closestPrLayer = L.layerGroup().addTo(map);
+const clickedPointsLayer = L.layerGroup().addTo(map);
 let closestPrTooltips = [];
 
 // Styles and HTML content
 const styles = {
-  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane', renderer: L.canvas() },
-  highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane', renderer: L.canvas() },
-  point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane', renderer: L.canvas() }),
-  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane', renderer: L.canvas() },
+  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
+  highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
+  point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
+  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
   tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
   prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' },
   popup: { closeButton: true }
@@ -83,22 +73,15 @@ const findClosestPRs = (point, routeId) => {
   ].filter(Boolean);
 };
 
-// Debounce Function
-const debounce = (func, delay) => {
-  let debounceTimer;
-  return function() {
-    const context = this, args = arguments;
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(() => func.apply(context, args), delay);
-  };
-};
-
 // Event Handlers
-const handleMouseMove = debounce((e) => {
+const handleMouseMove = (e) => {
   if (map.getZoom() < ZOOM_REQUIREMENT) return;
 
   // Remove existing tooltips
-  if (highlightedTooltip) map.removeLayer(highlightedTooltip);
+  if (highlightedTooltip) {
+    map.removeLayer(highlightedTooltip);
+    highlightedTooltip = null;
+  }
   closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
   closestPrTooltips = [];
 
@@ -142,7 +125,7 @@ const handleMouseMove = debounce((e) => {
   } else {
     previewPoint.setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]]);
   }
-}, DEBOUNCE_DELAY);
+};
 
 const handleMapClick = (e) => {
   if (map.getZoom() < ZOOM_REQUIREMENT) return;
@@ -174,7 +157,7 @@ const handleMapClick = (e) => {
 const handleZoomEnd = () => {
   const currentZoom = map.getZoom();
   const data = currentZoom >= ZOOM_REQUIREMENT ? originalData : simplifyGeometry(originalData, currentZoom);
-
+  
   if (currentZoom < ZOOM_REQUIREMENT) {
     [pointsLayer, clickedPointsLayer, closestPrLayer].forEach(layer => map.removeLayer(layer));
   } else {
@@ -184,7 +167,7 @@ const handleZoomEnd = () => {
   }
 
   map.removeLayer(routesLayer);
-  routesLayer = L.geoJson(data, { style: styles.route, renderer: L.canvas() }).addTo(map);
+  routesLayer = L.geoJson(data, { style: styles.route }).addTo(map);
 };
 
 // Fetch Data and Initialize Layers
@@ -195,10 +178,10 @@ const initializeMap = async () => {
   ]);
 
   originalData = await routesResponse.json();
-  routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route, renderer: L.canvas() }).addTo(map);
+  routesLayer = L.geoJson(simplifyGeometry(originalData, map.getZoom()), { style: styles.route }).addTo(map);
 
   const prData = await prResponse.json();
-  pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")), renderer: L.canvas() }).addTo(map);
+  pointsLayer = L.geoJson(prData, { pointToLayer: (feature, latlng) => L.circleMarker(latlng, styles.point("#ff0000")) }).addTo(map);
 
   map.on('mousemove', handleMouseMove);
   map.on('click', handleMapClick);
