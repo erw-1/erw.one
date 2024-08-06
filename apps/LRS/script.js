@@ -55,27 +55,24 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
 // Function to update the preview marker
 let previewMarker;
 const updatePreviewMarker = (e) => {
-  if (previewMarker) {
-    map.removeLayer(previewMarker);
-  }
+  if (previewMarker) map.removeLayer(previewMarker);
 
-  const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
+  const roadsLayer = window.routesLayer;
   if (!roadsLayer) return;
 
-  const maxDistance = 50; // in pixels
+  const maxDistance = 200; // in meters
   let closestPoint = null;
   let closestDistance = Infinity;
 
   roadsLayer.eachLayer(layer => {
     const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
     const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
-    const snapped = turf.nearestPointOnLine(line, cursorPoint);
-    const snappedLatLng = L.latLng(snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]);
-    const distance = map.latLngToContainerPoint(snappedLatLng).distanceTo(map.latLngToContainerPoint(e.latlng));
+    const snapped = turf.nearestPointOnLine(line, cursorPoint, { units: 'meters' });
+    const distance = snapped.properties.dist;
 
     if (distance < closestDistance) {
       closestDistance = distance;
-      closestPoint = snappedLatLng;
+      closestPoint = [snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]];
     }
   });
 
@@ -95,12 +92,14 @@ const initializeMap = () => {
 initializeMap(); // Load initial layers
 
 // Update routes layer and pane visibility on zoom end
-map.on('zoomend', () => {
+if (map.getZoom() >= 14) { map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and update routes layer
   if (map.getZoom() >= 13 && map.getZoom() <= 15) {
     togglePaneVisibility('pointsPane', 14);  // Handle points pane visibility only when necessary
   }
-});
+}});
 
 // Add debounced mousemove event to update the preview marker
-map.on('mousemove', debounce(updatePreviewMarker, 100));
+if (map.getZoom() >= 14) {
+  map.on('mousemove', debounce(updatePreviewMarker, 100));
+};
