@@ -44,7 +44,7 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
         }
         window[layerVar] = layer;
       }
-    }
+    })
 };
 
 // Function to initialize the map with data
