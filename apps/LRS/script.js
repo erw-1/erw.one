@@ -49,33 +49,36 @@ const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
 
-// Function to find the closest PR points ahead and behind
-const findClosestPRs = (point, roadLine, routeId) => {
+// Function to find the closest PR distances from the previewed point along the road
+const findClosestPRs = (previewPoint, roadLine, routeId) => {
+  const prPoints = [];
+  window.pointsLayer.eachLayer(layer => {
+    if (layer.feature.properties.route_pr === routeId) {
+      const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
+      prPoints.push({ layer, point: prPoint, properties: layer.feature.properties });
+    }
+  });
+
   let closestAhead = null;
   let closestBehind = null;
   let minDistanceAhead = Infinity;
   let minDistanceBehind = Infinity;
 
-  window.pointsLayer.eachLayer(layer => {
-    if (layer.feature.properties.route_pr === routeId) {
-      const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-      const distanceAhead = turf.pointToLineDistance(prPoint, roadLine, { units: 'meters' });
-      const distanceBehind = turf.pointToLineDistance(point, roadLine, { units: 'meters' });
+  prPoints.forEach(pr => {
+    const prPoint = pr.point;
+    const distanceAhead = turf.lineDistance(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
+    const distanceBehind = turf.lineDistance(turf.lineSlice(prPoint, previewPoint, roadLine), { units: 'meters' });
 
-      if (distanceAhead < minDistanceAhead) {
-        minDistanceAhead = distanceAhead;
-        closestAhead = { prLayer: layer, distance: distanceAhead };
-      }
+    if (distanceAhead < minDistanceAhead) {
+      minDistanceAhead = distanceAhead;
+      closestAhead = { prLayer: pr.layer, distance: distanceAhead, properties: pr.properties };
+    }
 
-      if (distanceBehind < minDistanceBehind) {
-        minDistanceBehind = distanceBehind;
-        closestBehind = { prLayer: layer, distance: distanceBehind };
-      }
+    if (distanceBehind < minDistanceBehind) {
+      minDistanceBehind = distanceBehind;
+      closestBehind = { prLayer: pr.layer, distance: distanceBehind, properties: pr.properties };
     }
   });
-
-  console.log("Closest Ahead:", closestAhead);
-  console.log("Closest Behind:", closestBehind);
 
   return { closestAhead, closestBehind };
 };
@@ -125,7 +128,7 @@ const updatePreviewMarker = (e) => {
 
     if (closestAhead) {
       const prMarkerAhead = L.circleMarker(closestAhead.prLayer.getLatLng(), styles.highlight)
-        .bindTooltip(htmlContent.prTooltipContent(closestAhead.prLayer.feature.properties.num_pr, closestAhead.distance), styles.prTooltip)
+        .bindTooltip(htmlContent.prTooltipContent(closestAhead.properties.num_pr, closestAhead.distance), styles.prTooltip)
         .addTo(map);
       prTooltips.push(prMarkerAhead);
       highlightedPRs.push(prMarkerAhead);
@@ -133,7 +136,7 @@ const updatePreviewMarker = (e) => {
 
     if (closestBehind) {
       const prMarkerBehind = L.circleMarker(closestBehind.prLayer.getLatLng(), styles.highlight)
-        .bindTooltip(htmlContent.prTooltipContent(closestBehind.prLayer.feature.properties.num_pr, closestBehind.distance), styles.prTooltip)
+        .bindTooltip(htmlContent.prTooltipContent(closestBehind.properties.num_pr, closestBehind.distance), styles.prTooltip)
         .addTo(map);
       prTooltips.push(prMarkerBehind);
       highlightedPRs.push(prMarkerBehind);
