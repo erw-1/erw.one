@@ -29,7 +29,7 @@ let closestPrTooltips = [];
 
 // Styles and HTML content
 const styles = {
-  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
+  route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane', renderer: L.canvas() },
   highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
   point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
   preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
