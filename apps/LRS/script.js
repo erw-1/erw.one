@@ -7,7 +7,7 @@ L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}
   maxZoom: 22
 }).addTo(map);
 
-// Create Panes
+// Create Panes, bottom to top
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
   map.createPane(pane).style.zIndex = 400 + index;
 });
