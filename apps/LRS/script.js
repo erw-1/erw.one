@@ -61,25 +61,24 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
 
 // Function to find the closest PR distances from the previewed point along the road
 const findPrDistancesAlongRoad = (previewPoint, roadLine, prLayer) => {
-  let closestPRs = { before: null, after: null };
   let closestDistances = { before: Infinity, after: Infinity };
 
   prLayer.eachLayer(layer => {
     const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
     const route_pr = layer.feature.properties.route_pr;
 
-    const pointOnLine = turf.nearestPointOnLine(roadLine, prPoint);
-    const distanceAlongLine = turf.lineDistance(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
-
     if (route_pr === roadLine.properties.nom_route) {
-      const prDistance = turf.distance(previewPoint, prPoint, { units: 'meters' });
+      const lineSliceBefore = turf.lineSlice(previewPoint, prPoint, roadLine);
+      const lineSliceAfter = turf.lineSlice(prPoint, previewPoint, roadLine);
+      const distanceBefore = turf.length(lineSliceBefore, { units: 'meters' });
+      const distanceAfter = turf.length(lineSliceAfter, { units: 'meters' });
 
-      if (pointOnLine.geometry.coordinates[0] < previewPoint.geometry.coordinates[0] && prDistance < closestDistances.before) {
-        closestDistances.before = prDistance;
-        closestPRs.before = layer;
-      } else if (pointOnLine.geometry.coordinates[0] > previewPoint.geometry.coordinates[0] && prDistance < closestDistances.after) {
-        closestDistances.after = prDistance;
-        closestPRs.after = layer;
+      if (distanceBefore < closestDistances.before) {
+        closestDistances.before = distanceBefore;
+      }
+
+      if (distanceAfter < closestDistances.after) {
+        closestDistances.after = distanceAfter;
       }
     }
   });
@@ -117,7 +116,7 @@ const updatePreviewMarker = (e) => {
   if (closestPoint) {
     const roadLine = turf.lineString(roadsLayer.getLayers()[0].getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
     const prDistances = findPrDistancesAlongRoad(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, prLayer);
-    const prDistancesString = `Before: ${prDistances.before} meters, After: ${prDistances.after} meters`;
+    const prDistancesString = `Before: ${prDistances.before.toFixed(1)} meters, After: ${prDistances.after.toFixed(1)} meters`;
 
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
