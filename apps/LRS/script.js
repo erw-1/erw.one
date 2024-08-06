@@ -4,8 +4,8 @@ const MAGNETISM_RANGE = 300;
 const ZOOM_REQUIREMENT = 14;
 
 // Map Initialization
-const map = L.map('map', {center: [47.6205, 6.3498],zoom: 10,zoomControl: false});
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot | HSN | OSM',maxNativeZoom: 19,maxZoom: 22}).addTo(map);
+const map = L.map('map', {center: [47.6205, 6.3498], zoom: 10, zoomControl: false});
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {attribution: 'Erwan Vinot | HSN | OSM', maxNativeZoom: 19, maxZoom: 22}).addTo(map);
 
 // Create Panes
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
@@ -79,22 +79,28 @@ const findClosestPRs = (point, routeId) => {
   return [closestAhead, closestBehind].filter(Boolean);
 };
 
-// Event Handlers
-const handleMouseMove = (e) => {
-  if (map.getZoom() < ZOOM_REQUIREMENT) return;
-
-  // Remove existing tooltips
+const removeExistingTooltips = () => {
   if (highlightedTooltip) map.removeLayer(highlightedTooltip);
   closestPrTooltips.forEach(tooltip => map.removeLayer(tooltip));
   closestPrTooltips = [];
+};
+
+const resetLayerStyles = () => {
+  if (highlightedLayer) routesLayer.resetStyle(highlightedLayer);
+  if (previewPoint) map.removeLayer(previewPoint);
+  closestPrLayer.clearLayers();
+  highlightedLayer = previewPoint = null;
+  map.getContainer().style.cursor = '';
+};
+
+const handleMouseMove = (e) => {
+  if (map.getZoom() < ZOOM_REQUIREMENT) return;
+
+  removeExistingTooltips();
 
   const { nearestPoint, nearestLayer } = getNearestPoint(e.latlng);
   if (!nearestPoint) {
-    if (highlightedLayer) routesLayer.resetStyle(highlightedLayer);
-    if (previewPoint) map.removeLayer(previewPoint);
-    closestPrLayer.clearLayers();
-    highlightedLayer = previewPoint = null;
-    map.getContainer().style.cursor = '';
+    resetLayerStyles();
     return;
   }
 
