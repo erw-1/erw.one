@@ -28,12 +28,25 @@ const closestPrLayer = L.layerGroup().addTo(map);
 const clickedPointsLayer = L.layerGroup().addTo(map);
 let closestPrTooltips = [];
 
-// Styles
+// Styles and HTML content
 const styles = {
   route: { color: "#4d4d4d", weight: 2, opacity: 0.8, pane: 'routesPane' },
   highlight: { color: "#2d2d2d", weight: 3, opacity: 1, pane: 'routesPane' },
   point: (fillColor) => ({ radius: 3, fillColor, color: "none", fillOpacity: 1, pane: 'pointsPane' }),
-  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' }
+  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' }),
+  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
+  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' },
+  popup: { closeButton: true }
+};
+
+const htmlContent = {
+  roadName: (roadName) => String(roadName),
+  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `
+    <b>${roadName}</b><br>
+    Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>
+    Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.
+  `
 };
 
 // Utility Functions
@@ -106,17 +119,17 @@ const handleMouseMove = (e) => {
   map.getContainer().style.cursor = 'pointer';
 
   const roadName = nearestLayer.feature.properties.nom_route;
-  highlightedTooltip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' })
-    .setContent(String(roadName))
+  highlightedTooltip = L.tooltip(styles.tooltip)
+    .setContent(htmlContent.roadName(roadName))
     .setLatLng([nearestPoint.geometry.coordinates[1], nearestPoint.geometry.coordinates[0]])
     .addTo(map);
 
   const closestPRs = findClosestPRs(nearestPoint.geometry.coordinates, roadName);
   closestPRs.forEach(pr => {
     const prLatLng = pr.layer.getLatLng();
-    const tooltipContent = `<b>PR${pr.properties.num_pr}</b><br>${pr.distance.toFixed(1)} m`;
+    const tooltipContent = htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance);
     const prMarker = L.circleMarker(prLatLng, styles.point("#ffa500")).addTo(closestPrLayer);
-    const prTooltip = L.tooltip({ permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' })
+    const prTooltip = L.tooltip(styles.prTooltip)
       .setContent(tooltipContent)
       .setLatLng(prLatLng)
       .addTo(map);
@@ -141,12 +154,14 @@ const handleMapClick = (e) => {
       const distanceAhead = closestPRs[0].distance;
       const distanceBehind = closestPRs[1].distance;
 
-      const popupContent = `
-        <b>${roadName}</b><br>
-        Point à ${distanceAhead.toFixed(1)} m du PR ${closestPRs[0].properties.num_pr}.<br>
-        Et à ${distanceBehind.toFixed(1)} m du PR ${closestPRs[1].properties.num_pr}.
-      `;
-      const popup = L.popup({ closeButton: true })
+      const popupContent = htmlContent.popupContent(
+        roadName,
+        distanceAhead,
+        closestPRs[0].properties.num_pr,
+        distanceBehind,
+        closestPRs[1].properties.num_pr
+      );
+      const popup = L.popup(styles.popup)
         .setContent(popupContent)
         .setLatLng(clickedPoint.getLatLng())
         .openOn(map);
