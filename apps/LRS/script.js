@@ -19,8 +19,8 @@ const styles = {
   preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
   selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
   highlight: { radius: 3, fillColor: "#ffa500", color: "none", fillOpacity: 1, pane: 'previewPane' },
-  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip' },
-  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip' }
+  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip', pane: 'previewPane' },
+  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip', pane: 'previewPane' }
 };
 
 // Define HTML content for tooltips
