@@ -89,7 +89,6 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
   }));
 
   distances.sort((a, b) => a.distance - b.distance);
-
   return distances.slice(0, 2); // Return the two closest PRs
 };
 
