@@ -171,6 +171,7 @@ const initializeMap = () => {
 };
 
 initializeMap();
+let eventsAdded = false;
 
 map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer');
