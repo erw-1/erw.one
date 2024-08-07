@@ -23,8 +23,8 @@ const styles = {
 // Define HTML content for tooltips
 const htmlContent = {
   tooltip: (roadName) => `<b>${roadName}</b>`,
-  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
-  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
+  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance} m`,
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead} m du PR ${prAhead}.<br>Et à ${distanceBehind} m du PR ${prBehind}.`
 };
 
 // Utility Functions
@@ -69,8 +69,8 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
 let previewMarker;
 let prTooltips = [];
 let highlightedPRs = [];
-let eventsAdded = false;
-let currentPRs = { roadName: '', closestAhead: null, closestBehind: null };
+let currentPRs = [];
+let activePopups = [];
 
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
@@ -105,14 +105,12 @@ const updatePreviewMarker = (e) => {
   if (closestPoint) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
+
     const closestPRs = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, roadName);
+
     previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
 
-    currentPRs = {
-      roadName,
-      closestAhead: closestPRs[0] ? { distance: closestPRs[0].distance, num_pr: closestPRs[0].properties.num_pr } : null,
-      closestBehind: closestPRs[1] ? { distance: closestPRs[1].distance, num_pr: closestPRs[1].properties.num_pr } : null
-    };
+    currentPRs = closestPRs; // Update current PRs
 
     closestPRs.forEach(pr => {
       const prMarker = L.circleMarker(pr.prLayer.getLatLng(), styles.highlight)
@@ -160,11 +158,12 @@ const initializeMap = () => {
 
 initializeMap();
 
+let eventsAdded = false;
 map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer');
   togglePaneVisibility('pointsPane', 14);
   togglePaneVisibility('previewPane', 14);
-
+  
   if (map.getZoom() >= 14 && !eventsAdded) {
     map.on('mousemove', debounce(updatePreviewMarker, 50));
     map.on('click', selectPreviewMarker);
