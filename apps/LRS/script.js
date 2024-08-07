@@ -29,12 +29,9 @@ const htmlContent = {
   prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`
 };
 
-
-//// Utility Functions
-// Geometry simplification
+// Utility Functions
 const simplifyGeometry = (geojson, tolerance) => turf.simplify(geojson, { tolerance: tolerance, highQuality: false });
 
-// Debounce utility
 const debounce = (func, delay) => {
   let timeoutId;
   return (...args) => {
@@ -45,13 +42,49 @@ const debounce = (func, delay) => {
   };
 };
 
-// Function to toggle pane visibility based on zoom level
 const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
 
-// Helper function to find the closest point on the road
-const findClosestPointOnRoad = (cursorPoint, roadsLayer, maxDistance) => {
+// Function to find the closest PRs from the previewed point along the road
+const findClosestPRs = (previewPoint, roadLine, routeId) => {
+  const prPoints = [];
+  window.pointsLayer.eachLayer(layer => {
+    if (layer.feature.properties.route_pr === routeId) {
+      const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
+      prPoints.push({ layer, point: prPoint, properties: layer.feature.properties });
+    }
+  });
+
+  const distances = prPoints.map(pr => ({
+    prLayer: pr.layer,
+    distance: turf.length(turf.lineSlice(previewPoint, pr.point, roadLine), { units: 'meters' }),
+    properties: pr.properties
+  }));
+
+  distances.sort((a, b) => a.distance - b.distance);
+
+  return distances.slice(0, 2); // Return the two closest PRs
+};
+
+// Function to update the preview marker with a tooltip
+let previewMarker;
+let prTooltips = [];
+let highlightedPRs = [];
+let eventsAdded = false;
+
+const updatePreviewMarker = (e) => {
+  if (previewMarker) map.removeLayer(previewMarker);
+  prTooltips.forEach(tooltip => map.removeLayer(tooltip));
+  prTooltips = [];
+  highlightedPRs.forEach(pr => map.removeLayer(pr));
+  highlightedPRs = [];
+
+  const roadsLayer = window.routesLayer; // Assuming routesLayer is the layer with road data
+  if (!roadsLayer) return;
+
+  const maxDistance = 200; // in meters
+  const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
   let closestPoint = null;
   let closestDistance = Infinity;
   let roadName = '';
@@ -70,86 +103,20 @@ const findClosestPointOnRoad = (cursorPoint, roadsLayer, maxDistance) => {
     }
   });
 
-  return { closestPoint, roadName, roadLine };
-};
-
-// Helper function to find the closest PRs in both directions
-const findClosestPRs = (previewPoint, roadLine, routeId) => {
-  const prPoints = [];
-  window.pointsLayer.eachLayer(layer => {
-    if (layer.feature.properties.route_pr === routeId) {
-      const prPoint = turf.point([layer.getLatLng().lng, layer.getLatLng().lat]);
-      prPoints.push({ layer, point: prPoint, properties: layer.feature.properties });
-    }
-  });
-
-  let closestAhead = null;
-  let closestBehind = null;
-  let minDistanceAhead = Infinity;
-  let minDistanceBehind = Infinity;
-
-  prPoints.forEach(pr => {
-    const prPoint = pr.point;
-    const prLayer = pr.layer;
-    const distanceAhead = turf.length(turf.lineSlice(previewPoint, prPoint, roadLine), { units: 'meters' });
-    const distanceBehind = turf.length(turf.lineSlice(prPoint, previewPoint, roadLine), { units: 'meters' });
-
-    if (distanceAhead < minDistanceAhead) {
-      minDistanceAhead = distanceAhead;
-      closestAhead = { prLayer, properties: pr.properties, distance: distanceAhead };
-    }
-
-    if (distanceBehind < minDistanceBehind) {
-      minDistanceBehind = distanceBehind;
-      closestBehind = { prLayer, properties: pr.properties, distance: distanceBehind };
-    }
-  });
-
-  return { closestAhead, closestBehind };
-};
-
-
-// Interaction functions
-// Function to update the preview marker with a tooltip
-let previewMarker;
-let prTooltips = [];
-let highlightedPRs = [];
-
-const updatePreviewMarker = (e) => {
-  // Remove Existing Preview Marker and Tooltips
-  if (previewMarker) map.removeLayer(previewMarker);
-  prTooltips.forEach(tooltip => map.removeLayer(tooltip));
-  prTooltips = [];
-  highlightedPRs.forEach(pr => map.removeLayer(pr));
-  highlightedPRs = [];
-
-  // Define Cursor Point
-  const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
-  const maxDistance = 200; // in meters
-
-  // Find Closest Point on Road
-  const { closestPoint, roadName, roadLine } = findClosestPointOnRoad(cursorPoint, window.routesLayer, maxDistance);
-
   if (closestPoint) {
-    // Update Preview Marker
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
+    const closestPRs = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, roadName);
     previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
-
-    // Highlight Closest PRs
-    const { closestAhead, closestBehind } = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, roadName);
-
-    [closestAhead, closestBehind].forEach(pr => {
-      if (pr) {
-        const prMarker = L.circleMarker(pr.prLayer.getLatLng(), styles.highlight)
-          .bindTooltip(htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance), styles.prTooltip)
-          .addTo(map);
-        prTooltips.push(prMarker);
-        highlightedPRs.push(prMarker);
-      }
+    
+    closestPRs.forEach(pr => {
+      const prMarker = L.circleMarker(pr.prLayer.getLatLng(), styles.highlight)
+        .bindTooltip(htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance), styles.prTooltip)
+        .addTo(map);
+      prTooltips.push(prMarker);
+      highlightedPRs.push(prMarker);
     });
   } else {
-    // Reset Cursor
     map.getContainer().style.cursor = ''; // Reset cursor
   }
 };
@@ -162,43 +129,33 @@ const selectPreviewMarker = (e) => {
   }
 };
 
-// GeoJSON layer addition function
 const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) => {
   fetch(url)
     .then(response => response.json())
     .then(data => {
-      if (simplify) data = simplifyGeometry(data, 1 / Math.pow(2, map.getZoom())); // Simplify geometry if needed
+      if (simplify) data = simplifyGeometry(data, 1 / Math.pow(2, map.getZoom()));
       const layer = L.geoJson(data, { style, pointToLayer }).addTo(map);
-      if (layerVar && window[layerVar]) map.removeLayer(window[layerVar]); // Remove duplicates
+      if (layerVar && window[layerVar]) map.removeLayer(window[layerVar]);
       window[layerVar] = layer;
     });
 };
 
-// Function to initialize the map with data
 const initializeMap = () => {
-  addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and add routes layer
-  addGeoJsonLayer('data/pr70.geojson', null, (feature, latlng) => L.circleMarker(latlng, styles.point), false, 'pointsLayer'); // Add points layer
-  togglePaneVisibility('pointsPane', 14); // Handle points pane visibility based on initial zoom level
+  addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer');
+  addGeoJsonLayer('data/pr70.geojson', null, (feature, latlng) => L.circleMarker(latlng, styles.point), false, 'pointsLayer');
+  togglePaneVisibility('pointsPane', 14);
 };
 
-//// Interactions
-// Load initial layers
 initializeMap();
 
-// Update routes layer and pane visibility on zoom end
 map.on('zoomend', () => {
-  addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and update routes layer
-  togglePaneVisibility('pointsPane', 14);  // Handle points pane visibility only when necessary
+  addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer');
+  togglePaneVisibility('pointsPane', 14);
   togglePaneVisibility('previewPane', 14);
-  
-  // Add mousemove and click events if zoom level is 14 or above
+
   if (map.getZoom() >= 14 && !eventsAdded) {
     map.on('mousemove', debounce(updatePreviewMarker, 50));
     map.on('click', selectPreviewMarker);
     eventsAdded = true;
-  } else if (map.getZoom() < 14 && eventsAdded) {
-    map.off('mousemove', debounce(updatePreviewMarker, 50));
-    map.off('click', selectPreviewMarker);
-    eventsAdded = false;
   }
 });
