@@ -73,6 +73,7 @@ let previewMarker;
 let prTooltips = [];
 let highlightedPRs = [];
 let currentPRs = [];
+let activePopups = [];
 
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
@@ -140,7 +141,21 @@ const selectPreviewMarker = (e) => {
     );
 
     const marker = L.circleMarker(latlng, styles.selected).addTo(map);
-    marker.bindPopup(popupContent, { closeButton: true }).openPopup();
+    const popup = marker.bindPopup(popupContent, { closeButton: true });
+
+    popup.on('popupopen', () => {
+      activePopups.push(popup);
+    });
+
+    popup.on('popupclose', () => {
+      const index = activePopups.indexOf(popup);
+      if (index > -1) {
+        activePopups.splice(index, 1);
+      }
+      map.removeLayer(marker);
+    });
+
+    popup.openPopup();
   }
 };
 
