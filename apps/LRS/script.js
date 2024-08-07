@@ -52,14 +52,14 @@ const togglePaneVisibility = (paneName, zoomLevel) => {
 // Helper function to find the closest point on the road
 const findClosestPointOnRoad = (cursorPoint, roadsLayer, maxDistance) => {
   let closestPoint = null;
-  let closestDistance = Infinity;
+  let closestDistance = 1000;
   let roadName = '';
   let roadLine = null;
 
   roadsLayer.eachLayer(layer => {
     const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
     const snapped = turf.nearestPointOnLine(line, cursorPoint);
-    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' });
+    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' }).toFixed(1);
 
     if (distance < closestDistance && distance <= maxDistance) {
       closestDistance = distance;
@@ -145,10 +145,14 @@ const selectPreviewMarker = (e) => {
       currentPRs.closestAhead ? currentPRs.closestAhead.distance : 0, currentPRs.closestAhead ? currentPRs.closestAhead.num_pr : 'N/A',
       currentPRs.closestBehind ? currentPRs.closestBehind.distance : 0, currentPRs.closestBehind ? currentPRs.closestBehind.num_pr : 'N/A'
     );
-    L.circleMarker(latlng, styles.selected)
+    const marker = L.circleMarker(latlng, styles.selected)
       .bindPopup(popupContent, styles.popup)
       .addTo(map)
       .openPopup();
+
+    marker.on('popupclose', () => {
+      map.removeLayer(marker);
+    });
   }
 };
 
