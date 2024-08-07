@@ -152,7 +152,6 @@ const selectPreviewMarker = (e) => {
       if (index > -1) {
         activePopups.splice(index, 1);
       }
-      map.removeLayer(marker);
     });
 
     popup.openPopup();
