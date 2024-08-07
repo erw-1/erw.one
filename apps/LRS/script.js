@@ -23,7 +23,7 @@ const styles = {
 // Define HTML content for tooltips
 const htmlContent = {
   tooltip: (roadName) => `<b>${roadName}</b>`,
-  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
+  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance} m`,
   popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead} m du PR ${prAhead}.<br>Et à ${distanceBehind} m du PR ${prBehind}.`
 };
 
