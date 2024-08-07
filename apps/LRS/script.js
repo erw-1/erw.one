@@ -1,11 +1,7 @@
 //// Config
 // Initialize the map
 const map = L.map('map', { center: [47.6205, 6.3498], zoom: 10, zoomControl: false });
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', {
-  attribution: 'Erwan Vinot - HSN | OSM',
-  maxNativeZoom: 19,
-  maxZoom: 22
-}).addTo(map);
+L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', { attribution: 'Erwan Vinot - HSN | OSM', maxNativeZoom: 19, maxZoom: 22 }).addTo(map);
 
 // Create Panes, bottom to top
 ['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
@@ -28,8 +24,7 @@ const styles = {
 const htmlContent = {
   tooltip: (roadName) => `<b>${roadName}</b>`,
   prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
-  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) =>
-    `<b>${roadName}</b><br>Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
 };
 
 // Utility Functions
@@ -61,7 +56,7 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
 
   const distances = prPoints.map(pr => ({
     prLayer: pr.layer,
-    distance: turf.length(turf.lineSlice(previewPoint, pr.point, roadLine), { units: 'meters' }),
+    distance: turf.length(turf.lineSlice(previewPoint, pr.point, roadLine), { units: 'meters' }).toFixed(1),
     properties: pr.properties
   }));
 
@@ -90,14 +85,14 @@ const updatePreviewMarker = (e) => {
   const maxDistance = 200; // in meters
   const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
   let closestPoint = null;
-  let closestDistance = Infinity;
+  let closestDistance = 1000;
   let roadName = '';
   let roadLine = null;
 
   roadsLayer.eachLayer(layer => {
     const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
     const snapped = turf.nearestPointOnLine(line, cursorPoint);
-    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' });
+    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' }).toFixed(1);
 
     if (distance < closestDistance && distance <= maxDistance) {
       closestDistance = distance;
@@ -110,9 +105,7 @@ const updatePreviewMarker = (e) => {
   if (closestPoint) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
-
     const closestPRs = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, roadName);
-
     previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
 
     currentPRs = {
