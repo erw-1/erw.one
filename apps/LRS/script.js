@@ -190,8 +190,15 @@ map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer'); // Simplify and update routes layer
   togglePaneVisibility('pointsPane', 14);  // Handle points pane visibility only when necessary
   togglePaneVisibility('previewPane', 14);
-  if (map.getZoom() >= 14) {
+  
+  // Add mousemove and click events if zoom level is 14 or above
+  if (map.getZoom() >= 14 && !eventsAdded) {
     map.on('mousemove', debounce(updatePreviewMarker, 50));
     map.on('click', selectPreviewMarker);
+    eventsAdded = true;
+  } else if (map.getZoom() < 14 && eventsAdded) {
+    map.off('mousemove', debounce(updatePreviewMarker, 50));
+    map.off('click', selectPreviewMarker);
+    eventsAdded = false;
   }
 });
