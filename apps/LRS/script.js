@@ -166,11 +166,14 @@ initializeMap();
 map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer');
   togglePaneVisibility('pointsPane', 14);
-  togglePaneVisibility('previewPane', 14);
-  if (map.getZoom() >= 14) {
-    map.off('mousemove', debounce(updatePreviewMarker, 50));
+  
+  if (map.getZoom() >= 14 && !eventsAdded) {
     map.on('mousemove', debounce(updatePreviewMarker, 50));
-    map.off('click', selectPreviewMarker);
     map.on('click', selectPreviewMarker);
+    eventsAdded = true;
+  } else {
+    map.off('mousemove', debounce(updatePreviewMarker, 50));
+    map.off('click', selectPreviewMarker);
+    eventsAdded = false;
   }
 });
