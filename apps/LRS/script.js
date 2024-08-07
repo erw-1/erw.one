@@ -20,16 +20,14 @@ const styles = {
   selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
   highlight: { radius: 3, fillColor: "#ffa500", color: "none", fillOpacity: 1, pane: 'previewPane' },
   tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip', pane: 'previewPane' },
-  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip', pane: 'previewPane' },
-  popup: { closeButton: true }
+  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip', pane: 'previewPane' }
 };
 
 // Define HTML content for tooltips
 const htmlContent = {
   tooltip: (roadName) => `<b>${roadName}</b>`,
-  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
-  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) =>
-    `<b>${roadName}</b><br>Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
+  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance} m`,
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead} m du PR ${prAhead}.<br>Et à ${distanceBehind} m du PR ${prBehind}.`
 };
 
 // Utility Functions
@@ -61,7 +59,7 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
 
   const distances = prPoints.map(pr => ({
     prLayer: pr.layer,
-    distance: turf.length(turf.lineSlice(previewPoint, pr.point, roadLine), { units: 'meters' }),
+    distance: turf.length(turf.lineSlice(previewPoint, pr.point, roadLine), { units: 'meters' }).toFixed(1),
     properties: pr.properties
   }));
 
@@ -74,8 +72,7 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
 let previewMarker;
 let prTooltips = [];
 let highlightedPRs = [];
-let eventsAdded = false;
-let currentPRs = { roadName: '', closestAhead: null, closestBehind: null };
+let currentPRs = [];
 
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
@@ -90,14 +87,14 @@ const updatePreviewMarker = (e) => {
   const maxDistance = 200; // in meters
   const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
   let closestPoint = null;
-  let closestDistance = Infinity;
+  let closestDistance = 1000;
   let roadName = '';
   let roadLine = null;
 
   roadsLayer.eachLayer(layer => {
     const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
     const snapped = turf.nearestPointOnLine(line, cursorPoint);
-    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' });
+    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' }).toFixed(1);
 
     if (distance < closestDistance && distance <= maxDistance) {
       closestDistance = distance;
@@ -115,11 +112,7 @@ const updatePreviewMarker = (e) => {
 
     previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
 
-    currentPRs = {
-      roadName,
-      closestAhead: closestPRs[0] ? { distance: closestPRs[0].distance, num_pr: closestPRs[0].properties.num_pr } : null,
-      closestBehind: closestPRs[1] ? { distance: closestPRs[1].distance, num_pr: closestPRs[1].properties.num_pr } : null
-    };
+    currentPRs = closestPRs; // Update current PRs
 
     closestPRs.forEach(pr => {
       const prMarker = L.circleMarker(pr.prLayer.getLatLng(), styles.highlight)
@@ -137,14 +130,17 @@ const updatePreviewMarker = (e) => {
 const selectPreviewMarker = (e) => {
   if (previewMarker) {
     const latlng = previewMarker.getLatLng();
+    const roadName = previewMarker.getTooltip().getContent();
     const popupContent = htmlContent.popupContent(
-      currentPRs.roadName,currentPRs.closestAhead ? currentPRs.closestAhead.distance : 0, currentPRs.closestAhead ? currentPRs.closestAhead.num_pr : 'N/A',
-      currentPRs.closestBehind ? currentPRs.closestBehind.distance : 0, currentPRs.closestBehind ? currentPRs.closestBehind.num_pr : 'N/A'
+      roadName,
+      currentPRs[0].distance,
+      currentPRs[0].properties.num_pr,
+      currentPRs[1].distance,
+      currentPRs[1].properties.num_pr
     );
-    L.circleMarker(latlng, styles.selected)
-      .bindPopup(popupContent, styles.popup)
-      .addTo(map)
-      .openPopup();
+
+    const marker = L.circleMarker(latlng, styles.selected).addTo(map);
+    marker.bindPopup(popupContent, { closeButton: true }).openPopup();
   }
 };
 
@@ -171,10 +167,10 @@ map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer');
   togglePaneVisibility('pointsPane', 14);
   togglePaneVisibility('previewPane', 14);
-
-  if (map.getZoom() >= 14 && !eventsAdded) {
+  if (map.getZoom() >= 14) {
+    map.off('mousemove', debounce(updatePreviewMarker, 50));
     map.on('mousemove', debounce(updatePreviewMarker, 50));
+    map.off('click', selectPreviewMarker);
     map.on('click', selectPreviewMarker);
-    eventsAdded = true;
   }
 });
