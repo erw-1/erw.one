@@ -20,13 +20,16 @@ const styles = {
   selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
   highlight: { radius: 3, fillColor: "#ffa500", color: "none", fillOpacity: 1, pane: 'previewPane' },
   tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip', pane: 'previewPane' },
-  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip', pane: 'previewPane' }
+  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip', pane: 'previewPane' },
+  popup: { closeButton: true }
 };
 
 // Define HTML content for tooltips
 const htmlContent = {
   tooltip: (roadName) => `<b>${roadName}</b>`,
-  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`
+  prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance.toFixed(1)} m`,
+  popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) =>
+    `<b>${roadName}</b><br>Point à ${distanceAhead.toFixed(1)} m du PR ${prAhead}.<br>Et à ${distanceBehind.toFixed(1)} m du PR ${prBehind}.`
 };
 
 // Utility Functions
@@ -72,6 +75,7 @@ let previewMarker;
 let prTooltips = [];
 let highlightedPRs = [];
 let eventsAdded = false;
+let currentPRs = { roadName: '', closestAhead: null, closestBehind: null };
 
 const updatePreviewMarker = (e) => {
   if (previewMarker) map.removeLayer(previewMarker);
@@ -106,9 +110,17 @@ const updatePreviewMarker = (e) => {
   if (closestPoint) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
     map.getContainer().style.cursor = 'pointer'; // Change cursor to pointer
+
     const closestPRs = findClosestPRs(turf.point([closestPoint.lng, closestPoint.lat]), roadLine, roadName);
+
     previewMarker.bindTooltip(htmlContent.tooltip(roadName), styles.tooltip).openTooltip();
-    
+
+    currentPRs = {
+      roadName,
+      closestAhead: closestPRs[0] ? { distance: closestPRs[0].distance, num_pr: closestPRs[0].properties.num_pr } : null,
+      closestBehind: closestPRs[1] ? { distance: closestPRs[1].distance, num_pr: closestPRs[1].properties.num_pr } : null
+    };
+
     closestPRs.forEach(pr => {
       const prMarker = L.circleMarker(pr.prLayer.getLatLng(), styles.highlight)
         .bindTooltip(htmlContent.prTooltipContent(pr.properties.num_pr, pr.distance), styles.prTooltip)
@@ -121,11 +133,18 @@ const updatePreviewMarker = (e) => {
   }
 };
 
-// Function to handle click event to place the previewed marker
+// Function to handle click event to place the previewed marker with a popup
 const selectPreviewMarker = (e) => {
   if (previewMarker) {
     const latlng = previewMarker.getLatLng();
-    L.circleMarker(latlng, styles.selected).addTo(map);
+    const popupContent = htmlContent.popupContent(
+      currentPRs.roadName,currentPRs.closestAhead ? currentPRs.closestAhead.distance : 0, currentPRs.closestAhead ? currentPRs.closestAhead.num_pr : 'N/A',
+      currentPRs.closestBehind ? currentPRs.closestBehind.distance : 0, currentPRs.closestBehind ? currentPRs.closestBehind.num_pr : 'N/A'
+    );
+    L.circleMarker(latlng, styles.selected)
+      .bindPopup(popupContent, styles.popup)
+      .addTo(map)
+      .openPopup();
   }
 };
 
