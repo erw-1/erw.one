@@ -1,22 +1,18 @@
-//// Config
-// Initialize the map
-const map = L.map('map', { center: [47.6205, 6.3498], zoom: 10, zoomControl: false });
-L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', { attribution: 'Erwan Vinot - HSN | OSM', maxNativeZoom: 19, maxZoom: 22 }).addTo(map);
+//// Constants
+const MIN_ZOOM_LEVEL_FOR_PANES = 14;
 
-// Create Panes, bottom to top
-['routesPane', 'pointsPane', 'previewPane'].forEach((pane, index) => {
-  map.createPane(pane).style.zIndex = 400 + index;
-});
-
-// Define styles
+//// Styles
 const styles = {
+  mapTileLayer: 'https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png',
+  mapTileLayerAttribution: 'Erwan Vinot - HSN | OSM',
+  mapOptions: { center: [47.6205, 6.3498], zoom: 10, zoomControl: false },
   route: { color: "#4d4d4d", weight: 2, opacity: 1, pane: 'routesPane', renderer: L.canvas() },
-  point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPane' },
-  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
-  selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'previewPane' },
-  highlight: { radius: 3, fillColor: "#ffa500", color: "none", fillOpacity: 1, pane: 'previewPane' },
-  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip', pane: 'previewPane' },
-  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip', pane: 'previewPane' },
+  point: { radius: 3, fillColor: "#ff0000", color: "none", fillOpacity: 1, pane: 'pointsPreviewPane' },
+  preview: { radius: 3, fillColor: "#ffff00", color: "none", fillOpacity: 1, pane: 'pointsPreviewPane' },
+  selected: { radius: 3, fillColor: "#00ff00", color: "none", fillOpacity: 1, pane: 'pointsPreviewPane' },
+  highlight: { radius: 3, fillColor: "#ffa500", color: "none", fillOpacity: 1, pane: 'pointsPreviewPane' },
+  tooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'highlighted-tooltip', pane: 'pointsPreviewPane' },
+  prTooltip: { permanent: true, direction: 'top', offset: [0, -10], className: 'pr-tooltip', pane: 'pointsPreviewPane' },
   popup: { closeOnClick: false, autoClose: false }
 };
 
@@ -26,6 +22,15 @@ const htmlContent = {
   prTooltipContent: (num_pr, distance) => `<b>PR${num_pr}</b><br>${distance} m`,
   popupContent: (roadName, distanceAhead, prAhead, distanceBehind, prBehind) => `<b>${roadName}</b><br>Point à ${distanceAhead} m du PR ${prAhead}.<br>Et à ${distanceBehind} m du PR ${prBehind}.`
 };
+
+// Initialize the map
+const map = L.map('map', styles.mapOptions);
+L.tileLayer(styles.mapTileLayer, { attribution: styles.mapTileLayerAttribution, maxNativeZoom: 19, maxZoom: 22 }).addTo(map);
+
+// Create Panes, bottom to top
+['routesPane', 'pointsPreviewPane'].forEach((pane, index) => {
+  map.createPane(pane).style.zIndex = 400 + index;
+});
 
 // Utility Functions
 const simplifyGeometry = (geojson, tolerance) => turf.simplify(geojson, { tolerance: tolerance, highQuality: false });
@@ -44,7 +49,30 @@ const togglePaneVisibility = (paneName, zoomLevel) => {
   map.getPane(paneName).style.display = map.getZoom() >= zoomLevel ? 'block' : 'none';
 };
 
-// Function to find the closest PRs from the previewed point along the road
+// Helper function to find the closest point on the road
+const findClosestPointOnRoad = (cursorPoint, roadsLayer, maxDistance) => {
+  let closestPoint = null;
+  let closestDistance = Infinity;
+  let roadName = '';
+  let roadLine = null;
+
+  roadsLayer.eachLayer(layer => {
+    const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
+    const snapped = turf.nearestPointOnLine(line, cursorPoint);
+    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' });
+
+    if (distance < closestDistance && distance <= maxDistance) {
+      closestDistance = distance;
+      closestPoint = L.latLng(snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]);
+      roadName = layer.feature.properties.nom_route; // Road name field
+      roadLine = line;
+    }
+  });
+
+  return { closestPoint, roadName, roadLine };
+};
+
+// Helper function to find the closest PRs in both directions
 const findClosestPRs = (previewPoint, roadLine, routeId) => {
   const prPoints = [];
   window.pointsLayer.eachLayer(layer => {
@@ -69,7 +97,6 @@ const findClosestPRs = (previewPoint, roadLine, routeId) => {
 let previewMarker;
 let prTooltips = [];
 let highlightedPRs = [];
-let eventsAdded = false;
 let currentPRs = { roadName: '', closestAhead: null, closestBehind: null };
 
 const updatePreviewMarker = (e) => {
@@ -84,23 +111,7 @@ const updatePreviewMarker = (e) => {
 
   const maxDistance = 200; // in meters
   const cursorPoint = turf.point([e.latlng.lng, e.latlng.lat]);
-  let closestPoint = null;
-  let closestDistance = 1000;
-  let roadName = '';
-  let roadLine = null;
-
-  roadsLayer.eachLayer(layer => {
-    const line = turf.lineString(layer.getLatLngs().map(latlng => [latlng.lng, latlng.lat]));
-    const snapped = turf.nearestPointOnLine(line, cursorPoint);
-    const distance = turf.distance(cursorPoint, snapped, { units: 'meters' }).toFixed(1);
-
-    if (distance < closestDistance && distance <= maxDistance) {
-      closestDistance = distance;
-      closestPoint = L.latLng(snapped.geometry.coordinates[1], snapped.geometry.coordinates[0]);
-      roadName = layer.feature.properties.nom_route; // Road name field
-      roadLine = line;
-    }
-  });
+  const { closestPoint, roadName, roadLine } = findClosestPointOnRoad(cursorPoint, roadsLayer, maxDistance);
 
   if (closestPoint) {
     previewMarker = L.circleMarker(closestPoint, styles.preview).addTo(map);
@@ -131,7 +142,8 @@ const selectPreviewMarker = (e) => {
   if (previewMarker) {
     const latlng = previewMarker.getLatLng();
     const popupContent = htmlContent.popupContent(
-      currentPRs.roadName,currentPRs.closestAhead ? currentPRs.closestAhead.distance : 0, currentPRs.closestAhead ? currentPRs.closestAhead.num_pr : 'N/A',
+      currentPRs.roadName,
+      currentPRs.closestAhead ? currentPRs.closestAhead.distance : 0, currentPRs.closestAhead ? currentPRs.closestAhead.num_pr : 'N/A',
       currentPRs.closestBehind ? currentPRs.closestBehind.distance : 0, currentPRs.closestBehind ? currentPRs.closestBehind.num_pr : 'N/A'
     );
     L.circleMarker(latlng, styles.selected)
@@ -155,17 +167,16 @@ const addGeoJsonLayer = (url, style, pointToLayer, simplify = false, layerVar) =
 const initializeMap = () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer');
   addGeoJsonLayer('data/pr70.geojson', null, (feature, latlng) => L.circleMarker(latlng, styles.point), false, 'pointsLayer');
-  togglePaneVisibility('pointsPane', 14);
+  togglePaneVisibility('pointsPreviewPane', MIN_ZOOM_LEVEL_FOR_PANES);
 };
 
 initializeMap();
 
 map.on('zoomend', () => {
   addGeoJsonLayer('data/routes70.geojson', styles.route, null, true, 'routesLayer');
-  togglePaneVisibility('pointsPane', 14);
-  togglePaneVisibility('previewPane', 14);
+  togglePaneVisibility('pointsPreviewPane', MIN_ZOOM_LEVEL_FOR_PANES);
 
-  if (map.getZoom() >= 14 && !eventsAdded) {
+  if (map.getZoom() >= MIN_ZOOM_LEVEL_FOR_PANES && !eventsAdded) {
     map.on('mousemove', debounce(updatePreviewMarker, 50));
     map.on('click', selectPreviewMarker);
     eventsAdded = true;
