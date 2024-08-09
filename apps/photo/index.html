@@ -110,12 +110,21 @@
         #back-button:hover {
             background-color: #0056b3;
         }
+
+        #error-message {
+            display: none;
+            color: red;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 18px;
+        }
     </style>
 </head>
 <body>
 
 <div id="gallery" class="container"></div>
 <button id="back-button">Back to Folders</button>
+<div id="error-message">Error: Rate limit exceeded. Please try again later.</div>
 
 <div id="lightbox">
     <span id="prev">&#10094;</span>
@@ -135,19 +144,31 @@
     const prevBtn = document.getElementById('prev');
     const nextBtn = document.getElementById('next');
     const backButton = document.getElementById('back-button');
+    const errorMessage = document.getElementById('error-message');
 
     let currentFolder = '';
     let currentIndex = 0;
     let currentImages = [];
 
     async function fetchGitHubContents(path) {
-        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
-        return response.json();
+        try {
+            const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
+            if (response.status === 403) {
+                throw new Error('Rate limit exceeded');
+            }
+            return response.json();
+        } catch (error) {
+            console.error(error.message);
+            errorMessage.style.display = 'block';
+            return null;
+        }
     }
 
     async function showFolders() {
         galleryContainer.innerHTML = '';
+        errorMessage.style.display = 'none';
         const folders = await fetchGitHubContents(basePath);
+        if (!folders) return;
 
         folders.forEach(folder => {
             if (folder.type === 'dir') {
@@ -168,7 +189,9 @@
     async function showPhotos(folderPath) {
         currentFolder = folderPath;
         galleryContainer.innerHTML = '';
+        errorMessage.style.display = 'none';
         const files = await fetchGitHubContents(folderPath);
+        if (!files) return;
 
         currentImages = files.filter(file => file.name.endsWith('.jpg'));
 
