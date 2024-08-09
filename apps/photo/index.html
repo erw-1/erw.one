@@ -3,8 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Photo Gallery with JXL Decoding</title>
+    <title>Photo Gallery with JXL.js</title>
+    <script src="serviceworker.min.js"></script>
+    <script src="jxl.min.js"></script>
     <style>
+        /* Basic styles for your gallery */
         body {
             font-family: Arial, sans-serif;
             margin: 0;
@@ -107,12 +110,11 @@
     <span id="next">&#10095;</span>
 </div>
 
-<script src="https://raw.githubusercontent.com/niutech/jxl.js/main/jxl.min.js"></script>
 <script>
     const owner = 'erw-1';
     const repo = 'erw.one';
     const basePath = 'img/photo/';
-    const branch = 'main';
+    const branch = 'main'; // Replace with the correct branch if not main
 
     const galleryContainer = document.getElementById('gallery');
     const lightbox = document.getElementById('lightbox');
@@ -124,27 +126,13 @@
     let currentIndex = 0;
     let currentImages = [];
 
+    // Function to fetch contents from GitHub without authentication (for public repos)
     async function fetchGitHubContents(path) {
         const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
         return response.json();
     }
 
-    async function loadAndDisplayJxlImage(url, imgElement) {
-        const response = await fetch(url);
-        const arrayBuffer = await response.arrayBuffer();
-        const jxlDecoder = new JxlDecoder();
-        const imageData = await jxlDecoder.decode(arrayBuffer);
-
-        const canvas = document.createElement('canvas');
-        canvas.width = imageData.width;
-        canvas.height = imageData.height;
-        const ctx = canvas.getContext('2d');
-        const imageDataObj = new ImageData(imageData.data, imageData.width, imageData.height);
-        ctx.putImageData(imageDataObj, 0, 0);
-
-        imgElement.src = canvas.toDataURL();
-    }
-
+    // Function to display folders
     async function showFolders() {
         galleryContainer.innerHTML = '';
         const folders = await fetchGitHubContents(basePath);
@@ -153,19 +141,17 @@
             if (folder.type === 'dir') {
                 const folderDiv = document.createElement('div');
                 folderDiv.className = 'folder';
-                const imgElement = document.createElement('img');
-                const imgUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl`;
-
-                loadAndDisplayJxlImage(imgUrl, imgElement);
-
-                folderDiv.appendChild(imgElement);
-                folderDiv.innerHTML += `<div class="title">${folder.name}</div>`;
+                folderDiv.innerHTML = `
+                    <img src="https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl" alt="${folder.name}">
+                    <div class="title">${folder.name}</div>
+                `;
                 folderDiv.onclick = () => showPhotos(folder.path);
                 galleryContainer.appendChild(folderDiv);
             }
         });
     }
 
+    // Function to display photos in a folder
     async function showPhotos(folderPath) {
         currentFolder = folderPath;
         galleryContainer.innerHTML = '';
@@ -176,36 +162,36 @@
         currentImages.forEach((image, index) => {
             const photoDiv = document.createElement('div');
             photoDiv.className = 'photo';
-            const imgElement = document.createElement('img');
-            const imgUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}`;
-
-            loadAndDisplayJxlImage(imgUrl, imgElement);
-
-            photoDiv.appendChild(imgElement);
+            photoDiv.innerHTML = `
+                <img src="https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}" alt="${image.name}">
+            `;
             photoDiv.onclick = () => openLightbox(index);
             galleryContainer.appendChild(photoDiv);
         });
     }
 
+    // Function to open the lightbox
     function openLightbox(index) {
         currentIndex = index;
         updateLightbox();
         lightbox.style.display = 'flex';
     }
 
+    // Function to update the lightbox image
     function updateLightbox() {
         const imagePath = currentImages[currentIndex].path;
-        const imgUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}`;
-        loadAndDisplayJxlImage(imgUrl, lightboxImg);
+        lightboxImg.src = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}`;
     }
 
-    function closeLightbox() {
-        lightbox.style.display = 'none';
-    }
-
+    // Functions to navigate through images in the lightbox
     function navigate(direction) {
         currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
         updateLightbox();
+    }
+
+    // Function to close the lightbox
+    function closeLightbox() {
+        lightbox.style.display = 'none';
     }
 
     prevBtn.onclick = () => navigate(-1);
