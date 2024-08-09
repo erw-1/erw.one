@@ -135,7 +135,7 @@
 <script>
     const owner = 'erw-1';
     const repo = 'erw.one';
-    const basePath = 'files/img/photo/';
+    const basePath = 'img/photo/';
     const branch = 'main';
 
     const galleryContainer = document.getElementById('gallery');
@@ -193,7 +193,7 @@
         const files = await fetchGitHubContents(folderPath);
         if (!files) return;
 
-        currentImages = files.filter(file => file.name.endsWith('.jpg'));
+        currentImages = files.filter(file => file.name.endsWith('.jpg') || file.name.endsWith('.png'));
 
         currentImages.forEach((image, index) => {
             const photoDiv = document.createElement('div');
