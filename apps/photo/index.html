@@ -192,6 +192,11 @@
         updateLightbox();
     }
 
+    // Function to close the lightbox
+    function closeLightbox() {
+        lightbox.style.display = 'none';
+    }
+
     prevBtn.onclick = () => navigate(-1);
     nextBtn.onclick = () => navigate(1);
     lightbox.onclick = closeLightbox;
