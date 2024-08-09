@@ -39,10 +39,8 @@ async function showFolders() {
         if (folder.type === 'dir') {
             const folderDiv = document.createElement('div');
             folderDiv.className = 'folder';
-            folderDiv.innerHTML = `
-                <img src="https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jpg" alt="${folder.name}">
-                <div class="title">${folder.name}</div>
-            `;
+            folderDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jpg')`;
+            folderDiv.innerHTML = `<div class="title">${folder.name}</div>`;
             folderDiv.onclick = () => showPhotos(folder.path);
             galleryContainer.appendChild(folderDiv);
         }
@@ -63,9 +61,7 @@ async function showPhotos(folderPath) {
     currentImages.forEach((image, index) => {
         const photoDiv = document.createElement('div');
         photoDiv.className = 'photo';
-        photoDiv.innerHTML = `
-            <img src="https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}" alt="${image.name}">
-        `;
+        photoDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}')`;
         photoDiv.onclick = () => openLightbox(index);
         galleryContainer.appendChild(photoDiv);
     });
