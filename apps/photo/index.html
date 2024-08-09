@@ -142,7 +142,7 @@
                 const folderDiv = document.createElement('div');
                 folderDiv.className = 'folder';
                 folderDiv.innerHTML = `
-                    <img src="https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl" alt="${folder.name}">
+                    <img src="../../${folder.path}/preview.jxl" alt="${folder.name}">
                     <div class="title">${folder.name}</div>
                 `;
                 folderDiv.onclick = () => showPhotos(folder.path);
@@ -163,7 +163,7 @@
             const photoDiv = document.createElement('div');
             photoDiv.className = 'photo';
             photoDiv.innerHTML = `
-                <img src="https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}" alt="${image.name}">
+                <img src="../../${image.path}" alt="${image.name}">
             `;
             photoDiv.onclick = () => openLightbox(index);
             galleryContainer.appendChild(photoDiv);
@@ -180,7 +180,7 @@
     // Function to update the lightbox image
     function updateLightbox() {
         const imagePath = currentImages[currentIndex].path;
-        lightboxImg.src = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}`;
+        lightboxImg.src = `../../${imagePath}`;
     }
 
     // Functions to navigate through images in the lightbox
