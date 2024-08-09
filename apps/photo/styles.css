@@ -24,6 +24,13 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    background-size: cover; /* Ensures the image covers the entire button */
+    background-position: center; /* Centers the image within the button */
+    background-repeat: no-repeat; /* Prevents the image from repeating */
+}
+
+.folder:hover, .photo:hover {
+    transform: scale(1.1);
 }
 
 .folder img, .photo img {
@@ -31,10 +38,6 @@ body {
     max-height: 100%;
     object-fit: cover;
     transition: transform 0.3s ease;
-}
-
-.folder:hover img, .photo:hover img {
-    transform: scale(1.1);
 }
 
 .title {
