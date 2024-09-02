@@ -30,6 +30,18 @@ document.addEventListener('DOMContentLoaded', () => {
         return markdown.replace(/!\[(.*?)\]\((.*?)\)/g, '![ $1 ](/files/img/blog/$2)');
     }
 
+    function basicMarkdownParser(markdown) {
+        markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+        markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
+        markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
+        markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/gim, "<img alt='$1' src='/files/img/blog/$2' />");
+        markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>");
+        markdown = markdown.replace(/\n$/gim, '<br />');
+        return markdown.trim();
+    }
+
     function renderThemes(themes) {
         const themeList = document.getElementById('theme-list');
         themeList.innerHTML = '';
@@ -50,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contentDiv.innerHTML = `<h1>${theme}</h1>`;
         for (let article in articles) {
             const articleDiv = document.createElement('div');
-            articleDiv.innerHTML = `<h2 id="${theme}-${article}">${article}</h2>${marked(articles[article])}`;
+            articleDiv.innerHTML = `<h2 id="${theme}-${article}">${article}</h2>${basicMarkdownParser(articles[article])}`;
             contentDiv.appendChild(articleDiv);
         }
     }
