@@ -6,16 +6,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseMarkdown(markdown) {
         const themes = {};
         let currentTheme = null;
+        let homeTitle = null;
         let homeContent = '';
-        let homeTitle = 'Home';
 
         markdown.split('\n').forEach(line => {
-            if (line.startsWith('# Home')) {
-                currentTheme = 'Home';
-                themes[currentTheme] = { intro: '', articles: {} };
-            } else if (line.startsWith('# ')) {
-                currentTheme = line.substring(2).trim();
-                themes[currentTheme] = { intro: '', articles: {} };
+            if (line.startsWith('# ')) {
+                if (!homeTitle) {
+                    // First title becomes the home title
+                    homeTitle = line.substring(2).trim();
+                    currentTheme = 'Home';
+                    themes[currentTheme] = { intro: '', articles: {} };
+                } else {
+                    currentTheme = line.substring(2).trim();
+                    themes[currentTheme] = { intro: '', articles: {} };
+                }
             } else if (line.startsWith('## ')) {
                 const articleTitle = line.substring(3).trim();
                 themes[currentTheme].articles[articleTitle] = '';
@@ -45,12 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        themeNameDiv.textContent = title;
+        // Remove "Home" text from the header
+        themeNameDiv.style.display = 'none';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
         let homeHtml = `<h1>${title}</h1>`;
-        homeHtml += `<p>${content}</p>`;
+        homeHtml += `<p>${content.trim()}</p>`;
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
             if (theme !== 'Home') {
@@ -80,6 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         themeNameDiv.textContent = theme;
         themeNameDiv.setAttribute('href', `#${theme}`);
+        themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
@@ -108,6 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         themeNameDiv.textContent = theme;
         themeNameDiv.setAttribute('href', `#${theme}`);
+        themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'inline';
         separator.style.display = 'inline';
         articleNameDiv.querySelector('#article-title').textContent = article;
@@ -115,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Populate dropdown list, excluding the current article
         articleListDiv.innerHTML = '';
         for (let articleTitle in articles.articles) {
-            if (articleTitle !== article) {  // Exclude the current article
+            if (articleTitle !== article) {
                 const articleListItem = document.createElement('li');
                 articleListItem.textContent = articleTitle;
                 articleListItem.addEventListener('click', () => {
@@ -159,7 +166,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const article = hash[1];
 
         if (theme === '' || theme === 'Home') {
-            renderHome('Home', themes['Home'].intro, themes);
+            renderHome(themes['Home'].intro ? themes['Home'].intro.trim() : 'Home', themes['Home'].intro, themes);
         } else if (theme && themes[theme]) {
             if (article) {
                 renderArticle(theme, article, themes[theme]);
