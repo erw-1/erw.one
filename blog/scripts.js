@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 themes[currentTheme][articleTitle] = '';
             } else if (currentTheme && themes[currentTheme]) {
                 const lastArticleKey = Object.keys(themes[currentTheme]).pop();
-                themes[currentTheme][lastArticleKey] += updateImagePaths(line + '\n');
+                themes[currentTheme][lastArticleKey] += line + '\n';
             }
         });
 
@@ -26,25 +26,31 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('hashchange', () => handleHashChange(themes));
     }
 
-    function updateImagePaths(markdown) {
-        return markdown.replace(/!\[(.*?)\]\((.*?)\)/g, function(match, p1, p2) {
-            // If the image path doesn't already include a directory, prepend the correct path
-            if (!p2.startsWith('/files/img/blog/')) {
-                return `![${p1}](/files/img/blog/${p2})`;
-            }
-            return match;
-        });
-    }
-    
     function basicMarkdownParser(markdown) {
+        // Convert headers
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
         markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
         markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+        
+        // Convert bold and italic text
         markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
         markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
-        markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/gim, "<img alt='$1' src='/files/img/blog/$2' />");
+        
+        // Convert images (handling paths correctly)
+        markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/gim, function(match, altText, imagePath) {
+            // Check if the path is already absolute
+            if (!imagePath.startsWith('/files/img/blog/')) {
+                imagePath = `/files/img/blog/${imagePath}`;
+            }
+            return `<img alt='${altText}' src='${imagePath}' />`;
+        });
+        
+        // Convert links
         markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>");
+        
+        // Convert line breaks
         markdown = markdown.replace(/\n$/gim, '<br />');
+        
         return markdown.trim();
     }
 
