@@ -33,13 +33,15 @@ body {
     display: flex;
     align-items: center;
     border-bottom: 1px solid #444444;
+    gap: 10px; /* Ensure equal spacing between elements */
 }
 
 #theme-name {
     font-size: 1.2em;
-    margin-right: 10px;
     color: #e0e0e0;
     text-decoration: none;
+    display: flex;
+    align-items: center;
 }
 
 #theme-name:hover {
@@ -48,23 +50,27 @@ body {
 }
 
 #separator {
-    margin: 0 10px;
     font-size: 1.2em; /* Match the font size with the text */
     color: #888888; /* Dim the ">" symbol */
+    display: flex;
+    align-items: center;
 }
 
 #article-name {
-    display: inline-block;
-    position: relative;
+    display: flex;
+    align-items: center;
     font-size: 1.2em;
     cursor: pointer; /* Indicate it's clickable */
 }
 
 #article-title::after {
     content: " ∨";
-    font-size: 1.2em; /* Match the font size with the text */
-    margin-left: 5px;
-    color: #888888; /* Dim the "∨" symbol */
+    font-size: 0.75em;
+    font-weight: 600;
+    color: #888888;
+    margin-left: 3px; /* Space between the title and the arrow */
+    display: flex;
+    align-items: center;
 }
 
 #article-name:hover .dropdown-content {
