@@ -42,33 +42,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderThemeIntro(theme, articles) {
-        const contentDiv = document.getElementById('content');
-        const themeNameDiv = document.getElementById('theme-name');
-        const articleNameDiv = document.getElementById('article-name');
-        const separator = document.getElementById('separator');
-
-        if (!themeNameDiv || !articleNameDiv || !separator) {
-            console.error('Required elements are missing in the DOM.');
-            return;
-        }
-
-        themeNameDiv.textContent = theme;
-        themeNameDiv.setAttribute('href', `#${theme}`); // Set the link to the theme overview
-        articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
-        separator.style.display = 'none'; // Hide the separator
-
-        let introHtml = '';
-        introHtml += `<p>${articles.intro}</p>`;
-        introHtml += '<div class="article-buttons">';
-        for (let articleTitle in articles.articles) {
-            introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
-        }
-        introHtml += '</div>';
-
-        contentDiv.innerHTML = introHtml;
-    }
-
     function renderArticle(theme, article, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
@@ -104,17 +77,26 @@ document.addEventListener('DOMContentLoaded', () => {
         // Toggle dropdown on click
         articleNameDiv.addEventListener('click', (event) => {
             event.stopPropagation(); // Prevent triggering other click events
-            articleListDiv.style.display = articleListDiv.style.display === 'block' ? 'none' : 'block';
+            const isDropdownVisible = articleListDiv.style.display === 'block';
+            closeAllDropdowns();
+            if (!isDropdownVisible) {
+                articleListDiv.style.display = 'block';
+            }
         });
 
         // Close dropdown if clicking outside
         document.addEventListener('click', (event) => {
             if (!articleNameDiv.contains(event.target)) {
-                articleListDiv.style.display = 'none';
+                closeAllDropdowns();
             }
         });
 
         contentDiv.innerHTML = basicMarkdownParser(articles.articles[article]);
+    }
+
+    function closeAllDropdowns() {
+        const dropdowns = document.querySelectorAll('.dropdown-content');
+        dropdowns.forEach(dropdown => dropdown.style.display = 'none');
     }
 
     function handleHashChange(themes) {
@@ -137,7 +119,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</gim>');
         markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
         markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
         markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
