@@ -42,6 +42,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function renderThemeIntro(theme, articles) {
+        const contentDiv = document.getElementById('content');
+        const themeNameDiv = document.getElementById('theme-name');
+        const articleNameDiv = document.getElementById('article-name');
+        const separator = document.getElementById('separator');
+
+        if (!themeNameDiv || !articleNameDiv || !separator) {
+            console.error('Required elements are missing in the DOM.');
+            return;
+        }
+
+        themeNameDiv.textContent = theme;
+        themeNameDiv.setAttribute('href', `#${theme}`); // Set the link to the theme overview
+        articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
+        separator.style.display = 'none'; // Hide the separator
+
+        let introHtml = '';
+        introHtml += `<p>${articles.intro}</p>`;
+        introHtml += '<div class="article-buttons">';
+        for (let articleTitle in articles.articles) {
+            introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
+        }
+        introHtml += '</div>';
+
+        contentDiv.innerHTML = introHtml;
+    }
+
     function renderArticle(theme, article, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
