@@ -174,3 +174,44 @@ body {
 .article-button:hover {
     background-color: #555555;
 }
+
+.theme-buttons {
+    margin-top: 20px;
+}
+
+.theme-button {
+    display: block;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background-color: #444444;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-align: left;
+}
+
+.theme-button:hover {
+    background-color: #555555;
+}
+
+.article-buttons {
+    margin-left: 20px;
+}
+
+.article-button {
+    display: block;
+    padding: 8px 12px;
+    margin-bottom: 5px;
+    background-color: #555555;
+    color: #ffffff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.article-button:hover {
+    background-color: #666666;
+}
