@@ -6,30 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseMarkdown(markdown) {
         const themes = {};
         let currentTheme = null;
-        let homeTitle = null;
-        let homeContent = '';
         let isHomeContent = false;
+        let homeContent = '';
 
         markdown.split('\n').forEach(line => {
-            if (line.startsWith('# ')) {
-                // First title becomes the home title
-                homeTitle = line.substring(2).trim();
-                currentTheme = 'Home';
-                themes[currentTheme] = { intro: '', articles: {} };
-                isHomeContent = true;  // Start capturing home content
-            } else if (line.startsWith('## ')) {
-                // Subsequent ## titles become themes
-                isHomeContent = false;  // Stop capturing home content
-                currentTheme = line.substring(3).trim();
-                themes[currentTheme] = { intro: '', articles: {} };
-            } else if (line.startsWith('### ')) {
-                // Subsequent ### titles become articles under the current theme
-                const articleTitle = line.substring(4).trim();
-                themes[currentTheme].articles[articleTitle] = '';
-                isHomeContent = false;  // Stop capturing home content
-            } else if (isHomeContent && line.trim() !== '') {
-                // Capture everything between the home title and the first theme as home content
+            if (line.startsWith('<!-- HOME CONTENT -->')) {
+                isHomeContent = true;
+                return;
+            } else if (line.startsWith('<!-- END HOME CONTENT -->')) {
+                isHomeContent = false;
+                return;
+            }
+
+            if (isHomeContent) {
                 homeContent += line + '\n';
+            } else if (line.startsWith('# ')) {
+                currentTheme = line.substring(2).trim();
+                themes[currentTheme] = { intro: '', articles: {} };
+            } else if (line.startsWith('## ')) {
+                const articleTitle = line.substring(3).trim();
+                themes[currentTheme].articles[articleTitle] = '';
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
                 themes[currentTheme].intro += line + '\n';
             } else if (currentTheme) {
@@ -38,39 +34,30 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        renderHome(homeTitle, homeContent.trim(), themes);
+        renderHome(homeContent.trim(), themes);
         handleHashChange(themes);
         window.addEventListener('hashchange', () => handleHashChange(themes));
     }
 
-    function renderHome(title, content, themes) {
+    function renderHome(content, themes) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
 
-        if (!themeNameDiv || !articleNameDiv || !separator) {
-            console.error('Required elements are missing in the DOM.');
-            return;
-        }
-
-        // Remove the title from the header
         themeNameDiv.style.display = 'none';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
-        let homeHtml = `<h1>${title}</h1>`;
-        homeHtml += `<div>${basicMarkdownParser(content)}</div>`;
+        let homeHtml = `<div>${basicMarkdownParser(content)}</div>`;
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
-            if (theme !== 'Home') {
-                homeHtml += `<button class="theme-button" onclick="window.location.hash='${theme}'">${theme}</button>`;
-                homeHtml += '<div class="article-buttons">';
-                for (let articleTitle in themes[theme].articles) {
-                    homeHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
-                }
-                homeHtml += '</div>';
+            homeHtml += `<button class="theme-button" onclick="window.location.hash='${theme}'">${theme}</button>`;
+            homeHtml += '<div class="article-buttons">';
+            for (let articleTitle in themes[theme].articles) {
+                homeHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
             }
+            homeHtml += '</div>';
         }
         homeHtml += '</div>';
 
@@ -83,19 +70,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
 
-        if (!themeNameDiv || !articleNameDiv || !separator) {
-            console.error('Required elements are missing in the DOM.');
-            return;
-        }
-
         themeNameDiv.textContent = theme;
         themeNameDiv.setAttribute('href', `#${theme}`);
         themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
-        let introHtml = '';
-        introHtml += `<p>${articles.intro}</p>`;
+        let introHtml = `<p>${articles.intro}</p>`;
         introHtml += '<div class="article-buttons">';
         for (let articleTitle in articles.articles) {
             introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
@@ -112,11 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleListDiv = document.getElementById('article-list');
         const separator = document.getElementById('separator');
 
-        if (!themeNameDiv || !articleNameDiv || !separator) {
-            console.error('Required elements are missing in the DOM.');
-            return;
-        }
-
         themeNameDiv.textContent = theme;
         themeNameDiv.setAttribute('href', `#${theme}`);
         themeNameDiv.style.display = 'inline';
@@ -124,7 +100,6 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'inline';
         articleNameDiv.querySelector('#article-title').textContent = article;
 
-        // Populate dropdown list, excluding the current article
         articleListDiv.innerHTML = '';
         for (let articleTitle in articles.articles) {
             if (articleTitle !== article) {
@@ -132,16 +107,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 articleListItem.textContent = articleTitle;
                 articleListItem.addEventListener('click', () => {
                     window.location.hash = `${theme}#${articleTitle}`;
-                    closeAllDropdowns(); // Close dropdown on selection
+                    closeAllDropdowns();
                 });
                 articleListDiv.appendChild(articleListItem);
             }
         }
 
-        // Ensure the dropdown toggle works reliably
         let dropdownVisible = false;
         articleNameDiv.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent triggering other click events
+            event.stopPropagation();
             dropdownVisible = !dropdownVisible;
             closeAllDropdowns();
             if (dropdownVisible) {
@@ -149,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // Close dropdown if clicking outside
         document.addEventListener('click', (event) => {
             if (!articleNameDiv.contains(event.target)) {
                 closeAllDropdowns();
