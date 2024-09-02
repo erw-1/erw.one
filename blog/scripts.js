@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const themes = {};
         let currentTheme = null;
         let homeContent = '';
-        let isHomeSection = true; // Start by assuming the first section is the Home section
+        let isHomeSection = true;
 
         markdown.split('\n').forEach(line => {
             if (line.startsWith('# ')) {
@@ -15,8 +15,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Treat the first title as Home
                     currentTheme = 'Home';
                     themes[currentTheme] = { intro: '', articles: {} };
-                    homeContent = line.substring(2).trim();
-                    isHomeSection = false; // We've handled the home section, now it's themes
+                    homeContent = line.substring(2).trim(); // Capture the Home title
+                    isHomeSection = false;
                 } else {
                     currentTheme = line.substring(2).trim();
                     themes[currentTheme] = { intro: '', articles: {} };
@@ -34,12 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        renderHome(themes['Home'].intro.trim(), themes);
+        renderHome(homeContent.trim(), themes['Home'].intro.trim(), themes);
         handleHashChange(themes);
         window.addEventListener('hashchange', () => handleHashChange(themes));
     }
 
-    function renderHome(content, themes) {
+    function renderHome(title, content, themes) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
@@ -49,7 +49,8 @@ document.addEventListener('DOMContentLoaded', () => {
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
-        let homeHtml = `<div>${basicMarkdownParser(content)}</div>`;
+        let homeHtml = `<h1>${title}</h1>`;
+        homeHtml += `<div>${basicMarkdownParser(content)}</div>`;
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
             if (theme !== 'Home') { // Skip the home "theme"
@@ -146,7 +147,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const article = hash[1];
 
         if (theme === '' || theme === 'Home') {
-            renderHome(themes['Home'].intro.trim(), themes);
+            renderHome(themes['Home'].intro ? themes['Home'].intro.trim() : 'Home', themes['Home'].intro, themes);
         } else if (theme && themes[theme]) {
             if (article) {
                 renderArticle(theme, article, themes[theme]);
