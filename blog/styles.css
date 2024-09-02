@@ -64,7 +64,6 @@ body {
 
 #dropdown-arrow {
     margin-left: 3px; /* Space between the title and the arrow */
-    display: flex;
     align-items: center;
     color: #888888; /* Dim the arrow */
 }
