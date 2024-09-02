@@ -9,7 +9,7 @@ body {
 #container {
     display: flex;
     height: 100vh;
-    overflow: hidden; /* Prevent sidebar from being squished */
+    overflow: hidden;
 }
 
 #sidebar {
@@ -17,14 +17,14 @@ body {
     background-color: #1e1e1e;
     padding: 20px;
     overflow-y: auto;
-    flex-shrink: 0; /* Prevents the sidebar from shrinking */
+    flex-shrink: 0;
 }
 
 #main-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* Prevents content overflow */
+    overflow: hidden;
 }
 
 #header {
@@ -42,13 +42,18 @@ body {
 
 #separator {
     margin: 0 10px;
-    display: none; /* Hide the separator by default */
 }
 
 #article-name {
     display: inline-block;
     position: relative;
     font-size: 1.2em;
+}
+
+#article-title::before {
+    content: "∨ ";
+    font-size: 0.9em;
+    margin-right: 5px;
 }
 
 #article-name:hover .dropdown-content {
@@ -63,11 +68,13 @@ body {
     padding: 10px;
     z-index: 1;
     border-radius: 5px;
+    min-width: 200px; /* Increase dropdown width */
+    white-space: nowrap; /* Prevent text from wrapping */
 }
 
 .dropdown-content li {
     list-style: none;
-    padding: 5px 0;
+    padding: 5px 10px;
     cursor: pointer;
     color: #ffffff;
 }
@@ -81,8 +88,8 @@ body {
     padding: 20px;
     overflow-y: auto;
     background-color: #2e2e2e;
-    border-radius: 0px; /* Remove the rounded corners */
-    margin: 0px 0px; /* Remove the gap around the content */
+    border-radius: 0px;
+    margin: 0px 0px;
 }
 
 #theme-list {
