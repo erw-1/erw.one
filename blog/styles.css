@@ -99,7 +99,7 @@ body {
     width: auto; /* Let width adjust based on content */
     top: 100%; /* Position dropdown directly below the article name */
     left: 0;
-    transform: translateX(-50%); /* Center the dropdown under the article title */
+    transform: translateX(-20%); /* Center the dropdown under the article title */
     transition: all 0.2s ease; /* Smooth transition effect for hover */
 }
 
