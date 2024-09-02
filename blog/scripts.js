@@ -45,11 +45,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const articleListDiv = document.getElementById('article-list');
-
+    
+        console.log('Rendering Articles:', theme, article); // Debugging line
+    
         themeNameDiv.textContent = theme;
         articleNameDiv.style.display = article ? 'inline' : 'none';
         articleNameDiv.querySelector('#article-title').textContent = article;
-
+    
         // Populate dropdown list
         articleListDiv.innerHTML = '';
         for (let articleTitle in articles) {
@@ -60,8 +62,13 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             articleListDiv.appendChild(articleListItem);
         }
-
-        contentDiv.innerHTML = article ? basicMarkdownParser(articles[article]) : '';
+    
+        // Check if the article content exists
+        if (article && articles[article]) {
+            contentDiv.innerHTML = basicMarkdownParser(articles[article]);
+        } else {
+            contentDiv.innerHTML = ''; // Clear content if no article is selected
+        }
     }
 
     function handleHashChange(themes) {
