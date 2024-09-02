@@ -34,6 +34,7 @@ body {
     align-items: center;
     border-bottom: 1px solid #444444;
     gap: 10px; /* Ensure equal spacing between elements */
+    position: relative; /* Ensure dropdown remains within header context */
 }
 
 #theme-name {
@@ -60,6 +61,7 @@ body {
     align-items: center;
     font-size: 1.2em;
     cursor: pointer; /* Indicate it's clickable */
+    position: relative; /* Needed for dropdown positioning */
 }
 
 #dropdown-arrow {
@@ -77,7 +79,8 @@ body {
     transform: rotate(270deg); /* Rotate the arrow by 270 degrees */
 }
 
-#article-name:hover .dropdown-content {
+#article-name:hover .dropdown-content,
+.dropdown-content:hover {
     display: block;
 }
 
@@ -91,6 +94,8 @@ body {
     border-radius: 5px;
     white-space: nowrap; /* Prevent text from wrapping */
     width: auto; /* Let width adjust based on content */
+    top: 100%; /* Position dropdown below the article name */
+    left: 0;
 }
 
 .dropdown-content li {
