@@ -17,16 +17,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     homeTitle = line.substring(2).trim();
                     currentTheme = 'Home';
                     themes[currentTheme] = { intro: '', articles: {} };
+                    isHomeContent = true;  // Start capturing home content
                 } else {
+                    isHomeContent = false;  // Stop capturing home content
                     currentTheme = line.substring(2).trim();
                     themes[currentTheme] = { intro: '', articles: {} };
                 }
-                isHomeContent = false;
-            } else if (line === '<!-- home-content -->') {
-                isHomeContent = true;
             } else if (line.startsWith('## ')) {
                 const articleTitle = line.substring(3).trim();
                 themes[currentTheme].articles[articleTitle] = '';
+                isHomeContent = false;  // Stop capturing home content
             } else if (isHomeContent) {
                 homeContent += line + '\n';
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
