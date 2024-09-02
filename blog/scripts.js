@@ -54,15 +54,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         themeNameDiv.textContent = theme;
-        themeNameDiv.setAttribute('href', `#${theme}`); // Set the link to the theme overview
+        themeNameDiv.setAttribute('href', #${theme}); // Set the link to the theme overview
         articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
         separator.style.display = 'none'; // Hide the separator
 
         let introHtml = '';
-        introHtml += `<p>${articles.intro}</p>`;
+        introHtml += <p>${articles.intro}</p>;
         introHtml += '<div class="article-buttons">';
         for (let articleTitle in articles.articles) {
-            introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
+            introHtml += <button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>;
         }
         introHtml += '</div>';
 
@@ -95,18 +95,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 articleListItem.textContent = articleTitle;
                 articleListItem.addEventListener('click', () => {
                     window.location.hash = `${theme}#${articleTitle}`;
-                    articleListDiv.style.display = 'none'; // Close dropdown on selection
+                    closeAllDropdowns(); // Close dropdown on selection
                 });
                 articleListDiv.appendChild(articleListItem);
             }
         }
 
-        // Toggle dropdown on click
+        // Ensure the dropdown toggle works reliably
+        let dropdownVisible = false;
         articleNameDiv.addEventListener('click', (event) => {
             event.stopPropagation(); // Prevent triggering other click events
-            const isDropdownVisible = articleListDiv.style.display === 'block';
+            dropdownVisible = !dropdownVisible;
             closeAllDropdowns();
-            if (!isDropdownVisible) {
+            if (dropdownVisible) {
                 articleListDiv.style.display = 'block';
             }
         });
@@ -115,6 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.addEventListener('click', (event) => {
             if (!articleNameDiv.contains(event.target)) {
                 closeAllDropdowns();
+                dropdownVisible = false;
             }
         });
 
@@ -146,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</gim>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
         markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
         markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
         markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
