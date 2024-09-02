@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => parseMarkdown(data));
 
     function parseMarkdown(markdown) {
-        const contentDiv = document.getElementById('content');
         const themes = {};
         let currentTheme = null;
 
@@ -26,34 +25,6 @@ document.addEventListener('DOMContentLoaded', () => {
         window.addEventListener('hashchange', () => handleHashChange(themes));
     }
 
-    function basicMarkdownParser(markdown) {
-        // Convert headers
-        markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
-        markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-        
-        // Convert bold and italic text
-        markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
-        markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
-        
-        // Convert images (handling paths correctly)
-        markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/gim, function(match, altText, imagePath) {
-            // Check if the path is already absolute
-            if (!imagePath.startsWith('/files/img/blog/')) {
-                imagePath = `/files/img/blog/${imagePath}`;
-            }
-            return `<img alt='${altText}' src='${imagePath}' />`;
-        });
-        
-        // Convert links
-        markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>");
-        
-        // Convert line breaks
-        markdown = markdown.replace(/\n$/gim, '<br />');
-        
-        return markdown.trim();
-    }
-
     function renderThemes(themes) {
         const themeList = document.getElementById('theme-list');
         themeList.innerHTML = '';
@@ -69,14 +40,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderArticles(theme, articles) {
+    function renderArticles(theme, article, articles) {
         const contentDiv = document.getElementById('content');
-        contentDiv.innerHTML = `<h1>${theme}</h1>`;
-        for (let article in articles) {
-            const articleDiv = document.createElement('div');
-            articleDiv.innerHTML = `<h2 id="${theme}-${article}">${article}</h2>${basicMarkdownParser(articles[article])}`;
-            contentDiv.appendChild(articleDiv);
+        const themeNameDiv = document.getElementById('theme-name');
+        const articleNameDiv = document.getElementById('article-name');
+        const articleListDiv = document.getElementById('article-list');
+
+        themeNameDiv.textContent = theme;
+        articleNameDiv.style.display = article ? 'inline' : 'none';
+        articleNameDiv.querySelector('#article-title').textContent = article;
+
+        // Populate dropdown list
+        articleListDiv.innerHTML = '';
+        for (let articleTitle in articles) {
+            const articleListItem = document.createElement('li');
+            articleListItem.textContent = articleTitle;
+            articleListItem.addEventListener('click', () => {
+                window.location.hash = `${theme}#${articleTitle}`;
+            });
+            articleListDiv.appendChild(articleListItem);
         }
+
+        contentDiv.innerHTML = article ? basicMarkdownParser(articles[article]) : '';
     }
 
     function handleHashChange(themes) {
@@ -89,14 +74,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.classList.toggle('active', li.id === theme);
             });
 
-            renderArticles(theme, themes[theme]);
-
-            if (article) {
-                const articleElement = document.getElementById(`${theme}-${article}`);
-                if (articleElement) {
-                    articleElement.scrollIntoView();
-                }
-            }
+            renderArticles(theme, article, themes[theme]);
         }
+    }
+    
+    function basicMarkdownParser(markdown) {
+        markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+        markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
+        markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
+        markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/gim, function(match, altText, imagePath) {
+            if (!imagePath.startsWith('/files/img/blog/')) {
+                imagePath = `/files/img/blog/${imagePath}`;
+            }
+            return `<img alt='${altText}' src='${imagePath}' />`;
+        });
+        markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>");
+        markdown = markdown.replace(/\n$/gim, '<br />');
+        return markdown.trim();
     }
 });
