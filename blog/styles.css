@@ -42,18 +42,21 @@ body {
 
 #separator {
     margin: 0 10px;
+    color: #888888; /* Dim the ">" symbol */
 }
 
 #article-name {
     display: inline-block;
     position: relative;
     font-size: 1.2em;
+    cursor: pointer; /* Indicate it's clickable */
 }
 
-#article-title::before {
-    content: "∨ ";
+#article-title::after {
+    content: " ∨";
     font-size: 0.9em;
-    margin-right: 5px;
+    margin-left: 5px;
+    color: #888888; /* Dim the "∨" symbol */
 }
 
 #article-name:hover .dropdown-content {
