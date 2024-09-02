@@ -15,7 +15,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const articleTitle = line.substring(3).trim();
                 themes[currentTheme].articles[articleTitle] = '';
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
-                // Populate the intro for the theme
                 themes[currentTheme].intro += line + '\n';
             } else if (currentTheme) {
                 const lastArticleKey = Object.keys(themes[currentTheme].articles).pop();
@@ -43,51 +42,24 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderThemeIntro(theme, articles) {
-        const contentDiv = document.getElementById('content');
-        const themeNameDiv = document.getElementById('theme-name');
-        const articleNameDiv = document.getElementById('article-name');
-        const separator = document.getElementById('separator');
-    
-        if (!themeNameDiv || !articleNameDiv || !separator) {
-            console.error('Required elements are missing in the DOM.');
-            return;
-        }
-    
-        themeNameDiv.textContent = theme;
-        themeNameDiv.setAttribute('href', `#${theme}`); // Set the link to the theme overview
-        articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
-        separator.style.display = 'none'; // Hide the separator
-    
-        let introHtml = '';
-        introHtml += `<p>${articles.intro}</p>`;
-        introHtml += '<div class="article-buttons">';
-        for (let articleTitle in articles.articles) {
-            introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
-        }
-        introHtml += '</div>';
-    
-        contentDiv.innerHTML = introHtml;
-    }
-    
     function renderArticle(theme, article, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const articleListDiv = document.getElementById('article-list');
         const separator = document.getElementById('separator');
-    
+
         if (!themeNameDiv || !articleNameDiv || !separator) {
             console.error('Required elements are missing in the DOM.');
             return;
         }
-    
+
         themeNameDiv.textContent = theme;
         themeNameDiv.setAttribute('href', `#${theme}`);
         articleNameDiv.style.display = 'inline';
         separator.style.display = 'inline';
         articleNameDiv.querySelector('#article-title').textContent = article;
-    
+
         // Populate dropdown list, excluding the current article
         articleListDiv.innerHTML = '';
         for (let articleTitle in articles.articles) {
@@ -96,11 +68,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 articleListItem.textContent = articleTitle;
                 articleListItem.addEventListener('click', () => {
                     window.location.hash = `${theme}#${articleTitle}`;
+                    articleListDiv.style.display = 'none'; // Close dropdown on selection
                 });
                 articleListDiv.appendChild(articleListItem);
             }
         }
-    
+
+        // Toggle dropdown on click
+        articleNameDiv.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent triggering other click events
+            articleListDiv.style.display = articleListDiv.style.display === 'block' ? 'none' : 'block';
+        });
+
+        // Close dropdown if clicking outside
+        document.addEventListener('click', (event) => {
+            if (!articleNameDiv.contains(event.target)) {
+                articleListDiv.style.display = 'none';
+            }
+        });
+
         contentDiv.innerHTML = basicMarkdownParser(articles.articles[article]);
     }
 
@@ -108,12 +94,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const hash = decodeURIComponent(window.location.hash.substring(1)).split('#');
         const theme = hash[0];
         const article = hash[1];
-    
+
         if (theme && themes[theme]) {
             document.querySelectorAll('#theme-list li').forEach(li => {
                 li.classList.toggle('active', li.id === theme);
             });
-    
+
             if (article) {
                 renderArticle(theme, article, themes[theme]);
             } else {
@@ -121,7 +107,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     }
-    
+
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
         markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
