@@ -94,15 +94,18 @@ body {
     border-radius: 5px;
     white-space: nowrap; /* Prevent text from wrapping */
     width: auto; /* Let width adjust based on content */
-    top: 100%; /* Position dropdown below the article name */
+    top: 100%; /* Position dropdown directly below the article name */
     left: 0;
+    transform: translateX(-50%); /* Center the dropdown under the article title */
+    transition: all 0.2s ease; /* Smooth transition effect for hover */
 }
 
 .dropdown-content li {
     list-style: none;
-    padding: 5px 10px;
+    padding: 8px 12px; /* Slightly larger padding for easier clicking */
     cursor: pointer;
     color: #ffffff;
+    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
 }
 
 .dropdown-content li:hover {
@@ -150,6 +153,7 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
 }
 
 .article-button:hover {
