@@ -162,3 +162,27 @@ body {
 .article-button:hover {
     background-color: #555555;
 }
+
+#home-button-sidebar,
+#home-button-header {
+    font-size: 1.2em;
+    color: #e0e0e0;
+    text-decoration: none;
+    padding: 10px 15px;
+    background-color: #444444;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+#home-button-sidebar:hover,
+#home-button-header:hover {
+    background-color: #555555;
+    cursor: pointer;
+}
+
+#header-separator {
+    color: #888888;
+    margin: 0 10px;
+}
