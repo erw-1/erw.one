@@ -75,32 +75,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const articleListDiv = document.getElementById('article-list');
-        const separator = document.getElementById('separator'); // Get the separator element
-
+        const separator = document.getElementById('separator');
+    
         if (!themeNameDiv || !articleNameDiv || !separator) {
             console.error('Required elements are missing in the DOM.');
             return;
         }
     
         themeNameDiv.textContent = theme;
+        themeNameDiv.setAttribute('href', `#${theme}`);
         articleNameDiv.style.display = 'inline';
-        separator.style.display = 'inline'; // Show the separator
+        separator.style.display = 'inline';
         articleNameDiv.querySelector('#article-title').textContent = article;
     
-        // Populate dropdown list
+        // Populate dropdown list, excluding the current article
         articleListDiv.innerHTML = '';
         for (let articleTitle in articles.articles) {
-            const articleListItem = document.createElement('li');
-            articleListItem.textContent = articleTitle;
-            articleListItem.addEventListener('click', () => {
-                window.location.hash = `${theme}#${articleTitle}`;
-            });
-            articleListDiv.appendChild(articleListItem);
+            if (articleTitle !== article) {  // Exclude the current article
+                const articleListItem = document.createElement('li');
+                articleListItem.textContent = articleTitle;
+                articleListItem.addEventListener('click', () => {
+                    window.location.hash = `${theme}#${articleTitle}`;
+                });
+                articleListDiv.appendChild(articleListItem);
+            }
         }
     
         contentDiv.innerHTML = basicMarkdownParser(articles.articles[article]);
     }
-    
+
     function handleHashChange(themes) {
         const hash = decodeURIComponent(window.location.hash.substring(1)).split('#');
         const theme = hash[0];
