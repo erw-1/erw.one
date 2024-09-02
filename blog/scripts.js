@@ -10,13 +10,16 @@ document.addEventListener('DOMContentLoaded', () => {
         markdown.split('\n').forEach(line => {
             if (line.startsWith('# ')) {
                 currentTheme = line.substring(2).trim();
-                themes[currentTheme] = {};
+                themes[currentTheme] = { intro: '', articles: {} };
             } else if (line.startsWith('## ')) {
                 const articleTitle = line.substring(3).trim();
-                themes[currentTheme][articleTitle] = '';
-            } else if (currentTheme && themes[currentTheme]) {
-                const lastArticleKey = Object.keys(themes[currentTheme]).pop();
-                themes[currentTheme][lastArticleKey] += line + '\n';
+                themes[currentTheme].articles[articleTitle] = '';
+            } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
+                // Populate the intro for the theme
+                themes[currentTheme].intro += line + '\n';
+            } else if (currentTheme) {
+                const lastArticleKey = Object.keys(themes[currentTheme].articles).pop();
+                themes[currentTheme].articles[lastArticleKey] += line + '\n';
             }
         });
 
@@ -40,21 +43,38 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function renderArticles(theme, article, articles) {
+    function renderThemeIntro(theme, articles) {
+        const contentDiv = document.getElementById('content');
+        const themeNameDiv = document.getElementById('theme-name');
+        const articleNameDiv = document.getElementById('article-name');
+
+        themeNameDiv.textContent = theme;
+        articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
+
+        let introHtml = '';
+        introHtml += `<p>${articles.intro}</p>`;
+        introHtml += '<div class="article-buttons">';
+        for (let articleTitle in articles.articles) {
+            introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
+        }
+        introHtml += '</div>';
+
+        contentDiv.innerHTML = introHtml;
+    }
+
+    function renderArticle(theme, article, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const articleListDiv = document.getElementById('article-list');
-    
-        console.log('Rendering Articles:', theme, article); // Debugging line
-    
+
         themeNameDiv.textContent = theme;
-        articleNameDiv.style.display = article ? 'inline' : 'none';
+        articleNameDiv.style.display = 'inline';
         articleNameDiv.querySelector('#article-title').textContent = article;
-    
+
         // Populate dropdown list
         articleListDiv.innerHTML = '';
-        for (let articleTitle in articles) {
+        for (let articleTitle in articles.articles) {
             const articleListItem = document.createElement('li');
             articleListItem.textContent = articleTitle;
             articleListItem.addEventListener('click', () => {
@@ -62,13 +82,8 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             articleListDiv.appendChild(articleListItem);
         }
-    
-        // Check if the article content exists
-        if (article && articles[article]) {
-            contentDiv.innerHTML = basicMarkdownParser(articles[article]);
-        } else {
-            contentDiv.innerHTML = ''; // Clear content if no article is selected
-        }
+
+        contentDiv.innerHTML = basicMarkdownParser(articles.articles[article]);
     }
 
     function handleHashChange(themes) {
@@ -81,7 +96,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 li.classList.toggle('active', li.id === theme);
             });
 
-            renderArticles(theme, article, themes[theme]);
+            if (article) {
+                renderArticle(theme, article, themes[theme]);
+            } else {
+                renderThemeIntro(theme, themes[theme]);
+            }
         }
     }
     
