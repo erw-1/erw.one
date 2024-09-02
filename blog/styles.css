@@ -63,14 +63,14 @@ body {
 }
 
 #dropdown-arrow {
-    margin-left: 3px; /* Space between the title and the arrow */
+    margin-left: 5px; /* Slightly increase the space between the title and the arrow */
     align-items: center;
     color: #888888; /* Dim the arrow */
 }
 
 .icon-md {
-    width: 12px; /* Adjust the width of the SVG icon */
-    height: 12px; /* Adjust the height of the SVG icon */
+    width: 16px; /* Increase the width of the SVG icon */
+    height: 16px; /* Increase the height of the SVG icon */
 }
 
 .rotate-270 {
