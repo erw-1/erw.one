@@ -59,10 +59,10 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'none'; // Hide the separator
 
         let introHtml = '';
-        introHtml += <p>${articles.intro}</p>;
+        introHtml += `<p>${articles.intro}</p>`;
         introHtml += '<div class="article-buttons">';
         for (let articleTitle in articles.articles) {
-            introHtml += <button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>;
+            introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
         }
         introHtml += '</div>';
 
