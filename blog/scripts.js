@@ -19,6 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     themes[currentTheme] = { intro: '', articles: {} };
                     isHomeContent = true;  // Start capturing home content
                 } else {
+                    // Subsequent titles become themes
                     isHomeContent = false;  // Stop capturing home content
                     currentTheme = line.substring(2).trim();
                     themes[currentTheme] = { intro: '', articles: {} };
@@ -54,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        // Remove "Home" text from the header
+        // Remove the title from the header
         themeNameDiv.style.display = 'none';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
