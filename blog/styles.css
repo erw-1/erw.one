@@ -63,14 +63,18 @@ body {
     cursor: pointer; /* Indicate it's clickable */
 }
 
+#article-title {
+    display: inline-block;
+    vertical-align: middle; /* Align the title vertically with the arrow */
+}
+
 #article-title::after {
     content: " ∨";
     font-size: 0.75em;
     font-weight: 600;
     color: #888888;
     margin-left: 3px; /* Space between the title and the arrow */
-    display: flex;
-    align-items: center;
+    vertical-align: middle; /* Ensure the arrow aligns vertically with the text */
 }
 
 #article-name:hover .dropdown-content {
