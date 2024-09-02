@@ -50,7 +50,10 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'none';
 
         let homeHtml = `<h1>${title}</h1>`;
-        homeHtml += `<div>${basicMarkdownParser(content)}</div>`;
+        // Only add the intro text if it's not exactly the same as the title
+        if (title !== content) {
+            homeHtml += `<div>${basicMarkdownParser(content)}</div>`;
+        }
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
             if (theme !== 'Home') { // Skip the home "theme"
