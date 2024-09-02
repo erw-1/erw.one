@@ -37,22 +37,27 @@ body {
     position: relative; /* Ensure dropdown remains within header context */
 }
 
+/* Reusable hover effect class */
+.hover-effect {
+    padding: 5px 10px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
+}
+
+.hover-effect:hover {
+    background-color: #555555;
+    cursor: pointer;
+}
+
 #theme-name {
     font-size: 1.2em;
     color: #e0e0e0;
     text-decoration: none;
     display: flex;
     align-items: center;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
 }
 
-#theme-name:hover {
-    background-color: #555555; /* Similar to article button hover effect */
-    cursor: pointer;
-}
-
+/* No need for separate hover effect as it uses .hover-effect class */
 #separator {
     display: flex;
     align-items: center;
@@ -63,10 +68,10 @@ body {
     display: flex;
     align-items: center;
     font-size: 1.2em;
-    cursor: pointer; /* Indicate it's clickable */
     position: relative; /* Needed for dropdown positioning */
 }
 
+/* Dropdown styles */
 #dropdown-arrow {
     margin-left: 5px; /* Slightly increase the space between the title and the arrow */
     align-items: center;
@@ -103,18 +108,13 @@ body {
     transition: all 0.2s ease; /* Smooth transition effect for hover */
 }
 
+/* Apply hover-effect class to dropdown items */
 .dropdown-content li {
     list-style: none;
-    padding: 8px 12px; /* Slightly larger padding for easier clicking */
-    cursor: pointer;
     color: #ffffff;
-    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
 }
 
-.dropdown-content li:hover {
-    background-color: #555555;
-}
-
+/* No need for separate hover effect as it uses .hover-effect class */
 #content {
     flex-grow: 1;
     padding: 20px;
@@ -129,15 +129,14 @@ body {
     padding: 0;
 }
 
+/* Apply hover-effect class to theme list items */
 #theme-list li {
-    padding: 10px;
-    cursor: pointer;
     border-bottom: 1px solid #444444;
     border-radius: 5px;
     margin-bottom: 5px;
 }
 
-#theme-list li:hover,
+/* No need for separate hover effect as it uses .hover-effect class */
 #theme-list li.active {
     background-color: #333333;
 }
@@ -146,19 +145,12 @@ body {
     margin-top: 20px;
 }
 
+/* Apply hover-effect class to article buttons */
 .article-button {
     display: inline-block;
-    padding: 10px 15px;
     margin-right: 10px;
     margin-bottom: 10px;
     background-color: #444444;
     color: #ffffff;
     border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
-}
-
-.article-button:hover {
-    background-color: #555555;
 }
