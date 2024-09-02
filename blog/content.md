@@ -1,4 +1,5 @@
-# Home
+# Hi
+<!-- home-content -->
 Welcome to the Wiki Blog! Here you will find various themes and articles.
 
 # Theme 1
