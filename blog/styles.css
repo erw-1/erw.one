@@ -18,6 +18,24 @@ body {
     padding: 20px;
     overflow-y: auto;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#home-button-sidebar,
+#home-button-header {
+    color: #e0e0e0;
+    padding: 10px;
+    background-color: #444444;
+    border-radius: 5px;
+    transition: background-color 0.2s ease;
+    text-align: center;
+}
+
+#home-button-sidebar:hover,
+#home-button-header:hover {
+    background-color: #555555;
+    cursor: pointer;
 }
 
 #main-content {
@@ -33,11 +51,20 @@ body {
     display: flex;
     align-items: center;
     border-bottom: 1px solid #444444;
-    gap: 10px; /* Ensure equal spacing between elements */
-    position: relative; /* Ensure dropdown remains within header context */
+    gap: 10px;
+    position: relative;
 }
 
-#theme-name {
+#separator {
+    display: flex;
+    align-items: center;
+    color: #888888;
+}
+
+#theme-name,
+#theme-list li,
+.article-button,
+.dropdown-content li {
     font-size: 1.2em;
     color: #e0e0e0;
     text-decoration: none;
@@ -45,41 +72,37 @@ body {
     align-items: center;
     padding: 5px 10px;
     border-radius: 5px;
-    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
-}
-
-#theme-name:hover {
-    background-color: #555555; /* Similar to article button hover effect */
+    transition: background-color 0.2s ease;
     cursor: pointer;
 }
 
-#separator {
-    display: flex;
-    align-items: center;
-    color: #888888; /* Dim the ">" symbol */
+#theme-name:hover,
+#theme-list li:hover,
+.article-button:hover,
+.dropdown-content li:hover {
+    background-color: #555555;
 }
 
 #article-name {
     display: flex;
     align-items: center;
     font-size: 1.2em;
-    cursor: pointer; /* Indicate it's clickable */
-    position: relative; /* Needed for dropdown positioning */
+    position: relative;
 }
 
 #dropdown-arrow {
-    margin-left: 5px; /* Slightly increase the space between the title and the arrow */
+    margin-left: 5px;
     align-items: center;
-    color: #888888; /* Dim the arrow */
+    color: #888888;
 }
 
 .icon-md {
-    width: 16px; /* Increase the width of the SVG icon */
-    height: 16px; /* Increase the height of the SVG icon */
+    width: 16px;
+    height: 16px;
 }
 
 .rotate-270 {
-    transform: rotate(270deg); /* Rotate the arrow by 270 degrees */
+    transform: rotate(270deg);
 }
 
 #article-name:hover .dropdown-content,
@@ -95,24 +118,12 @@ body {
     padding: 10px;
     z-index: 1;
     border-radius: 5px;
-    white-space: nowrap; /* Prevent text from wrapping */
-    width: auto; /* Let width adjust based on content */
-    top: 100%; /* Position dropdown directly below the article name */
+    white-space: nowrap;
+    width: auto;
+    top: 100%;
     left: 0;
-    transform: translateX(-20%); /* Center the dropdown under the article title */
-    transition: all 0.2s ease; /* Smooth transition effect for hover */
-}
-
-.dropdown-content li {
-    list-style: none;
-    padding: 8px 12px; /* Slightly larger padding for easier clicking */
-    cursor: pointer;
-    color: #ffffff;
-    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
-}
-
-.dropdown-content li:hover {
-    background-color: #555555;
+    transform: translateX(-50%);
+    transition: all 0.2s ease;
 }
 
 #content {
@@ -127,6 +138,7 @@ body {
 #theme-list {
     list-style-type: none;
     padding: 0;
+    margin-top: 0; /* Aligns the theme list with the top of the sidebar */
 }
 
 #theme-list li {
@@ -156,33 +168,9 @@ body {
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: background-color 0.2s ease; /* Smooth transition for hover effect */
+    transition: background-color 0.2s ease;
 }
 
 .article-button:hover {
     background-color: #555555;
-}
-
-#home-button-sidebar,
-#home-button-header {
-    font-size: 1.2em;
-    color: #e0e0e0;
-    text-decoration: none;
-    padding: 10px 15px;
-    background-color: #444444;
-    border-radius: 5px;
-    transition: background-color 0.2s ease;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-#home-button-sidebar:hover,
-#home-button-header:hover {
-    background-color: #555555;
-    cursor: pointer;
-}
-
-#header-separator {
-    color: #888888;
-    margin: 0 10px;
 }
