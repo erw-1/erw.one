@@ -29,7 +29,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        renderThemes(themes);
         renderHome(homeTitle, homeContent, themes);
         handleHashChange(themes);
         window.addEventListener('hashchange', () => handleHashChange(themes));
@@ -66,21 +65,6 @@ document.addEventListener('DOMContentLoaded', () => {
         homeHtml += '</div>';
 
         contentDiv.innerHTML = homeHtml;
-    }
-
-    function renderThemes(themes) {
-        const themeList = document.getElementById('theme-list');
-        themeList.innerHTML = '';
-
-        for (let theme in themes) {
-            const themeItem = document.createElement('li');
-            themeItem.textContent = theme;
-            themeItem.id = theme;
-            themeItem.addEventListener('click', () => {
-                window.location.hash = theme;
-            });
-            themeList.appendChild(themeItem);
-        }
     }
 
     function renderThemeIntro(theme, articles) {
@@ -177,10 +161,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (theme === '' || theme === 'Home') {
             renderHome('Home', themes['Home'].intro, themes);
         } else if (theme && themes[theme]) {
-            document.querySelectorAll('#theme-list li').forEach(li => {
-                li.classList.toggle('active', li.id === theme);
-            });
-
             if (article) {
                 renderArticle(theme, article, themes[theme]);
             } else {
@@ -191,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</gim>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
         markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
         markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
         markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
