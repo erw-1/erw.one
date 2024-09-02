@@ -27,7 +27,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const articleTitle = line.substring(3).trim();
                 themes[currentTheme].articles[articleTitle] = '';
                 isHomeContent = false;  // Stop capturing home content
-            } else if (isHomeContent) {
+            } else if (isHomeContent && line.trim() !== '') {
+                // Capture everything between the home title and the first theme as home content
                 homeContent += line + '\n';
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
                 themes[currentTheme].intro += line + '\n';
@@ -37,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        renderHome(homeTitle, homeContent, themes);
+        renderHome(homeTitle, homeContent.trim(), themes);
         handleHashChange(themes);
         window.addEventListener('hashchange', () => handleHashChange(themes));
     }
@@ -59,7 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'none';
 
         let homeHtml = `<h1>${title}</h1>`;
-        homeHtml += `<div>${basicMarkdownParser(content.trim())}</div>`;
+        homeHtml += `<div>${basicMarkdownParser(content)}</div>`;
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
             if (theme !== 'Home') {
