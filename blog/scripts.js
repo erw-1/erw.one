@@ -12,20 +12,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         markdown.split('\n').forEach(line => {
             if (line.startsWith('# ')) {
-                if (!homeTitle) {
-                    // First title becomes the home title
-                    homeTitle = line.substring(2).trim();
-                    currentTheme = 'Home';
-                    themes[currentTheme] = { intro: '', articles: {} };
-                    isHomeContent = true;  // Start capturing home content
-                } else {
-                    // Subsequent titles become themes
-                    isHomeContent = false;  // Stop capturing home content
-                    currentTheme = line.substring(2).trim();
-                    themes[currentTheme] = { intro: '', articles: {} };
-                }
+                // First title becomes the home title
+                homeTitle = line.substring(2).trim();
+                currentTheme = 'Home';
+                themes[currentTheme] = { intro: '', articles: {} };
+                isHomeContent = true;  // Start capturing home content
             } else if (line.startsWith('## ')) {
-                const articleTitle = line.substring(3).trim();
+                // Subsequent ## titles become themes
+                isHomeContent = false;  // Stop capturing home content
+                currentTheme = line.substring(3).trim();
+                themes[currentTheme] = { intro: '', articles: {} };
+            } else if (line.startsWith('### ')) {
+                // Subsequent ### titles become articles under the current theme
+                const articleTitle = line.substring(4).trim();
                 themes[currentTheme].articles[articleTitle] = '';
                 isHomeContent = false;  // Stop capturing home content
             } else if (isHomeContent && line.trim() !== '') {
