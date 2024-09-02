@@ -54,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         themeNameDiv.textContent = theme;
-        themeNameDiv.setAttribute('href', #${theme}); // Set the link to the theme overview
+        themeNameDiv.setAttribute('href', `#${theme}`); // Set the link to the theme overview
         articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
         separator.style.display = 'none'; // Hide the separator
 
