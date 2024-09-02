@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         let currentTheme = null;
         let homeTitle = null;
         let homeContent = '';
+        let isHomeContent = false;
 
         markdown.split('\n').forEach(line => {
             if (line.startsWith('# ')) {
@@ -20,10 +21,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     currentTheme = line.substring(2).trim();
                     themes[currentTheme] = { intro: '', articles: {} };
                 }
+                isHomeContent = false;
+            } else if (line === '<!-- home-content -->') {
+                isHomeContent = true;
             } else if (line.startsWith('## ')) {
                 const articleTitle = line.substring(3).trim();
                 themes[currentTheme].articles[articleTitle] = '';
-            } else if (currentTheme === 'Home') {
+            } else if (isHomeContent) {
                 homeContent += line + '\n';
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
                 themes[currentTheme].intro += line + '\n';
