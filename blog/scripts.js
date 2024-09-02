@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'none';
 
         let homeHtml = `<h1>${title}</h1>`;
-        homeHtml += `<p>${content.trim()}</p>`;
+        homeHtml += `<div>${basicMarkdownParser(content.trim())}</div>`;
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
             if (theme !== 'Home') {
