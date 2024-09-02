@@ -27,9 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateImagePaths(markdown) {
-        return markdown.replace(/!\[(.*?)\]\((.*?)\)/g, '![ $1 ](/files/img/blog/$2)');
+        return markdown.replace(/!\[(.*?)\]\((.*?)\)/g, function(match, p1, p2) {
+            // If the image path doesn't already include a directory, prepend the correct path
+            if (!p2.startsWith('/files/img/blog/')) {
+                return `![${p1}](/files/img/blog/${p2})`;
+            }
+            return match;
+        });
     }
-
+    
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
         markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
