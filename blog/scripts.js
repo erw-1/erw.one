@@ -24,7 +24,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 currentTheme = line.substring(2).trim();
                 themes[currentTheme] = { intro: '', articles: {} };
             } else if (line.startsWith('## ')) {
-                const articleTitle = line.substring(3).trim();
+                const themeTitle = line.substring(3).trim();
+                themes[themeTitle] = themes[themeTitle] || { intro: '', articles: {} };
+                currentTheme = themeTitle;
+            } else if (line.startsWith('### ')) {
+                const articleTitle = line.substring(4).trim();
                 themes[currentTheme].articles[articleTitle] = '';
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
                 themes[currentTheme].intro += line + '\n';
@@ -76,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
-        let introHtml = `<p>${articles.intro}</p>`;
+        let introHtml = `<p>${articles.intro || ''}</p>`;
         introHtml += '<div class="article-buttons">';
         for (let articleTitle in articles.articles) {
             introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
@@ -156,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</gim>');
         markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
         markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
         markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
