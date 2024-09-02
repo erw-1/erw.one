@@ -41,6 +41,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
 
+        if (!themeNameDiv || !articleNameDiv || !separator) {
+            console.error('Required elements are missing in the DOM.');
+            return;
+        }
+
         themeNameDiv.textContent = title;
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
@@ -78,33 +83,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function handleHashChange(themes) {
-        const hash = decodeURIComponent(window.location.hash.substring(1)).split('#');
-        const theme = hash[0];
-        const article = hash[1];
-
-        if (!theme || theme === 'Home') {
-            renderHome('Home', themes['Home'].intro, themes);
-        } else if (theme && themes[theme]) {
-            document.querySelectorAll('#theme-list li').forEach(li => {
-                li.classList.toggle('active', li.id === theme);
-            });
-
-            if (article) {
-                renderArticle(theme, article, themes[theme]);
-            } else {
-                renderThemeIntro(theme, themes[theme]);
-            }
-        }
-    }
-
     function renderThemeIntro(theme, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
 
+        if (!themeNameDiv || !articleNameDiv || !separator) {
+            console.error('Required elements are missing in the DOM.');
+            return;
+        }
+
         themeNameDiv.textContent = theme;
+        themeNameDiv.setAttribute('href', `#${theme}`);
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
@@ -126,30 +117,81 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleListDiv = document.getElementById('article-list');
         const separator = document.getElementById('separator');
 
+        if (!themeNameDiv || !articleNameDiv || !separator) {
+            console.error('Required elements are missing in the DOM.');
+            return;
+        }
+
         themeNameDiv.textContent = theme;
+        themeNameDiv.setAttribute('href', `#${theme}`);
         articleNameDiv.style.display = 'inline';
         separator.style.display = 'inline';
         articleNameDiv.querySelector('#article-title').textContent = article;
 
+        // Populate dropdown list, excluding the current article
         articleListDiv.innerHTML = '';
         for (let articleTitle in articles.articles) {
-            if (articleTitle !== article) {
+            if (articleTitle !== article) {  // Exclude the current article
                 const articleListItem = document.createElement('li');
                 articleListItem.textContent = articleTitle;
                 articleListItem.addEventListener('click', () => {
                     window.location.hash = `${theme}#${articleTitle}`;
-                    articleListDiv.style.display = 'none';
+                    closeAllDropdowns(); // Close dropdown on selection
                 });
                 articleListDiv.appendChild(articleListItem);
             }
         }
 
+        // Ensure the dropdown toggle works reliably
+        let dropdownVisible = false;
+        articleNameDiv.addEventListener('click', (event) => {
+            event.stopPropagation(); // Prevent triggering other click events
+            dropdownVisible = !dropdownVisible;
+            closeAllDropdowns();
+            if (dropdownVisible) {
+                articleListDiv.style.display = 'block';
+            }
+        });
+
+        // Close dropdown if clicking outside
+        document.addEventListener('click', (event) => {
+            if (!articleNameDiv.contains(event.target)) {
+                closeAllDropdowns();
+                dropdownVisible = false;
+            }
+        });
+
         contentDiv.innerHTML = basicMarkdownParser(articles.articles[article]);
+    }
+
+    function closeAllDropdowns() {
+        const dropdowns = document.querySelectorAll('.dropdown-content');
+        dropdowns.forEach(dropdown => dropdown.style.display = 'none');
+    }
+
+    function handleHashChange(themes) {
+        const hash = decodeURIComponent(window.location.hash.substring(1)).split('#');
+        const theme = hash[0];
+        const article = hash[1];
+
+        if (theme === '' || theme === 'Home') {
+            renderHome('Home', themes['Home'].intro, themes);
+        } else if (theme && themes[theme]) {
+            document.querySelectorAll('#theme-list li').forEach(li => {
+                li.classList.toggle('active', li.id === theme);
+            });
+
+            if (article) {
+                renderArticle(theme, article, themes[theme]);
+            } else {
+                renderThemeIntro(theme, themes[theme]);
+            }
+        }
     }
 
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</gim>');
         markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
         markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
         markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
