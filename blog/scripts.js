@@ -47,10 +47,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
-
+        const separator = document.getElementById('separator'); // Get the separator element
+    
         themeNameDiv.textContent = theme;
         articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
-
+        separator.style.display = 'none'; // Hide the separator
+    
         let introHtml = '';
         introHtml += `<p>${articles.intro}</p>`;
         introHtml += '<div class="article-buttons">';
@@ -58,20 +60,22 @@ document.addEventListener('DOMContentLoaded', () => {
             introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
         }
         introHtml += '</div>';
-
+    
         contentDiv.innerHTML = introHtml;
     }
-
+    
     function renderArticle(theme, article, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const articleListDiv = document.getElementById('article-list');
-
+        const separator = document.getElementById('separator'); // Get the separator element
+    
         themeNameDiv.textContent = theme;
         articleNameDiv.style.display = 'inline';
+        separator.style.display = 'inline'; // Show the separator
         articleNameDiv.querySelector('#article-title').textContent = article;
-
+    
         // Populate dropdown list
         articleListDiv.innerHTML = '';
         for (let articleTitle in articles.articles) {
@@ -82,20 +86,20 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             articleListDiv.appendChild(articleListItem);
         }
-
+    
         contentDiv.innerHTML = basicMarkdownParser(articles.articles[article]);
     }
-
+    
     function handleHashChange(themes) {
         const hash = decodeURIComponent(window.location.hash.substring(1)).split('#');
         const theme = hash[0];
         const article = hash[1];
-
+    
         if (theme && themes[theme]) {
             document.querySelectorAll('#theme-list li').forEach(li => {
                 li.classList.toggle('active', li.id === theme);
             });
-
+    
             if (article) {
                 renderArticle(theme, article, themes[theme]);
             } else {
