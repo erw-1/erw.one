@@ -49,6 +49,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator'); // Get the separator element
     
+        if (!themeNameDiv || !articleNameDiv || !separator) {
+            console.error('Required elements are missing in the DOM.');
+            return;
+        }
+
         themeNameDiv.textContent = theme;
         articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
         separator.style.display = 'none'; // Hide the separator
@@ -70,6 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleNameDiv = document.getElementById('article-name');
         const articleListDiv = document.getElementById('article-list');
         const separator = document.getElementById('separator'); // Get the separator element
+
+        if (!themeNameDiv || !articleNameDiv || !separator) {
+            console.error('Required elements are missing in the DOM.');
+            return;
+        }
     
         themeNameDiv.textContent = theme;
         articleNameDiv.style.display = 'inline';
