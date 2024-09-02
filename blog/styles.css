@@ -23,19 +23,35 @@ body {
 }
 
 #home-button-sidebar,
-#home-button-header {
+#home-button-header,
+#theme-name,
+#theme-list li,
+.theme-button,
+.article-button,
+.dropdown-content li {
     color: #e0e0e0;
     padding: 10px;
     background-color: #444444;
     border-radius: 5px;
     transition: background-color 0.2s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+#home-button-sidebar,
+#home-button-header {
     text-align: center;
 }
 
 #home-button-sidebar:hover,
-#home-button-header:hover {
+#home-button-header:hover,
+#theme-name:hover,
+#theme-list li:hover,
+.theme-button:hover,
+.article-button:hover,
+.dropdown-content li:hover {
     background-color: #555555;
-    cursor: pointer;
 }
 
 #main-content {
@@ -59,28 +75,6 @@ body {
     display: flex;
     align-items: center;
     color: #888888;
-}
-
-#theme-name,
-#theme-list li,
-.article-button,
-.dropdown-content li {
-    font-size: 1.2em;
-    color: #e0e0e0;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    padding: 5px 10px;
-    border-radius: 5px;
-    transition: background-color 0.2s ease;
-    cursor: pointer;
-}
-
-#theme-name:hover,
-#theme-list li:hover,
-.article-button:hover,
-.dropdown-content li:hover {
-    background-color: #555555;
 }
 
 #article-name {
@@ -138,78 +132,30 @@ body {
 #theme-list {
     list-style-type: none;
     padding: 0;
-    margin-top: 0; /* Aligns the theme list with the top of the sidebar */
+    margin-top: 0;
 }
 
 #theme-list li {
-    padding: 10px;
-    cursor: pointer;
     border-bottom: 1px solid #444444;
-    border-radius: 5px;
     margin-bottom: 5px;
 }
 
-#theme-list li:hover,
 #theme-list li.active {
     background-color: #333333;
-}
-
-.article-buttons {
-    margin-top: 20px;
-}
-
-.article-button {
-    display: inline-block;
-    padding: 10px 15px;
-    margin-right: 10px;
-    margin-bottom: 10px;
-    background-color: #444444;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.article-button:hover {
-    background-color: #555555;
-}
-
-.theme-buttons {
-    margin-top: 20px;
-}
-
-.theme-button {
-    display: block;
-    padding: 10px 15px;
-    margin-bottom: 10px;
-    background-color: #444444;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    text-align: left;
-}
-
-.theme-button:hover {
-    background-color: #555555;
 }
 
 .article-buttons {
     margin-left: 20px;
 }
 
+.theme-buttons {
+    margin-top: 20px;
+}
+
 .article-button {
-    display: block;
     padding: 8px 12px;
     margin-bottom: 5px;
     background-color: #555555;
-    color: #ffffff;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
 }
 
 .article-button:hover {
