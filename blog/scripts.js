@@ -6,14 +6,21 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseMarkdown(markdown) {
         const themes = {};
         let currentTheme = null;
+        let homeContent = '';
+        let homeTitle = 'Home';
 
         markdown.split('\n').forEach(line => {
-            if (line.startsWith('# ')) {
+            if (line.startsWith('# Home')) {
+                currentTheme = 'Home';
+                themes[currentTheme] = { intro: '', articles: {} };
+            } else if (line.startsWith('# ')) {
                 currentTheme = line.substring(2).trim();
                 themes[currentTheme] = { intro: '', articles: {} };
             } else if (line.startsWith('## ')) {
                 const articleTitle = line.substring(3).trim();
                 themes[currentTheme].articles[articleTitle] = '';
+            } else if (currentTheme === 'Home') {
+                homeContent += line + '\n';
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
                 themes[currentTheme].intro += line + '\n';
             } else if (currentTheme) {
@@ -23,8 +30,37 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         renderThemes(themes);
+        renderHome(homeTitle, homeContent, themes);
         handleHashChange(themes);
         window.addEventListener('hashchange', () => handleHashChange(themes));
+    }
+
+    function renderHome(title, content, themes) {
+        const contentDiv = document.getElementById('content');
+        const themeNameDiv = document.getElementById('theme-name');
+        const articleNameDiv = document.getElementById('article-name');
+        const separator = document.getElementById('separator');
+
+        themeNameDiv.textContent = title;
+        articleNameDiv.style.display = 'none';
+        separator.style.display = 'none';
+
+        let homeHtml = `<h1>${title}</h1>`;
+        homeHtml += `<p>${content}</p>`;
+        homeHtml += '<div class="theme-buttons">';
+        for (let theme in themes) {
+            if (theme !== 'Home') {
+                homeHtml += `<button class="theme-button" onclick="window.location.hash='${theme}'">${theme}</button>`;
+                homeHtml += '<div class="article-buttons">';
+                for (let articleTitle in themes[theme].articles) {
+                    homeHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
+                }
+                homeHtml += '</div>';
+            }
+        }
+        homeHtml += '</div>';
+
+        contentDiv.innerHTML = homeHtml;
     }
 
     function renderThemes(themes) {
@@ -42,21 +78,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function handleHashChange(themes) {
+        const hash = decodeURIComponent(window.location.hash.substring(1)).split('#');
+        const theme = hash[0];
+        const article = hash[1];
+
+        if (!theme || theme === 'Home') {
+            renderHome('Home', themes['Home'].intro, themes);
+        } else if (theme && themes[theme]) {
+            document.querySelectorAll('#theme-list li').forEach(li => {
+                li.classList.toggle('active', li.id === theme);
+            });
+
+            if (article) {
+                renderArticle(theme, article, themes[theme]);
+            } else {
+                renderThemeIntro(theme, themes[theme]);
+            }
+        }
+    }
+
     function renderThemeIntro(theme, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
 
-        if (!themeNameDiv || !articleNameDiv || !separator) {
-            console.error('Required elements are missing in the DOM.');
-            return;
-        }
-
         themeNameDiv.textContent = theme;
-        themeNameDiv.setAttribute('href', `#${theme}`); // Set the link to the theme overview
-        articleNameDiv.style.display = 'none'; // Hide the article name since only the theme intro is displayed
-        separator.style.display = 'none'; // Hide the separator
+        articleNameDiv.style.display = 'none';
+        separator.style.display = 'none';
 
         let introHtml = '';
         introHtml += `<p>${articles.intro}</p>`;
@@ -76,74 +126,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleListDiv = document.getElementById('article-list');
         const separator = document.getElementById('separator');
 
-        if (!themeNameDiv || !articleNameDiv || !separator) {
-            console.error('Required elements are missing in the DOM.');
-            return;
-        }
-
         themeNameDiv.textContent = theme;
-        themeNameDiv.setAttribute('href', `#${theme}`);
         articleNameDiv.style.display = 'inline';
         separator.style.display = 'inline';
         articleNameDiv.querySelector('#article-title').textContent = article;
 
-        // Populate dropdown list, excluding the current article
         articleListDiv.innerHTML = '';
         for (let articleTitle in articles.articles) {
-            if (articleTitle !== article) {  // Exclude the current article
+            if (articleTitle !== article) {
                 const articleListItem = document.createElement('li');
                 articleListItem.textContent = articleTitle;
                 articleListItem.addEventListener('click', () => {
                     window.location.hash = `${theme}#${articleTitle}`;
-                    closeAllDropdowns(); // Close dropdown on selection
+                    articleListDiv.style.display = 'none';
                 });
                 articleListDiv.appendChild(articleListItem);
             }
         }
 
-        // Ensure the dropdown toggle works reliably
-        let dropdownVisible = false;
-        articleNameDiv.addEventListener('click', (event) => {
-            event.stopPropagation(); // Prevent triggering other click events
-            dropdownVisible = !dropdownVisible;
-            closeAllDropdowns();
-            if (dropdownVisible) {
-                articleListDiv.style.display = 'block';
-            }
-        });
-
-        // Close dropdown if clicking outside
-        document.addEventListener('click', (event) => {
-            if (!articleNameDiv.contains(event.target)) {
-                closeAllDropdowns();
-                dropdownVisible = false;
-            }
-        });
-
         contentDiv.innerHTML = basicMarkdownParser(articles.articles[article]);
-    }
-
-    function closeAllDropdowns() {
-        const dropdowns = document.querySelectorAll('.dropdown-content');
-        dropdowns.forEach(dropdown => dropdown.style.display = 'none');
-    }
-
-    function handleHashChange(themes) {
-        const hash = decodeURIComponent(window.location.hash.substring(1)).split('#');
-        const theme = hash[0];
-        const article = hash[1];
-
-        if (theme && themes[theme]) {
-            document.querySelectorAll('#theme-list li').forEach(li => {
-                li.classList.toggle('active', li.id === theme);
-            });
-
-            if (article) {
-                renderArticle(theme, article, themes[theme]);
-            } else {
-                renderThemeIntro(theme, themes[theme]);
-            }
-        }
     }
 
     function basicMarkdownParser(markdown) {
