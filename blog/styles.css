@@ -36,12 +36,20 @@ body {
 }
 
 #theme-name {
-    font-size: 1.5em;
+    font-size: 1.2em;
     margin-right: 10px;
+    color: #e0e0e0;
+    text-decoration: none;
+}
+
+#theme-name:hover {
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 #separator {
     margin: 0 10px;
+    font-size: 1.2em; /* Match the font size with the text */
     color: #888888; /* Dim the ">" symbol */
 }
 
@@ -54,7 +62,7 @@ body {
 
 #article-title::after {
     content: " ∨";
-    font-size: 0.9em;
+    font-size: 1.2em; /* Match the font size with the text */
     margin-left: 5px;
     color: #888888; /* Dim the "∨" symbol */
 }
@@ -71,8 +79,8 @@ body {
     padding: 10px;
     z-index: 1;
     border-radius: 5px;
-    min-width: 200px; /* Increase dropdown width */
     white-space: nowrap; /* Prevent text from wrapping */
+    width: auto; /* Let width adjust based on content */
 }
 
 .dropdown-content li {
