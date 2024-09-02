@@ -9,6 +9,7 @@ body {
 #container {
     display: flex;
     height: 100vh;
+    overflow: hidden; /* Prevent sidebar from being squished */
 }
 
 #sidebar {
@@ -16,12 +17,14 @@ body {
     background-color: #1e1e1e;
     padding: 20px;
     overflow-y: auto;
+    flex-shrink: 0; /* Prevents the sidebar from shrinking */
 }
 
 #main-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
+    overflow: hidden; /* Prevents content overflow */
 }
 
 #header {
@@ -37,18 +40,19 @@ body {
     margin-right: 10px;
 }
 
+#separator {
+    margin: 0 10px;
+    display: none; /* Hide the separator by default */
+}
+
 #article-name {
     display: inline-block;
     position: relative;
+    font-size: 1.2em;
 }
 
 #article-name:hover .dropdown-content {
     display: block;
-}
-
-#article-title {
-    cursor: pointer;
-    font-size: 1.2em;
 }
 
 .dropdown-content {
@@ -77,8 +81,8 @@ body {
     padding: 20px;
     overflow-y: auto;
     background-color: #2e2e2e;
-    border-radius: 10px;
-    margin: 10px 20px;
+    border-radius: 0px; /* Remove the rounded corners */
+    margin: 0px 0px; /* Remove the gap around the content */
 }
 
 #theme-list {
