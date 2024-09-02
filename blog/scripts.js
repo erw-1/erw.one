@@ -6,30 +6,26 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseMarkdown(markdown) {
         const themes = {};
         let currentTheme = null;
-        let isHomeContent = false;
         let homeContent = '';
+        let isHomeSection = true; // Start by assuming the first section is the Home section
 
         markdown.split('\n').forEach(line => {
-            if (line.startsWith('<!-- HOME CONTENT -->')) {
-                isHomeContent = true;
-                return;
-            } else if (line.startsWith('<!-- END HOME CONTENT -->')) {
-                isHomeContent = false;
-                return;
-            }
-
-            if (isHomeContent) {
-                homeContent += line + '\n';
-            } else if (line.startsWith('# ')) {
-                currentTheme = line.substring(2).trim();
-                themes[currentTheme] = { intro: '', articles: {} };
+            if (line.startsWith('# ')) {
+                if (isHomeSection) {
+                    // Treat the first title as Home
+                    currentTheme = 'Home';
+                    themes[currentTheme] = { intro: '', articles: {} };
+                    homeContent = line.substring(2).trim();
+                    isHomeSection = false; // We've handled the home section, now it's themes
+                } else {
+                    currentTheme = line.substring(2).trim();
+                    themes[currentTheme] = { intro: '', articles: {} };
+                }
             } else if (line.startsWith('## ')) {
-                const themeTitle = line.substring(3).trim();
-                themes[themeTitle] = themes[themeTitle] || { intro: '', articles: {} };
-                currentTheme = themeTitle;
-            } else if (line.startsWith('### ')) {
-                const articleTitle = line.substring(4).trim();
-                themes[currentTheme].articles[articleTitle] = '';
+                const articleTitle = line.substring(3).trim();
+                if (currentTheme) {
+                    themes[currentTheme].articles[articleTitle] = '';
+                }
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
                 themes[currentTheme].intro += line + '\n';
             } else if (currentTheme) {
@@ -38,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        renderHome(homeContent.trim(), themes);
+        renderHome(themes['Home'].intro.trim(), themes);
         handleHashChange(themes);
         window.addEventListener('hashchange', () => handleHashChange(themes));
     }
@@ -56,12 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let homeHtml = `<div>${basicMarkdownParser(content)}</div>`;
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
-            homeHtml += `<button class="theme-button" onclick="window.location.hash='${theme}'">${theme}</button>`;
-            homeHtml += '<div class="article-buttons">';
-            for (let articleTitle in themes[theme].articles) {
-                homeHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
+            if (theme !== 'Home') { // Skip the home "theme"
+                homeHtml += `<button class="theme-button" onclick="window.location.hash='${theme}'">${theme}</button>`;
+                homeHtml += '<div class="article-buttons">';
+                for (let articleTitle in themes[theme].articles) {
+                    homeHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
+                }
+                homeHtml += '</div>';
             }
-            homeHtml += '</div>';
         }
         homeHtml += '</div>';
 
@@ -148,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const article = hash[1];
 
         if (theme === '' || theme === 'Home') {
-            renderHome(themes['Home'].intro ? themes['Home'].intro.trim() : 'Home', themes['Home'].intro, themes);
+            renderHome(themes['Home'].intro.trim(), themes);
         } else if (theme && themes[theme]) {
             if (article) {
                 renderArticle(theme, article, themes[theme]);
