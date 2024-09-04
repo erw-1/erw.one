@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!type || !id || !title) return;
 
-        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
+        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : [] });
 
         switch (type) {
             case 'home':
@@ -40,22 +40,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Created Home:', homePage);
                 break;
             case 'theme':
-                if (homePage?.children) {
-                    homePage.children.push(newPage);
-                    currentPage = newPage;  // Set the current page context to theme
-                    console.log('Added Theme to Home:', newPage);
-                } else {
-                    console.error('Home Page not initialized when adding theme');
+                if (!homePage.children) {
+                    homePage.children = []; // Ensure homePage has a children array
                 }
+                homePage.children.push(newPage);
+                currentPage = newPage;  // Set the current page context to theme
+                console.log('Added Theme to Home:', newPage);
                 break;
             case 'article':
-                if (currentPage?.children) {
-                    currentPage.children.push(newPage);
-                    currentPage = newPage;  // Set the current page context to article
-                    console.log('Added Article to Theme:', newPage);
-                } else {
-                    console.error('Current theme not initialized when adding article');
+                if (!currentPage.children) {
+                    currentPage.children = []; // Ensure the current theme has a children array
                 }
+                currentPage.children.push(newPage);
+                currentPage = newPage;  // Set the current page context to article
+                console.log('Added Article to Theme:', newPage);
                 break;
             default:
                 console.error('Unknown type:', type);
