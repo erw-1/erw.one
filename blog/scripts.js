@@ -114,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
 
-        themeNameDiv.textContent = themeTitle;
+        themeNameDiv.innerHTML = `<a href="#${theme.id}">${themeTitle}</a>`; // Correct theme link
         themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const articleTitle = theme.articles[articleId].title;
 
-        themeNameDiv.textContent = themeTitle;
+        themeNameDiv.innerHTML = `<a href="#${theme.id}">${themeTitle}</a>`; // Correct theme link
         themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'inline';
         separator.style.display = 'inline';
