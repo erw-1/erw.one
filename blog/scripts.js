@@ -5,62 +5,59 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch and parse the markdown
     fetch('content.md')
         .then(response => response.text())
-        .then(data => {
-            console.log('Raw Markdown Data:', data);
-            parseMarkdown(data);
-            console.log('Parsed Home Page Data:', homePage);  // Log parsed home page (with children)
-        });
+        .then(parseMarkdown)
+        .catch(err => console.error('Error loading markdown:', err));
 
-    // Main function to parse the markdown
+    // Parse markdown into structured data
     function parseMarkdown(markdown) {
         const lines = markdown.split('\n');
-        
+
         lines.forEach(line => {
-            if (line.startsWith('<!--')) {
-                parseComment(line);  // Handle comment parsing (create page, assign parent, etc.)
-            } else {
-                addContent(line);  // Add content to the current page
-            }
+            line.startsWith('<!--') ? parseComment(line) : addContent(line);
         });
+
+        console.log('Parsed Home Page Data:', homePage);  // Log parsed home page (with children)
     }
 
-    // Parse comment lines (for home, theme, or article)
+    // Parse comment lines to create pages (home, theme, or article)
     function parseComment(line) {
         const type = extractFromComment(line, 'type');
         const title = extractFromComment(line, 'title');
         const id = extractFromComment(line, 'id');
 
-        if (!type || !id || !title) return;  // Skip if any required field is missing
+        if (!type || !id || !title) return;
 
         const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
 
-        // Handle nesting of themes and articles
-        if (type === 'home') {
-            homePage = newPage;  // Set home as the root page
-            currentPage = homePage;  // Set currentPage to home
-        } 
-        else if (type === 'theme') {
-            homePage.children.push(newPage);  // Add the theme to homePage's children
-            currentPage = newPage;  // Set currentPage to this theme for future articles
-        } 
-        else if (type === 'article') {
-            if (currentPage && currentPage.type === 'theme') {
-                currentPage.children.push(newPage);  // Add article to the current theme's children
-            }
+        switch (type) {
+            case 'home':
+                homePage = newPage;
+                currentPage = homePage;  // Set the current page context to home
+                break;
+            case 'theme':
+                homePage?.children?.push(newPage);
+                currentPage = newPage;  // Set the current page context to theme
+                break;
+            case 'article':
+                currentPage?.children?.push(newPage);
+                currentPage = newPage;  // Set the current page context to article
+                break;
+            default:
+                console.error('Unknown type:', type);
         }
     }
 
-    // Add content to the current page (home, theme, or article)
+    // Add content to the current page
     function addContent(line) {
         if (currentPage) {
-            currentPage.content += line + '\n';  // Always add content to the currentPage
-            console.log(`Added content to ${currentPage.type.charAt(0).toUpperCase() + currentPage.type.slice(1)}:`, line);
+            currentPage.content += line + '\n';
+            console.log(`Added content to ${currentPage.type}:`, line);
         }
     }
 
     // Helper to create a new page (home, theme, or article)
     function createPage(page) {
-        console.log(`Created ${page.type.charAt(0).toUpperCase() + page.type.slice(1)}:`, page);
+        console.log(`Created ${page.type}:`, page);
         return page;
     }
 
