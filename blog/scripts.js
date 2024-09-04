@@ -8,9 +8,79 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(parseMarkdown)
         .then(() => {
             convertContentToHtml(homePage);  // Convert the content of all pages to HTML after parsing
+            renderPage(homePage);  // Initially render the home page
             console.log('Final Parsed Data with HTML Content:', JSON.stringify(homePage, null, 2));  // Log the data structure with HTML content
         })
         .catch(err => console.error('Error loading markdown:', err));
+
+    // Function to handle rendering based on hash changes in the URL
+    window.addEventListener('hashchange', () => {
+        const hash = window.location.hash.split('#').filter(Boolean); // Get hash without #
+        if (hash.length > 0) {
+            navigateToPage(homePage, hash);
+        } else {
+            renderPage(homePage);  // Default to home if no hash
+        }
+    });
+
+    // Function to navigate to a page based on the hash in the URL
+    function navigateToPage(page, hashArray) {
+        let targetPage = page;
+        for (const id of hashArray) {
+            const child = targetPage.children?.find(childPage => childPage.id === id);
+            if (child) {
+                targetPage = child;  // Navigate to the next level in the hierarchy
+            } else {
+                console.error(`Page with id "${id}" not found.`);
+                return;
+            }
+        }
+        renderPage(targetPage);  // Render the target page after resolving the hash
+    }
+
+    // Function to render the current page with its title, content, and child buttons
+    function renderPage(page) {
+        const contentDiv = document.getElementById('content');
+        contentDiv.innerHTML = '';  // Clear existing content
+
+        // Render page title and content
+        const titleElement = document.createElement('h1');
+        titleElement.textContent = page.title;
+        contentDiv.appendChild(titleElement);
+
+        const contentElement = document.createElement('div');
+        contentElement.innerHTML = page.content;
+        contentDiv.appendChild(contentElement);
+
+        // Recursively render buttons for children (themes, articles)
+        if (page.children && page.children.length > 0) {
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+
+            page.children.forEach(childPage => {
+                const button = document.createElement('button');
+                button.textContent = childPage.title;
+                button.onclick = () => {
+                    window.location.hash = `${page.id}#${childPage.id}`;
+                };
+                buttonContainer.appendChild(button);
+
+                // Recursively render buttons for children of children if they exist
+                if (childPage.children && childPage.children.length > 0) {
+                    childPage.children.forEach(grandChildPage => {
+                        const subButton = document.createElement('button');
+                        subButton.textContent = grandChildPage.title;
+                        subButton.onclick = () => {
+                            window.location.hash = `${page.id}#${childPage.id}#${grandChildPage.id}`;
+                        };
+                        buttonContainer.appendChild(subButton);
+                    });
+                }
+            });
+
+            contentDiv.appendChild(buttonContainer);
+        }
+    }
 
     // Parse markdown into structured data
     function parseMarkdown(markdown) {
