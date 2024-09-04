@@ -1,5 +1,5 @@
 <!-- type:"home" id:"home" title:"Hi!" -->
-Welcome to the Blog! Here you will find various themes and articles.
+Welcome to my 100% static "blog/ wiki" thing that works solely off a single Markdown file.
 
 <!-- type:"theme" id:"theme1" title:"Theme 1 title" -->
 Fusce mollis, metus vitae ornare vehicula, ipsum justo tempus purus, imperdiet ullamcorper tellus diam sed odio. (Theme 1 content)
@@ -19,3 +19,6 @@ Content for the first article in Theme 2...
 
 <!-- type:"article" id:"article2-theme2" title:"Article 2 title" -->
 Content for the second article in Theme 2...
+
+<!-- type:"article" id:"article2" title:"Titre de l'article 3" -->
+Content for the third article in Theme 2...
