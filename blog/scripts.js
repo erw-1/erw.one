@@ -40,12 +40,18 @@ document.addEventListener('DOMContentLoaded', () => {
             currentPage = homePage;  // Set currentPage to home
         } 
         else if (type === 'theme') {
-            homePage.children.push(newPage);  // Add the theme to homePage's children
-            currentPage = newPage;  // Set currentPage to this theme for future articles
+            if (homePage) {  // Ensure homePage exists before pushing to children
+                homePage.children.push(newPage);  // Add the theme to homePage's children
+                currentPage = newPage;  // Set currentPage to this theme for future articles
+            } else {
+                console.error('Error: homePage is not initialized before adding a theme');
+            }
         } 
         else if (type === 'article') {
             if (currentPage && currentPage.type === 'theme') {
                 currentPage.children.push(newPage);  // Add article to the current theme's children
+            } else {
+                console.error('Error: currentPage is not a theme when adding an article');
             }
         }
     }
