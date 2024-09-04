@@ -1,6 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let pages = [];  // Store all pages (home, themes, and articles)
-    let currentPage = null;  // To track the current page (home, theme, or article)
     let homePage = null;     // Track home page separately
     let lastTheme = null;    // Track the last theme for associating articles
 
@@ -10,7 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(data => {
             console.log('Raw Markdown Data:', data);
             parseMarkdown(data);
-            console.log('Parsed Pages Data:', pages);  // Log parsed data
+            console.log('Parsed Home Page Data:', homePage);  // Log parsed home page (with children)
         });
 
     // Main function to parse the markdown
@@ -36,35 +34,35 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Home Page
         if (type === 'home') {
-            homePage = addPage({ type, id, title, content: '', children: [] });
-            currentPage = homePage;  // Set home as current page
+            homePage = createPage({ type, id, title, content: '', children: [] });
         }
         // Theme Page
         else if (type === 'theme') {
-            const theme = addPage({ type, id, title, content: '', children: [] });
+            const theme = createPage({ type, id, title, content: '', children: [] });
             homePage.children.push(theme);  // Add the theme to homePage's children
             lastTheme = theme;  // Set this as the current theme
-            currentPage = theme;  // Set theme as the current page
         }
         // Article Page
         else if (type === 'article' && lastTheme) {
-            const article = addPage({ type, id, title, content: '' });
+            const article = createPage({ type, id, title, content: '' });
             lastTheme.children.push(article);  // Add the article to the last theme's children
-            currentPage = article;  // Set the article as the current page
         }
     }
 
     // Add content to the current page (home, theme, or article)
     function addContent(line) {
-        if (currentPage) {
-            currentPage.content += line + '\n';  // Add content to the current page
-            console.log(`Added to ${currentPage.type.charAt(0).toUpperCase() + currentPage.type.slice(1)} Content:`, line);
+        if (lastTheme && lastTheme.children.length > 0) {
+            const lastArticle = lastTheme.children[lastTheme.children.length - 1];
+            lastArticle.content += line + '\n';  // Add to the last article's content
+        } else if (lastTheme) {
+            lastTheme.content += line + '\n';  // Add to theme content if no articles
+        } else if (homePage) {
+            homePage.content += line + '\n';  // Add to home content
         }
     }
 
-    // Helper to add a page (home, theme, or article) to the pages array
-    function addPage(page) {
-        pages.push(page);
+    // Helper to create and return a page (home, theme, or article)
+    function createPage(page) {
         console.log(`Parsed ${page.type.charAt(0).toUpperCase() + page.type.slice(1)}:`, page);
         return page;
     }
