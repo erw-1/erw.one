@@ -16,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
             line.startsWith('<!--') ? parseComment(line) : addContent(line);
         });
 
-        console.log('Parsed Home Page Data:', homePage);  // Log parsed home page (with children)
+        console.log('Final Parsed Data:', JSON.stringify(homePage, null, 2));  // Log final data structure with children
     }
 
     // Parse comment lines to create pages (home, theme, or article)
@@ -51,13 +51,11 @@ document.addEventListener('DOMContentLoaded', () => {
     function addContent(line) {
         if (currentPage) {
             currentPage.content += line + '\n';
-            console.log(`Added content to ${currentPage.type}:`, line);
         }
     }
 
     // Helper to create a new page (home, theme, or article)
     function createPage(page) {
-        console.log(`Created ${page.type}:`, page);
         return page;
     }
 
