@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (hash.length > 0) {
             navigateToPage(homePage, hash);
         } else {
-            renderPage(homePage);  // Default to home if no hash
+            renderPage(homePage);
         }
     });
 
@@ -87,8 +87,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!type || !id || !title) return;
 
-        // Articles don't need children, only themes and home do
-        const newPage = { type, id, title, content: '', children: type === 'theme' ? [] : undefined };
+        // Initialize the children array only for home and theme pages
+        const newPage = { 
+            type, 
+            id, 
+            title, 
+            content: '', 
+            children: type === 'theme' || type === 'home' ? [] : undefined 
+        };
 
         addPageToStructure(newPage, type);
     }
@@ -122,6 +128,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add a child page (article or theme) to a parent page (home or theme)
     function addChildPage(parent, child) {
+        if (!parent.children) {
+            parent.children = [];  // Ensure the parent has a children array
+        }
         parent.children.push(child);
     }
 
