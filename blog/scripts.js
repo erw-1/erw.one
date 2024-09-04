@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Main function to parse the markdown
     function parseMarkdown(markdown) {
         const lines = markdown.split('\n');
-
+        
         lines.forEach(line => {
             if (line.startsWith('<!--')) {
                 parseComment(line);  // Handle comment parsing (create page, assign parent, etc.)
@@ -30,36 +30,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = extractFromComment(line, 'title');
         const id = extractFromComment(line, 'id');
 
-        if (!type || !id || !title) return;
+        if (!type || !id || !title) return;  // Skip if any required field is missing
 
-        // Create the new page (home, theme, or article)
-        const newPage = createPage({ 
-            type, 
-            id, 
-            title, 
-            content: '', 
-            children: type === 'theme' ? [] : undefined // Ensure children array for themes and home
-        });
+        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
 
-        // Handle Home Page
+        // Handle nesting of themes and articles
         if (type === 'home') {
             homePage = newPage;  // Set home as the root page
             currentPage = homePage;  // Set currentPage to home
-            homePage.children = [];  // Explicitly initialize children for homePage
         } 
-        // Handle Theme Page
         else if (type === 'theme') {
-            if (homePage && homePage.children) {
-                homePage.children.push(newPage);  // Add the theme to homePage's children
-                currentPage = newPage;  // Set currentPage to this theme for future articles
-            } else {
-                console.error('Error: homePage or homePage.children is not properly initialized');
-            }
+            homePage.children.push(newPage);  // Add the theme to homePage's children
+            currentPage = newPage;  // Set currentPage to this theme for future articles
         } 
-        // Handle Article Page
-        else if (type === 'article' && currentPage && currentPage.type === 'theme') {
-            currentPage.children.push(newPage);  // Add article to the current theme's children
-            currentPage = newPage;  // Set currentPage to the article for content addition
+        else if (type === 'article') {
+            if (currentPage && currentPage.type === 'theme') {
+                currentPage.children.push(newPage);  // Add article to the current theme's children
+            }
         }
     }
 
