@@ -16,44 +16,39 @@ document.addEventListener('DOMContentLoaded', () => {
         const lines = markdown.split('\n');
 
         lines.forEach(line => {
-            // Parse Home
-            if (line.startsWith('<!-- Home')) {
-                const homeTitle = extractFromComment(line, 'title', true);
-                const homePage = {
-                    type: 'home',
-                    id: 'home',  // Assign a default id for home
-                    title: homeTitle,
-                    content: ''
-                };
-                pages.push(homePage);
-                console.log('Parsed Home:', homePage);
-            }
-            // Parse Theme
-            else if (line.startsWith('<!-- Theme')) {
-                const themeTitle = extractFromComment(line, 'title', true);
-                const themeId = extractFromComment(line, 'id', false);
-                currentTheme = {
-                    type: 'theme',
-                    id: themeId || `theme-${Math.random().toString(36).substr(2, 9)}`,  // Fallback in case no ID is provided
-                    title: themeTitle,
-                    content: '',
-                    articles: []  // Articles will be nested inside themes
-                };
-                pages.push(currentTheme);
-                console.log('Parsed Theme:', currentTheme);
-            }
-            // Parse Article
-            else if (line.startsWith('<!-- Article')) {
-                const articleTitle = extractFromComment(line, 'title', true);
-                const articleId = extractFromComment(line, 'id', false);
-                const article = {
-                    type: 'article',
-                    id: articleId || `article-${Math.random().toString(36).substr(2, 9)}`,  // Fallback in case no ID is provided
-                    title: articleTitle,
-                    content: ''
-                };
-                if (currentTheme) {
-                    currentTheme.articles.push(article);  // Add article to the current theme
+            // Parse Home, Theme, or Article
+            if (line.startsWith('<!--')) {
+                const type = extractFromComment(line, 'type');
+                const title = extractFromComment(line, 'title');
+                const id = extractFromComment(line, 'id');
+
+                if (type === 'home') {
+                    const homePage = {
+                        type: 'home',
+                        id: id,
+                        title: title,
+                        content: ''
+                    };
+                    pages.push(homePage);
+                    console.log('Parsed Home:', homePage);
+                } else if (type === 'theme') {
+                    currentTheme = {
+                        type: 'theme',
+                        id: id,
+                        title: title,
+                        content: '',
+                        articles: []
+                    };
+                    pages.push(currentTheme);
+                    console.log('Parsed Theme:', currentTheme);
+                } else if (type === 'article' && currentTheme) {
+                    const article = {
+                        type: 'article',
+                        id: id,
+                        title: title,
+                        content: ''
+                    };
+                    currentTheme.articles.push(article);
                     pages.push(article);
                     console.log('Parsed Article:', article);
                 }
@@ -77,8 +72,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Helper to extract data from comment lines
-    function extractFromComment(line, key, isQuoted = true) {
-        const regex = isQuoted ? new RegExp(`${key}:\\s*"([^"]+)"`) : new RegExp(`${key}:\\s*([^\\s]+)`);
+    function extractFromComment(line, key) {
+        const regex = new RegExp(`${key}:"([^"]+)"`);
         const match = line.match(regex);
         return match ? match[1].trim() : '';
     }
@@ -96,9 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
             renderHeader(page);  // Render the header
             renderPage(page);  // Render the content
         } else {
-            const homePage = pages.find(p => p.type === 'home');
-            renderHeader(homePage);  // Default to the home page
-            renderPage(homePage);
+            console.error(`Page with id "${pageId}" not found.`);
         }
     }
 
