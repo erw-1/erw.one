@@ -49,13 +49,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         // Render the homepage and set up hash change handling
-        renderPage(themes['Home'].title, themes['Home'].content, getThemeButtons(themes));
+        renderHome(themes['Home'].title, themes);
         handleHashChange(themes, themeIdMap, articleIdMap);
         window.addEventListener('hashchange', () => handleHashChange(themes, themeIdMap, articleIdMap));
     }
 
-    // Helper function to render a page (used for home, theme, and article rendering)
-    function renderPage(title, content, buttons = []) {
+    // Render the homepage content
+    function renderHome(title, themes) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
@@ -65,19 +65,28 @@ document.addEventListener('DOMContentLoaded', () => {
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
-        let html = `<h1>${title}</h1>`;
-        html += `<p>${basicMarkdownParser(content)}</p>`;
-
-        // Add buttons (if any)
-        if (buttons.length > 0) {
-            html += '<div class="buttons">';
-            buttons.forEach(button => {
-                html += `<button class="theme-button" onclick="${button.onclick}">${button.label}</button>`;
-            });
-            html += '</div>';
+        let homeHtml = `<h1>${title}</h1>`;
+        // Add the content for the Home (previously called "intro")
+        homeHtml += `<p>${themes['Home'].content}</p>`;
+    
+        // Render buttons for themes and their articles
+        homeHtml += '<div class="theme-buttons">';
+        for (let theme in themes) {
+            if (theme !== 'Home') {
+                const themeId = themes[theme].id;
+                const themeTitle = themes[theme].title;
+                homeHtml += `<button class="theme-button" onclick="window.location.hash='${themeId}'">${themeTitle}</button>`;
+                homeHtml += '<div class="article-buttons">';
+                for (let articleId in themes[theme].articles) {
+                    const articleTitle = themes[theme].articles[articleId].title;
+                    homeHtml += `<button class="article-button" onclick="window.location.hash='${themeId}#${articleId}'">${articleTitle}</button>`;
+                }
+                homeHtml += '</div>';
+            }
         }
+        homeHtml += '</div>';
 
-        contentDiv.innerHTML = html;
+        contentDiv.innerHTML = homeHtml;
     }
 
     // Handle the hash change for navigation
@@ -87,49 +96,57 @@ document.addEventListener('DOMContentLoaded', () => {
         const articleId = hash[1];
 
         if (!themeId || themeId === 'Home') {
-            renderPage(themes['Home'].title, themes['Home'].content, getThemeButtons(themes));
+            renderHome(themes['Home'].title, themes);
         } else if (themeIdMap[themeId]) {
             const themeTitle = themeIdMap[themeId].title;
             if (articleId) {
-                renderPage(
-                    themeTitle,
-                    themes[themeId].articles[articleId].content,
-                    [] // No buttons for articles
-                );
+                renderArticle(themeTitle, articleId, themes[themeId]);
             } else {
-                renderPage(
-                    themeTitle,
-                    themes[themeId].content,
-                    getArticleButtons(themes[themeId].articles, themeId)
-                );
+                renderThemeContent(themeTitle, themes[themeId]);
             }
         }
     }
 
-    // Helper function to generate theme buttons for the homepage
-    function getThemeButtons(themes) {
-        const buttons = [];
-        for (let theme in themes) {
-            if (theme !== 'Home') {
-                buttons.push({
-                    label: themes[theme].title,
-                    onclick: `window.location.hash='${themes[theme].id}'`
-                });
-            }
+    // Render theme content and article buttons
+    function renderThemeContent(themeTitle, theme) {
+        const contentDiv = document.getElementById('content');
+        const themeNameDiv = document.getElementById('theme-name');
+        const articleNameDiv = document.getElementById('article-name');
+        const separator = document.getElementById('separator');
+
+        themeNameDiv.textContent = themeTitle;
+        themeNameDiv.style.display = 'inline';
+        articleNameDiv.style.display = 'none';
+        separator.style.display = 'none';
+
+        let contentHtml = `<h1>${themeTitle}</h1><p>${theme.content}</p>`;
+        contentHtml += '<div class="article-buttons">';
+        for (let articleId in theme.articles) {
+            const articleTitle = theme.articles[articleId].title;
+            contentHtml += `<button class="article-button" onclick="window.location.hash='${theme.id}#${articleId}'">${articleTitle}</button>`;
         }
-        return buttons;
+        contentHtml += '</div>';
+
+        contentDiv.innerHTML = contentHtml;
     }
 
-    // Helper function to generate article buttons for a theme
-    function getArticleButtons(articles, themeId) {
-        const buttons = [];
-        for (let articleId in articles) {
-            buttons.push({
-                label: articles[articleId].title,
-                onclick: `window.location.hash='${themeId}#${articleId}'`
-            });
-        }
-        return buttons;
+    // Render the selected article
+    function renderArticle(themeTitle, articleId, theme) {
+        const contentDiv = document.getElementById('content');
+        const themeNameDiv = document.getElementById('theme-name');
+        const articleNameDiv = document.getElementById('article-name');
+        const separator = document.getElementById('separator');
+
+        const articleTitle = theme.articles[articleId].title;
+
+        themeNameDiv.textContent = themeTitle;
+        themeNameDiv.style.display = 'inline';
+        articleNameDiv.style.display = 'inline';
+        separator.style.display = 'inline';
+        articleNameDiv.querySelector('#article-title').textContent = articleTitle;
+
+        const articleContent = theme.articles[articleId].content;
+        contentDiv.innerHTML = `<h1>${articleTitle}</h1>` + basicMarkdownParser(articleContent);
     }
 
     // A simple markdown parser function
