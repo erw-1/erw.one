@@ -11,7 +11,7 @@ Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas non metus sed 
 <!-- type:"article" id:"article2-theme1" title:"Article 2 title" -->
 Lorem ipsum dolor sit amet, consectetur adipiscing elit...
 
-<!-- type:"theme" id:"theme1" title:"Theme 1 title" -->
+<!-- type:"theme" id:"theme2" title:"Theme 2 title" -->
 Introduction to Theme 2 Some introductory text for Theme 2.
 
 <!-- type:"article" id:"article1-theme2" title:"Article 1 title" -->
