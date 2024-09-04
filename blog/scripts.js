@@ -33,20 +33,31 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!type || !id || !title) return;
 
         // Create the new page (home, theme, or article)
-        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
+        const newPage = createPage({ 
+            type, 
+            id, 
+            title, 
+            content: '', 
+            children: type === 'theme' ? [] : undefined // Ensure children array for themes and home
+        });
 
         // Handle Home Page
         if (type === 'home') {
             homePage = newPage;  // Set home as the root page
             currentPage = homePage;  // Set currentPage to home
+            homePage.children = [];  // Explicitly initialize children for homePage
         } 
         // Handle Theme Page
         else if (type === 'theme') {
-            homePage.children.push(newPage);  // Add the theme to homePage's children
-            currentPage = newPage;  // Set currentPage to this theme for future articles
+            if (homePage && homePage.children) {
+                homePage.children.push(newPage);  // Add the theme to homePage's children
+                currentPage = newPage;  // Set currentPage to this theme for future articles
+            } else {
+                console.error('Error: homePage or homePage.children is not properly initialized');
+            }
         } 
         // Handle Article Page
-        else if (type === 'article' && currentPage.type === 'theme') {
+        else if (type === 'article' && currentPage && currentPage.type === 'theme') {
             currentPage.children.push(newPage);  // Add article to the current theme's children
             currentPage = newPage;  // Set currentPage to the article for content addition
         }
@@ -62,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Helper to create a new page (home, theme, or article)
     function createPage(page) {
-        console.log(`Parsed ${page.type.charAt(0).toUpperCase() + page.type.slice(1)}:`, page);
+        console.log(`Created ${page.type.charAt(0).toUpperCase() + page.type.slice(1)}:`, page);
         return page;
     }
 
