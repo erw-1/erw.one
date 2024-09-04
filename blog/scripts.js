@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'none';
 
         let homeHtml = `<h1>${title}</h1>`;
-        // Add the content for the Home (previously called "intro")
+        // Add the content for the Home
         homeHtml += `<p>${themes['Home'].content}</p>`;
     
         // Render buttons for themes and their articles
@@ -102,19 +102,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (articleId) {
                 renderArticle(themeTitle, articleId, themes[themeId]);
             } else {
-                renderThemeContent(themeTitle, themes[themeId]);
+                renderThemeContent(themeTitle, themes[themeId], themes);
             }
         }
     }
 
     // Render theme content and article buttons
-    function renderThemeContent(themeTitle, theme) {
+    function renderThemeContent(themeTitle, theme, themes) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
+        const dropdownDiv = document.getElementById('theme-dropdown'); // Theme dropdown for other themes
 
-        themeNameDiv.innerHTML = `<a href="#${theme.id}">${themeTitle}</a>`; // Correct theme link
+        themeNameDiv.innerHTML = `<a href="#${theme.id}">${themeTitle}</a>`;
         themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
@@ -127,6 +128,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         contentHtml += '</div>';
 
+        // Populate the dropdown with links to other themes
+        let dropdownHtml = '';
+        for (let themeKey in themes) {
+            if (themeKey !== 'Home' && themes[themeKey].id !== theme.id) {
+                const themeDropdownTitle = themes[themeKey].title;
+                dropdownHtml += `<li><a href="#${themes[themeKey].id}">${themeDropdownTitle}</a></li>`;
+            }
+        }
+        dropdownDiv.innerHTML = dropdownHtml;
+
         contentDiv.innerHTML = contentHtml;
     }
 
@@ -136,10 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
+        const dropdownDiv = document.getElementById('article-dropdown'); // Article dropdown
 
         const articleTitle = theme.articles[articleId].title;
 
-        themeNameDiv.innerHTML = `<a href="#${theme.id}">${themeTitle}</a>`; // Correct theme link
+        themeNameDiv.innerHTML = `<a href="#${theme.id}">${themeTitle}</a>`;
         themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'inline';
         separator.style.display = 'inline';
@@ -147,6 +159,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const articleContent = theme.articles[articleId].content;
         contentDiv.innerHTML = `<h1>${articleTitle}</h1>` + basicMarkdownParser(articleContent);
+
+        // Populate the dropdown with other articles from the same theme
+        let dropdownHtml = '';
+        for (let otherArticleId in theme.articles) {
+            if (otherArticleId !== articleId) {
+                const otherArticleTitle = theme.articles[otherArticleId].title;
+                dropdownHtml += `<li><a href="#${theme.id}#${otherArticleId}">${otherArticleTitle}</a></li>`;
+            }
+        }
+        dropdownDiv.innerHTML = dropdownHtml;
     }
 
     // A simple markdown parser function
