@@ -38,30 +38,43 @@ document.addEventListener('DOMContentLoaded', () => {
             const type = extractFromComment(line, 'type');
             const title = extractFromComment(line, 'title');
             const id = extractFromComment(line, 'id');
-
+        
             if (!type || !id || !title) return;
-
+        
             const newPage = {
-                type, id, title, content: '', children: type === 'theme' ? [] : undefined
+                type, id, title, content: '', children: type === 'theme' || type === 'home' ? [] : undefined
             };
-
+        
             // Home Page
             if (type === 'home') {
                 homePage = newPage;
+                homePage.children = homePage.children || [];  // Ensure homePage has children array
                 currentPage = homePage;
+                console.log('Created Home:', homePage);
             }
-
+        
             // Theme Page
             else if (type === 'theme') {
-                homePage.children.push(newPage); // Themes are children of Home
-                lastTheme = newPage;  // Track the current theme
+                if (!homePage) {
+                    console.error('Error: homePage is not initialized.');
+                    return;
+                }
+                homePage.children = homePage.children || [];  // Ensure homePage has children array
+                homePage.children.push(newPage);
                 currentPage = newPage;
+                console.log('Added Theme to Home:', newPage);
             }
-
+        
             // Article Page
-            else if (type === 'article' && lastTheme) {
-                lastTheme.children.push(newPage);  // Articles are children of the last theme
-                currentPage = newPage;
+            else if (type === 'article') {
+                if (!currentPage || currentPage.type !== 'theme') {
+                    console.error('Error: Current theme is not initialized or is not a theme.');
+                    return;
+                }
+                currentPage.children = currentPage.children || [];  // Ensure current theme has children array
+                currentPage.children.push(newPage);  // Add article to the current theme
+                currentPage = newPage;  // Set current page context to article
+                console.log('Added Article to Theme:', newPage);
             }
         }
 
