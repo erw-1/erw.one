@@ -1,6 +1,8 @@
 document.addEventListener('DOMContentLoaded', () => {
     let pages = [];  // Store all pages (home, themes, and articles)
     let currentPage = null;  // To track the current page (home, theme, or article)
+    let homePage = null;     // Track home page separately
+    let lastTheme = null;    // Track the last theme for associating articles
 
     // Fetch and parse the markdown
     fetch('content.md')
@@ -32,7 +34,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!type || !id || !title) return;
 
-        currentPage = addPage({ type, id, title, content: '', articles: type === 'theme' ? [] : undefined });
+        // Home Page
+        if (type === 'home') {
+            homePage = addPage({ type, id, title, content: '', children: [] });
+            currentPage = homePage;  // Set home as current page
+        }
+        // Theme Page
+        else if (type === 'theme') {
+            const theme = addPage({ type, id, title, content: '', children: [] });
+            homePage.children.push(theme);  // Add the theme to homePage's children
+            lastTheme = theme;  // Set this as the current theme
+            currentPage = theme;  // Set theme as the current page
+        }
+        // Article Page
+        else if (type === 'article' && lastTheme) {
+            const article = addPage({ type, id, title, content: '' });
+            lastTheme.children.push(article);  // Add the article to the last theme's children
+            currentPage = article;  // Set the article as the current page
+        }
     }
 
     // Add content to the current page (home, theme, or article)
