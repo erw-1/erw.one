@@ -45,58 +45,76 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Populate the header (breadcrumb style)
+    // Adjusted populateHeader function
     function populateHeader(page) {
-        const headerDiv = document.getElementById('header');
-        headerDiv.innerHTML = '';  // Clear existing header content
-
-        // Add home button without "Hi!" (just the SVG)
-        const homeButton = createElement('button', homeSvg, true);
+        const header = document.getElementById('header');
+        header.innerHTML = ''; // Clear the current header
+    
+        // Home button
+        const homeButton = createElement('button', '', true);
+        homeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md">
+        <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`;
         homeButton.onclick = () => window.location.hash = '';
-        headerDiv.appendChild(homeButton);
-
-        // Breadcrumb trail (skip "Hi!" for home, only show theme/article titles)
-        let breadcrumbTrail = [];
-        let currentPage = page;
-
-        while (currentPage && currentPage !== homePage) {
-            breadcrumbTrail.unshift(currentPage);  // Add pages in reverse order
-            currentPage = findParent(currentPage);
-        }
-
-        breadcrumbTrail.forEach((breadcrumbPage, index) => {
-            const separator = createElement('span', separatorSvg, true, 'separator');
-            headerDiv.appendChild(separator);
-
-            const pageButton = createElement('button', breadcrumbPage.title);
-            if (index === breadcrumbTrail.length - 1 && breadcrumbPage.children?.length) {
-                // Last page in breadcrumb, add dropdown functionality
-                const dropdownSeparator = createElement('span', separatorSvg, true, 'dropdown-separator');
-                dropdownSeparator.onclick = () => createDropdown(breadcrumbPage.children, dropdownSeparator);
-                headerDiv.appendChild(pageButton);
-                headerDiv.appendChild(dropdownSeparator);
-            } else {
-                // Normal breadcrumb button
-                pageButton.onclick = () => navigateHash(findParent(breadcrumbPage), breadcrumbPage);
-                headerDiv.appendChild(pageButton);
+        header.appendChild(homeButton);
+    
+        if (page === homePage) {
+            // If on the home page, show the dropdown for themes
+            const separator = createElement('span', '', false, 'separator');
+            header.appendChild(separator);
+    
+            const dropdownSeparator = createElement('button', '', true, 'dropdown-separator');
+            dropdownSeparator.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-md text-token-text-tertiary rotate-270">
+            <path fill="currentColor" fill-rule="evenodd" d="M5.293 9.293a1 1 0 0 1 1.414 0L12 14.586l5.293-5.293a1 1 0 1 1 1.414 1.414l-6 6a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path></svg>`;
+    
+            const dropdown = createDropdown(page.children, child => navigateHash(page, child)); // Pass the homePage's children (themes)
+            dropdownSeparator.appendChild(dropdown);
+    
+            header.appendChild(dropdownSeparator);
+        } else {
+            // Not on home page, render breadcrumb logic like you already have for themes and articles
+            const separator = createElement('span', '', false, 'separator');
+            header.appendChild(separator);
+    
+            const currentTitle = createElement('button', page.title, false);
+            header.appendChild(currentTitle);
+            
+            if (page.type === 'theme' && page.children?.length > 0) {
+                // If on a theme page with articles, add dropdown for articles
+                const dropdownSeparator = createElement('button', '', true, 'dropdown-separator');
+                dropdownSeparator.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-md rotate-270">
+                <path fill="currentColor" fill-rule="evenodd" d="M5.293 9.293a1 1 0 0 1 1.414 0L12 14.586l5.293-5.293a1 1 0 1 1 1.414 1.414l-6 6a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path></svg>`;
+    
+                const dropdown = createDropdown(page.children, child => navigateHash(page, child)); // Pass the theme's articles
+                dropdownSeparator.appendChild(dropdown);
+    
+                header.appendChild(dropdownSeparator);
             }
-        });
+        }
     }
-
-    // Create dropdown for sibling pages
-    function createDropdown(children, separatorElement) {
-        const dropdown = createElement('div', '', false, 'dropdown');
+    
+    // Create dropdown for children (either themes or articles)
+    function createDropdown(children, onClickHandler) {
+        const dropdown = document.createElement('div');
+        dropdown.className = 'dropdown';
+        dropdown.style.display = 'none'; // Hidden by default
+    
         children.forEach(child => {
-            const dropdownItem = createElement('div', child.title);
-            dropdownItem.onclick = () => navigateHash(findParent(child), child);
+            const dropdownItem = createElement('div', child.title, false);
+            dropdownItem.onclick = () => {
+                onClickHandler(child);
+                dropdown.style.display = 'none'; // Hide after click
+            };
             dropdown.appendChild(dropdownItem);
         });
-
-        // Position and display the dropdown near the separator
-        dropdown.style.position = 'absolute';
-        dropdown.style.left = `${separatorElement.offsetLeft}px`;
-        separatorElement.appendChild(dropdown);
+    
+        // Toggle dropdown visibility when the separator is clicked
+        dropdown.onclick = function () {
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        };
+    
+        return dropdown;
     }
+
 
     // Simplified button hash creation
     function navigateHash(parentPage, childPage) {
