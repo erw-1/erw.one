@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let pages = [];  // Store all pages (home, themes, and articles)
-    let currentTheme = null;  // To track the current theme or context
+    let currentPage = null;  // To track the current page (home, theme, or article)
 
     // Fetch and parse the markdown
     fetch('content.md')
@@ -32,28 +32,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!type || !id || !title) return;
 
-        if (type === 'home') {
-            addPage({ type, id, title });
-        } else if (type === 'theme') {
-            currentTheme = addPage({ type, id, title, articles: [] });
-        } else if (type === 'article' && currentTheme) {
-            const article = addPage({ type, id, title });
-            currentTheme.articles.push(article);  // Add article to current theme
-        }
+        currentPage = addPage({ type, id, title, content: '', articles: type === 'theme' ? [] : undefined });
     }
 
-    // Add content to the correct page (home, theme, or article)
+    // Add content to the current page (home, theme, or article)
     function addContent(line) {
-        if (currentTheme === null && pages.length > 0) {
-            pages[0].content += line + '\n';  // Add to home content
-            console.log('Added to Home Content:', line);
-        } else if (currentTheme && currentTheme.articles.length === 0) {
-            currentTheme.content += line + '\n';  // Add to theme content
-            console.log('Added to Theme Content:', line);
-        } else if (currentTheme && currentTheme.articles.length > 0) {
-            const lastArticle = currentTheme.articles[currentTheme.articles.length - 1];
-            lastArticle.content += line + '\n';  // Add to the last article's content
-            console.log('Added to Article Content:', line);
+        if (currentPage) {
+            currentPage.content += line + '\n';  // Add content to the current page
+            console.log(`Added to ${currentPage.type.charAt(0).toUpperCase() + currentPage.type.slice(1)} Content:`, line);
         }
     }
 
