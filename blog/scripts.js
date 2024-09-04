@@ -22,15 +22,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Navigate to a page based on the URL hash
     function navigateToPage(page, hashArray) {
-        let targetPage = hashArray.reduce((currentPage, id) => {
+        const targetPage = hashArray.reduce((currentPage, id) => {
             return currentPage?.children?.find(child => child.id === id) || null;
         }, page);
-
-        if (targetPage) {
-            renderPage(targetPage);
-        } else {
-            console.error('Page not found for the given hash:', hashArray);
-        }
+        if (targetPage) renderPage(targetPage);
     }
 
     // Render the current page with title, content, and children buttons
@@ -38,16 +33,69 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = '';  // Clear existing content
 
-        populateHeader(page);  // Populate the header
-
         contentDiv.appendChild(createElement('h1', page.title));
         contentDiv.appendChild(createElement('div', page.content, true));
+
+        populateHeader(page);
 
         if (page.children?.length > 0) {
             const buttonContainer = createElement('div', '', false, 'button-container');
             page.children.forEach(child => buttonContainer.appendChild(createElement('button', child.title, false, '', () => navigateHash(page, child))));
             contentDiv.appendChild(buttonContainer);
         }
+    }
+
+    // Populate the header (breadcrumb style)
+    function populateHeader(page) {
+        const headerDiv = document.getElementById('header');
+        headerDiv.innerHTML = '';  // Clear existing header content
+
+        // Add home button without "Hi!" (just the SVG)
+        const homeButton = createElement('button', homeSvg, true);
+        homeButton.onclick = () => window.location.hash = '';
+        headerDiv.appendChild(homeButton);
+
+        // Breadcrumb trail (skip "Hi!" for home, only show theme/article titles)
+        let breadcrumbTrail = [];
+        let currentPage = page;
+
+        while (currentPage && currentPage !== homePage) {
+            breadcrumbTrail.unshift(currentPage);  // Add pages in reverse order
+            currentPage = findParent(currentPage);
+        }
+
+        breadcrumbTrail.forEach((breadcrumbPage, index) => {
+            const separator = createElement('span', separatorSvg, true, 'separator');
+            headerDiv.appendChild(separator);
+
+            const pageButton = createElement('button', breadcrumbPage.title);
+            if (index === breadcrumbTrail.length - 1 && breadcrumbPage.children?.length) {
+                // Last page in breadcrumb, add dropdown functionality
+                const dropdownSeparator = createElement('span', separatorSvg, true, 'dropdown-separator');
+                dropdownSeparator.onclick = () => createDropdown(breadcrumbPage.children, dropdownSeparator);
+                headerDiv.appendChild(pageButton);
+                headerDiv.appendChild(dropdownSeparator);
+            } else {
+                // Normal breadcrumb button
+                pageButton.onclick = () => navigateHash(findParent(breadcrumbPage), breadcrumbPage);
+                headerDiv.appendChild(pageButton);
+            }
+        });
+    }
+
+    // Create dropdown for sibling pages
+    function createDropdown(children, separatorElement) {
+        const dropdown = createElement('div', '', false, 'dropdown');
+        children.forEach(child => {
+            const dropdownItem = createElement('div', child.title);
+            dropdownItem.onclick = () => navigateHash(findParent(child), child);
+            dropdown.appendChild(dropdownItem);
+        });
+
+        // Position and display the dropdown near the separator
+        dropdown.style.position = 'absolute';
+        dropdown.style.left = `${separatorElement.offsetLeft}px`;
+        separatorElement.appendChild(dropdown);
     }
 
     // Simplified button hash creation
@@ -64,6 +112,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (className) element.className = className;
         if (eventListener) element.onclick = eventListener;
         return element;
+    }
+
+    // Find the parent of a given page
+    function findParent(page) {
+        const findInParent = (parent) => parent.children?.find(child => child === page);
+        let foundParent = homePage?.children?.find(findInParent);
+        if (!foundParent) {
+            homePage?.children?.forEach(theme => {
+                if (findInParent(theme)) foundParent = theme;
+            });
+        }
+        return foundParent || homePage;
     }
 
     // Parse the markdown into structured data
@@ -142,82 +202,13 @@ document.addEventListener('DOMContentLoaded', () => {
             .trim();
     }
 
-    // Populate the header with navigation breadcrumbs and dropdowns
-    function populateHeader(page) {
-        const headerDiv = document.getElementById('header');
-        headerDiv.innerHTML = ''; // Clear existing header
-
-        // Home icon
-        const homeIcon = createElement('div', homeSvg, true, 'header-item');
-        homeIcon.onclick = () => {
-            window.location.hash = ''; // Navigate to home
-        };
-        headerDiv.appendChild(homeIcon);
-
-        // Check if page exists before populating
-        if (!page) {
-            console.error('Page is undefined in populateHeader.');
-            return; // Exit if page is undefined
-        }
-
-        // Add breadcrumbs for themes and articles
-        let currentPage = page;
-        const breadcrumbs = [];
-
-        while (currentPage) {
-            breadcrumbs.unshift(currentPage); // Collect breadcrumb trail from current to home
-            currentPage = findParent(homePage, currentPage);
-        }
-
-        breadcrumbs.forEach((crumb, index) => {
-            const separator = createElement('div', separatorSvg, true, 'separator-item');
-            const crumbElement = createElement('div', crumb.title, false, 'header-item');
-
-            crumbElement.onclick = () => {
-                // Navigate to the corresponding page
-                window.location.hash = breadcrumbs.slice(0, index + 1).map(b => b.id).join('#');
-            };
-
-            headerDiv.appendChild(separator);
-            headerDiv.appendChild(crumbElement);
-        });
-
-        // Handle last breadcrumb dropdown (if applicable)
-        const lastPage = breadcrumbs[breadcrumbs.length - 1];
-        if (lastPage && lastPage.children?.length > 0) {
-            const dropdownButton = createElement('div', separatorSvg, true, 'dropdown');
-            dropdownButton.classList.add('rotated-separator');
-            const dropdownContent = createElement('div', '', false, 'dropdown-content');
-
-            lastPage.children.forEach(sibling => {
-                const siblingElement = createElement('div', sibling.title, false);
-                siblingElement.onclick = () => {
-                    window.location.hash = breadcrumbs.map(b => b.id).join('#') + `#${sibling.id}`;
-                };
-                dropdownContent.appendChild(siblingElement);
-            });
-
-            dropdownButton.appendChild(dropdownContent);
-            headerDiv.appendChild(dropdownButton);
-
-            dropdownButton.onclick = () => {
-                dropdownContent.classList.toggle('visible');
-            };
-        }
-    }
-
-    // Helper function to find the parent page of a given page
-    function findParent(rootPage, targetPage) {
-        if (!rootPage || !rootPage.children) return null;
-        if (rootPage.children.includes(targetPage)) return rootPage;
-        for (let child of rootPage.children) {
-            const parent = findParent(child, targetPage);
-            if (parent) return parent;
-        }
-        return null;
-    }
-
-    // SVG for home icon and separator
-    const homeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`;
-    const separatorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-md"><path fill="currentColor" fill-rule="evenodd" d="M5.293 9.293a1 1 0 0 1 1.414 0L12 14.586l5.293-5.293a1 1 0 1 1 1.414 1.414l-6 6a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path></svg>`;
+    // Home SVG and Separator SVGs
+    const homeSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md">
+        <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>`;
+    const separatorSvg = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-md text-token-text-tertiary">
+        <path fill="currentColor" fill-rule="evenodd" d="M5.293 9.293a1 1 0 0 1 1.414 0L12 14.586l5.293-5.293a1 1 0 1 1 1.414 1.414l-6 6a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path>
+        </svg>`;
 });
