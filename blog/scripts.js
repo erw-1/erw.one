@@ -31,7 +31,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (!type || !id || !title) return;
 
-        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : [] });
+        // Articles don't need children, only themes and home do
+        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
 
         switch (type) {
             case 'home':
@@ -51,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!currentPage.children) {
                     currentPage.children = []; // Ensure the current theme has a children array
                 }
-                currentPage.children.push(newPage);
+                currentPage.children.push(newPage);  // Add article to the current theme
                 currentPage = newPage;  // Set the current page context to article
                 console.log('Added Article to Theme:', newPage);
                 break;
