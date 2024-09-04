@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let homePage = null;
-    let currentContext = null;
-    let currentTheme = null;  // Track the current theme to attach articles as siblings
+    let currentTheme = null;  // Track the current theme or page context
 
     // Fetch and parse the markdown
     fetch('content.md')
@@ -75,13 +74,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (type === 'home') {
             homePage = newPage;
-            currentContext = homePage;
             currentTheme = null;  // Reset current theme
             console.log('Created Home:', homePage);
         } else if (type === 'theme') {
             addChildPage(homePage, newPage);  // Themes are direct children of home
-            currentContext = newPage;  // Change context to current theme for articles
-            currentTheme = newPage;  // Track the current theme for adding articles
+            currentTheme = newPage;  // Set the current theme for adding articles
             console.log('Added Theme to Home:', newPage);
         } else if (type === 'article') {
             if (currentTheme) {
@@ -90,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.error('No theme found to attach the article to');
             }
-            currentContext = newPage;  // Set the current context to the article
         }
     }
 
@@ -100,10 +96,12 @@ document.addEventListener('DOMContentLoaded', () => {
         parent.children.push(child);
     }
 
-    // Add content to the current page
+    // Add content to the current theme or home
     function addContent(line) {
-        if (currentContext) {
-            currentContext.content += line + '\n';
+        if (currentTheme) {
+            currentTheme.content += line + '\n';
+        } else if (homePage) {
+            homePage.content += line + '\n';
         }
     }
 
