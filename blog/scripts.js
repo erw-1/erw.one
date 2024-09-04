@@ -83,51 +83,52 @@ document.addEventListener('DOMContentLoaded', () => {
     // Parse markdown into structured data
     function parseMarkdown(markdown) {
         const lines = markdown.split('\n');
+        let currentTheme = null;  // Track the current theme to attach articles as siblings
 
         lines.forEach(line => {
             if (line.startsWith('<!--')) {
-                parseComment(line);
+                parseComment(line, currentTheme);
             } else {
                 addContent(line);
             }
         });
-    }
 
-    // Parse comment lines to create pages (home, theme, or article)
-    function parseComment(line) {
-        const type = extractFromComment(line, 'type');
-        const title = extractFromComment(line, 'title');
-        const id = extractFromComment(line, 'id');
+        function parseComment(line, currentTheme) {
+            const type = extractFromComment(line, 'type');
+            const title = extractFromComment(line, 'title');
+            const id = extractFromComment(line, 'id');
 
-        if (!type || !id || !title) return;
+            if (!type || !id || !title) return;
 
-        // Articles don't need children, only themes and home do
-        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
+            const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
 
-        switch (type) {
-            case 'home':
-                homePage = newPage;
-                currentPage = homePage;  // Set the current page context to home
-                console.log('Created Home:', homePage);
-                break;
-            case 'theme':
-                if (!homePage.children) {
-                    homePage.children = []; // Ensure homePage has a children array
-                }
-                homePage.children.push(newPage);
-                currentPage = newPage;  // Set the current page context to theme
-                console.log('Added Theme to Home:', newPage);
-                break;
-            case 'article':
-                if (!currentPage.children) {
-                    currentPage.children = []; // Ensure the current theme has a children array
-                }
-                currentPage.children.push(newPage);  // Add article to the current theme
-                currentPage = newPage;  // Set the current page context to article
-                console.log('Added Article to Theme:', newPage);
-                break;
-            default:
-                console.error('Unknown type:', type);
+            switch (type) {
+                case 'home':
+                    homePage = newPage;
+                    currentPage = homePage;  // Set the current page context to home
+                    console.log('Created Home:', homePage);
+                    break;
+                case 'theme':
+                    if (!homePage.children) {
+                        homePage.children = []; // Ensure homePage has a children array
+                    }
+                    homePage.children.push(newPage);
+                    currentPage = newPage;  // Set the current page context to theme
+                    currentTheme = newPage;  // Track the current theme for adding articles
+                    console.log('Added Theme to Home:', newPage);
+                    break;
+                case 'article':
+                    if (currentTheme) {
+                        currentTheme.children.push(newPage);  // Add articles as siblings to the current theme
+                        currentPage = newPage;  // Set the current page context to article
+                        console.log('Added Article to Theme:', newPage);
+                    } else {
+                        console.error('No theme found to attach the article to');
+                    }
+                    break;
+                default:
+                    console.error('Unknown type:', type);
+            }
         }
     }
 
