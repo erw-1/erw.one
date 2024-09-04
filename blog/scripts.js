@@ -6,7 +6,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function parseMarkdown(markdown) {
         const themes = {};
         let currentTheme = null;
-        let currentArticle = null;
         const themeIdMap = {};  // Map theme IDs to theme names and titles
         const articleIdMap = {};  // Map article IDs to their respective titles and theme
 
@@ -38,9 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     articleIdMap[articleId] = { theme: currentTheme, title: articleTitle };
                 }
             }
-            // Add content to the theme's or article's content
-            else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
-                themes[currentTheme].content += line + '\n';
+            // Add content to the home or theme
+            else if (currentTheme === null && themes['Home']) {
+                themes['Home'].content += line + '\n';  // Add to home content if no theme is active
+            } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
+                themes[currentTheme].content += line + '\n';  // Add to theme content if no articles
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length > 0) {
                 const lastArticleKey = Object.keys(themes[currentTheme].articles).pop();
                 themes[currentTheme].articles[lastArticleKey].content += line + '\n';
@@ -65,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'none';
 
         let homeHtml = `<h1>${title}</h1>`;
-        // Add the content for the Home
+        // Add the content for the Home (previously called "intro")
         homeHtml += `<p>${themes['Home'].content}</p>`;
     
         // Render buttons for themes and their articles
