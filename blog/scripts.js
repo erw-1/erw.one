@@ -22,10 +22,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Navigate to a page based on the URL hash
     function navigateToPage(page, hashArray) {
-        const targetPage = hashArray.reduce((currentPage, id) => {
+        let targetPage = hashArray.reduce((currentPage, id) => {
             return currentPage?.children?.find(child => child.id === id) || null;
         }, page);
-        if (targetPage) renderPage(targetPage);
+
+        if (targetPage) {
+            renderPage(targetPage);
+        } else {
+            console.error('Page not found for the given hash:', hashArray);
+        }
     }
 
     // Render the current page with title, content, and children buttons
@@ -33,8 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = '';  // Clear existing content
 
-        // Call the function to populate the header
-        populateHeader(page);
+        populateHeader(page);  // Populate the header
 
         contentDiv.appendChild(createElement('h1', page.title));
         contentDiv.appendChild(createElement('div', page.content, true));
@@ -43,92 +47,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const buttonContainer = createElement('div', '', false, 'button-container');
             page.children.forEach(child => buttonContainer.appendChild(createElement('button', child.title, false, '', () => navigateHash(page, child))));
             contentDiv.appendChild(buttonContainer);
-        }
-    }
-
-    // Populate the header with navigation and dropdown links
-    function populateHeader(currentPage) {
-        const header = document.getElementById('header');
-        header.innerHTML = ''; // Clear existing header content
-
-        // Create Home SVG element
-        const homeSvg = document.createElement('div');
-        homeSvg.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md">
-        <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`;
-        homeSvg.classList.add('header-icon');
-        homeSvg.onclick = () => window.location.hash = '#';  // Link to home
-
-        // Append home icon
-        header.appendChild(homeSvg);
-
-        // Function to create separator SVG
-        function createSeparator(rotated = false) {
-            const separator = document.createElement('div');
-            separator.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-md ${rotated ? 'rotated-separator' : ''}">
-            <path fill="currentColor" fill-rule="evenodd" d="M5.293 9.293a1 1 0 0 1 1.414 0L12 14.586l5.293-5.293a1 1 0 1 1 1.414 1.414l-6 6a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path>
-            </svg>`;
-            return separator;
-        }
-
-        // Add dropdowns for the children if it's home or theme
-        function createDropdown(page, isRotated = false) {
-            const separator = createSeparator(isRotated);
-            separator.classList.add('dropdown');
-            separator.onclick = () => toggleDropdown(page);
-
-            const dropdownContent = document.createElement('div');
-            dropdownContent.classList.add('dropdown-content');
-            page.children.forEach(child => {
-                const childLink = document.createElement('div');
-                childLink.textContent = child.title;
-                childLink.onclick = () => {
-                    const newHash = page === homePage ? `#${child.id}` : `#${page.id}#${child.id}`;
-                    window.location.hash = newHash;
-                };
-                dropdownContent.appendChild(childLink);
-            });
-
-            separator.appendChild(dropdownContent);
-            header.appendChild(separator);
-        }
-
-        // Append elements depending on the current page
-        if (currentPage === homePage) {
-            // On the home page, add a dropdown for themes (children of home)
-            if (currentPage.children?.length) {
-                createDropdown(currentPage);  // Normal separator for home
-            }
-        } else if (currentPage.type === 'theme') {
-            // On a theme page, add theme title and dropdown for siblings (articles)
-            header.appendChild(createElement('div', currentPage.title, 'header-item'));
-
-            if (currentPage.children?.length) {
-                createDropdown(currentPage, true);  // Rotated separator for theme siblings
-            }
-        } else if (currentPage.type === 'article') {
-            // On an article page, show the theme and article title
-            const theme = currentPage.parent;  // Assuming the theme is stored in parent
-
-            header.appendChild(createElement('div', theme.title, 'header-item'));
-            header.appendChild(createSeparator()); // Separator between theme and article
-            header.appendChild(createElement('div', currentPage.title, 'header-item'));
-
-            // Add dropdown for article siblings
-            createDropdown(theme, true);
-        }
-
-        // Utility function to create header item
-        function createElement(tag, content, className) {
-            const element = document.createElement(tag);
-            element.textContent = content;
-            element.classList.add(className);
-            return element;
-        }
-
-        // Toggle dropdown visibility
-        function toggleDropdown(page) {
-            const dropdown = header.querySelector('.dropdown-content');
-            if (dropdown) dropdown.classList.toggle('visible');
         }
     }
 
@@ -223,4 +141,83 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/\n/gim, '<br />')
             .trim();
     }
+
+    // Populate the header with navigation breadcrumbs and dropdowns
+    function populateHeader(page) {
+        const headerDiv = document.getElementById('header');
+        headerDiv.innerHTML = ''; // Clear existing header
+
+        // Home icon
+        const homeIcon = createElement('div', homeSvg, true, 'header-item');
+        homeIcon.onclick = () => {
+            window.location.hash = ''; // Navigate to home
+        };
+        headerDiv.appendChild(homeIcon);
+
+        // Check if page exists before populating
+        if (!page) {
+            console.error('Page is undefined in populateHeader.');
+            return; // Exit if page is undefined
+        }
+
+        // Add breadcrumbs for themes and articles
+        let currentPage = page;
+        const breadcrumbs = [];
+
+        while (currentPage) {
+            breadcrumbs.unshift(currentPage); // Collect breadcrumb trail from current to home
+            currentPage = findParent(homePage, currentPage);
+        }
+
+        breadcrumbs.forEach((crumb, index) => {
+            const separator = createElement('div', separatorSvg, true, 'separator-item');
+            const crumbElement = createElement('div', crumb.title, false, 'header-item');
+
+            crumbElement.onclick = () => {
+                // Navigate to the corresponding page
+                window.location.hash = breadcrumbs.slice(0, index + 1).map(b => b.id).join('#');
+            };
+
+            headerDiv.appendChild(separator);
+            headerDiv.appendChild(crumbElement);
+        });
+
+        // Handle last breadcrumb dropdown (if applicable)
+        const lastPage = breadcrumbs[breadcrumbs.length - 1];
+        if (lastPage && lastPage.children?.length > 0) {
+            const dropdownButton = createElement('div', separatorSvg, true, 'dropdown');
+            dropdownButton.classList.add('rotated-separator');
+            const dropdownContent = createElement('div', '', false, 'dropdown-content');
+
+            lastPage.children.forEach(sibling => {
+                const siblingElement = createElement('div', sibling.title, false);
+                siblingElement.onclick = () => {
+                    window.location.hash = breadcrumbs.map(b => b.id).join('#') + `#${sibling.id}`;
+                };
+                dropdownContent.appendChild(siblingElement);
+            });
+
+            dropdownButton.appendChild(dropdownContent);
+            headerDiv.appendChild(dropdownButton);
+
+            dropdownButton.onclick = () => {
+                dropdownContent.classList.toggle('visible');
+            };
+        }
+    }
+
+    // Helper function to find the parent page of a given page
+    function findParent(rootPage, targetPage) {
+        if (!rootPage || !rootPage.children) return null;
+        if (rootPage.children.includes(targetPage)) return rootPage;
+        for (let child of rootPage.children) {
+            const parent = findParent(child, targetPage);
+            if (parent) return parent;
+        }
+        return null;
+    }
+
+    // SVG for home icon and separator
+    const homeSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`;
+    const separatorSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-md"><path fill="currentColor" fill-rule="evenodd" d="M5.293 9.293a1 1 0 0 1 1.414 0L12 14.586l5.293-5.293a1 1 0 1 1 1.414 1.414l-6 6a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path></svg>`;
 });
