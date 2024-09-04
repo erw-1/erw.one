@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPage(targetPage);  // Render the target page after resolving the hash
     }
 
-    // Function to render the current page with its title, content, and child buttons
+    // Function to render the current page with its title, content, and immediate child buttons
     function renderPage(page) {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = '';  // Clear existing content
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
         contentElement.innerHTML = page.content;
         contentDiv.appendChild(contentElement);
 
-        // Recursively render buttons for children (themes, articles)
+        // Render buttons for immediate children (themes, articles)
         if (page.children && page.children.length > 0) {
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'button-container';
@@ -74,19 +74,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 buttonContainer.appendChild(button);
-
-                // Recursively render buttons for children of children (i.e., articles under themes)
-                if (childPage.children && childPage.children.length > 0) {
-                    childPage.children.forEach(grandChildPage => {
-                        const subButton = document.createElement('button');
-                        subButton.textContent = grandChildPage.title;
-                        // Ensure the hash reflects the correct hierarchy (theme -> article)
-                        subButton.onclick = () => {
-                            window.location.hash = `#${page.id}#${childPage.id}#${grandChildPage.id}`;
-                        };
-                        buttonContainer.appendChild(subButton);
-                    });
-                }
             });
 
             contentDiv.appendChild(buttonContainer);
