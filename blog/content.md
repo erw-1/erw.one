@@ -1,22 +1,21 @@
-<!-- Home title: "Hi!" -->
+<!-- type:"home" id:"home" title:"Hi!" -->
 Welcome to the Blog! Here you will find various themes and articles.
 
-<!-- Theme title: "Theme 1 title" id: theme1 -->
+<!-- type:"theme" id:"theme1" title:"Theme 1 title" -->
 Fusce mollis, metus vitae ornare vehicula, ipsum justo tempus purus, imperdiet ullamcorper tellus diam sed odio. (Theme 1 content)
 
-<!-- Article title: "Article 1 title" id: article1-theme1 -->
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas non metus sed urna hendrerit iaculis sit amet vel diam. In mattis libero id fringilla bibendum. Quisque et ultrices diam, ornare bibendum diam. Etiam semper non lacus rhoncus iaculis. Praesent eu consectetur felis, at porta nunc. Morbi eget augue interdum, interdum dui quis, dictum dolor. Vivamus mattis quam vitae nibh mattis maximus. Vivamus viverra nulla et lectus aliquam, at auctor erat auctor. Sed eget lacinia ipsum. Vivamus dignissim vitae arcu quis consectetur. Aenean sed mi suscipit, tristique dui vel, porttitor justo. Quisque volutpat vitae neque ut luctus. Etiam erat orci, accumsan ut lectus viverra, pharetra consequat magna. Sed pretium porta mauris, placerat auctor risus. Fusce mollis, metus vitae ornare vehicula, ipsum justo tempus purus, imperdiet ullamcorper tellus diam sed odio.
-
+<!-- type:"article" id:"article1-theme1" title:"Article 1 title" -->
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas non metus sed urna hendrerit iaculis sit amet vel diam. In mattis libero id fringilla bibendum. Quisque et ultrices diam, ornare bibendum diam. Etiam semper non lacus rhoncus iaculis.
 ![Image1](img1.png) 
 
-<!-- Article title: "Article 2 title" id: article2-theme1 -->
+<!-- type:"article" id:"article2-theme1" title:"Article 2 title" -->
 Lorem ipsum dolor sit amet, consectetur adipiscing elit...
 
-<!-- Theme title: "Theme 2 title" id: theme2 --> 
+<!-- type:"theme" id:"theme1" title:"Theme 1 title" -->
 Introduction to Theme 2 Some introductory text for Theme 2.
 
-<!-- Article title: "Article 1 title" id: article1-theme2 -->
+<!-- type:"article" id:"article1-theme2" title:"Article 1 title" -->
 Content for the first article in Theme 2...
 
-<!-- Article title: "Article 2 title" id: article2-theme2 -->
+<!-- type:"article" id:"article2-theme2" title:"Article 2 title" -->
 Content for the second article in Theme 2...
