@@ -108,13 +108,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.log('Created Home:', homePage);
                 break;
             case 'theme':
-                addChildPage(homePage, newPage);
-                currentTheme = newPage;
+                currentPage = newPage;  // Ensure we're switching to the new theme
+                addChildPage(homePage, newPage);  // Add the theme to home
+                currentTheme = newPage;  // Track the current theme for adding articles
                 console.log('Added Theme to Home:', newPage);
                 break;
             case 'article':
                 if (currentTheme) {
-                    addChildPage(currentTheme, newPage);
+                    addChildPage(currentTheme, newPage);  // Add articles to the current theme
                     console.log('Added Article to Theme:', newPage);
                 } else {
                     console.error('No theme found to attach the article to');
