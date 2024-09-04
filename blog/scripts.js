@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let homePage = null;
+    let currentContext = null;
     let currentTheme = null;  // Track the current theme to attach articles as siblings
 
     // Fetch and parse the markdown
@@ -44,7 +45,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Simplified button hash creation
     function navigateHash(parentPage, childPage) {
-        const newHash = parentPage === homePage ? `#${childPage.id}` : `#${parentPage.id}#${childPage.id}`;
+        const newHash = parentPage === homePage ? #${childPage.id} : #${parentPage.id}#${childPage.id};
         window.location.hash = newHash;
     }
 
@@ -74,11 +75,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (type === 'home') {
             homePage = newPage;
+            currentContext = homePage;
             currentTheme = null;  // Reset current theme
             console.log('Created Home:', homePage);
         } else if (type === 'theme') {
             addChildPage(homePage, newPage);  // Themes are direct children of home
-            currentTheme = newPage;  // Set the current theme for adding articles
+            currentContext = newPage;  // Change context to current theme for articles
+            currentTheme = newPage;  // Track the current theme for adding articles
             console.log('Added Theme to Home:', newPage);
         } else if (type === 'article') {
             if (currentTheme) {
@@ -87,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 console.error('No theme found to attach the article to');
             }
+            currentContext = newPage;  // Set the current context to the article
         }
     }
 
@@ -96,18 +100,16 @@ document.addEventListener('DOMContentLoaded', () => {
         parent.children.push(child);
     }
 
-    // Add content to the current page (either theme or home)
+    // Add content to the current page
     function addContent(line) {
-        if (currentTheme) {
-            currentTheme.content += line + '\n';
-        } else if (homePage) {
-            homePage.content += line + '\n';
+        if (currentContext) {
+            currentContext.content += line + '\n';
         }
     }
 
     // Extract data from comment lines
     function extractFromComment(line, key) {
-        const regex = new RegExp(`${key}:"([^"]+)"`);
+        const regex = new RegExp(${key}:"([^"]+)");
         return (line.match(regex)?.[1] || '').trim();
     }
 
@@ -125,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/^# (.*$)/gim, '<h1>$1</h1>')
             .replace(/\*\*(.*?)\*\*/gim, '<b>$1</b>')
             .replace(/\*(.*?)\*/gim, '<i>$1</i>')
-            .replace(/!\[(.*?)\]\((.*?)\)/gim, (match, altText, imagePath) => `<img alt='${altText}' src='${!imagePath.startsWith('/files/img/blog/') ? `/files/img/blog/${imagePath}` : imagePath}' />`)
+            .replace(/!\[(.*?)\]\((.*?)\)/gim, (match, altText, imagePath) => <img alt='${altText}' src='${!imagePath.startsWith('/files/img/blog/') ? /files/img/blog/${imagePath} : imagePath}' />)
             .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
             .replace(/\n\s*\n/gim, '</p><p>')
             .replace(/\n$/gim, '<br />')
