@@ -1,31 +1,35 @@
 document.addEventListener('DOMContentLoaded', () => {
     let homePage = null;
-    let currentContext = null;
-    let currentTheme = null;  // Track the current theme to attach articles as siblings
+    let currentPageContext = null;
 
     // Fetch and parse the markdown
     fetch('content.md')
         .then(response => response.text())
         .then(parseMarkdown)
         .then(() => {
-            convertContentToHtml(homePage);  // Convert content of all pages to HTML after parsing
-            renderPage(homePage);  // Initially render the home page
-            console.log('Final Parsed Data with HTML Content:', JSON.stringify(homePage, null, 2));  // Log data structure with HTML content
+            convertContentToHtml(homePage);
+            renderPage(homePage);
+            console.log('Final Parsed Data with HTML Content:', JSON.stringify(homePage, null, 2));
         })
         .catch(err => console.error('Error loading markdown:', err));
 
     // Handle hash changes for navigation
     window.addEventListener('hashchange', () => {
         const hash = window.location.hash.split('#').filter(Boolean);
-        hash.length > 0 ? navigateToPage(homePage, hash) : renderPage(homePage);  // If no hash, render home
+        hash.length > 0 ? navigateToPage(homePage, hash) : renderPage(homePage);
     });
 
     // Navigate to a page based on the URL hash
     function navigateToPage(page, hashArray) {
-        const targetPage = hashArray.reduce((currentPage, id) => {
+        const targetPage = resolvePageFromHash(page, hashArray);
+        if (targetPage) renderPage(targetPage);
+    }
+
+    // Resolve page based on the hash array
+    function resolvePageFromHash(page, hashArray) {
+        return hashArray.reduce((currentPage, id) => {
             return currentPage?.children?.find(child => child.id === id) || null;
         }, page);
-        if (targetPage) renderPage(targetPage);
     }
 
     // Render the current page with title, content, and children buttons
@@ -33,9 +37,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = '';  // Clear existing content
 
+        // Add the title and content
         contentDiv.appendChild(createElement('h1', page.title));
         contentDiv.appendChild(createElement('div', page.content, true));
 
+        // Add buttons for children
         if (page.children?.length > 0) {
             const buttonContainer = createElement('div', '', false, 'button-container');
             page.children.forEach(child => buttonContainer.appendChild(createElement('button', child.title, false, '', () => navigateHash(page, child))));
@@ -45,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Simplified button hash creation
     function navigateHash(parentPage, childPage) {
-        const newHash = parentPage === homePage ? `#${childPage.id}` : `#${parentPage.id}#${childPage.id}`;
+        const newHash = `#${parentPage === homePage ? '' : parentPage.id + '#'}${childPage.id}`;
         window.location.hash = newHash;
     }
 
@@ -61,7 +67,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Parse the markdown into structured data
     function parseMarkdown(markdown) {
-        markdown.split('\n').forEach(line => line.startsWith('<!--') ? parseComment(line) : addContent(line));
+        markdown.split('\n').forEach(line => {
+            if (line.startsWith('<!--')) {
+                parseComment(line);
+            } else {
+                addContent(line);
+            }
+        });
     }
 
     // Parse comments to create pages (home, theme, article)
@@ -69,41 +81,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const type = extractFromComment(line, 'type');
         const title = extractFromComment(line, 'title');
         const id = extractFromComment(line, 'id');
+
         if (!type || !id || !title) return;
 
         const newPage = { type, id, title, content: '', children: type === 'theme' || type === 'home' ? [] : undefined };
 
-        if (type === 'home') {
-            homePage = newPage;
-            currentContext = homePage;
-            currentTheme = null;  // Reset current theme
-            console.log('Created Home:', homePage);
-        } else if (type === 'theme') {
-            addChildPage(homePage, newPage);  // Themes are direct children of home
-            currentContext = newPage;  // Change context to current theme for articles
-            currentTheme = newPage;  // Track the current theme for adding articles
-            console.log('Added Theme to Home:', newPage);
-        } else if (type === 'article') {
-            if (currentTheme) {
-                addChildPage(currentTheme, newPage);  // Articles are added as children to the current theme
-                console.log('Added Article to Theme:', newPage);
-            } else {
-                console.error('No theme found to attach the article to');
-            }
-            currentContext = newPage;  // Set the current context to the article
+        switch (type) {
+            case 'home':
+                homePage = newPage;
+                currentPageContext = homePage;
+                console.log('Created Home:', homePage);
+                break;
+            case 'theme':
+                homePage.children.push(newPage);  // Themes are direct children of home
+                currentPageContext = newPage;
+                console.log('Added Theme:', newPage);
+                break;
+            case 'article':
+                if (currentPageContext?.type === 'theme') {
+                    currentPageContext.children.push(newPage);  // Articles are children of the current theme
+                    console.log('Added Article to Theme:', newPage);
+                }
+                break;
         }
-    }
-
-    // Add a child page (article or theme) to a parent page (home or theme)
-    function addChildPage(parent, child) {
-        parent.children ??= [];  // Ensure the parent has a children array
-        parent.children.push(child);
     }
 
     // Add content to the current page
     function addContent(line) {
-        if (currentContext) {
-            currentContext.content += line + '\n';
+        if (currentPageContext) {
+            currentPageContext.content += line + '\n';
         }
     }
 
@@ -115,7 +121,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Convert markdown content to HTML for all pages recursively
     function convertContentToHtml(page) {
-        if (page.content) page.content = MarkdownParser(page.content);
+        if (page.content) {
+            page.content = MarkdownParser(page.content);
+        }
+
         page.children?.forEach(convertContentToHtml);
     }
 
