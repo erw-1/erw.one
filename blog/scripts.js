@@ -1,22 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
     let homePage = null;
     let currentContext = null;
+    let currentTheme = null;  // Track the current theme to attach articles as siblings
 
     // Fetch and parse the markdown
     fetch('content.md')
         .then(response => response.text())
         .then(parseMarkdown)
         .then(() => {
-            convertContentToHtml(homePage);
-            renderPage(homePage);
-            console.log('Final Parsed Data with HTML Content:', JSON.stringify(homePage, null, 2));
+            convertContentToHtml(homePage);  // Convert content of all pages to HTML after parsing
+            renderPage(homePage);  // Initially render the home page
+            console.log('Final Parsed Data with HTML Content:', JSON.stringify(homePage, null, 2));  // Log data structure with HTML content
         })
         .catch(err => console.error('Error loading markdown:', err));
 
     // Handle hash changes for navigation
     window.addEventListener('hashchange', () => {
         const hash = window.location.hash.split('#').filter(Boolean);
-        hash.length > 0 ? navigateToPage(homePage, hash) : renderPage(homePage);
+        hash.length > 0 ? navigateToPage(homePage, hash) : renderPage(homePage);  // If no hash, render home
     });
 
     // Navigate to a page based on the URL hash
@@ -75,10 +76,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'home') {
             homePage = newPage;
             currentContext = homePage;
+            currentTheme = null;  // Reset current theme
             console.log('Created Home:', homePage);
-        } else {
-            addChildPage(currentContext, newPage);
-            if (type === 'theme') currentContext = newPage;  // Change context to current theme for articles
+        } else if (type === 'theme') {
+            addChildPage(homePage, newPage);  // Themes are direct children of home
+            currentContext = newPage;  // Change context to current theme for articles
+            currentTheme = newPage;  // Track the current theme for adding articles
+            console.log('Added Theme to Home:', newPage);
+        } else if (type === 'article') {
+            if (currentTheme) {
+                addChildPage(currentTheme, newPage);  // Articles are added as children to the current theme
+                console.log('Added Article to Theme:', newPage);
+            } else {
+                console.error('No theme found to attach the article to');
+            }
+            currentContext = newPage;  // Set the current context to the article
         }
     }
 
@@ -90,7 +102,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add content to the current page
     function addContent(line) {
-        if (currentContext) currentContext.content += line + '\n';
+        if (currentContext) {
+            currentContext.content += line + '\n';
+        }
     }
 
     // Extract data from comment lines
