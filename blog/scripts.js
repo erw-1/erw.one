@@ -1,147 +1,170 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let homePage = null;
-    let currentPage = null; // Track the current page (theme, article)
+    let homePage = null;     // Track home page separately
+    let currentPage = null;  // Track the current page being processed (home, theme, or article)
+    let currentTheme = null;  // Track the current theme to attach articles as siblings
 
     // Fetch and parse the markdown
     fetch('content.md')
         .then(response => response.text())
         .then(parseMarkdown)
         .then(() => {
-            convertContentToHtml(homePage);  // Convert all page content to HTML
-            renderPage(homePage);  // Render the home page
-            console.log('Final Parsed Data:', JSON.stringify(homePage, null, 2));  // Log final structured data
+            convertContentToHtml(homePage);  // Convert the content of all pages to HTML after parsing
+            renderPage(homePage);  // Initially render the home page
+            console.log('Final Parsed Data with HTML Content:', JSON.stringify(homePage, null, 2));  // Log the data structure with HTML content
         })
         .catch(err => console.error('Error loading markdown:', err));
 
-    // Handle hash changes for navigation
+    // Function to handle rendering based on hash changes in the URL
     window.addEventListener('hashchange', () => {
-        const hashPath = getHashPath();
-        const targetPage = findPageByHash(homePage, hashPath);
-        if (targetPage) renderPage(targetPage);
-        else console.error('Page not found for hash:', hashPath);
+        const hash = window.location.hash.split('#').filter(Boolean); // Get hash without #
+        if (hash.length > 0) {
+            navigateToPage(homePage, hash);
+        } else {
+            renderPage(homePage);  // Default to home if no hash
+        }
     });
+
+    // Function to navigate to a page based on the hash in the URL
+    function navigateToPage(page, hashArray) {
+        let targetPage = page;
+        for (const id of hashArray) {
+            const child = targetPage.children?.find(childPage => childPage.id === id);
+            if (child) {
+                targetPage = child;  // Navigate to the next level in the hierarchy
+            } else {
+                console.error(`Page with id "${id}" not found.`);
+                return;
+            }
+        }
+        renderPage(targetPage);  // Render the target page after resolving the hash
+    }
+
+    // Function to render the current page with its title, content, and immediate child buttons
+    function renderPage(page) {
+        const contentDiv = document.getElementById('content');
+        contentDiv.innerHTML = '';  // Clear existing content
+
+        // Render page title and content
+        const titleElement = document.createElement('h1');
+        titleElement.textContent = page.title;
+        contentDiv.appendChild(titleElement);
+
+        const contentElement = document.createElement('div');
+        contentElement.innerHTML = page.content;
+        contentDiv.appendChild(contentElement);
+
+        // Render buttons for immediate children (themes, articles)
+        if (page.children && page.children.length > 0) {
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'button-container';
+
+            page.children.forEach(childPage => {
+                const button = document.createElement('button');
+                button.textContent = childPage.title;
+
+                if (page === homePage) {
+                    // If on the home page, avoid adding 'home' to the hash
+                    button.onclick = () => {
+                        window.location.hash = `#${childPage.id}`;
+                    };
+                } else {
+                    // For other pages (theme -> article), preserve hierarchy
+                    button.onclick = () => {
+                        window.location.hash = `#${page.id}#${childPage.id}`;
+                    };
+                }
+
+                buttonContainer.appendChild(button);
+            });
+
+            contentDiv.appendChild(buttonContainer);
+        }
+    }
 
     // Parse markdown into structured data
     function parseMarkdown(markdown) {
         const lines = markdown.split('\n');
-        let lastTheme = null; // Keep track of the last parsed theme
 
         lines.forEach(line => {
             if (line.startsWith('<!--')) {
-                parseComment(line);
+                parseComment(line);  // Handle comment parsing (create page, assign parent, etc.)
             } else {
                 addContent(line);
             }
         });
+    }
 
-        function parseComment(line) {
-            const type = extractFromComment(line, 'type');
-            const title = extractFromComment(line, 'title');
-            const id = extractFromComment(line, 'id');
-        
-            if (!type || !id || !title) return;
-        
-            const newPage = {
-                type, id, title, content: '', children: type === 'theme' || type === 'home' ? [] : undefined
-            };
-        
-            // Home Page
-            if (type === 'home') {
+    // Parse comment lines to create pages (home, theme, or article)
+    function parseComment(line) {
+        const type = extractFromComment(line, 'type');
+        const title = extractFromComment(line, 'title');
+        const id = extractFromComment(line, 'id');
+
+        if (!type || !id || !title) return;
+
+        // Articles don't need children, only themes and home do
+        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
+
+        switch (type) {
+            case 'home':
                 homePage = newPage;
-                homePage.children = homePage.children || [];  // Ensure homePage has children array
-                currentPage = homePage;
+                currentPage = homePage;  // Set the current page context to home
                 console.log('Created Home:', homePage);
-            }
-        
-            // Theme Page
-            else if (type === 'theme') {
-                if (!homePage) {
-                    console.error('Error: homePage is not initialized.');
-                    return;
+                break;
+            case 'theme':
+                if (!homePage.children) {
+                    homePage.children = []; // Ensure homePage has a children array
                 }
-                homePage.children = homePage.children || [];  // Ensure homePage has children array
                 homePage.children.push(newPage);
-                currentPage = newPage;
+                currentPage = newPage;  // Set the current page context to theme
+                currentTheme = newPage;  // Track the current theme for adding articles
                 console.log('Added Theme to Home:', newPage);
-            }
-        
-            // Article Page
-            else if (type === 'article') {
-                if (!currentPage || currentPage.type !== 'theme') {
-                    console.error('Error: Current theme is not initialized or is not a theme.');
-                    return;
+                break;
+            case 'article':
+                if (currentTheme) {
+                    currentTheme.children.push(newPage);  // Add articles as siblings to the current theme
+                    console.log('Added Article to Theme:', newPage);
+                } else {
+                    console.error('No theme found to attach the article to');
                 }
-                currentPage.children = currentPage.children || [];  // Ensure current theme has children array
-                currentPage.children.push(newPage);  // Add article to the current theme
-                currentPage = newPage;  // Set current page context to article
-                console.log('Added Article to Theme:', newPage);
-            }
-        }
-
-        function addContent(line) {
-            if (currentPage) {
-                currentPage.content += line + '\n';
-            }
+                currentPage = newPage;  // Set the current page context to article
+                break;
+            default:
+                console.error('Unknown type:', type);
         }
     }
 
-    // Helper function to extract data from comment lines
+    // Add content to the current page
+    function addContent(line) {
+        if (currentPage) {
+            currentPage.content += line + '\n';
+            console.log(`Added content to ${currentPage.type}:`, line);
+        }
+    }
+
+    // Helper to create a new page (home, theme, or article)
+    function createPage(page) {
+        return page;
+    }
+
+    // Helper to extract data from comment lines
     function extractFromComment(line, key) {
         const regex = new RegExp(`${key}:"([^"]+)"`);
         const match = line.match(regex);
         return match ? match[1].trim() : null;
     }
 
-    // Function to render the current page
-    function renderPage(page) {
-        const contentDiv = document.getElementById('content');
-        contentDiv.innerHTML = '';  // Clear existing content
-
-        // Render page title
-        const titleElement = document.createElement('h1');
-        titleElement.textContent = page.title;
-        contentDiv.appendChild(titleElement);
-
-        // Render page content
-        const contentElement = document.createElement('div');
-        contentElement.innerHTML = page.content;
-        contentDiv.appendChild(contentElement);
-
-        // Render buttons for children (themes or articles)
-        if (page.children && page.children.length > 0) {
-            const buttonContainer = document.createElement('div');
-            page.children.forEach(child => {
-                const button = document.createElement('button');
-                button.textContent = child.title;
-                button.onclick = () => {
-                    window.location.hash = `#${child.id}`;
-                };
-                buttonContainer.appendChild(button);
-            });
-            contentDiv.appendChild(buttonContainer);
-        }
-    }
-
-    // Convert markdown content to HTML
+    // Convert markdown content to HTML for all pages recursively
     function convertContentToHtml(page) {
         if (page.content) {
-            page.content = MarkdownParser(page.content);
+            page.content = MarkdownParser(page.content);  // Convert markdown to HTML
+            console.log(`Converted content to HTML for ${page.type}:`, page.content);
         }
-        if (page.children) {
-            page.children.forEach(convertContentToHtml);
+
+        // If the page has children (for home or themes), apply conversion recursively
+        if (page.children && page.children.length > 0) {
+            page.children.forEach(childPage => convertContentToHtml(childPage));
         }
-    }
-
-    // Function to traverse hash path and find the target page
-    function findPageByHash(root, hashPath) {
-        return hashPath.reduce((current, id) => {
-            return current?.children?.find(child => child.id === id) || null;
-        }, root);
-    }
-
-    // Function to get hash path (array of IDs from the URL)
-    function getHashPath() {
-        return window.location.hash.split('#').filter(Boolean);
     }
 
     // Markdown to HTML conversion function
@@ -154,6 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
         // Convert bold and italic
         markdown = markdown.replace(/\*\*(.*?)\*\*/gim, '<b>$1</b>'); // Bold
         markdown = markdown.replace(/\*(.*?)\*/gim, '<i>$1</i>');     // Italic
+
+        // Convert inline code
+        markdown = markdown.replace(/`(.*?)`/gim, '<code>$1</code>');
+
+        // Convert blockquotes
+        markdown = markdown.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
+
+        // Convert lists
+        markdown = markdown.replace(/^\s*-\s+(.*$)/gim, '<li>$1</li>');  // Unordered list
+        markdown = markdown.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>'); // Wrap list items in <ul>
 
         // Convert images
         markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/gim, function(match, altText, imagePath) {
@@ -169,7 +202,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Convert paragraphs (two newlines = new paragraph)
         markdown = markdown.replace(/\n\s*\n/gim, '</p><p>'); // Paragraph breaks
         markdown = '<p>' + markdown + '</p>'; // Wrap everything in <p>
-        
+
+        // Clean up extra <br /> from single newlines
+        markdown = markdown.replace(/<\/p><p><br \/>/gim, '</p><p>');
+
         return markdown.trim();
     }
 });
