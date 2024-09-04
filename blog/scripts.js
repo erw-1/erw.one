@@ -30,7 +30,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = extractFromComment(line, 'title');
         const id = extractFromComment(line, 'id');
 
-        if (!type || !id || !title) return;  // Skip if any required field is missing
+        if (!type || !id || !title) {
+            console.error('Missing required fields in comment', { type, title, id });
+            return;  // Skip if any required field is missing
+        }
 
         const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
 
@@ -38,11 +41,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (type === 'home') {
             homePage = newPage;  // Set home as the root page
             currentPage = homePage;  // Set currentPage to home
+            console.log('Home Page Created:', homePage);
         } 
         else if (type === 'theme') {
             if (homePage) {  // Ensure homePage exists before pushing to children
                 homePage.children.push(newPage);  // Add the theme to homePage's children
                 currentPage = newPage;  // Set currentPage to this theme for future articles
+                console.log('Added theme to Home:', newPage);
             } else {
                 console.error('Error: homePage is not initialized before adding a theme');
             }
@@ -50,8 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
         else if (type === 'article') {
             if (currentPage && currentPage.type === 'theme') {
                 currentPage.children.push(newPage);  // Add article to the current theme's children
+                console.log('Added article to theme:', newPage);
             } else {
-                console.error('Error: currentPage is not a theme when adding an article');
+                console.error('Error: currentPage is not a theme when adding an article', { currentPage });
             }
         }
     }
@@ -61,6 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentPage) {
             currentPage.content += line + '\n';  // Always add content to the currentPage
             console.log(`Added content to ${currentPage.type.charAt(0).toUpperCase() + currentPage.type.slice(1)}:`, line);
+        } else {
+            console.error('Error: currentPage is undefined when trying to add content');
         }
     }
 
