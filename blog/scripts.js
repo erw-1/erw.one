@@ -60,9 +60,18 @@ document.addEventListener('DOMContentLoaded', () => {
             page.children.forEach(childPage => {
                 const button = document.createElement('button');
                 button.textContent = childPage.title;
-                button.onclick = () => {
-                    window.location.hash = `${page.id}#${childPage.id}`;
-                };
+
+                if (page === homePage) {
+                    // No 'home' in hash, only child ID (theme ID)
+                    button.onclick = () => {
+                        window.location.hash = `#${childPage.id}`;
+                    };
+                } else {
+                    // Regular page navigation (theme -> article)
+                    button.onclick = () => {
+                        window.location.hash = `${page.id}#${childPage.id}`;
+                    };
+                }
                 buttonContainer.appendChild(button);
 
                 // Recursively render buttons for children of children if they exist
