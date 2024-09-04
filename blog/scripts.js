@@ -1,155 +1,140 @@
 document.addEventListener('DOMContentLoaded', () => {
+    let pages = [];
+
     fetch('content.md')
         .then(response => response.text())
         .then(data => parseMarkdown(data));
 
     function parseMarkdown(markdown) {
-        const themes = {};
         let currentTheme = null;
-        const themeIdMap = {};  // Map theme IDs to theme names and titles
-        const articleIdMap = {};  // Map article IDs to their respective titles and theme
-
-        markdown.split('\n').forEach(line => {
-            // Parse the Home content from the comment
+        const lines = markdown.split('\n');
+        
+        lines.forEach((line) => {
+            // Home
             if (line.startsWith('<!-- Home')) {
-                const homeTitleMatch = line.match(/title:\s*"([^"]+)"/);
-                const homeTitle = homeTitleMatch ? homeTitleMatch[1].trim() : 'Home';
-                themes['Home'] = { content: '', articles: {}, title: homeTitle };
+                const homeTitle = extractFromComment(line, 'title');
+                pages.push({
+                    type: 'home',
+                    id: 'home',
+                    title: homeTitle,
+                    content: ''
+                });
             }
-            // Parse theme with title and custom ID
+            // Theme
             else if (line.startsWith('<!-- Theme')) {
-                const themeTitleMatch = line.match(/title:\s*"([^"]+)"/);
-                const themeIdMatch = line.match(/id:\s*([^\s]+)/);
-                const themeTitle = themeTitleMatch ? themeTitleMatch[1].trim() : 'Untitled Theme';
-                const themeId = themeIdMatch ? themeIdMatch[1].trim() : `theme-${Math.random().toString(36).substr(2, 9)}`;
-                currentTheme = themeId;
-                themeIdMap[themeId] = { title: themeTitle, id: themeId };
-                themes[currentTheme] = { content: '', articles: {}, id: themeId, title: themeTitle };
+                const themeTitle = extractFromComment(line, 'title');
+                const themeId = extractFromComment(line, 'id');
+                currentTheme = {
+                    type: 'theme',
+                    id: themeId,
+                    title: themeTitle,
+                    content: '',
+                    articles: []
+                };
+                pages.push(currentTheme);
             }
-            // Parse article with title and custom ID
+            // Article
             else if (line.startsWith('<!-- Article')) {
-                const articleTitleMatch = line.match(/title:\s*"([^"]+)"/);
-                const articleIdMatch = line.match(/id:\s*([^\s]+)/);
-                const articleTitle = articleTitleMatch ? articleTitleMatch[1].trim() : 'Untitled Article';
-                const articleId = articleIdMatch ? articleIdMatch[1].trim() : `article-${Math.random().toString(36).substr(2, 9)}`;
+                const articleTitle = extractFromComment(line, 'title');
+                const articleId = extractFromComment(line, 'id');
                 if (currentTheme) {
-                    themes[currentTheme].articles[articleId] = { content: '', id: articleId, title: articleTitle };
-                    articleIdMap[articleId] = { theme: currentTheme, title: articleTitle };
+                    const article = {
+                        type: 'article',
+                        id: articleId,
+                        title: articleTitle,
+                        content: ''
+                    };
+                    currentTheme.articles.push(article);
+                    pages.push(article);
                 }
             }
-            // Add content to the home or theme
-            else if (currentTheme === null && themes['Home']) {
-                themes['Home'].content += line + '\n';  // Add to home content if no theme is active
-            } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
-                themes[currentTheme].content += line + '\n';  // Add to theme content if no articles
-            } else if (currentTheme && Object.keys(themes[currentTheme].articles).length > 0) {
-                const lastArticleKey = Object.keys(themes[currentTheme].articles).pop();
-                themes[currentTheme].articles[lastArticleKey].content += line + '\n';
+            // Add content to the correct place
+            else if (currentTheme && currentTheme.articles.length === 0) {
+                currentTheme.content += line + '\n';  // Add to theme content
+            } else if (currentTheme && currentTheme.articles.length > 0) {
+                const lastArticle = currentTheme.articles[currentTheme.articles.length - 1];
+                lastArticle.content += line + '\n';  // Add to the last article's content
+            } else if (pages.length > 0 && pages[0].type === 'home') {
+                pages[0].content += line + '\n';  // Add to home content
             }
         });
 
-        // Render the homepage and set up hash change handling
-        renderHome(themes['Home'].title, themes);
-        handleHashChange(themes, themeIdMap, articleIdMap);
-        window.addEventListener('hashchange', () => handleHashChange(themes, themeIdMap, articleIdMap));
+        renderPage('home');  // Start by rendering the homepage
+        window.addEventListener('hashchange', handleHashChange);
     }
 
-    // Render the homepage content
-    function renderHome(title, themes) {
+    // Helper to extract data from comment lines
+    function extractFromComment(line, key) {
+        const regex = new RegExp(`${key}:\\s*"([^"]+)"`);
+        const match = line.match(regex);
+        return match ? match[1].trim() : '';
+    }
+
+    // Render a page based on its type
+    function renderPage(pageId) {
+        const page = pages.find(p => p.id === pageId);
         const contentDiv = document.getElementById('content');
-        const themeNameDiv = document.getElementById('theme-name');
-        const articleNameDiv = document.getElementById('article-name');
-        const separator = document.getElementById('separator');
 
-        themeNameDiv.style.display = 'none';
-        articleNameDiv.style.display = 'none';
-        separator.style.display = 'none';
-
-        let homeHtml = `<h1>${title}</h1>`;
-        // Add the content for the Home (previously called "intro")
-        homeHtml += `<p>${themes['Home'].content}</p>`;
-    
-        // Render buttons for themes and their articles
-        homeHtml += '<div class="theme-buttons">';
-        for (let theme in themes) {
-            if (theme !== 'Home') {
-                const themeId = themes[theme].id;
-                const themeTitle = themes[theme].title;
-                homeHtml += `<button class="theme-button" onclick="window.location.hash='${themeId}'">${themeTitle}</button>`;
-                homeHtml += '<div class="article-buttons">';
-                for (let articleId in themes[theme].articles) {
-                    const articleTitle = themes[theme].articles[articleId].title;
-                    homeHtml += `<button class="article-button" onclick="window.location.hash='${themeId}#${articleId}'">${articleTitle}</button>`;
-                }
-                homeHtml += '</div>';
-            }
+        if (!page) {
+            contentDiv.innerHTML = `<p>Page not found</p>`;
+            return;
         }
-        homeHtml += '</div>';
 
-        contentDiv.innerHTML = homeHtml;
-    }
-
-    // Handle the hash change for navigation
-    function handleHashChange(themes, themeIdMap, articleIdMap) {
-        const hash = window.location.hash.substring(1).split('#');
-        const themeId = hash[0];
-        const articleId = hash[1];
-
-        if (!themeId || themeId === 'Home') {
-            renderHome(themes['Home'].title, themes);
-        } else if (themeIdMap[themeId]) {
-            const themeTitle = themeIdMap[themeId].title;
-            if (articleId) {
-                renderArticle(themeTitle, articleId, themes[themeId]);
-            } else {
-                renderThemeContent(themeTitle, themes[themeId]);
+        if (page.type === 'home') {
+            renderPageContent(page.title, page.content, getThemeButtons());
+        } else if (page.type === 'theme') {
+            renderPageContent(page.title, page.content, getArticleButtons(page));
+        } else if (page.type === 'article') {
+            const theme = pages.find(p => p.articles && p.articles.some(a => a.id === pageId));
+            if (theme) {
+                renderPageContent(page.title, page.content, []);
             }
         }
     }
 
-    // Render theme content and article buttons
-    function renderThemeContent(themeTitle, theme) {
+    // Unified function to render the title, content, and buttons
+    function renderPageContent(title, content, buttons = []) {
         const contentDiv = document.getElementById('content');
-        const themeNameDiv = document.getElementById('theme-name');
-        const articleNameDiv = document.getElementById('article-name');
-        const separator = document.getElementById('separator');
+        let html = `<h1>${title}</h1>`;
+        html += `<div>${basicMarkdownParser(content)}</div>`;
 
-        themeNameDiv.textContent = themeTitle;
-        themeNameDiv.style.display = 'inline';
-        articleNameDiv.style.display = 'none';
-        separator.style.display = 'none';
-
-        let contentHtml = `<h1>${themeTitle}</h1><p>${theme.content}</p>`;
-        contentHtml += '<div class="article-buttons">';
-        for (let articleId in theme.articles) {
-            const articleTitle = theme.articles[articleId].title;
-            contentHtml += `<button class="article-button" onclick="window.location.hash='${theme.id}#${articleId}'">${articleTitle}</button>`;
+        // Add buttons (if any)
+        if (buttons.length > 0) {
+            html += '<div class="buttons">';
+            buttons.forEach(button => {
+                html += `<button class="theme-button" onclick="${button.onclick}">${button.label}</button>`;
+            });
+            html += '</div>';
         }
-        contentHtml += '</div>';
 
-        contentDiv.innerHTML = contentHtml;
+        contentDiv.innerHTML = html;
     }
 
-    // Render the selected article
-    function renderArticle(themeTitle, articleId, theme) {
-        const contentDiv = document.getElementById('content');
-        const themeNameDiv = document.getElementById('theme-name');
-        const articleNameDiv = document.getElementById('article-name');
-        const separator = document.getElementById('separator');
-
-        const articleTitle = theme.articles[articleId].title;
-
-        themeNameDiv.textContent = themeTitle;
-        themeNameDiv.style.display = 'inline';
-        articleNameDiv.style.display = 'inline';
-        separator.style.display = 'inline';
-        articleNameDiv.querySelector('#article-title').textContent = articleTitle;
-
-        const articleContent = theme.articles[articleId].content;
-        contentDiv.innerHTML = `<h1>${articleTitle}</h1>` + basicMarkdownParser(articleContent);
+    // Helper to get buttons for themes
+    function getThemeButtons() {
+        return pages
+            .filter(p => p.type === 'theme')
+            .map(theme => ({
+                label: theme.title,
+                onclick: `window.location.hash='${theme.id}'`
+            }));
     }
 
-    // A simple markdown parser function
+    // Helper to get buttons for articles within a theme
+    function getArticleButtons(theme) {
+        return theme.articles.map(article => ({
+            label: article.title,
+            onclick: `window.location.hash='${article.id}'`
+        }));
+    }
+
+    // Handle hash changes for navigation
+    function handleHashChange() {
+        const hash = window.location.hash.substring(1);
+        renderPage(hash || 'home');
+    }
+
+    // Markdown parser (simple version)
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
         markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
