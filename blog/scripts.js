@@ -33,6 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = '';  // Clear existing content
 
+        // Update the header with the current page context
+        updateHeader(page);
+
         contentDiv.appendChild(createElement('h1', page.title));
         contentDiv.appendChild(createElement('div', page.content, true));
 
@@ -43,9 +46,43 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Function to update the header based on the page hierarchy
+    function updateHeader(page) {
+        const homeButton = document.getElementById('home-button-header');
+        const themeName = document.getElementById('theme-name');
+        const articleName = document.getElementById('article-name');
+        const separatorEls = document.querySelectorAll('#separator');
+
+        if (page === homePage) {
+            homeButton.style.display = 'block';
+            themeName.style.display = 'none';
+            articleName.style.display = 'none';
+            separatorEls.forEach(sep => sep.style.display = 'none');
+        } else if (page.type === 'theme') {
+            homeButton.style.display = 'block';
+            themeName.style.display = 'inline-block';
+            themeName.textContent = page.title;
+            articleName.style.display = 'none';
+            separatorEls.forEach(sep => sep.style.display = 'block');
+        } else if (page.type === 'article') {
+            const parentTheme = findParentTheme(page);
+            homeButton.style.display = 'block';
+            themeName.style.display = 'inline-block';
+            themeName.textContent = parentTheme.title;
+            articleName.style.display = 'inline-block';
+            articleName.textContent = page.title;
+            separatorEls.forEach(sep => sep.style.display = 'block');
+        }
+    }
+
+    // Function to find the parent theme of an article
+    function findParentTheme(articlePage) {
+        return homePage.children.find(theme => theme.children.includes(articlePage));
+    }
+
     // Simplified button hash creation
     function navigateHash(parentPage, childPage) {
-        const newHash = parentPage === homePage ? #${childPage.id} : #${parentPage.id}#${childPage.id};
+        const newHash = parentPage === homePage ? `#${childPage.id}` : `#${parentPage.id}#${childPage.id}`;
         window.location.hash = newHash;
     }
 
@@ -109,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Extract data from comment lines
     function extractFromComment(line, key) {
-        const regex = new RegExp(${key}:"([^"]+)");
+        const regex = new RegExp(`${key}:"([^"]+)"`);
         return (line.match(regex)?.[1] || '').trim();
     }
 
@@ -127,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/^# (.*$)/gim, '<h1>$1</h1>')
             .replace(/\*\*(.*?)\*\*/gim, '<b>$1</b>')
             .replace(/\*(.*?)\*/gim, '<i>$1</i>')
-            .replace(/!\[(.*?)\]\((.*?)\)/gim, (match, altText, imagePath) => <img alt='${altText}' src='${!imagePath.startsWith('/files/img/blog/') ? /files/img/blog/${imagePath} : imagePath}' />)
+            .replace(/!\[(.*?)\]\((.*?)\)/gim, (match, altText, imagePath) => `<img alt='${altText}' src='${!imagePath.startsWith('/files/img/blog/') ? `/files/img/blog/${imagePath}` : imagePath}' />`)
             .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
             .replace(/\n\s*\n/gim, '</p><p>')
             .replace(/\n$/gim, '<br />')
