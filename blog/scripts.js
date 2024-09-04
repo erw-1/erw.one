@@ -1,140 +1,134 @@
 document.addEventListener('DOMContentLoaded', () => {
-    let homePage = null;     // Track home page separately
-    let currentPage = null;  // Track the current page being processed (home, theme, or article)
-
-    // Fetch and parse the markdown
     fetch('content.md')
         .then(response => response.text())
-        .then(parseMarkdown)
-        .then(() => {
-            convertContentToHtml(homePage);  // Convert the content of all pages to HTML after parsing
-            console.log('Final Parsed Data with HTML Content:', JSON.stringify(homePage, null, 2));  // Log the data structure with HTML content
-        })
-        .catch(err => console.error('Error loading markdown:', err));
+        .then(data => parseMarkdown(data));
 
-    // Parse markdown into structured data
     function parseMarkdown(markdown) {
-        const lines = markdown.split('\n');
+        const pages = {};
+        let currentPage = null;
+        let isHomeSection = true;
 
-        lines.forEach(line => {
-            if (line.startsWith('<!--')) {
-                parseComment(line);
-            } else {
-                addContent(line);
+        markdown.split('\n').forEach(line => {
+            if (line.startsWith('# ')) {
+                currentPage = line.substring(2).trim();
+                pages[currentPage] = { id: slugify(currentPage), content: '', children: [] };
+                isHomeSection = false;
+            } else if (line.startsWith('## ')) {
+                const themeTitle = line.substring(3).trim();
+                if (currentPage) {
+                    const theme = { id: slugify(themeTitle), content: '', children: [] };
+                    pages[currentPage].children.push(theme);
+                }
+            } else if (line.startsWith('### ')) {
+                const articleTitle = line.substring(4).trim();
+                const lastTheme = pages[currentPage].children[pages[currentPage].children.length - 1];
+                if (lastTheme) {
+                    const article = { id: slugify(articleTitle), content: '', children: [] };
+                    lastTheme.children.push(article);
+                }
+            } else if (currentPage) {
+                // Add content to the appropriate section (home, theme, or article)
+                if (pages[currentPage].children.length > 0) {
+                    const lastTheme = pages[currentPage].children[pages[currentPage].children.length - 1];
+                    if (lastTheme.children.length > 0) {
+                        const lastArticle = lastTheme.children[lastTheme.children.length - 1];
+                        lastArticle.content += line + '\n';
+                    } else {
+                        lastTheme.content += line + '\n';
+                    }
+                } else {
+                    pages[currentPage].content += line + '\n';
+                }
             }
         });
+
+        // Render the page based on the current hash
+        handleHashChange(pages);
+        window.addEventListener('hashchange', () => handleHashChange(pages));
     }
 
-    // Parse comment lines to create pages (home, theme, or article)
-    function parseComment(line) {
-        const type = extractFromComment(line, 'type');
-        const title = extractFromComment(line, 'title');
-        const id = extractFromComment(line, 'id');
+    function renderPage(page, parentPage = null) {
+        const contentDiv = document.getElementById('content');
+        contentDiv.innerHTML = ''; // Clear the previous content
 
-        if (!type || !id || !title) return;
+        // Render the title
+        const title = document.createElement('h1');
+        title.textContent = page.title || 'No Title';
+        contentDiv.appendChild(title);
 
-        // Articles don't need children, only themes and home do
-        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
-
-        switch (type) {
-            case 'home':
-                homePage = newPage;
-                currentPage = homePage;  // Set the current page context to home
-                console.log('Created Home:', homePage);
-                break;
-            case 'theme':
-                if (!homePage.children) {
-                    homePage.children = []; // Ensure homePage has a children array
-                }
-                homePage.children.push(newPage);
-                currentPage = newPage;  // Set the current page context to theme
-                console.log('Added Theme to Home:', newPage);
-                break;
-            case 'article':
-                if (!currentPage.children) {
-                    currentPage.children = []; // Ensure the current theme has a children array
-                }
-                currentPage.children.push(newPage);  // Add article to the current theme
-                currentPage = newPage;  // Set the current page context to article
-                console.log('Added Article to Theme:', newPage);
-                break;
-            default:
-                console.error('Unknown type:', type);
-        }
-    }
-
-    // Add content to the current page
-    function addContent(line) {
-        if (currentPage) {
-            currentPage.content += line + '\n';
-            console.log(`Added content to ${currentPage.type}:`, line);
-        }
-    }
-
-    // Helper to create a new page (home, theme, or article)
-    function createPage(page) {
-        return page;
-    }
-
-    // Helper to extract data from comment lines
-    function extractFromComment(line, key) {
-        const regex = new RegExp(`${key}:"([^"]+)"`);
-        const match = line.match(regex);
-        return match ? match[1].trim() : null;
-    }
-
-    // Convert markdown content to HTML for all pages recursively
-    function convertContentToHtml(page) {
+        // Render the content (if any)
         if (page.content) {
-            page.content = MarkdownParser(page.content);  // Convert markdown to HTML
-            console.log(`Converted content to HTML for ${page.type}:`, page.content);
+            const content = document.createElement('div');
+            content.innerHTML = basicMarkdownParser(page.content.trim());
+            contentDiv.appendChild(content);
         }
 
-        // If the page has children (for home or themes), apply conversion recursively
+        // Render buttons for children (if any)
         if (page.children && page.children.length > 0) {
-            page.children.forEach(childPage => convertContentToHtml(childPage));
+            const childButtonsDiv = document.createElement('div');
+            childButtonsDiv.classList.add('child-buttons');
+
+            page.children.forEach(child => {
+                const button = document.createElement('button');
+                button.textContent = child.id;
+                button.classList.add('child-button');
+                button.onclick = () => {
+                    const hash = parentPage ? `#${parentPage.id}#${child.id}` : `#${child.id}`;
+                    window.location.hash = hash;
+                };
+                childButtonsDiv.appendChild(button);
+            });
+
+            contentDiv.appendChild(childButtonsDiv);
         }
     }
 
-    // Markdown to HTML conversion function
-    function MarkdownParser(markdown) {
-        // Convert headers
+    function handleHashChange(pages) {
+        const hash = decodeURIComponent(window.location.hash.substring(1));
+        const hashParts = hash.split('#');
+
+        let currentPage = pages['Home']; // Default to home page
+        let parentPage = null;
+
+        if (hashParts[0]) {
+            currentPage = pages[Object.keys(pages).find(page => pages[page].id === hashParts[0])];
+            if (hashParts.length > 1) {
+                const childPageId = hashParts[1];
+                const childPage = currentPage.children.find(child => child.id === childPageId);
+                if (childPage) {
+                    parentPage = currentPage;
+                    currentPage = childPage;
+                }
+            }
+        }
+
+        renderPage(currentPage, parentPage);
+    }
+
+    function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
         markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
         markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
-
-        // Convert bold and italic
-        markdown = markdown.replace(/\*\*(.*?)\*\*/gim, '<b>$1</b>'); // Bold
-        markdown = markdown.replace(/\*(.*?)\*/gim, '<i>$1</i>');     // Italic
-
-        // Convert inline code
-        markdown = markdown.replace(/`(.*?)`/gim, '<code>$1</code>');
-
-        // Convert blockquotes
-        markdown = markdown.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
-
-        // Convert lists
-        markdown = markdown.replace(/^\s*-\s+(.*$)/gim, '<li>$1</li>');  // Unordered list
-        markdown = markdown.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>'); // Wrap list items in <ul>
-
-        // Convert images
+        markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
+        markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
         markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/gim, function(match, altText, imagePath) {
             if (!imagePath.startsWith('/files/img/blog/')) {
                 imagePath = `/files/img/blog/${imagePath}`;
             }
             return `<img alt='${altText}' src='${imagePath}' />`;
         });
-
-        // Convert links
         markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>");
-
-        // Convert paragraphs (two newlines = new paragraph)
-        markdown = markdown.replace(/\n\s*\n/gim, '</p><p>'); // Paragraph breaks
-        markdown = '<p>' + markdown + '</p>'; // Wrap everything in <p>
-
-        // Clean up extra <br /> from single newlines
-        markdown = markdown.replace(/<\/p><p><br \/>/gim, '</p><p>');
-
+        markdown = markdown.replace(/\n$/gim, '<br />');
         return markdown.trim();
+    }
+
+    // Helper function to generate a slug from the page title
+    function slugify(text) {
+        return text.toString().toLowerCase()
+            .replace(/\s+/g, '-')        // Replace spaces with -
+            .replace(/[^\w\-]+/g, '')    // Remove all non-word chars
+            .replace(/\-\-+/g, '-')      // Replace multiple - with single -
+            .replace(/^-+/, '')          // Trim - from start of text
+            .replace(/-+$/, '');         // Trim - from end of text
     }
 });
