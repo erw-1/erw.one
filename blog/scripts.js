@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Main function to parse the markdown
     function parseMarkdown(markdown) {
         const lines = markdown.split('\n');
-        
+
         lines.forEach(line => {
             if (line.startsWith('<!--')) {
                 parseComment(line);  // Handle comment parsing (create page, assign parent, etc.)
@@ -30,35 +30,25 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = extractFromComment(line, 'title');
         const id = extractFromComment(line, 'id');
 
-        if (!type || !id || !title) {
-            console.error('Missing required fields in comment', { type, title, id });
-            return;  // Skip if any required field is missing
-        }
+        if (!type || !id || !title) return;
 
+        // Create the new page (home, theme, or article)
         const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
 
-        // Handle nesting of themes and articles
+        // Handle Home Page
         if (type === 'home') {
             homePage = newPage;  // Set home as the root page
             currentPage = homePage;  // Set currentPage to home
-            console.log('Home Page Created:', homePage);
         } 
+        // Handle Theme Page
         else if (type === 'theme') {
-            if (homePage) {  // Ensure homePage exists before pushing to children
-                homePage.children.push(newPage);  // Add the theme to homePage's children
-                currentPage = newPage;  // Set currentPage to this theme for future articles
-                console.log('Added theme to Home:', newPage);
-            } else {
-                console.error('Error: homePage is not initialized before adding a theme');
-            }
+            homePage.children.push(newPage);  // Add the theme to homePage's children
+            currentPage = newPage;  // Set currentPage to this theme for future articles
         } 
-        else if (type === 'article') {
-            if (currentPage && currentPage.type === 'theme') {
-                currentPage.children.push(newPage);  // Add article to the current theme's children
-                console.log('Added article to theme:', newPage);
-            } else {
-                console.error('Error: currentPage is not a theme when adding an article', { currentPage });
-            }
+        // Handle Article Page
+        else if (type === 'article' && currentPage.type === 'theme') {
+            currentPage.children.push(newPage);  // Add article to the current theme's children
+            currentPage = newPage;  // Set currentPage to the article for content addition
         }
     }
 
@@ -67,14 +57,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (currentPage) {
             currentPage.content += line + '\n';  // Always add content to the currentPage
             console.log(`Added content to ${currentPage.type.charAt(0).toUpperCase() + currentPage.type.slice(1)}:`, line);
-        } else {
-            console.error('Error: currentPage is undefined when trying to add content');
         }
     }
 
     // Helper to create a new page (home, theme, or article)
     function createPage(page) {
-        console.log(`Created ${page.type.charAt(0).toUpperCase() + page.type.slice(1)}:`, page);
+        console.log(`Parsed ${page.type.charAt(0).toUpperCase() + page.type.slice(1)}:`, page);
         return page;
     }
 
