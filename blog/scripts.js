@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (line.startsWith('<!-- Home')) {
                 const homeTitleMatch = line.match(/title:\s*"([^"]+)"/);
                 const homeTitle = homeTitleMatch ? homeTitleMatch[1].trim() : 'Home';
-                themes['Home'] = { intro: '', articles: {}, title: homeTitle };
+                themes['Home'] = { content: '', articles: {}, title: homeTitle };
             }
             // Parse theme with title and custom ID
             else if (line.startsWith('<!-- Theme')) {
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const themeId = themeIdMatch ? themeIdMatch[1].trim() : `theme-${Math.random().toString(36).substr(2, 9)}`;
                 currentTheme = themeId;
                 themeIdMap[themeId] = { title: themeTitle, id: themeId };
-                themes[currentTheme] = { intro: '', articles: {}, id: themeId, title: themeTitle };
+                themes[currentTheme] = { content: '', articles: {}, id: themeId, title: themeTitle };
             }
             // Parse article with title and custom ID
             else if (line.startsWith('<!-- Article')) {
@@ -38,9 +38,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     articleIdMap[articleId] = { theme: currentTheme, title: articleTitle };
                 }
             }
-            // Add content to the theme's intro or article's content
+            // Add content to the theme's or article's content
             else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
-                themes[currentTheme].intro += line + '\n';
+                themes[currentTheme].content += line + '\n';
             } else if (currentTheme && Object.keys(themes[currentTheme].articles).length > 0) {
                 const lastArticleKey = Object.keys(themes[currentTheme].articles).pop();
                 themes[currentTheme].articles[lastArticleKey].content += line + '\n';
@@ -65,6 +65,10 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'none';
 
         let homeHtml = `<h1>${title}</h1>`;
+        // Add the content for the Home
+        homeHtml += `<p>${themes['Home'].content}</p>`;
+    
+        // Render buttons for themes and their articles
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
             if (theme !== 'Home') {
@@ -97,13 +101,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if (articleId) {
                 renderArticle(themeTitle, articleId, themes[themeId]);
             } else {
-                renderThemeIntro(themeTitle, themes[themeId]);
+                renderThemeContent(themeTitle, themes[themeId]);
             }
         }
     }
 
-    // Render theme intro and article buttons
-    function renderThemeIntro(themeTitle, theme) {
+    // Render theme content and article buttons
+    function renderThemeContent(themeTitle, theme) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
@@ -114,15 +118,15 @@ document.addEventListener('DOMContentLoaded', () => {
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
-        let introHtml = `<h1>${themeTitle}</h1><p>${theme.intro}</p>`;
-        introHtml += '<div class="article-buttons">';
+        let contentHtml = `<h1>${themeTitle}</h1><p>${theme.content}</p>`;
+        contentHtml += '<div class="article-buttons">';
         for (let articleId in theme.articles) {
             const articleTitle = theme.articles[articleId].title;
-            introHtml += `<button class="article-button" onclick="window.location.hash='${theme.id}#${articleId}'">${articleTitle}</button>`;
+            contentHtml += `<button class="article-button" onclick="window.location.hash='${theme.id}#${articleId}'">${articleTitle}</button>`;
         }
-        introHtml += '</div>';
+        contentHtml += '</div>';
 
-        contentDiv.innerHTML = introHtml;
+        contentDiv.innerHTML = contentHtml;
     }
 
     // Render the selected article
