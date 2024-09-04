@@ -13,7 +13,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const lines = markdown.split('\n');
 
         lines.forEach(line => {
-            line.startsWith('<!--') ? parseComment(line) : addContent(line);
+            if (line.startsWith('<!--')) {
+                parseComment(line);
+            } else {
+                addContent(line);
+            }
         });
 
         console.log('Final Parsed Data:', JSON.stringify(homePage, null, 2));  // Log final data structure with children
@@ -33,14 +37,25 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'home':
                 homePage = newPage;
                 currentPage = homePage;  // Set the current page context to home
+                console.log('Created Home:', homePage);
                 break;
             case 'theme':
-                homePage?.children?.push(newPage);
-                currentPage = newPage;  // Set the current page context to theme
+                if (homePage?.children) {
+                    homePage.children.push(newPage);
+                    currentPage = newPage;  // Set the current page context to theme
+                    console.log('Added Theme to Home:', newPage);
+                } else {
+                    console.error('Home Page not initialized when adding theme');
+                }
                 break;
             case 'article':
-                currentPage?.children?.push(newPage);
-                currentPage = newPage;  // Set the current page context to article
+                if (currentPage?.children) {
+                    currentPage.children.push(newPage);
+                    currentPage = newPage;  // Set the current page context to article
+                    console.log('Added Article to Theme:', newPage);
+                } else {
+                    console.error('Current theme not initialized when adding article');
+                }
                 break;
             default:
                 console.error('Unknown type:', type);
@@ -51,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function addContent(line) {
         if (currentPage) {
             currentPage.content += line + '\n';
+            console.log(`Added content to ${currentPage.type}:`, line);
         }
     }
 
