@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let homePage = null;
-    let currentPage = null;
-    let currentTheme = null;
+    let currentContext = null;
 
     // Fetch and parse the markdown
     fetch('content.md')
@@ -17,24 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
     // Handle hash changes for navigation
     window.addEventListener('hashchange', () => {
         const hash = window.location.hash.split('#').filter(Boolean);
-        if (hash.length > 0) {
-            navigateToPage(homePage, hash);
-        } else {
-            renderPage(homePage);
-        }
+        hash.length > 0 ? navigateToPage(homePage, hash) : renderPage(homePage);
     });
 
     // Navigate to a page based on the URL hash
     function navigateToPage(page, hashArray) {
-        let targetPage = resolvePageFromHash(page, hashArray);
-        if (targetPage) renderPage(targetPage);
-    }
-
-    // Resolve page based on the hash array
-    function resolvePageFromHash(page, hashArray) {
-        return hashArray.reduce((currentPage, id) => {
+        const targetPage = hashArray.reduce((currentPage, id) => {
             return currentPage?.children?.find(child => child.id === id) || null;
         }, page);
+        if (targetPage) renderPage(targetPage);
     }
 
     // Render the current page with title, content, and children buttons
@@ -42,41 +32,35 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = '';  // Clear existing content
 
-        const titleElement = createElement('h1', page.title);
-        const contentElement = createElement('div', page.content, true);
+        contentDiv.appendChild(createElement('h1', page.title));
+        contentDiv.appendChild(createElement('div', page.content, true));
 
-        contentDiv.appendChild(titleElement);
-        contentDiv.appendChild(contentElement);
-
-        if (page.children && page.children.length > 0) {
+        if (page.children?.length > 0) {
             const buttonContainer = createElement('div', '', false, 'button-container');
-            page.children.forEach(childPage => buttonContainer.appendChild(createButton(page, childPage)));
+            page.children.forEach(child => buttonContainer.appendChild(createElement('button', child.title, false, '', () => navigateHash(page, child))));
             contentDiv.appendChild(buttonContainer);
         }
     }
 
-    // Create a button for navigating to child pages
-    function createButton(parentPage, childPage) {
-        const button = createElement('button', childPage.title);
+    // Simplified button hash creation
+    function navigateHash(parentPage, childPage) {
         const newHash = parentPage === homePage ? `#${childPage.id}` : `#${parentPage.id}#${childPage.id}`;
-        button.onclick = () => window.location.hash = newHash;
-        return button;
+        window.location.hash = newHash;
     }
 
-    // Create a generic HTML element with optional innerHTML
-    function createElement(tag, content = '', isHtml = false, className = '') {
+    // Create a generic HTML element with optional innerHTML and event
+    function createElement(tag, content = '', isHtml = false, className = '', eventListener = null) {
         const element = document.createElement(tag);
         if (isHtml) element.innerHTML = content;
         else element.textContent = content;
         if (className) element.className = className;
+        if (eventListener) element.onclick = eventListener;
         return element;
     }
 
     // Parse the markdown into structured data
     function parseMarkdown(markdown) {
-        markdown.split('\n').forEach(line => {
-            line.startsWith('<!--') ? parseComment(line) : addContent(line);
-        });
+        markdown.split('\n').forEach(line => line.startsWith('<!--') ? parseComment(line) : addContent(line));
     }
 
     // Parse comments to create pages (home, theme, article)
@@ -84,80 +68,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const type = extractFromComment(line, 'type');
         const title = extractFromComment(line, 'title');
         const id = extractFromComment(line, 'id');
-
         if (!type || !id || !title) return;
 
-        // Initialize the children array only for home and theme pages
-        const newPage = { 
-            type, 
-            id, 
-            title, 
-            content: '', 
-            children: type === 'theme' || type === 'home' ? [] : undefined 
-        };
+        const newPage = { type, id, title, content: '', children: type === 'theme' || type === 'home' ? [] : undefined };
 
-        addPageToStructure(newPage, type);
-    }
-
-    // Add the page to the correct place in the structure
-    function addPageToStructure(newPage, type) {
-        switch (type) {
-            case 'home':
-                homePage = newPage;
-                currentPage = homePage;
-                console.log('Created Home:', homePage);
-                break;
-            case 'theme':
-                currentPage = newPage;  // Ensure we're switching to the new theme
-                addChildPage(homePage, newPage);  // Add the theme to home
-                currentTheme = newPage;  // Track the current theme for adding articles
-                console.log('Added Theme to Home:', newPage);
-                break;
-            case 'article':
-                if (currentTheme) {
-                    addChildPage(currentTheme, newPage);  // Add articles to the current theme
-                    console.log('Added Article to Theme:', newPage);
-                } else {
-                    console.error('No theme found to attach the article to');
-                }
-                currentPage = newPage;
-                break;
-            default:
-                console.error('Unknown type:', type);
+        if (type === 'home') {
+            homePage = newPage;
+            currentContext = homePage;
+            console.log('Created Home:', homePage);
+        } else {
+            addChildPage(currentContext, newPage);
+            if (type === 'theme') currentContext = newPage;  // Change context to current theme for articles
         }
     }
 
     // Add a child page (article or theme) to a parent page (home or theme)
     function addChildPage(parent, child) {
-        if (!parent.children) {
-            parent.children = [];  // Ensure the parent has a children array
-        }
+        parent.children ??= [];  // Ensure the parent has a children array
         parent.children.push(child);
     }
 
     // Add content to the current page
     function addContent(line) {
-        if (currentPage) {
-            currentPage.content += line + '\n';
-        }
+        if (currentContext) currentContext.content += line + '\n';
     }
 
     // Extract data from comment lines
     function extractFromComment(line, key) {
         const regex = new RegExp(`${key}:"([^"]+)"`);
-        const match = line.match(regex);
-        return match ? match[1].trim() : null;
+        return (line.match(regex)?.[1] || '').trim();
     }
 
     // Convert markdown content to HTML for all pages recursively
     function convertContentToHtml(page) {
-        if (page.content) {
-            page.content = MarkdownParser(page.content);
-        }
-
-        if (page.children && page.children.length > 0) {
-            page.children.forEach(convertContentToHtml);
-        }
+        if (page.content) page.content = MarkdownParser(page.content);
+        page.children?.forEach(convertContentToHtml);
     }
 
     // Convert markdown to HTML
@@ -168,12 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .replace(/^# (.*$)/gim, '<h1>$1</h1>')
             .replace(/\*\*(.*?)\*\*/gim, '<b>$1</b>')
             .replace(/\*(.*?)\*/gim, '<i>$1</i>')
-            .replace(/!\[(.*?)\]\((.*?)\)/gim, (match, altText, imagePath) => {
-                if (!imagePath.startsWith('/files/img/blog/')) {
-                    imagePath = `/files/img/blog/${imagePath}`;
-                }
-                return `<img alt='${altText}' src='${imagePath}' />`;
-            })
+            .replace(/!\[(.*?)\]\((.*?)\)/gim, (match, altText, imagePath) => `<img alt='${altText}' src='${!imagePath.startsWith('/files/img/blog/') ? `/files/img/blog/${imagePath}` : imagePath}' />`)
             .replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>")
             .replace(/\n\s*\n/gim, '</p><p>')
             .replace(/\n$/gim, '<br />')
