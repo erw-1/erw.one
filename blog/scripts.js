@@ -18,10 +18,10 @@ document.addEventListener('DOMContentLoaded', () => {
         lines.forEach(line => {
             // Parse Home
             if (line.startsWith('<!-- Home')) {
-                const homeTitle = extractFromComment(line, 'title');
+                const homeTitle = extractFromComment(line, 'title', true);
                 const homePage = {
                     type: 'home',
-                    id: 'home',
+                    id: 'home',  // Assign a default id for home
                     title: homeTitle,
                     content: ''
                 };
@@ -30,11 +30,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // Parse Theme
             else if (line.startsWith('<!-- Theme')) {
-                const themeTitle = extractFromComment(line, 'title');
-                const themeId = extractFromComment(line, 'id');
+                const themeTitle = extractFromComment(line, 'title', true);
+                const themeId = extractFromComment(line, 'id', false);
                 currentTheme = {
                     type: 'theme',
-                    id: themeId,
+                    id: themeId || `theme-${Math.random().toString(36).substr(2, 9)}`,  // Fallback in case no ID is provided
                     title: themeTitle,
                     content: '',
                     articles: []  // Articles will be nested inside themes
@@ -44,11 +44,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             // Parse Article
             else if (line.startsWith('<!-- Article')) {
-                const articleTitle = extractFromComment(line, 'title');
-                const articleId = extractFromComment(line, 'id');
+                const articleTitle = extractFromComment(line, 'title', true);
+                const articleId = extractFromComment(line, 'id', false);
                 const article = {
                     type: 'article',
-                    id: articleId,
+                    id: articleId || `article-${Math.random().toString(36).substr(2, 9)}`,  // Fallback in case no ID is provided
                     title: articleTitle,
                     content: ''
                 };
@@ -77,8 +77,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Helper to extract data from comment lines
-    function extractFromComment(line, key) {
-        const regex = new RegExp(`${key}:\\s*"([^"]+)"`);
+    function extractFromComment(line, key, isQuoted = true) {
+        const regex = isQuoted ? new RegExp(`${key}:\\s*"([^"]+)"`) : new RegExp(`${key}:\\s*([^\\s]+)`);
         const match = line.match(regex);
         return match ? match[1].trim() : '';
     }
