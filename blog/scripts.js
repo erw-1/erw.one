@@ -60,10 +60,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
+        const articleDropdown = document.getElementById('article-list');
 
         themeNameDiv.style.display = 'none';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
+        articleDropdown.innerHTML = '';  // Clear any dropdown content
 
         let homeHtml = `<h1>${title}</h1>`;
         // Add the content for the Home
@@ -113,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
-        const dropdownDiv = document.getElementById('theme-dropdown'); // Theme dropdown for other themes
+        const articleDropdown = document.getElementById('article-list');
 
         themeNameDiv.innerHTML = `<a href="#${theme.id}">${themeTitle}</a>`;
         themeNameDiv.style.display = 'inline';
@@ -128,17 +130,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         contentHtml += '</div>';
 
-        // Populate the dropdown with links to other themes
-        let dropdownHtml = '';
-        for (let themeKey in themes) {
-            if (themeKey !== 'Home' && themes[themeKey].id !== theme.id) {
-                const themeDropdownTitle = themes[themeKey].title;
-                dropdownHtml += `<li><a href="#${themes[themeKey].id}">${themeDropdownTitle}</a></li>`;
-            }
-        }
-        dropdownDiv.innerHTML = dropdownHtml;
-
         contentDiv.innerHTML = contentHtml;
+
+        // Clear the dropdown for themes (as no dropdown for articles is needed here)
+        articleDropdown.innerHTML = ''; 
     }
 
     // Render the selected article
@@ -147,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
         const separator = document.getElementById('separator');
-        const dropdownDiv = document.getElementById('article-dropdown'); // Article dropdown
+        const articleDropdown = document.getElementById('article-list');
 
         const articleTitle = theme.articles[articleId].title;
 
@@ -168,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 dropdownHtml += `<li><a href="#${theme.id}#${otherArticleId}">${otherArticleTitle}</a></li>`;
             }
         }
-        dropdownDiv.innerHTML = dropdownHtml;
+        articleDropdown.innerHTML = dropdownHtml;  // Add articles to the dropdown
     }
 
     // A simple markdown parser function
