@@ -42,25 +42,25 @@ document.addEventListener('DOMContentLoaded', () => {
     function renderPage(page) {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = '';  // Clear existing content
-
+    
         // Render page title and content
         const titleElement = document.createElement('h1');
         titleElement.textContent = page.title;
         contentDiv.appendChild(titleElement);
-
+    
         const contentElement = document.createElement('div');
         contentElement.innerHTML = page.content;
         contentDiv.appendChild(contentElement);
-
+    
         // Recursively render buttons for children (themes, articles)
         if (page.children && page.children.length > 0) {
             const buttonContainer = document.createElement('div');
             buttonContainer.className = 'button-container';
-
+    
             page.children.forEach(childPage => {
                 const button = document.createElement('button');
                 button.textContent = childPage.title;
-
+    
                 if (page === homePage) {
                     // No 'home' in hash, only child ID (theme ID)
                     button.onclick = () => {
@@ -69,24 +69,26 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     // Regular page navigation (theme -> article)
                     button.onclick = () => {
-                        window.location.hash = `${page.id}#${childPage.id}`;
+                        window.location.hash = `#${page.id}#${childPage.id}`;
                     };
                 }
+    
                 buttonContainer.appendChild(button);
-
+    
                 // Recursively render buttons for children of children if they exist
                 if (childPage.children && childPage.children.length > 0) {
                     childPage.children.forEach(grandChildPage => {
                         const subButton = document.createElement('button');
                         subButton.textContent = grandChildPage.title;
+                        // Set the hash correctly for grandchildren (theme -> article)
                         subButton.onclick = () => {
-                            window.location.hash = `${page.id}#${childPage.id}#${grandChildPage.id}`;
+                            window.location.hash = `#${page.id}#${childPage.id}#${grandChildPage.id}`;
                         };
                         buttonContainer.appendChild(subButton);
                     });
                 }
             });
-
+    
             contentDiv.appendChild(buttonContainer);
         }
     }
