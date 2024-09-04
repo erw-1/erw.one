@@ -6,6 +6,10 @@ document.addEventListener('DOMContentLoaded', () => {
     fetch('content.md')
         .then(response => response.text())
         .then(parseMarkdown)
+        .then(() => {
+            convertContentToHtml(homePage);  // Convert the content of all pages to HTML after parsing
+            console.log('Final Parsed Data with HTML Content:', JSON.stringify(homePage, null, 2));  // Log the data structure with HTML content
+        })
         .catch(err => console.error('Error loading markdown:', err));
 
     // Parse markdown into structured data
@@ -19,8 +23,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 addContent(line);
             }
         });
-
-        console.log('Final Parsed Data:', JSON.stringify(homePage, null, 2));  // Log final data structure with children
     }
 
     // Parse comment lines to create pages (home, theme, or article)
@@ -79,5 +81,60 @@ document.addEventListener('DOMContentLoaded', () => {
         const regex = new RegExp(`${key}:"([^"]+)"`);
         const match = line.match(regex);
         return match ? match[1].trim() : null;
+    }
+
+    // Convert markdown content to HTML for all pages recursively
+    function convertContentToHtml(page) {
+        if (page.content) {
+            page.content = MarkdownParser(page.content);  // Convert markdown to HTML
+            console.log(`Converted content to HTML for ${page.type}:`, page.content);
+        }
+
+        // If the page has children (for home or themes), apply conversion recursively
+        if (page.children && page.children.length > 0) {
+            page.children.forEach(childPage => convertContentToHtml(childPage));
+        }
+    }
+
+    // Markdown to HTML conversion function
+    function MarkdownParser(markdown) {
+        // Convert headers
+        markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+        // Convert bold and italic
+        markdown = markdown.replace(/\*\*(.*?)\*\*/gim, '<b>$1</b>'); // Bold
+        markdown = markdown.replace(/\*(.*?)\*/gim, '<i>$1</i>');     // Italic
+
+        // Convert inline code
+        markdown = markdown.replace(/`(.*?)`/gim, '<code>$1</code>');
+
+        // Convert blockquotes
+        markdown = markdown.replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>');
+
+        // Convert lists
+        markdown = markdown.replace(/^\s*-\s+(.*$)/gim, '<li>$1</li>');  // Unordered list
+        markdown = markdown.replace(/(<li>.*<\/li>)/gim, '<ul>$1</ul>'); // Wrap list items in <ul>
+
+        // Convert images
+        markdown = markdown.replace(/!\[(.*?)\]\((.*?)\)/gim, function(match, altText, imagePath) {
+            if (!imagePath.startsWith('/files/img/blog/')) {
+                imagePath = `/files/img/blog/${imagePath}`;
+            }
+            return `<img alt='${altText}' src='${imagePath}' />`;
+        });
+
+        // Convert links
+        markdown = markdown.replace(/\[(.*?)\]\((.*?)\)/gim, "<a href='$2'>$1</a>");
+
+        // Convert paragraphs (two newlines = new paragraph)
+        markdown = markdown.replace(/\n\s*\n/gim, '</p><p>'); // Paragraph breaks
+        markdown = '<p>' + markdown + '</p>'; // Wrap everything in <p>
+
+        // Clean up extra <br /> from single newlines
+        markdown = markdown.replace(/<\/p><p><br \/>/gim, '</p><p>');
+
+        return markdown.trim();
     }
 });
