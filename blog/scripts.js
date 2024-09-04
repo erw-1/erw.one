@@ -4,7 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // Fetch and parse the markdown
     fetch('content.md')
         .then(response => response.text())
-        .then(data => parseMarkdown(data));
+        .then(data => {
+            console.log('Raw Markdown Data:', data);
+            parseMarkdown(data);
+            console.log('Parsed Pages Data:', pages);
+        });
 
     // Parse the markdown and build the page data structure
     function parseMarkdown(markdown) {
@@ -15,12 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Parse Home
             if (line.startsWith('<!-- Home')) {
                 const homeTitle = extractFromComment(line, 'title');
-                pages.push({
+                const homePage = {
                     type: 'home',
                     id: 'home',
                     title: homeTitle,
                     content: ''
-                });
+                };
+                pages.push(homePage);
+                console.log('Parsed Home:', homePage);
             }
             // Parse Theme
             else if (line.startsWith('<!-- Theme')) {
@@ -34,6 +40,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     articles: []  // Articles will be nested inside themes
                 };
                 pages.push(currentTheme);
+                console.log('Parsed Theme:', currentTheme);
             }
             // Parse Article
             else if (line.startsWith('<!-- Article')) {
@@ -48,16 +55,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (currentTheme) {
                     currentTheme.articles.push(article);  // Add article to the current theme
                     pages.push(article);
+                    console.log('Parsed Article:', article);
                 }
             }
             // Add content to the home, theme, or article
             else if (currentTheme === null && pages.length > 0) {
                 pages[0].content += line + '\n';  // Add to home content
+                console.log('Added to Home Content:', line);
             } else if (currentTheme && currentTheme.articles.length === 0) {
                 currentTheme.content += line + '\n';  // Add to theme content
+                console.log('Added to Theme Content:', line);
             } else if (currentTheme && currentTheme.articles.length > 0) {
                 const lastArticle = currentTheme.articles[currentTheme.articles.length - 1];
                 lastArticle.content += line + '\n';  // Add to the last article's content
+                console.log('Added to Article Content:', line);
             }
         });
 
@@ -77,6 +88,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const hash = window.location.hash.substring(1).split('#');
         const pageId = hash[0];
         const page = pages.find(p => p.id === pageId);
+
+        console.log('Current Hash:', window.location.hash);
+        console.log('Found Page from Hash:', page);
 
         if (page) {
             renderHeader(page);  // Render the header
@@ -105,7 +119,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (page.type === 'theme') {
             themeNameDiv.innerHTML = `<a href="#${page.id}">${page.title}</a>`;
             themeNameDiv.style.display = 'inline';
-        } 
+            console.log('Rendered Header for Theme:', page.title);
+        }
         // If it's an article, show the theme and article breadcrumbs
         else if (page.type === 'article') {
             const theme = pages.find(t => t.articles.some(a => a.id === page.id));
@@ -114,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
             articleNameDiv.querySelector('#article-title').textContent = page.title;
             articleNameDiv.style.display = 'inline';
             separator.style.display = 'inline';
+            console.log('Rendered Header for Article:', page.title);
 
             // Populate the article dropdown with links to other articles in the theme
             let dropdownHtml = '';
@@ -123,6 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             articleDropdown.innerHTML = dropdownHtml;
+            console.log('Populated Article Dropdown:', dropdownHtml);
         }
     }
 
@@ -142,6 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         contentDiv.innerHTML = html;
+        console.log('Rendered Page:', page.title);
     }
 
     // Simple markdown parser to convert markdown to HTML
