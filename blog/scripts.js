@@ -33,8 +33,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const contentDiv = document.getElementById('content');
         contentDiv.innerHTML = '';  // Clear existing content
 
-        // Update the header with the current page context
-        updateHeader(page);
+        // Call the function to populate the header
+        populateHeader(page);
 
         contentDiv.appendChild(createElement('h1', page.title));
         contentDiv.appendChild(createElement('div', page.content, true));
@@ -46,38 +46,90 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Function to update the header based on the page hierarchy
-    function updateHeader(page) {
-        const homeButton = document.getElementById('home-button-header');
-        const themeName = document.getElementById('theme-name');
-        const articleName = document.getElementById('article-name');
-        const separatorEls = document.querySelectorAll('#separator');
+    // Populate the header with navigation and dropdown links
+    function populateHeader(currentPage) {
+        const header = document.getElementById('header');
+        header.innerHTML = ''; // Clear existing header content
 
-        if (page === homePage) {
-            homeButton.style.display = 'block';
-            themeName.style.display = 'none';
-            articleName.style.display = 'none';
-            separatorEls.forEach(sep => sep.style.display = 'none');
-        } else if (page.type === 'theme') {
-            homeButton.style.display = 'block';
-            themeName.style.display = 'inline-block';
-            themeName.textContent = page.title;
-            articleName.style.display = 'none';
-            separatorEls.forEach(sep => sep.style.display = 'block');
-        } else if (page.type === 'article') {
-            const parentTheme = findParentTheme(page);
-            homeButton.style.display = 'block';
-            themeName.style.display = 'inline-block';
-            themeName.textContent = parentTheme.title;
-            articleName.style.display = 'inline-block';
-            articleName.textContent = page.title;
-            separatorEls.forEach(sep => sep.style.display = 'block');
+        // Create Home SVG element
+        const homeSvg = document.createElement('div');
+        homeSvg.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24" class="icon-md">
+        <path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>`;
+        homeSvg.classList.add('header-icon');
+        homeSvg.onclick = () => window.location.hash = '#';  // Link to home
+
+        // Append home icon
+        header.appendChild(homeSvg);
+
+        // Function to create separator SVG
+        function createSeparator(rotated = false) {
+            const separator = document.createElement('div');
+            separator.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" class="icon-md ${rotated ? 'rotated-separator' : ''}">
+            <path fill="currentColor" fill-rule="evenodd" d="M5.293 9.293a1 1 0 0 1 1.414 0L12 14.586l5.293-5.293a1 1 0 1 1 1.414 1.414l-6 6a1 1 0 0 1-1.414 0l-6-6a1 1 0 0 1 0-1.414" clip-rule="evenodd"></path>
+            </svg>`;
+            return separator;
         }
-    }
 
-    // Function to find the parent theme of an article
-    function findParentTheme(articlePage) {
-        return homePage.children.find(theme => theme.children.includes(articlePage));
+        // Add dropdowns for the children if it's home or theme
+        function createDropdown(page, isRotated = false) {
+            const separator = createSeparator(isRotated);
+            separator.classList.add('dropdown');
+            separator.onclick = () => toggleDropdown(page);
+
+            const dropdownContent = document.createElement('div');
+            dropdownContent.classList.add('dropdown-content');
+            page.children.forEach(child => {
+                const childLink = document.createElement('div');
+                childLink.textContent = child.title;
+                childLink.onclick = () => {
+                    const newHash = page === homePage ? `#${child.id}` : `#${page.id}#${child.id}`;
+                    window.location.hash = newHash;
+                };
+                dropdownContent.appendChild(childLink);
+            });
+
+            separator.appendChild(dropdownContent);
+            header.appendChild(separator);
+        }
+
+        // Append elements depending on the current page
+        if (currentPage === homePage) {
+            // On the home page, add a dropdown for themes (children of home)
+            if (currentPage.children?.length) {
+                createDropdown(currentPage);  // Normal separator for home
+            }
+        } else if (currentPage.type === 'theme') {
+            // On a theme page, add theme title and dropdown for siblings (articles)
+            header.appendChild(createElement('div', currentPage.title, 'header-item'));
+
+            if (currentPage.children?.length) {
+                createDropdown(currentPage, true);  // Rotated separator for theme siblings
+            }
+        } else if (currentPage.type === 'article') {
+            // On an article page, show the theme and article title
+            const theme = currentPage.parent;  // Assuming the theme is stored in parent
+
+            header.appendChild(createElement('div', theme.title, 'header-item'));
+            header.appendChild(createSeparator()); // Separator between theme and article
+            header.appendChild(createElement('div', currentPage.title, 'header-item'));
+
+            // Add dropdown for article siblings
+            createDropdown(theme, true);
+        }
+
+        // Utility function to create header item
+        function createElement(tag, content, className) {
+            const element = document.createElement(tag);
+            element.textContent = content;
+            element.classList.add(className);
+            return element;
+        }
+
+        // Toggle dropdown visibility
+        function toggleDropdown(page) {
+            const dropdown = header.querySelector('.dropdown-content');
+            if (dropdown) dropdown.classList.toggle('visible');
+        }
     }
 
     // Simplified button hash creation
