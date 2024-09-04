@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (page.type === 'article') {
             const theme = pages.find(p => p.articles && p.articles.some(a => a.id === pageId));
             if (theme) {
-                renderPageContent(page.title, page.content, []);
+                renderPageContent(page.title, page.content, []); // No buttons for articles
             }
         }
     }
