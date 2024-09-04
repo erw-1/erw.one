@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let homePage = null;
-    let currentTheme = null;  // Track the current theme or page context
+    let currentTheme = null;  // Track the current theme to attach articles as siblings
 
     // Fetch and parse the markdown
     fetch('content.md')
@@ -96,7 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
         parent.children.push(child);
     }
 
-    // Add content to the current theme or home
+    // Add content to the current page (either theme or home)
     function addContent(line) {
         if (currentTheme) {
             currentTheme.content += line + '\n';
