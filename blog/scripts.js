@@ -3,43 +3,55 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(response => response.text())
         .then(data => parseMarkdown(data));
 
+    // Parse the markdown and extract themes, articles, and homepage content
     function parseMarkdown(markdown) {
         const themes = {};
         let currentTheme = null;
-        let homeContent = '';
-        let isHomeSection = true;
+        let currentArticle = null;
+        const themeIdMap = {};  // Map theme IDs to theme names
+        const articleIdMap = {};  // Map article IDs to article names
 
         markdown.split('\n').forEach(line => {
-            if (line.startsWith('# ')) {
-                if (isHomeSection) {
-                    // Treat the first title as Home
-                    currentTheme = 'Home';
-                    themes[currentTheme] = { intro: '', articles: {} };
-                    homeContent = line.substring(2).trim(); // Capture the Home title
-                    isHomeSection = false;
-                } else {
-                    currentTheme = line.substring(2).trim();
-                    themes[currentTheme] = { intro: '', articles: {} };
-                }
-            } else if (line.startsWith('## ')) {
-                const articleTitle = line.substring(3).trim();
+            // Parse the Home title from the comment
+            if (line.startsWith('<!-- Home:')) {
+                const homeTitle = line.match(/<!-- Home:\s*(.+)\s*-->/)[1].trim();
+                themes['Home'] = { intro: '', articles: {} };
+                themes['Home'].intro = homeTitle;
+            }
+            // Parse theme and its custom ID
+            else if (line.startsWith('<!-- Theme:')) {
+                const themeMatch = line.match(/<!-- Theme:\s*(.+)\s*-->/);
+                const themeId = themeMatch[1].trim(); // Custom ID from the comment
+                currentTheme = themeId;
+                themeIdMap[themeId] = currentTheme;
+                themes[currentTheme] = { intro: '', articles: {}, id: themeId };
+            }
+            // Parse article and its custom ID
+            else if (line.startsWith('<!-- Article:')) {
+                const articleMatch = line.match(/<!-- Article:\s*(.+)\s*-->/);
+                const articleId = articleMatch[1].trim(); // Custom ID from the comment
                 if (currentTheme) {
-                    themes[currentTheme].articles[articleTitle] = '';
+                    themes[currentTheme].articles[articleId] = { content: '', id: articleId };
+                    articleIdMap[articleId] = { theme: currentTheme, title: articleId };
                 }
-            } else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
+            }
+            // Add content to the theme's intro or the article's content
+            else if (currentTheme && Object.keys(themes[currentTheme].articles).length === 0) {
                 themes[currentTheme].intro += line + '\n';
-            } else if (currentTheme) {
+            } else if (currentTheme && Object.keys(themes[currentTheme].articles).length > 0) {
                 const lastArticleKey = Object.keys(themes[currentTheme].articles).pop();
-                themes[currentTheme].articles[lastArticleKey] += line + '\n';
+                themes[currentTheme].articles[lastArticleKey].content += line + '\n';
             }
         });
 
-        renderHome(homeContent.trim(), themes['Home'].intro.trim(), themes);
-        handleHashChange(themes);
-        window.addEventListener('hashchange', () => handleHashChange(themes));
+        // Render the homepage and set up hash change handling
+        renderHome(themes['Home'].intro, themes);
+        handleHashChange(themes, themeIdMap, articleIdMap);
+        window.addEventListener('hashchange', () => handleHashChange(themes, themeIdMap, articleIdMap));
     }
 
-    function renderHome(title, content, themes) {
+    // Render the homepage content
+    function renderHome(title, themes) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
@@ -50,17 +62,14 @@ document.addEventListener('DOMContentLoaded', () => {
         separator.style.display = 'none';
 
         let homeHtml = `<h1>${title}</h1>`;
-        // Only add the intro text if it's not exactly the same as the title
-        if (title !== content) {
-            homeHtml += `<div>${basicMarkdownParser(content)}</div>`;
-        }
         homeHtml += '<div class="theme-buttons">';
         for (let theme in themes) {
-            if (theme !== 'Home') { // Skip the home "theme"
-                homeHtml += `<button class="theme-button" onclick="window.location.hash='${theme}'">${theme}</button>`;
+            if (theme !== 'Home') {
+                const themeId = themes[theme].id;
+                homeHtml += `<button class="theme-button" onclick="window.location.hash='${themeId}'">${theme}</button>`;
                 homeHtml += '<div class="article-buttons">';
-                for (let articleTitle in themes[theme].articles) {
-                    homeHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
+                for (let articleId in themes[theme].articles) {
+                    homeHtml += `<button class="article-button" onclick="window.location.hash='${themeId}#${articleId}'">${articleId}</button>`;
                 }
                 homeHtml += '</div>';
             }
@@ -70,6 +79,25 @@ document.addEventListener('DOMContentLoaded', () => {
         contentDiv.innerHTML = homeHtml;
     }
 
+    // Handle the hash change for navigation
+    function handleHashChange(themes, themeIdMap, articleIdMap) {
+        const hash = window.location.hash.substring(1).split('#');
+        const themeId = hash[0];
+        const articleId = hash[1];
+
+        if (!themeId || themeId === 'Home') {
+            renderHome(themes['Home'].intro, themes);
+        } else if (themeIdMap[themeId]) {
+            const themeName = themeIdMap[themeId];
+            if (articleId) {
+                renderArticle(themeName, articleId, themes[themeName]);
+            } else {
+                renderThemeIntro(themeName, themes[themeName]);
+            }
+        }
+    }
+
+    // Render theme intro and article buttons
     function renderThemeIntro(theme, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
@@ -77,92 +105,41 @@ document.addEventListener('DOMContentLoaded', () => {
         const separator = document.getElementById('separator');
 
         themeNameDiv.textContent = theme;
-        themeNameDiv.setAttribute('href', `#${theme}`);
         themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'none';
         separator.style.display = 'none';
 
-        let introHtml = `<p>${articles.intro || ''}</p>`;
+        let introHtml = `<p>${articles.intro}</p>`;
         introHtml += '<div class="article-buttons">';
-        for (let articleTitle in articles.articles) {
-            introHtml += `<button class="article-button" onclick="window.location.hash='${theme}#${articleTitle}'">${articleTitle}</button>`;
+        for (let articleId in articles.articles) {
+            introHtml += `<button class="article-button" onclick="window.location.hash='${articles.id}#${articleId}'">${articleId}</button>`;
         }
         introHtml += '</div>';
 
         contentDiv.innerHTML = introHtml;
     }
 
-    function renderArticle(theme, article, articles) {
+    // Render the selected article
+    function renderArticle(theme, articleId, articles) {
         const contentDiv = document.getElementById('content');
         const themeNameDiv = document.getElementById('theme-name');
         const articleNameDiv = document.getElementById('article-name');
-        const articleListDiv = document.getElementById('article-list');
         const separator = document.getElementById('separator');
 
         themeNameDiv.textContent = theme;
-        themeNameDiv.setAttribute('href', `#${theme}`);
         themeNameDiv.style.display = 'inline';
         articleNameDiv.style.display = 'inline';
         separator.style.display = 'inline';
-        articleNameDiv.querySelector('#article-title').textContent = article;
+        articleNameDiv.querySelector('#article-title').textContent = articleId;
 
-        articleListDiv.innerHTML = '';
-        for (let articleTitle in articles.articles) {
-            if (articleTitle !== article) {
-                const articleListItem = document.createElement('li');
-                articleListItem.textContent = articleTitle;
-                articleListItem.addEventListener('click', () => {
-                    window.location.hash = `${theme}#${articleTitle}`;
-                    closeAllDropdowns();
-                });
-                articleListDiv.appendChild(articleListItem);
-            }
-        }
-
-        let dropdownVisible = false;
-        articleNameDiv.addEventListener('click', (event) => {
-            event.stopPropagation();
-            dropdownVisible = !dropdownVisible;
-            closeAllDropdowns();
-            if (dropdownVisible) {
-                articleListDiv.style.display = 'block';
-            }
-        });
-
-        document.addEventListener('click', (event) => {
-            if (!articleNameDiv.contains(event.target)) {
-                closeAllDropdowns();
-                dropdownVisible = false;
-            }
-        });
-
-        contentDiv.innerHTML = basicMarkdownParser(articles.articles[article]);
+        const articleContent = articles.articles[articleId].content;
+        contentDiv.innerHTML = basicMarkdownParser(articleContent);
     }
 
-    function closeAllDropdowns() {
-        const dropdowns = document.querySelectorAll('.dropdown-content');
-        dropdowns.forEach(dropdown => dropdown.style.display = 'none');
-    }
-
-    function handleHashChange(themes) {
-        const hash = decodeURIComponent(window.location.hash.substring(1)).split('#');
-        const theme = hash[0];
-        const article = hash[1];
-
-        if (theme === '' || theme === 'Home') {
-            renderHome(themes['Home'].intro ? themes['Home'].intro.trim() : 'Home', themes['Home'].intro, themes);
-        } else if (theme && themes[theme]) {
-            if (article) {
-                renderArticle(theme, article, themes[theme]);
-            } else {
-                renderThemeIntro(theme, themes[theme]);
-            }
-        }
-    }
-
+    // A simple markdown parser function
     function basicMarkdownParser(markdown) {
         markdown = markdown.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</gim>');
+        markdown = markdown.replace(/^## (.*$)/gim, '<h2>$1</h2>');
         markdown = markdown.replace(/^# (.*$)/gim, '<h1>$1</h1>');
         markdown = markdown.replace(/\*\*(.*)\*\*/gim, '<b>$1</b>');
         markdown = markdown.replace(/\*(.*)\*/gim, '<i>$1</i>');
