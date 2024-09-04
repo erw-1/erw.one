@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     let homePage = null;     // Track home page separately
-    let lastTheme = null;    // Track the last theme for associating articles
+    let currentPage = null;  // Track the current page being processed (home, theme, or article)
 
     // Fetch and parse the markdown
     fetch('content.md')
@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         lines.forEach(line => {
             if (line.startsWith('<!--')) {
-                parseComment(line);
+                parseComment(line);  // Handle comment parsing (create page, assign parent, etc.)
             } else {
-                addContent(line);
+                addContent(line);  // Add content to the current page
             }
         });
     }
@@ -30,40 +30,37 @@ document.addEventListener('DOMContentLoaded', () => {
         const title = extractFromComment(line, 'title');
         const id = extractFromComment(line, 'id');
 
-        if (!type || !id || !title) return;
+        if (!type || !id || !title) return;  // Skip if any required field is missing
 
-        // Home Page
+        const newPage = createPage({ type, id, title, content: '', children: type === 'theme' ? [] : undefined });
+
+        // Handle nesting of themes and articles
         if (type === 'home') {
-            homePage = createPage({ type, id, title, content: '', children: [] });
-        }
-        // Theme Page
+            homePage = newPage;  // Set home as the root page
+            currentPage = homePage;  // Set currentPage to home
+        } 
         else if (type === 'theme') {
-            const theme = createPage({ type, id, title, content: '', children: [] });
-            homePage.children.push(theme);  // Add the theme to homePage's children
-            lastTheme = theme;  // Set this as the current theme
-        }
-        // Article Page
-        else if (type === 'article' && lastTheme) {
-            const article = createPage({ type, id, title, content: '' });
-            lastTheme.children.push(article);  // Add the article to the last theme's children
+            homePage.children.push(newPage);  // Add the theme to homePage's children
+            currentPage = newPage;  // Set currentPage to this theme for future articles
+        } 
+        else if (type === 'article') {
+            if (currentPage && currentPage.type === 'theme') {
+                currentPage.children.push(newPage);  // Add article to the current theme's children
+            }
         }
     }
 
     // Add content to the current page (home, theme, or article)
     function addContent(line) {
-        if (lastTheme && lastTheme.children.length > 0) {
-            const lastArticle = lastTheme.children[lastTheme.children.length - 1];
-            lastArticle.content += line + '\n';  // Add to the last article's content
-        } else if (lastTheme) {
-            lastTheme.content += line + '\n';  // Add to theme content if no articles
-        } else if (homePage) {
-            homePage.content += line + '\n';  // Add to home content
+        if (currentPage) {
+            currentPage.content += line + '\n';  // Always add content to the currentPage
+            console.log(`Added content to ${currentPage.type.charAt(0).toUpperCase() + currentPage.type.slice(1)}:`, line);
         }
     }
 
-    // Helper to create and return a page (home, theme, or article)
+    // Helper to create a new page (home, theme, or article)
     function createPage(page) {
-        console.log(`Parsed ${page.type.charAt(0).toUpperCase() + page.type.slice(1)}:`, page);
+        console.log(`Created ${page.type.charAt(0).toUpperCase() + page.type.slice(1)}:`, page);
         return page;
     }
 
