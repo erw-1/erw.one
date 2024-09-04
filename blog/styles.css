@@ -1,57 +1,110 @@
-/* Basic header layout */
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+#content {
+    padding: 20px;
+}
+
+/* Header Styling */
 #header {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding: 10px;
     background-color: #333;
-    color: #fff;
-}
-
-/* Header item */
-.header-item {
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* SVG icons */
-.icon-md {
-    cursor: pointer;
-}
-
-/* Rotated separator */
-.rotated-separator {
-    transform: rotate(270deg);
-}
-
-/* Dropdown */
-.dropdown {
+    padding: 10px;
+    gap: 10px;
+    color: white;
     position: relative;
 }
 
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: #fff;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-}
-
-.dropdown-content div {
-    color: black;
-    padding: 12px 16px;
-    text-decoration: none;
-    display: block;
+#header button {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 16px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
 }
 
-.dropdown-content div:hover {
-    background-color: #ddd;
+#header button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    padding: 5px;
 }
 
-/* Show dropdown on click */
-.dropdown-content.visible {
-    display: block;
+#header svg.icon-md {
+    fill: currentColor;
+    margin-right: 5px;
+}
+
+/* Separator Styling */
+.separator {
+    color: #fff;
+    font-size: 14px;
+    margin: 0 8px;
+}
+
+.dropdown-separator {
+    cursor: pointer;
+    transform: rotate(270deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
+}
+
+.dropdown-separator:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+/* Dropdown Menu Styling */
+.dropdown {
+    position: absolute;
+    top: 100%;
+    background-color: #444;
+    padding: 5px 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+}
+
+.dropdown div {
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.dropdown div:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Button Container Styling */
+.button-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+button {
+    background-color: #f0f0f0;
+    border: 1px solid #ccc;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+button:hover {
+    background-color: #e0e0e0;
+}
+
+/* Utility Classes */
+.rotate-270 {
+    transform: rotate(270deg);
 }
