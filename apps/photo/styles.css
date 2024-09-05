@@ -9,12 +9,12 @@ body {
 
 .container {
     display: grid;
-    grid-gap: 15px; /* Spacing between grid items */
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Automatic column sizing */
+    grid-gap: 15px;
+    grid-auto-flow: dense;
     padding: 20px;
+    justify-content: center;
 }
 
-/* Style for each folder or photo */
 .folder, .photo {
     position: relative;
     background-color: #fff;
@@ -29,13 +29,7 @@ body {
 }
 
 .folder:hover, .photo:hover {
-    transform: scale(1.05); /* Zoom effect on hover */
-}
-
-/* Adjusting grid item sizes (for a more Bento effect) */
-.folder.large, .photo.large {
-    grid-column: span 2;
-    grid-row: span 2;
+    transform: scale(1.05);
 }
 
 /* Lightbox styling remains the same */
