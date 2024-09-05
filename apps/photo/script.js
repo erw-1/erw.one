@@ -4,16 +4,13 @@ const basePath = 'files/img/photo/';
 const branch = 'main';
 
 const galleryContainer = document.getElementById('gallery');
-const lightbox = document.getElementById('lightbox');
-const lightboxImg = document.getElementById('lightbox-img');
-const prevBtn = document.getElementById('prev');
-const nextBtn = document.getElementById('next');
 const backButton = document.getElementById('back-button');
 const errorMessage = document.getElementById('error-message');
 
 let currentFolder = '';
 let currentIndex = 0;
 let currentImages = [];
+let lightbox, lightboxImg, prevBtn, nextBtn;
 
 async function fetchGitHubContents(path) {
     try {
@@ -56,7 +53,7 @@ async function showPhotos(folderPath) {
     const files = await fetchGitHubContents(folderPath);
     if (!files) return;
 
-    currentImages = files.filter(file => file.name.endsWith('.jxl')) ;
+    currentImages = files.filter(file => file.name.endsWith('.jxl'));
 
     currentImages.forEach((image, index) => {
         const photoDiv = document.createElement('div');
@@ -71,8 +68,50 @@ async function showPhotos(folderPath) {
 
 function openLightbox(index) {
     currentIndex = index;
+    createLightbox();
     updateLightbox();
     lightbox.style.display = 'flex';
+}
+
+function createLightbox() {
+    if (!lightbox) {
+        lightbox = document.createElement('div');
+        lightbox.id = 'lightbox';
+        lightbox.className = 'lightbox';
+        lightbox.style.display = 'none'; // Initially hidden
+        document.body.appendChild(lightbox);
+
+        // Lightbox image
+        lightboxImg = document.createElement('div');
+        lightboxImg.id = 'lightbox-img';
+        lightboxImg.className = 'lightbox-img';
+        lightbox.appendChild(lightboxImg);
+
+        // Previous button
+        prevBtn = document.createElement('span');
+        prevBtn.id = 'prev';
+        prevBtn.innerHTML = '&#10094;';
+        prevBtn.className = 'nav';
+        prevBtn.onclick = (event) => {
+            event.stopPropagation();
+            navigate(-1);
+        };
+        lightbox.appendChild(prevBtn);
+
+        // Next button
+        nextBtn = document.createElement('span');
+        nextBtn.id = 'next';
+        nextBtn.innerHTML = '&#10095;';
+        nextBtn.className = 'nav';
+        nextBtn.onclick = (event) => {
+            event.stopPropagation();
+            navigate(1);
+        };
+        lightbox.appendChild(nextBtn);
+
+        // Close lightbox when clicking outside of the image
+        lightbox.onclick = closeLightbox;
+    }
 }
 
 function updateLightbox() {
@@ -81,26 +120,15 @@ function updateLightbox() {
 }
 
 function closeLightbox() {
-    lightbox.style.display = 'none';
+    if (lightbox) {
+        lightbox.style.display = 'none';
+    }
 }
 
 function navigate(direction) {
     currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
     updateLightbox();
 }
-
-// Prevent the click event on arrows from closing the lightbox
-prevBtn.onclick = (event) => {
-    event.stopPropagation();
-    navigate(-1);
-};
-
-nextBtn.onclick = (event) => {
-    event.stopPropagation();
-    navigate(1);
-};
-
-lightbox.onclick = closeLightbox;
 
 function goBack() {
     showFolders();
