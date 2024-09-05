@@ -58,7 +58,16 @@ async function showPhotos(folderPath) {
     currentImages.forEach((image, index) => {
         const photoDiv = document.createElement('div');
         photoDiv.className = 'photo';
-        photoDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}')`;
+        const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}`;
+        photoDiv.style.backgroundImage = `url('${imageUrl}')`;
+
+        // Create an Image object to load the image and log its dimensions
+        const img = new Image();
+        img.src = imageUrl;
+        img.onload = function() {
+            console.log(`Image ${image.name} loaded: width = ${img.naturalWidth}, height = ${img.naturalHeight}`);
+        };
+
         photoDiv.onclick = () => openLightbox(index);
         galleryContainer.appendChild(photoDiv);
     });
