@@ -68,12 +68,17 @@ async function showPhotos(folderPath) {
 
 function openLightbox(index) {
     currentIndex = index;
-    createLightbox();
+
+    // Reusing the existing gallery elements
+    const photoDivs = galleryContainer.querySelectorAll('.photo');
+    const selectedImage = photoDivs[currentIndex];
+
+    createLightbox(selectedImage);
     updateLightbox();
     lightbox.style.display = 'flex';
 }
 
-function createLightbox() {
+function createLightbox(selectedImage) {
     if (!lightbox) {
         lightbox = document.createElement('div');
         lightbox.id = 'lightbox';
@@ -81,10 +86,11 @@ function createLightbox() {
         lightbox.style.display = 'none'; // Initially hidden
         document.body.appendChild(lightbox);
 
-        // Lightbox image
+        // Lightbox image (we will use the same style of the photoDiv's background image)
         lightboxImg = document.createElement('div');
         lightboxImg.id = 'lightbox-img';
         lightboxImg.className = 'lightbox-img';
+        lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage; // Use the same image
         lightbox.appendChild(lightboxImg);
 
         // Previous button
@@ -111,12 +117,16 @@ function createLightbox() {
 
         // Close lightbox when clicking outside of the image
         lightbox.onclick = closeLightbox;
+    } else {
+        // Update existing lightbox with new image from the gallery
+        lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage;
     }
 }
 
 function updateLightbox() {
-    const imagePath = currentImages[currentIndex].path;
-    lightboxImg.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}')`;
+    const photoDivs = galleryContainer.querySelectorAll('.photo');
+    const selectedImage = photoDivs[currentIndex];
+    lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage;
 }
 
 function closeLightbox() {
