@@ -46,7 +46,6 @@ async function showFolders() {
     backButton.style.display = 'none';
 }
 
-// Function to watch for changes in the background-image of a div
 function observeBackgroundImageChange(targetElement) {
     const observer = new MutationObserver((mutationsList) => {
         mutationsList.forEach((mutation) => {
@@ -59,7 +58,12 @@ function observeBackgroundImageChange(targetElement) {
                     const img = new Image();
                     img.src = blobUrl;
                     img.onload = function() {
-                        console.log(`Image loaded from ${blobUrl}: width = ${img.naturalWidth}, height = ${img.naturalHeight}`);
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+                        console.log(`Image loaded from ${blobUrl}: width = ${img.naturalWidth}, height = ${img.naturalHeight}, aspect ratio = ${aspectRatio}`);
+
+                        // Resize the div to match the aspect ratio
+                        targetElement.style.width = `${200 * aspectRatio}px`; // Keeping the height constant at 200px
+                        targetElement.style.height = '200px';
                     };
                 }
             }
@@ -96,6 +100,7 @@ function showPhotos(folderPath) {
         backButton.style.display = 'block';
     });
 }
+
 
 function openLightbox(index) {
     currentIndex = index;
