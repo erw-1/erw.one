@@ -66,10 +66,23 @@ body {
     z-index: 1000;
 }
 
-#lightbox img {
+div#lightbox-img {
+    width: 200px;
+    height: 200px;
     max-width: 90%;
     max-height: 90%;
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+    margin: 10px;
+    background-color: #fff;
+    position: relative;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
 #prev, #next {
