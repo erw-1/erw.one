@@ -59,16 +59,20 @@ function observeBackgroundImageChange(targetElement) {
                     img.src = blobUrl;
                     img.onload = function() {
                         const aspectRatio = img.naturalWidth / img.naturalHeight;
-                        console.log(`Image loaded from ${blobUrl}: width = ${img.naturalWidth}, height = ${img.naturalHeight}, aspect ratio = ${aspectRatio}`);
 
                         // Resize the div to match the aspect ratio
-                        targetElement.style.width = `${200 * aspectRatio}px`; // Keeping the height constant at 200px
-                        targetElement.style.height = '200px';
+                        targetElement.style.width = `${200 * aspectRatio}px`; // Keeping the initial height as 200px
+                        targetElement.style.height = 'auto';
                     };
                 }
             }
         });
     });
+
+    // Start observing the target element for attribute changes
+    observer.observe(targetElement, { attributes: true });
+}
+
 
     // Start observing the target element for attribute changes
     observer.observe(targetElement, { attributes: true });
