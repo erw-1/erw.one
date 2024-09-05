@@ -39,7 +39,7 @@ async function showFolders() {
         if (folder.type === 'dir') {
             const folderDiv = document.createElement('div');
             folderDiv.className = 'folder';
-            folderDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jpg')`;
+            folderDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`;
             folderDiv.innerHTML = `<div class="title">${folder.name}</div>`;
             folderDiv.onclick = () => showPhotos(folder.path);
             galleryContainer.appendChild(folderDiv);
@@ -56,7 +56,7 @@ async function showPhotos(folderPath) {
     const files = await fetchGitHubContents(folderPath);
     if (!files) return;
 
-    currentImages = files.filter(file => file.name.endsWith('.jpg') || file.name.endsWith('.png'));
+    currentImages = files.filter(file => file.name.endsWith('.jxl')) ;
 
     currentImages.forEach((image, index) => {
         const photoDiv = document.createElement('div');
