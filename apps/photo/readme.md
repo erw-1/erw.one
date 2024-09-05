@@ -6,4 +6,4 @@ Clicking an image will enlarge it in a lightbox with navigation arrows.
 The current version is using images stored in JXL format to save space, that are converted to JPG when loading them.
 
 
-## [photo diry shortcut](https://github.com/erw-1/erw.one/tree/main/files/img/photo)
+## [photo dir. shortcut](https://github.com/erw-1/erw.one/tree/main/files/img/photo)
