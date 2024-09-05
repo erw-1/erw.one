@@ -46,33 +46,55 @@ async function showFolders() {
     backButton.style.display = 'none';
 }
 
-async function showPhotos(folderPath) {
+// Function to watch for changes in the background-image of a div
+function observeBackgroundImageChange(targetElement) {
+    const observer = new MutationObserver((mutationsList) => {
+        mutationsList.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                const bgImage = targetElement.style.backgroundImage;
+                if (bgImage && bgImage.startsWith('url("blob:')) {
+                    const blobUrl = bgImage.slice(5, -2); // Extract blob URL
+
+                    // Create an Image object to load the blob and get its dimensions
+                    const img = new Image();
+                    img.src = blobUrl;
+                    img.onload = function() {
+                        console.log(`Image loaded from ${blobUrl}: width = ${img.naturalWidth}, height = ${img.naturalHeight}`);
+                    };
+                }
+            }
+        });
+    });
+
+    // Start observing the target element for attribute changes
+    observer.observe(targetElement, { attributes: true });
+}
+
+// Apply the observer to each .folder or .photo element after they are added to the DOM
+function showPhotos(folderPath) {
     currentFolder = folderPath;
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
-    const files = await fetchGitHubContents(folderPath);
-    if (!files) return;
+    fetchGitHubContents(folderPath).then((files) => {
+        if (!files) return;
 
-    currentImages = files.filter(file => file.name.endsWith('.jxl'));
+        currentImages = files.filter(file => file.name.endsWith('.jxl'));
 
-    currentImages.forEach((image, index) => {
-        const photoDiv = document.createElement('div');
-        photoDiv.className = 'photo';
-        const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}`;
-        photoDiv.style.backgroundImage = `url('${imageUrl}')`;
+        currentImages.forEach((image, index) => {
+            const photoDiv = document.createElement('div');
+            photoDiv.className = 'photo';
+            const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}`;
+            photoDiv.style.backgroundImage = `url('${imageUrl}')`;
 
-        // Create an Image object to load the image and log its dimensions
-        const img = new Image();
-        img.src = imageUrl;
-        img.onload = function() {
-            console.log(`Image ${image.name} loaded: width = ${img.naturalWidth}, height = ${img.naturalHeight}`);
-        };
+            // Observe changes in the background image of this photoDiv
+            observeBackgroundImageChange(photoDiv);
 
-        photoDiv.onclick = () => openLightbox(index);
-        galleryContainer.appendChild(photoDiv);
+            photoDiv.onclick = () => openLightbox(index);
+            galleryContainer.appendChild(photoDiv);
+        });
+
+        backButton.style.display = 'block';
     });
-
-    backButton.style.display = 'block';
 }
 
 function openLightbox(index) {
