@@ -8,7 +8,6 @@ const backButton = document.getElementById('back-button');
 const errorMessage = document.getElementById('error-message');
 
 let currentFolder = '';
-let currentIndex = 0;
 let currentImages = [];
 let lightbox, lightboxImg, prevBtn, nextBtn;
 
@@ -46,37 +45,63 @@ async function showFolders() {
     backButton.style.display = 'none';
 }
 
-function showPhotos(folderPath) {
+async function showPhotos(folderPath) {
     currentFolder = folderPath;
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
-    fetchGitHubContents(folderPath).then(files => {
-        if (!files) return;
+    
+    const files = await fetchGitHubContents(folderPath);
+    if (!files) return;
 
-        currentImages = files.filter(file => file.name.endsWith('.jxl'));
+    currentImages = files.filter(file => file.name.endsWith('.jxl'));
 
-        currentImages.forEach((image, index) => {
+    // Load each image, fetch its dimensions, then create the grid item
+    const promises = currentImages.map((image, index) => {
+        return loadImageDimensions(image, index);
+    });
+
+    // Wait for all images to be loaded and sized
+    Promise.all(promises).then(() => {
+        backButton.style.display = 'block';
+    });
+}
+
+function loadImageDimensions(image, index) {
+    return new Promise((resolve) => {
+        const img = new Image();
+        const imgUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}`;
+
+        // On image load, retrieve dimensions and append the photoDiv to the gallery
+        img.onload = function () {
+            const width = img.naturalWidth;
+            const height = img.naturalHeight;
+
             const photoDiv = document.createElement('div');
             photoDiv.className = 'photo';
-            photoDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}')`;
 
-            // Randomly assign the 'large' class to some items for a bento effect
-            if (Math.random() > 0.7) {
-                photoDiv.classList.add('large');
-            }
+            // Set the dimensions based on the image's natural size
+            photoDiv.style.width = `${width}px`;
+            photoDiv.style.height = `${height}px`;
 
+            // Set the background image
+            photoDiv.style.backgroundImage = `url('${imgUrl}')`;
+
+            // Add click event to open lightbox
             photoDiv.onclick = () => openLightbox(index);
-            galleryContainer.appendChild(photoDiv);
-        });
 
-        backButton.style.display = 'block';
+            // Append the div to the gallery container
+            galleryContainer.appendChild(photoDiv);
+
+            resolve();
+        };
+
+        // Start loading the image
+        img.src = imgUrl;
     });
 }
 
 function openLightbox(index) {
     currentIndex = index;
-
-    // Reusing the existing gallery elements
     const photoDivs = galleryContainer.querySelectorAll('.photo');
     const selectedImage = photoDivs[currentIndex];
 
@@ -93,7 +118,7 @@ function createLightbox(selectedImage) {
         lightbox.style.display = 'none'; // Initially hidden
         document.body.appendChild(lightbox);
 
-        // Lightbox image (we will use the same style of the photoDiv's background image)
+        // Lightbox image
         lightboxImg = document.createElement('div');
         lightboxImg.id = 'lightbox-img';
         lightboxImg.className = 'lightbox-img';
