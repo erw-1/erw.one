@@ -73,11 +73,6 @@ function observeBackgroundImageChange(targetElement) {
     observer.observe(targetElement, { attributes: true });
 }
 
-
-    // Start observing the target element for attribute changes
-    observer.observe(targetElement, { attributes: true });
-}
-
 // Apply the observer to each .folder or .photo element after they are added to the DOM
 function showPhotos(folderPath) {
     currentFolder = folderPath;
