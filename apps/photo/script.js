@@ -46,24 +46,31 @@ async function showFolders() {
     backButton.style.display = 'none';
 }
 
-async function showPhotos(folderPath) {
+function showPhotos(folderPath) {
     currentFolder = folderPath;
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
-    const files = await fetchGitHubContents(folderPath);
-    if (!files) return;
+    fetchGitHubContents(folderPath).then(files => {
+        if (!files) return;
 
-    currentImages = files.filter(file => file.name.endsWith('.jxl'));
+        currentImages = files.filter(file => file.name.endsWith('.jxl'));
 
-    currentImages.forEach((image, index) => {
-        const photoDiv = document.createElement('div');
-        photoDiv.className = 'photo';
-        photoDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}')`;
-        photoDiv.onclick = () => openLightbox(index);
-        galleryContainer.appendChild(photoDiv);
+        currentImages.forEach((image, index) => {
+            const photoDiv = document.createElement('div');
+            photoDiv.className = 'photo';
+            photoDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}')`;
+
+            // Randomly assign the 'large' class to some items for a bento effect
+            if (Math.random() > 0.7) {
+                photoDiv.classList.add('large');
+            }
+
+            photoDiv.onclick = () => openLightbox(index);
+            galleryContainer.appendChild(photoDiv);
+        });
+
+        backButton.style.display = 'block';
     });
-
-    backButton.style.display = 'block';
 }
 
 function openLightbox(index) {
