@@ -77,7 +77,7 @@ function openLightbox(index) {
 
 function updateLightbox() {
     const imagePath = currentImages[currentIndex].path;
-    lightboxImg.src = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}`;
+    lightboxImg.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}')`;
 }
 
 function closeLightbox() {
