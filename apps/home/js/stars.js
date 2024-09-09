@@ -82,7 +82,7 @@ export function createStarsLayers(scene) {
     const layers = [];
     const sizes = [2, 1, 0.5, 0.25, 0.1]; // These are now the maximum sizes for each layer
     const depths = [50, 150, 300, 450, 600];
-    const counts = [500, 800, 1200, 1600, 2000];
+    const counts = [1000, 1600, 2400, 3200, 4000];
 
     for (let i = 0; i < sizes.length; i++) {
         // Randomly decide the size for each star in the layer between the maximum size and half of it.
