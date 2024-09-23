@@ -23,6 +23,7 @@ html, body {
     justify-content: center;
     align-items: center;
     backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.5); /* Voile plus transparent */
     transition: background-color 0.3s ease-in-out;
     z-index: 1000;
     opacity: 0;
@@ -31,12 +32,15 @@ html, body {
 
 /* Animation pour l'apparition du voile */
 @keyframes fadeIn {
-    to {
+    0% {
+        opacity: 0;
+    }
+    100% {
         opacity: 1;
     }
 }
 
-/* Style pour les boutons de navigation du carousel */
+/* Ajustements généraux pour le carousel */
 .carousel {
     display: flex;
     align-items: center;
@@ -44,17 +48,14 @@ html, body {
     overflow: hidden;
     position: relative;
     max-width: 60%;
+    margin-right: 20px; /* Décale les images à gauche */
 }
 
+/* Suppression du hover des images */
 .carousel img {
     max-height: 60vh;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    transition: transform 0.3s ease-in-out;
-}
-
-.carousel img:hover {
-    transform: scale(1.05);
 }
 
 /* Boutons de navigation */
@@ -67,8 +68,8 @@ html, body {
     cursor: pointer;
     z-index: 1;
     position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
+    bottom: 10px; /* Positionne les boutons en bas */
+    transform: translateY(0);
 }
 
 .carousel-button.left {
@@ -83,7 +84,7 @@ html, body {
     background: rgba(0, 0, 0, 0.7);
 }
 
-/* Positionnement du texte à côté du carousel */
+/* Positionnement du texte à côté des images */
 .text-box {
     position: absolute;
     top: 10%;
@@ -98,6 +99,20 @@ html, body {
     max-height: 80vh;
 }
 
+/* Animations pour l'ouverture et la fermeture de l'overlay */
+.overlay.hide {
+    animation: fadeOut 0.5s forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
 /* Style du cercle avec l'ID */
 .id-label {
     background: none;
@@ -110,12 +125,6 @@ html, body {
 /* Effet de sortie smooth */
 .overlay.hide {
     animation: fadeOut 0.5s forwards;
-}
-
-@keyframes fadeOut {
-    to {
-        opacity: 0;
-    }
 }
 
 /* Animation smooth des éléments de la fenêtre */
