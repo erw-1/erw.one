@@ -108,10 +108,11 @@ const showOverlay = (data) => {
   // Crée le carousel pour les images
   const carousel = document.createElement('div');
   carousel.className = 'carousel';
+  const baseURL = 'https://raw.githubusercontent.com/erw-1/erw.one/main/files/img/apps/houilles/';
   if (data.images.length > 0) {
     data.images.forEach(image => {
       const img = document.createElement('img');
-      img.src = `https://drive.google.com/uc?export=view&id=${image.trim()}`; // Format de l'image Drive
+      img.src = `${baseURL}${image.trim()}`; // URL complète de l'image GitHub
       carousel.appendChild(img);
       console.log('Image ajoutée au carousel :', img.src);
     });
