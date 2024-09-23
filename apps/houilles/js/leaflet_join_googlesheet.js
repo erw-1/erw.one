@@ -1,39 +1,58 @@
 // Fonction pour charger la configuration depuis le fichier JSON
-const loadConfig = () => fetch('config/config.json').then(response => response.json());
+const loadConfig = () => {
+  console.log("Chargement de la configuration...");
+  return fetch('config/config.json')
+    .then(response => {
+      if (!response.ok) {
+        console.error("Erreur lors du chargement de la configuration :", response.statusText);
+      }
+      return response.json();
+    })
+    .then(config => {
+      console.log("Configuration chargée avec succès :", config);
+      return config;
+    })
+    .catch(error => {
+      console.error("Erreur lors de la lecture de la configuration :", error);
+    });
+};
 
 // Fonction pour charger les données du Google Sheet
 const loadSheetData = (googleSheetUrl) => {
+  console.log("Chargement des données du Google Sheet...");
   return fetch(googleSheetUrl)
     .then(response => response.text())
     .then(data => {
-      // Parse le CSV en JSON
+      console.log("Données du Google Sheet chargées, parsing en cours...");
       const rows = data.split('\n').slice(1); // Ignorer l'en-tête
-      const sheetData = rows.map(row => {
+      const sheetData = rows.map((row, index) => {
         const columns = row.split(',');
         const id = columns[0] ? columns[0].trim() : '';
         const couleur = columns[1] ? columns[1].trim() : '#FFFFFF';
         const images = columns[2] ? columns[2].trim().split(',') : [];
         const texte = columns[3] ? columns[3].trim() : '';
-        return {
-          id,
-          couleur,
-          images,
-          texte
-        };
+        console.log(`Ligne ${index + 1} traitée :`, { id, couleur, images, texte });
+        return { id, couleur, images, texte };
       });
+      console.log("Parsing terminé, données traitées :", sheetData);
       return sheetData;
+    })
+    .catch(error => {
+      console.error("Erreur lors du chargement des données du Google Sheet :", error);
     });
 };
 
 // Fonction pour charger le GeoJSON et afficher les polygones sur la carte
 const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
+  console.log("Chargement du GeoJSON...");
   fetch(geojsonFeature)
     .then(response => response.json())
     .then(geojsonData => {
-      // Ajoute des polygones stylisés
+      console.log("GeoJSON chargé, ajout des polygones à la carte...");
       L.geoJson(geojsonData, {
         style: feature => {
           const data = sheetData.find(d => d.id === feature.properties.id);
+          console.log(`Style appliqué pour le polygone avec ID ${feature.properties.id} :`, data);
           return {
             color: data ? data.couleur : '#666666',
             fillColor: data ? data.couleur : '#FFFFFF',
@@ -43,6 +62,7 @@ const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
         },
         onEachFeature: (feature, layer) => {
           const data = sheetData.find(d => d.id === feature.properties.id);
+          console.log(`Traitement du polygone avec ID ${feature.properties.id} :`, data);
           if (data) {
             // Crée un cercle avec l'ID au centre
             const centroid = turf.centroid(feature); // Utilise Turf.js pour calculer le centre
@@ -57,18 +77,26 @@ const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
               className: 'id-label'
             });
 
-            // Ouvre l'overlay en cliquant sur le polygone
+            // Log pour vérifier si le clic est détecté
             layer.on('click', () => {
+              console.log('Polygone cliqué :', data);
               showOverlay(data);
             });
+          } else {
+            console.warn(`Aucune donnée trouvée pour le polygone avec ID ${feature.properties.id}`);
           }
         }
       }).addTo(map);
+    })
+    .catch(error => {
+      console.error("Erreur lors du chargement du GeoJSON :", error);
     });
 };
 
 // Fonction pour afficher l'overlay avec les images et le texte
 const showOverlay = (data) => {
+  console.log('Affichage de l\'overlay pour :', data);
+
   // Crée le voile coloré
   const overlay = document.createElement('div');
   overlay.className = 'overlay';
@@ -78,11 +106,16 @@ const showOverlay = (data) => {
   // Crée le carousel pour les images
   const carousel = document.createElement('div');
   carousel.className = 'carousel';
-  data.images.forEach(image => {
-    const img = document.createElement('img');
-    img.src = `https://drive.google.com/uc?export=view&id=${image.trim()}`; // Format de l'image Drive
-    carousel.appendChild(img);
-  });
+  if (data.images.length > 0) {
+    data.images.forEach(image => {
+      const img = document.createElement('img');
+      img.src = `https://drive.google.com/uc?export=view&id=${image.trim()}`; // Format de l'image Drive
+      carousel.appendChild(img);
+      console.log('Image ajoutée au carousel :', img.src);
+    });
+  } else {
+    console.warn('Aucune image disponible pour ce polygone.');
+  }
   overlay.appendChild(carousel);
 
   // Crée l'encart pour le texte
@@ -90,10 +123,12 @@ const showOverlay = (data) => {
   textBox.className = 'text-box';
   textBox.innerHTML = `<p>${data.texte}</p>`;
   overlay.appendChild(textBox);
+  console.log('Texte ajouté à l\'overlay :', data.texte);
 
   // Ferme l'overlay en cliquant en dehors du contenu
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
+      console.log('Fermeture de l\'overlay');
       overlay.remove();
     }
   });
@@ -101,6 +136,7 @@ const showOverlay = (data) => {
 
 // Fonction pour initialiser la carte
 const initMap = (config) => {
+  console.log("Initialisation de la carte avec la configuration :", config);
   const map = L.map('map', {
     center: config.mapSettings.center,
     zoom: config.mapSettings.zoomLevel,
