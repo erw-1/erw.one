@@ -1,0 +1,24 @@
+{
+  "googleSheetUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vQSjO9zcyEUlVHwcuOjp4bZnhto_epI3rHbgw3q8fflQCJWdDGvwXU--ZIPvkH97O29rDH7NZQHWRr4/pub?output=csv",
+  "geojsonFeature": "data/houilles.geojson",
+  "geoJsonStyle": {
+    "color": "#666666",
+    "weight": 1,
+    "fillColor": "#FFFFFF",
+    "fillOpacity": 0.5
+  },
+  "joinField": "id",
+  "popupFields": ["id", "couleur", "images", "texte"],
+  "driveFolderId": "1rdxtdHEHaw9r8aoJRU8qfU7hx5BnBfNk",
+  "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
+  "tileLayerOptions": {
+    "maxZoom": 18,
+    "minZoom": 6,
+    "attribution": "EV | Fond de carte © CartoDB"
+  },
+  "mapSettings": {
+    "zoomControl": false,
+    "center": [48.9230, 2.1898],
+    "zoomLevel": 14
+  }
+}
