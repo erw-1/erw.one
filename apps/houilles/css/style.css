@@ -142,3 +142,11 @@ html, body {
 .carousel, .text-box {
     animation: slideIn 0.6s ease-out;
 }
+
+/* Suppression des bordures et arrière-plans blancs des tooltips */
+.leaflet-tooltip {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 7px !important;
+}
+
