@@ -51,7 +51,8 @@ const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
       console.log("GeoJSON chargé, ajout des polygones à la carte...");
       L.geoJson(geojsonData, {
         style: feature => {
-          const data = sheetData.find(d => d.id === feature.properties.id);
+          // Convertir l'ID du GeoJSON en chaîne pour correspondre aux IDs du Google Sheet
+          const data = sheetData.find(d => d.id === String(feature.properties.id));
           console.log(`Style appliqué pour le polygone avec ID ${feature.properties.id} :`, data);
           return {
             color: data ? data.couleur : '#666666',
@@ -61,7 +62,8 @@ const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
           };
         },
         onEachFeature: (feature, layer) => {
-          const data = sheetData.find(d => d.id === feature.properties.id);
+          // Convertir l'ID du GeoJSON en chaîne pour correspondre aux IDs du Google Sheet
+          const data = sheetData.find(d => d.id === String(feature.properties.id));
           console.log(`Traitement du polygone avec ID ${feature.properties.id} :`, data);
           if (data) {
             // Crée un cercle avec l'ID au centre
@@ -77,7 +79,7 @@ const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
               className: 'id-label'
             });
 
-            // Log pour vérifier si le clic est détecté
+            // Ouvre l'overlay en cliquant sur le polygone
             layer.on('click', () => {
               console.log('Polygone cliqué :', data);
               showOverlay(data);
