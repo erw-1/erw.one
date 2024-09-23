@@ -97,44 +97,68 @@ const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
 
 // Fonction pour afficher l'overlay avec les images et le texte
 const showOverlay = (data) => {
-  console.log('Affichage de l\'overlay pour :', data);
+    console.log('Affichage de l\'overlay pour :', data);
 
-  // Crée le voile coloré
-  const overlay = document.createElement('div');
-  overlay.className = 'overlay';
-  overlay.style.backgroundColor = data.couleur + 'CC'; // Couleur semi-transparente
-  document.body.appendChild(overlay);
+    // Crée le voile coloré
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.style.backgroundColor = data.couleur + 'CC'; // Couleur semi-transparente
+    document.body.appendChild(overlay);
 
-  // Crée le carousel pour les images
-  const carousel = document.createElement('div');
-  carousel.className = 'carousel';
-  const baseURL = 'https://raw.githubusercontent.com/erw-1/erw.one/main/files/img/apps/houilles/';
-  if (data.images.length > 0) {
-    data.images.forEach(image => {
-      const img = document.createElement('img');
-      img.src = `${baseURL}${image.trim()}`; // URL complète de l'image GitHub
-      carousel.appendChild(img);
-      console.log('Image ajoutée au carousel :', img.src);
+    // Crée le carousel pour les images
+    const carousel = document.createElement('div');
+    carousel.className = 'carousel';
+    const baseURL = 'https://raw.githubusercontent.com/erw-1/erw.one/main/files/img/apps/houilles/';
+    let currentIndex = 0;
+
+    // Crée les images et ajoute-les au carousel
+    data.images.forEach((image, index) => {
+        const img = document.createElement('img');
+        img.src = `${baseURL}${image.trim()}`;
+        img.style.display = index === 0 ? 'block' : 'none'; // Affiche uniquement la première image
+        carousel.appendChild(img);
     });
-  } else {
-    console.warn('Aucune image disponible pour ce polygone.');
-  }
-  overlay.appendChild(carousel);
 
-  // Crée l'encart pour le texte
-  const textBox = document.createElement('div');
-  textBox.className = 'text-box';
-  textBox.innerHTML = `<p>${data.texte}</p>`;
-  overlay.appendChild(textBox);
-  console.log('Texte ajouté à l\'overlay :', data.texte);
+    // Bouton gauche
+    const leftButton = document.createElement('button');
+    leftButton.className = 'carousel-button left';
+    leftButton.innerHTML = '❮';
+    leftButton.onclick = () => {
+        const images = carousel.querySelectorAll('img');
+        images[currentIndex].style.display = 'none';
+        currentIndex = (currentIndex - 1 + images.length) % images.length;
+        images[currentIndex].style.display = 'block';
+    };
 
-  // Ferme l'overlay en cliquant en dehors du contenu
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      console.log('Fermeture de l\'overlay');
-      overlay.remove();
-    }
-  });
+    // Bouton droit
+    const rightButton = document.createElement('button');
+    rightButton.className = 'carousel-button right';
+    rightButton.innerHTML = '❯';
+    rightButton.onclick = () => {
+        const images = carousel.querySelectorAll('img');
+        images[currentIndex].style.display = 'none';
+        currentIndex = (currentIndex + 1) % images.length;
+        images[currentIndex].style.display = 'block';
+    };
+
+    overlay.appendChild(leftButton);
+    overlay.appendChild(rightButton);
+    overlay.appendChild(carousel);
+
+    // Crée l'encart pour le texte
+    const textBox = document.createElement('div');
+    textBox.className = 'text-box';
+    textBox.innerHTML = `<p>${data.texte}</p>`;
+    overlay.appendChild(textBox);
+    console.log('Texte ajouté à l\'overlay :', data.texte);
+
+    // Ferme l'overlay en cliquant en dehors du contenu
+    overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+            console.log('Fermeture de l\'overlay');
+            overlay.remove();
+        }
+    });
 };
 
 // Fonction pour initialiser la carte
