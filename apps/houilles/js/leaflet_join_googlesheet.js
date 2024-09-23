@@ -156,7 +156,8 @@ const showOverlay = (data) => {
     overlay.addEventListener('click', (e) => {
         if (e.target === overlay) {
             console.log('Fermeture de l\'overlay');
-            overlay.remove();
+            overlay.classList.add('hide'); // Ajoute la classe hide pour l'animation de fermeture
+            setTimeout(() => overlay.remove(), 500); // Retire l'overlay après l'animation
         }
     });
 };
