@@ -9,12 +9,16 @@ const loadSheetData = (googleSheetUrl) => {
       // Parse le CSV en JSON
       const rows = data.split('\n').slice(1); // Ignorer l'en-tête
       const sheetData = rows.map(row => {
-        const [id, couleur, images, texte] = row.split(',');
+        const columns = row.split(',');
+        const id = columns[0] ? columns[0].trim() : '';
+        const couleur = columns[1] ? columns[1].trim() : '#FFFFFF';
+        const images = columns[2] ? columns[2].trim().split(',') : [];
+        const texte = columns[3] ? columns[3].trim() : '';
         return {
-          id: id.trim(),
-          couleur: couleur.trim(),
-          images: images ? images.trim().split(',') : [],
-          texte: texte ? texte.trim() : ''
+          id,
+          couleur,
+          images,
+          texte
         };
       });
       return sheetData;
