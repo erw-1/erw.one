@@ -24,13 +24,13 @@ const loadSheetData = (googleSheetUrl) => {
     .then(response => response.text())
     .then(data => {
       console.log("Données du Google Sheet chargées, parsing en cours...");
-      const rows = data.split('\n').slice(1); // Ignorer l'en-tête
-      const sheetData = rows.map((row, index) => {
-        const columns = row.split(',');
-        const id = columns[0] ? columns[0].trim() : '';
-        const couleur = columns[1] ? columns[1].trim() : '#FFFFFF';
-        const images = columns[2] ? columns[2].trim().split(',') : [];
-        const texte = columns[3] ? columns[3].trim() : '';
+      // Utiliser PapaParse pour analyser correctement le CSV
+      const parsed = Papa.parse(data, { header: true, skipEmptyLines: true });
+      const sheetData = parsed.data.map((row, index) => {
+        const id = row['id'] ? row['id'].trim() : '';
+        const couleur = row['couleur'] ? row['couleur'].trim() : '#FFFFFF';
+        const images = row['images'] ? row['images'].trim().split(',') : [];
+        const texte = row['texte'] ? row['texte'].trim() : '';
         console.log(`Ligne ${index + 1} traitée :`, { id, couleur, images, texte });
         return { id, couleur, images, texte };
       });
