@@ -102,7 +102,7 @@ const showOverlay = (data) => {
     // Crée le voile coloré
     const overlay = document.createElement('div');
     overlay.className = 'overlay';
-    overlay.style.backgroundColor = data.couleur + 'CC'; // Couleur semi-transparente
+    overlay.style.backgroundColor = data.couleur + '80'; // Couleur semi-transparente
     document.body.appendChild(overlay);
 
     // Crée le carousel pour les images
