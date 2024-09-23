@@ -150,3 +150,14 @@ html, body {
     padding: 7px !important;
 }
 
+/* Style de l'affichage de l'ambiance */
+.ambiance-box {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    background: none;
+    padding: 5px;
+    border-radius: 5px;
+}
