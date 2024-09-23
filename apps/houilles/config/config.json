@@ -9,7 +9,6 @@
   },
   "joinField": "id",
   "popupFields": ["id", "couleur", "images", "texte"],
-  "driveFolderId": "1rdxtdHEHaw9r8aoJRU8qfU7hx5BnBfNk",
   "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
   "tileLayerOptions": {
     "maxZoom": 18,
