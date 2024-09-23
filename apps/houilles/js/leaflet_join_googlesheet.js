@@ -29,10 +29,11 @@ const loadSheetData = (googleSheetUrl) => {
       const sheetData = parsed.data.map((row, index) => {
         const id = row['id'] ? row['id'].trim() : '';
         const couleur = row['couleur'] ? row['couleur'].trim() : '#FFFFFF';
+        const ambiance = row['ambiance'] ? row['ambiance'].trim() : '';
         const images = row['images'] ? row['images'].trim().split(',') : [];
         const texte = row['texte'] ? row['texte'].trim() : '';
-        console.log(`Ligne ${index + 1} traitée :`, { id, couleur, images, texte });
-        return { id, couleur, images, texte };
+        console.log(`Ligne ${index + 1} traitée :`, { id, couleur, ambiance, images, texte });
+        return { id, couleur, ambiance, images, texte };
       });
       console.log("Parsing terminé, données traitées :", sheetData);
       return sheetData;
@@ -95,7 +96,7 @@ const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
     });
 };
 
-// Fonction pour afficher l'overlay avec les images et le texte
+// Fonction pour afficher l'overlay avec les images, l'ambiance et le texte
 const showOverlay = (data) => {
     console.log('Affichage de l\'overlay pour :', data);
 
@@ -104,6 +105,13 @@ const showOverlay = (data) => {
     overlay.className = 'overlay';
     overlay.style.backgroundColor = data.couleur + '80'; // Couleur semi-transparente
     document.body.appendChild(overlay);
+
+    // Crée l'élément pour l'ambiance
+    const ambianceBox = document.createElement('div');
+    ambianceBox.className = 'ambiance-box';
+    ambianceBox.textContent = data.ambiance;
+    ambianceBox.style.color = data.couleur; // Applique la couleur non transparente
+    overlay.appendChild(ambianceBox);
 
     // Crée le carousel pour les images
     const carousel = document.createElement('div');
