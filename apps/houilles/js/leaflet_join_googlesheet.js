@@ -68,7 +68,7 @@ const loadGeoJsonData = (geojsonFeature, sheetData, map) => {
           console.log(`Traitement du polygone avec ID ${feature.properties.id} :`, data);
           if (data) {
             // Crée un cercle avec l'ID au centre
-            const centroid = turf.centerOfMass(feature); // Utilise Turf.js pour calculer le centre
+            const centroid = turf.booleanPointInPolygon(turf.centerOfMass(feature), feature) ? turf.centerOfMass(feature) : turf.pointOnFeature(feature);
             const marker = L.circleMarker([centroid.geometry.coordinates[1], centroid.geometry.coordinates[0]], {
               color: data.couleur,
               fillColor: data.couleur,
