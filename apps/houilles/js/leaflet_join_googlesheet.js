@@ -116,7 +116,7 @@ const showOverlay = (data) => {
     // Crée le carousel pour les images
     const carousel = document.createElement('div');
     carousel.className = 'carousel';
-    const baseURL = 'https://raw.githubusercontent.com/erw-1/erw.one/main/files/img/apps/houilles/';
+    const baseURL = 'https://raw.githubusercontent.com/erw-1/erw.one/main/files/img/houilles/';
     let currentIndex = 0;
 
     // Crée les images et ajoute-les au carousel
