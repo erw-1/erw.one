@@ -13,7 +13,7 @@
   "tileLayerOptions": {
     "maxZoom": 18,
     "minZoom": 6,
-    "attribution": "EV | Fond de carte © CartoDB"
+    "attribution": "Adama Dior, Audrey, Erwan, Rafaël, Salifou, Savita | Fond de carte © CartoDB"
   },
   "mapSettings": {
     "zoomControl": false,
