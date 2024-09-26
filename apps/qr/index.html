@@ -4,24 +4,61 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QR Code Generator</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+    <title>Custom QR Code Generator</title>
+    <script src="https://cdn.jsdelivr.net/npm/qr-code-styling@1.5.0/lib/qr-code-styling.js"></script>
 </head>
 <body>
-    <h1>QR Code Generator</h1>
+    <h1>Custom QR Code Generator</h1>
     <input type="text" id="text" placeholder="Enter URL or text" value="https://erw.one" />
+    <br>
+    <label for="dot-color">Dot Color:</label>
+    <input type="color" id="dot-color" value="#000000">
+    <label for="bg-color">Background Color:</label>
+    <input type="color" id="bg-color" value="#ffffff">
+    <br>
+    <label for="dot-shape">Dot Shape:</label>
+    <select id="dot-shape">
+        <option value="square">Square</option>
+        <option value="circle">Circle</option>
+    </select>
+    <br>
+    <label for="logo">Upload Logo:</label>
+    <input type="file" id="logo" accept="image/*">
+    <br>
     <button onclick="generateQRCode()">Generate QR Code</button>
-    <canvas id="qrcode"></canvas>
+    <div id="qrcode"></div>
 
     <script>
+        let qrCode;
+
         function generateQRCode() {
             const text = document.getElementById('text').value;
-            const qrCode = new QRious({
-                element: document.getElementById('qrcode'),
-                value: text,
-                size: 200
-            });
+            const dotColor = document.getElementById('dot-color').value;
+            const bgColor = document.getElementById('bg-color').value;
+            const dotShape = document.getElementById('dot-shape').value;
+            const logoInput = document.getElementById('logo');
+
+            const options = {
+                width: 300,
+                height: 300,
+                type: "canvas",
+                data: text,
+                image: logoInput.files[0] ? URL.createObjectURL(logoInput.files[0]) : null,
+                dotsOptions: {
+                    color: dotColor,
+                    type: dotShape
+                },
+                backgroundOptions: {
+                    color: bgColor,
+                }
+            };
+
+            if (qrCode) {
+                qrCode.update(options);
+            } else {
+                qrCode = new QRCodeStyling(options);
+                qrCode.append(document.getElementById("qrcode"));
+            }
         }
     </script>
-</body>
-</html>
+</body
