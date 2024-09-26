@@ -2,166 +2,92 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Custom QR Code Generator</title>
     <script src="qr.js"></script>
-    <style>
-        .qr-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 20px;
-        }
-        .controls {
-            display: flex;
-            flex-direction: column;
-            width: 300px;
-            margin-bottom: 20px;
-        }
-        .control {
-            margin: 5px 0;
-        }
-    </style>
 </head>
 <body>
-
-<div class="qr-container">
-    <h1>Custom QR Code Generator</h1>
-    <div class="controls">
-        <!-- Main Options -->
-        <input class="control" type="text" id="qr-data" placeholder="Enter URL or Text" value="https://erw.one">
-        <input class="control" type="file" id="qr-logo" accept="image/*">
-        <input class="control" type="number" id="qr-width" min="100" max="1000" value="300" placeholder="Width">
-        <input class="control" type="number" id="qr-height" min="100" max="1000" value="300" placeholder="Height">
-        <input class="control" type="number" id="qr-margin" min="0" max="50" value="10" placeholder="Margin">
-
-        <!-- Dots Options -->
-        <select class="control" id="qr-dots-type">
-            <option value="square">Square</option>
-            <option value="dots">Dots</option>
-            <option value="rounded">Rounded</option>
-            <option value="extra-rounded">Extra Rounded</option>
-            <option value="classy">Classy</option>
-            <option value="classy-rounded">Classy Rounded</option>
-        </select>
-        <input class="control" type="color" id="qr-dots-color" value="#000000">
-
-        <!-- Corners Square Options -->
-        <select class="control" id="qr-corners-square-type">
-            <option value="square">Square</option>
-            <option value="dot">Dot</option>
-            <option value="extra-rounded">Extra Rounded</option>
-        </select>
-        <input class="control" type="color" id="qr-corners-square-color" value="#000000">
-
-        <!-- Corners Dot Options -->
-        <select class="control" id="qr-corners-dot-type">
-            <option value="">None</option>
-            <option value="square">Square</option>
-            <option value="dot">Dot</option>
-        </select>
-        <input class="control" type="color" id="qr-corners-dot-color" value="#000000">
-
-        <!-- Background Options -->
-        <input class="control" type="color" id="qr-background-color" value="#ffffff">
-
-        <!-- Image Options -->
-        <label class="control">Image Options</label>
-        <input class="control" type="number" id="qr-image-size" min="0.1" max="1" step="0.1" value="0.4" placeholder="Image Size">
-        <input class="control" type="number" id="qr-image-margin" min="0" max="100" value="0" placeholder="Image Margin">
-    </div>
-
-    <div id="qr-code"></div>
-    <button onclick="downloadQRCode()">Download QR Code</button>
-</div>
-
-<script>
-    const qrCode = new QRCodeStyling({
-        width: 300,
-        height: 300,
-        data: "https://erw.one",
-        image: null,
-        margin: 10,
-        dotsOptions: {
-            color: "#000000",
-            type: "square"
-        },
-        backgroundOptions: {
-            color: "#ffffff",
-        },
-        cornersSquareOptions: {
-            color: "#000000",
-            type: "square"
-        },
-        cornersDotOptions: {
-            color: "#000000",
-            type: "square"
-        },
-        imageOptions: {
-            hideBackgroundDots: true,
-            imageSize: 0.4,
-            margin: 0
-        }
-    });
-
-    qrCode.append(document.getElementById("qr-code"));
-
-    document.querySelectorAll('.control').forEach(control => {
-        control.addEventListener('input', updateQRCode);
-    });
-
-    function updateQRCode() {
-        const data = document.getElementById('qr-data').value;
-        const imageFile = document.getElementById('qr-logo').files[0];
-        const width = parseInt(document.getElementById('qr-width').value);
-        const height = parseInt(document.getElementById('qr-height').value);
-        const margin = parseInt(document.getElementById('qr-margin').value);
-        const dotsType = document.getElementById('qr-dots-type').value;
-        const dotsColor = document.getElementById('qr-dots-color').value;
-        const cornersSquareType = document.getElementById('qr-corners-square-type').value;
-        const cornersSquareColor = document.getElementById('qr-corners-square-color').value;
-        const cornersDotType = document.getElementById('qr-corners-dot-type').value;
-        const cornersDotColor = document.getElementById('qr-corners-dot-color').value;
-        const backgroundColor = document.getElementById('qr-background-color').value;
-        const imageSize = parseFloat(document.getElementById('qr-image-size').value);
-        const imageMargin = parseInt(document.getElementById('qr-image-margin').value);
-
-        qrCode.update({
-            data,
-            width,
-            height,
-            image: imageFile ? URL.createObjectURL(imageFile) : null,
-            margin,
-            dotsOptions: {
-                color: dotsColor,
-                type: dotsType
-            },
-            cornersSquareOptions: {
-                color: cornersSquareColor,
-                type: cornersSquareType
-            },
-            cornersDotOptions: {
-                color: cornersDotColor,
-                type: cornersDotType
-            },
-            backgroundOptions: {
-                color: backgroundColor
-            },
-            imageOptions: {
-                hideBackgroundDots: true,
-                imageSize: imageSize,
-                margin: imageMargin
-            }
-        });
-    }
-
-    function downloadQRCode() {
-        qrCode.download({
-            name: "qr-code",
-            extension: "png"
-        });
-    }
-</script>
-
+    <header class="container qr-header">
+        <div class="row row--qr-header">
+            <div class="col qr-logo">
+                <img class="qr-logo__img" src="logo.png" alt="QR code styling logo">
+            </div>
+        </div>
+    </header>
+    <main>
+        <section class="container qr-description">
+            <div class="col">
+                <h1>QR Code Styling</h1>
+                <p>Generate styled QR codes with customizable options.</p>
+            </div>
+        </section>
+        <section class="container">
+            <div class="row row--body">
+                <form class="col qr-form" id="form">
+                    <button type="button" class="accordion accordion--open">Main Options</button>
+                    <div class="panel panel--open">
+                        <label for="form-data">Data</label>
+                        <input node="data" node-change-event="oninput" id="form-data" type="text" value="https://qr-code-styling.com">
+                        <label for="form-image-file">Image File</label>
+                        <div class="buttons-container">
+                            <input node="image" node-data-field="files" id="form-image-file" type="file">
+                            <button type="button" id="button-cancel">Cancel</button>
+                        </div>
+                        <label for="form-width">Width</label>
+                        <input node="width" id="form-width" type="number" min="100" max="10000" value="300">
+                        <label for="form-height">Height</label>
+                        <input node="height" id="form-height" type="number" min="100" max="10000" value="300">
+                        <label for="form-margin">Margin</label>
+                        <input node="margin" id="form-margin" type="number" min="0" max="10000" value="0">
+                    </div>
+                    <button type="button" class="accordion">Dots Options</button>
+                    <div class="panel">
+                        <label for="form-dots-type">Dots Style</label>
+                        <select node="dotsOptions.type" id="form-dots-type">
+                            <option value="square">Square</option>
+                            <option value="dots">Dots</option>
+                            <option value="rounded">Rounded</option>
+                            <option value="extra-rounded" selected>Extra rounded</option>
+                            <option value="classy">Classy</option>
+                            <option value="classy-rounded">Classy rounded</option>
+                        </select>
+                        <label for="form-dots-color">Dots Color</label>
+                        <input node="dotsOptions.color" id="form-dots-color" type="color" value="#6a1a4c">
+                    </div>
+                    <button type="button" class="accordion">Corners Square Options</button>
+                    <div class="panel">
+                        <label for="form-corners-square-type">Corners Square Style</label>
+                        <select node="cornersSquareOptions.type" id="form-corners-square-type">
+                            <option value="">None</option>
+                            <option value="square">Square</option>
+                            <option value="dot">Dot</option>
+                            <option value="extra-rounded">Extra rounded</option>
+                        </select>
+                        <label for="form-corners-square-color">Corners Square Color</label>
+                        <input node="cornersSquareOptions.color" id="form-corners-square-color" type="color" value="#000000">
+                    </div>
+                    <button type="button" class="accordion">Image Options</button>
+                    <div class="panel">
+                        <label for="form-hide-background-dots">Hide Background Dots</label>
+                        <input node="imageOptions.hideBackgroundDots" node-data-field="checked" id="form-hide-background-dots" type="checkbox" checked>
+                        <label for="form-image-size">Image Size</label>
+                        <input node="imageOptions.imageSize" id="form-image-size" type="number" min="0" max="1" step="0.1" value="0.4">
+                        <label for="form-image-margin">Margin</label>
+                        <input node="imageOptions.margin" id="form-image-margin" type="number" min="0" max="10000" value="0">
+                    </div>
+                </form>
+                <div class="col qr-code-container">
+                    <div class="qr-code" id="qr-code-generated"></div>
+                    <div class="qr-download-group">
+                        <button id="qr-download">Download</button>
+                        <select id="qr-extension">
+                            <option value="png" selected>PNG</option>
+                            <option value="jpeg">JPEG</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
 </body>
 </html>
