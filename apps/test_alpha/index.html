@@ -107,20 +107,17 @@
                     // Compute luminance (perceived brightness)
                     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
-                    // Compute darkness
-                    const darkness = 1 - luminance;
+                    // For black pixels (luminance close to 0), set alpha to 0 (fully transparent)
+                    // For white pixels (luminance close to 1), keep original alpha
+                    const newAlpha = a * luminance;
 
-                    // Calculate new alpha
-                    const newAlpha = a * darkness;
-
-                    // Avoid division by zero
-                    if (newAlpha > 0) {
-                        // Adjust RGB values to maintain appearance over black background
+                    // Avoid division by zero and adjust RGB values if alpha is changed
+                    if (newAlpha < a && newAlpha > 0) {
                         data[i] = Math.min(255, (r * a) / newAlpha);
                         data[i + 1] = Math.min(255, (g * a) / newAlpha);
                         data[i + 2] = Math.min(255, (b * a) / newAlpha);
-                    } else {
-                        // If new alpha is zero, set RGB to black
+                    } else if (newAlpha === 0) {
+                        // Set RGB to 0 if alpha is zero
                         data[i] = 0;
                         data[i + 1] = 0;
                         data[i + 2] = 0;
@@ -147,8 +144,8 @@
                 // Create a download link for the processed image
                 const downloadLink = document.createElement('a');
                 downloadLink.href = dataURL;
-                downloadLink.download = `processed_${file.name}`;
-                downloadLink.textContent = `Download Processed Image (${file.name})`;
+                downloadLink.download = `processed_${file.name.replace(/\.\w+$/, '.png')}`;
+                downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
                 downloadLink.className = 'download-link';
 
                 // Append the image and link to the container
