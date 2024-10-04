@@ -1,84 +1,89 @@
-/* General Styles */
+/* Existing styles */
 body {
-    background-color: #f5f5f5;
-    font-family: 'Roboto', Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    color: #212121;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 40px auto;
-    padding: 0 20px;
-}
-
-h1 {
-    text-align: center;
-    color: #424242;
-}
-
-.file-input-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-}
-
-#fileInput {
-    display: none;
-}
-
-.file-input-container label {
-    background-color: #9e9e9e;
-    color: #fff;
-    padding: 12px 24px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
+    font-family: Arial, sans-serif;
+    margin: 20px;
 }
 
 #log {
-    max-width: 600px;
-    margin: 0 auto 20px;
-    text-align: center;
+    margin-top: 20px;
 }
 
-#output {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-}
-
-/* Comparison Slider */
-.img-comp-container {
+.image-container {
+    margin-top: 20px;
     position: relative;
-    max-width: 600px;
-    margin: 20px;
-    height: auto;
+    width: 100%;
+    max-width: 750px;
+    overflow: hidden;
+    border: 1px solid #ccc;
 }
 
-.img-comp-img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+.download-link {
+    display: block;
+    margin-top: 10px;
+}
+
+/* Slider styles */
+.image-comparison-slider {
+    position: relative;
     overflow: hidden;
 }
 
-.img-comp-img img {
-    display: block;
-    width: 100%;
-    height: auto;
-    vertical-align: middle;
+.image-comparison-slider .images {
+    display: flex;
 }
 
-.img-comp-slider {
+.image-comparison-slider .images .img-1,
+.image-comparison-slider .images .img-2 {
+    height: auto;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+}
+
+.image-comparison-slider .images .img-2 {
     position: absolute;
-    z-index: 9;
-    cursor: ew-resize;
-    width: 40px;
-    height: 40px;
-    background-color: #2196F3;
-    opacity: 0.7;
+    top: 0;
+    left: 0;
+    width: 50%;
+    overflow: hidden;
+}
+
+.image-comparison-slider .slider {
+    position: absolute;
+    top: 0;
+    width: 100%;
+    z-index: 1;
+}
+
+.image-comparison-slider .slider input {
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: col-resize;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+
+.image-comparison-slider .slider .drag-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background: #fff;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.image-comparison-slider .slider .drag-line span {
+    position: absolute;
+    top: 50%;
+    left: -10px;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    background: #fff;
     border-radius: 50%;
+    box-shadow: 0 0 0 3px #000;
 }
