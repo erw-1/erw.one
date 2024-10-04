@@ -77,6 +77,9 @@
             // Create an Image object
             const img = new Image();
 
+            // Ensure CORS is handled for cross-origin images
+            img.crossOrigin = 'Anonymous';
+
             // Load event handler for the Image
             img.onload = function() {
                 // Create an off-screen canvas
@@ -99,12 +102,16 @@
                     const r = data[i];     // Red channel
                     const g = data[i + 1]; // Green channel
                     const b = data[i + 2]; // Blue channel
+                    const a = data[i + 3]; // Alpha channel
 
                     // Compute luminance (perceived brightness)
                     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
-                    // Set alpha channel proportional to brightness
-                    data[i + 3] = luminance * 255;
+                    // Invert luminance to get darkness (0 = white, 1 = black)
+                    const darkness = 1 - luminance;
+
+                    // Adjust the existing alpha channel
+                    data[i + 3] = a * (1 - darkness);
                 }
 
                 // Put the processed data back onto the canvas
@@ -137,6 +144,11 @@
 
                 // Log the processing of this image
                 log(`Processed image: ${file.name}`);
+            };
+
+            // Error handling for image loading
+            img.onerror = function() {
+                log(`Failed to load image: ${file.name}`);
             };
 
             // Set the Image source to the data URL from the FileReader
