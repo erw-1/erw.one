@@ -90,14 +90,15 @@
             margin-top: 10px;
         }
         .download-link {
-            display: inline-block;
-            margin-top: 10px;
+            display: block;
+            margin: 10px auto;
             background-color: #616161;
             color: #ffffff;
             text-decoration: none;
             padding: 10px 20px;
             border-radius: 4px;
             text-align: center;
+            width: fit-content;
         }
         .download-link:hover {
             background-color: #757575;
@@ -118,10 +119,13 @@
         .remove-button:hover {
             background-color: #e64a19;
         }
-        /* Bulk download button */
-        #bulkDownloadBtn {
-            display: block;
+        /* Bulk download and empty list buttons */
+        #actionButtons {
+            display: flex;
+            justify-content: center;
             margin: 20px auto;
+        }
+        .action-button {
             background-color: #ff9800;
             color: #ffffff;
             border: none;
@@ -129,8 +133,9 @@
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;
+            margin: 0 10px;
         }
-        #bulkDownloadBtn:hover {
+        .action-button:hover {
             background-color: #fb8c00;
         }
         /* Responsive adjustments */
@@ -149,6 +154,12 @@
             .image-box {
                 margin: 10px 0;
             }
+            #actionButtons {
+                flex-direction: column;
+            }
+            .action-button {
+                margin: 10px 0;
+            }
         }
     </style>
 </head>
@@ -163,8 +174,11 @@
     <div id="processingMessage">Processing...</div>
 </div>
 
-<!-- Bulk download button -->
-<button id="bulkDownloadBtn" style="display: none;">Download All Processed Images</button>
+<!-- Action buttons -->
+<div id="actionButtons" style="display: none;">
+    <button id="bulkDownloadBtn" class="action-button">Download All Processed Images</button>
+    <button id="emptyListBtn" class="action-button">Empty List</button>
+</div>
 
 <!-- Container for processed images and download links -->
 <div id="output"></div>
@@ -176,6 +190,8 @@
     const outputDiv = document.getElementById('output');
     const processingMessage = document.getElementById('processingMessage');
     const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
+    const emptyListBtn = document.getElementById('emptyListBtn');
+    const actionButtons = document.getElementById('actionButtons');
 
     // Counter for tracking processing images
     let processingCount = 0;
@@ -188,6 +204,9 @@
 
     // Event listener for bulk download button
     bulkDownloadBtn.addEventListener('click', bulkDownload);
+
+    // Event listener for empty list button
+    emptyListBtn.addEventListener('click', emptyList);
 
     /**
      * Handles the files selected by the user.
@@ -338,12 +357,8 @@
                     const downloadLink = document.createElement('a');
                     downloadLink.href = processedPreview.src;
                     downloadLink.download = `processed_${file.name.replace(/\.\w+$/, '.png')}`;
-                    downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
+                    downloadLink.textContent = `Download Processed Image`;
                     downloadLink.className = 'download-link';
-
-                    // Center the download link
-                    downloadLink.style.display = 'block';
-                    downloadLink.style.margin = '10px auto';
 
                     // Create a remove button
                     const removeButton = document.createElement('button');
@@ -356,9 +371,9 @@
                         if (index !== -1) {
                             processedImages.splice(index, 1);
                         }
-                        // Hide bulk download button if no images left
+                        // Hide action buttons if no images left
                         if (processedImages.length === 0) {
-                            bulkDownloadBtn.style.display = 'none';
+                            actionButtons.style.display = 'none';
                         }
                     };
 
@@ -381,9 +396,9 @@
                         container: container
                     });
 
-                    // Show bulk download button if there are processed images
+                    // Show action buttons if there are processed images
                     if (processedImages.length > 0) {
-                        bulkDownloadBtn.style.display = 'block';
+                        actionButtons.style.display = 'flex';
                     }
 
                 }, 'image/png');
@@ -426,6 +441,20 @@
         processedImages.forEach(item => {
             item.downloadLink.click();
         });
+    }
+
+    /**
+     * Handles emptying the list of processed images.
+     */
+    function emptyList() {
+        // Remove all image containers from the output div
+        processedImages.forEach(item => {
+            outputDiv.removeChild(item.container);
+        });
+        // Clear the processedImages array
+        processedImages.length = 0;
+        // Hide action buttons
+        actionButtons.style.display = 'none';
     }
 </script>
 
