@@ -2,16 +2,29 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Black to Alpha Converter - Optimized with Slider</title>
+    <title>Black to Alpha Converter with Slider</title>
     <style>
         /* Existing styles */
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            background: #efefef;
         }
 
         #log {
             margin-top: 20px;
+        }
+
+        .download-link {
+            display: block;
+            margin-top: 10px;
+        }
+
+        /* Slider styles from your example */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
         .image-container {
@@ -20,84 +33,113 @@
             width: 100%;
             max-width: 750px;
             overflow: hidden;
-            border: 1px solid #ccc;
+            background: #fff;
+            border: 7px solid #fff;
+            box-shadow: 0px 0px 15px rgba(0,0,0,0.15);
         }
 
-        .download-link {
-            display: block;
-            margin-top: 10px;
-        }
-
-        /* Slider styles */
-        .image-comparison-slider {
-            position: relative;
-            overflow: hidden;
-        }
-
-        .image-comparison-slider .images {
+        .image-container .images {
+            height: 100%;
+            width: 100%;
             display: flex;
         }
 
-        .image-comparison-slider .images .img-1,
-        .image-comparison-slider .images .img-2 {
-            height: auto;
+        .image-container .images .img-1,
+        .image-container .images .img-2 {
+            height: 100%;
             width: 100%;
             background-size: cover;
             background-position: center;
         }
 
-        .image-comparison-slider .images .img-2 {
+        .image-container .images .img-2 {
             position: absolute;
-            top: 0;
-            left: 0;
             width: 50%;
-            overflow: hidden;
         }
 
-        .image-comparison-slider .slider {
+        .image-container .slider {
             position: absolute;
             top: 0;
             width: 100%;
-            z-index: 1;
+            z-index: 99;
         }
 
-        .image-comparison-slider .slider input {
+        .image-container .slider input {
             width: 100%;
+            outline: none;
+            background: none;
+            -webkit-appearance: none;
+        }
+
+        .image-container .slider input::-webkit-slider-thumb {
             height: 100%;
-            opacity: 0;
+            width: 3px;
+            background: none;
+            -webkit-appearance: none;
             cursor: col-resize;
-            position: absolute;
-            top: 0;
-            left: 0;
         }
 
-        .image-comparison-slider .slider .drag-line {
-            position: absolute;
-            left: 50%;
-            top: 0;
+        .image-container .slider .drag-line {
+            width: 3px;
             height: 100%;
-            width: 2px;
-            background: #fff;
-            z-index: 2;
+            position: absolute;
+            left: 49.85%;
             pointer-events: none;
         }
 
-        .image-comparison-slider .slider .drag-line span {
+        .image-container .slider .drag-line::before,
+        .image-container .slider .drag-line::after {
+            position: absolute;
+            content: "";
+            width: 100%;
+            height: 50%;
+            background: #fff;
+        }
+
+        .image-container .slider .drag-line::before {
+            top: 0;
+        }
+
+        .image-container .slider .drag-line::after {
+            bottom: 0;
+        }
+
+        .image-container .slider .drag-line span {
+            height: 42px;
+            width: 42px;
+            border: 3px solid #fff;
             position: absolute;
             top: 50%;
-            left: -10px;
-            transform: translateY(-50%);
-            width: 20px;
-            height: 20px;
-            background: #fff;
+            left: 50%;
             border-radius: 50%;
-            box-shadow: 0 0 0 3px #000;
+            transform: translate(-50%, -50%);
+        }
+
+        .image-container .slider .drag-line span::before,
+        .image-container .slider .drag-line span::after {
+            position: absolute;
+            content: "";
+            top: 50%;
+            border: 10px solid transparent;
+            border-bottom-width: 0px;
+            border-right-width: 0px;
+            transform: translate(-50%, -50%) rotate(45deg);
+        }
+
+        .image-container .slider .drag-line span::before {
+            left: 40%;
+            border-left-color: #fff;
+        }
+
+        .image-container .slider .drag-line span::after {
+            left: 60%;
+            border-top-color: #fff;
         }
     </style>
 </head>
 <body>
 
-<h1>Black to Alpha Converter - Optimized with Slider</h1>
+<h1>Black to Alpha Converter with Slider</h1>
 
 <!-- File input for uploading multiple images -->
 <input type="file" id="fileInput" accept="image/*" multiple>
@@ -143,21 +185,21 @@
 
         // Load event handler for the FileReader
         reader.onload = function(event) {
-            // Create an Image object for the original image
-            const originalImg = new Image();
+            // Create an Image object
+            const img = new Image();
 
-            // Load event handler for the original image
-            originalImg.onload = function() {
+            // Load event handler for the Image
+            img.onload = function() {
                 // Create an off-screen canvas
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
                 // Set canvas dimensions to the image dimensions
-                canvas.width = originalImg.width;
-                canvas.height = originalImg.height;
+                canvas.width = img.width;
+                canvas.height = img.height;
 
-                // Draw the original image onto the canvas
-                ctx.drawImage(originalImg, 0, 0);
+                // Draw the image onto the canvas
+                ctx.drawImage(img, 0, 0);
 
                 // Get image data from the canvas
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -204,20 +246,20 @@
                 // Convert the canvas to a data URL (PNG format)
                 const processedDataURL = canvas.toDataURL('image/png');
 
-                // Create the image comparison slider
-                createImageComparisonSlider(originalImg.src, processedDataURL, file.name);
+                // Now create the slider for this image
+                createImageComparisonSlider(img.src, processedDataURL, file.name, img.width, img.height);
 
                 // Log the processing of this image
                 log(`Processed image: ${file.name}`);
             };
 
             // Error handling for image loading
-            originalImg.onerror = function() {
+            img.onerror = function() {
                 log(`Failed to load image: ${file.name}`);
             };
 
-            // Set the original image source to the data URL from the FileReader
-            originalImg.src = event.target.result;
+            // Set the Image source to the data URL from the FileReader
+            img.src = event.target.result;
         };
 
         // Error handling for FileReader
@@ -229,14 +271,12 @@
         reader.readAsDataURL(file);
     }
 
-    function createImageComparisonSlider(originalSrc, processedSrc, fileName) {
+    function createImageComparisonSlider(originalSrc, processedSrc, fileName, imgWidth, imgHeight) {
         // Create a container for the slider
         const container = document.createElement('div');
         container.className = 'image-container';
-
-        // Create the slider wrapper
-        const sliderWrapper = document.createElement('div');
-        sliderWrapper.className = 'image-comparison-slider';
+        container.style.width = imgWidth + 'px';
+        container.style.height = imgHeight + 'px';
 
         // Create the images container
         const imagesDiv = document.createElement('div');
@@ -272,11 +312,11 @@
         inputRange.value = '50';
 
         // Event listener for the slider input
-        inputRange.addEventListener('input', function() {
+        inputRange.oninput = function() {
             let sliderVal = inputRange.value;
             dragLineDiv.style.left = sliderVal + '%';
             img2Div.style.width = sliderVal + '%';
-        });
+        };
 
         // Initialize the positions
         dragLineDiv.style.left = '50%';
@@ -286,12 +326,12 @@
         sliderDiv.appendChild(dragLineDiv);
         sliderDiv.appendChild(inputRange);
 
-        // Append images and slider to sliderWrapper
-        sliderWrapper.appendChild(imagesDiv);
-        sliderWrapper.appendChild(sliderDiv);
+        // Append images and slider to container
+        container.appendChild(imagesDiv);
+        container.appendChild(sliderDiv);
 
-        // Append the sliderWrapper to the container
-        container.appendChild(sliderWrapper);
+        // Append the container to the output div
+        outputDiv.appendChild(container);
 
         // Create a download link for the processed image
         const downloadLink = document.createElement('a');
@@ -300,11 +340,8 @@
         downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
         downloadLink.className = 'download-link';
 
-        // Append the download link to the container
-        container.appendChild(downloadLink);
-
-        // Append the container to the output div
-        outputDiv.appendChild(container);
+        // Append the download link to outputDiv
+        outputDiv.appendChild(downloadLink);
     }
 
     function log(message) {
