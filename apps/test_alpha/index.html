@@ -2,29 +2,318 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Black to Alpha Converter</title>
-    <!-- Link to CSS -->
-    <link rel="stylesheet" href="style.css">
+    <title>Black to Alpha Converter - Optimized with Slider</title>
+    <style>
+        /* Existing styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        #log {
+            margin-top: 20px;
+        }
+
+        .image-container {
+            margin-top: 20px;
+            position: relative;
+            width: 100%;
+            max-width: 750px;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+
+        .download-link {
+            display: block;
+            margin-top: 10px;
+        }
+
+        /* Slider styles */
+        .image-comparison-slider {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-comparison-slider .images {
+            display: flex;
+        }
+
+        .image-comparison-slider .images .img-1,
+        .image-comparison-slider .images .img-2 {
+            height: auto;
+            width: 100%;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .image-comparison-slider .images .img-2 {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            overflow: hidden;
+        }
+
+        .image-comparison-slider .slider {
+            position: absolute;
+            top: 0;
+            width: 100%;
+            z-index: 1;
+        }
+
+        .image-comparison-slider .slider input {
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: col-resize;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .image-comparison-slider .slider .drag-line {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: #fff;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .image-comparison-slider .slider .drag-line span {
+            position: absolute;
+            top: 50%;
+            left: -10px;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px #000;
+        }
+    </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Black to Alpha Converter</h1>
-        <!-- File input for uploading multiple images -->
-        <div class="file-input-container">
-            <input type="file" id="fileInput" accept="image/*" multiple>
-            <label for="fileInput">Choose Images</label>
-        </div>
+<h1>Black to Alpha Converter - Optimized with Slider</h1>
 
-        <!-- Container for logs and progress -->
-        <div id="log"></div>
+<!-- File input for uploading multiple images -->
+<input type="file" id="fileInput" accept="image/*" multiple>
 
-        <!-- Container for processed images and comparison sliders -->
-        <div id="output"></div>
-    </div>
+<!-- Container for logs -->
+<div id="log"></div>
 
-    <!-- Include JavaScript -->
-    <script src="script.js"></script>
+<!-- Container for processed images and sliders -->
+<div id="output"></div>
+
+<!-- JavaScript code -->
+<script>
+    // Get references to DOM elements
+    const fileInput = document.getElementById('fileInput');
+    const logDiv = document.getElementById('log');
+    const outputDiv = document.getElementById('output');
+
+    // Event listener for file input change
+    fileInput.addEventListener('change', handleFiles);
+
+    function handleFiles(event) {
+        const files = event.target.files;
+
+        // Clear previous output and logs
+        outputDiv.innerHTML = '';
+        logDiv.innerHTML = '';
+
+        // Process each selected file
+        for (let i = 0; i < files.length; i++) {
+            processImage(files[i]);
+        }
+    }
+
+    function processImage(file) {
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            log(`File is not an image: ${file.name}`);
+            return;
+        }
+
+        // Create a FileReader to read the image file
+        const reader = new FileReader();
+
+        // Load event handler for the FileReader
+        reader.onload = function(event) {
+            // Create an Image object for the original image
+            const originalImg = new Image();
+
+            // Load event handler for the original image
+            originalImg.onload = function() {
+                // Create an off-screen canvas
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+
+                // Set canvas dimensions to the image dimensions
+                canvas.width = originalImg.width;
+                canvas.height = originalImg.height;
+
+                // Draw the original image onto the canvas
+                ctx.drawImage(originalImg, 0, 0);
+
+                // Get image data from the canvas
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+
+                // Process each pixel
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];     // Red channel
+                    const g = data[i + 1]; // Green channel
+                    const b = data[i + 2]; // Blue channel
+                    const a = data[i + 3]; // Alpha channel
+
+                    const maxRGB = Math.max(r, g, b);
+
+                    if (maxRGB === 0) {
+                        data[i + 3] = 0; // Set alpha to 0 (fully transparent)
+                        continue;
+                    }
+
+                    const alphaFactor = maxRGB / 255;
+                    const newAlpha = a * alphaFactor;
+
+                    const epsilon = 0.00001;
+                    if (newAlpha < epsilon) {
+                        data[i + 3] = 0;
+                        continue;
+                    }
+
+                    data[i] = (r * a) / newAlpha;
+                    data[i + 1] = (g * a) / newAlpha;
+                    data[i + 2] = (b * a) / newAlpha;
+
+                    // Clamp RGB values
+                    data[i] = Math.min(255, Math.max(0, data[i]));
+                    data[i + 1] = Math.min(255, Math.max(0, data[i + 1]));
+                    data[i + 2] = Math.min(255, Math.max(0, data[i + 2]));
+
+                    data[i + 3] = newAlpha;
+                }
+
+                // Put the processed data back onto the canvas
+                ctx.putImageData(imageData, 0, 0);
+
+                // Convert the canvas to a data URL (PNG format)
+                const processedDataURL = canvas.toDataURL('image/png');
+
+                // Create the image comparison slider
+                createImageComparisonSlider(originalImg.src, processedDataURL, file.name);
+
+                // Log the processing of this image
+                log(`Processed image: ${file.name}`);
+            };
+
+            // Error handling for image loading
+            originalImg.onerror = function() {
+                log(`Failed to load image: ${file.name}`);
+            };
+
+            // Set the original image source to the data URL from the FileReader
+            originalImg.src = event.target.result;
+        };
+
+        // Error handling for FileReader
+        reader.onerror = function() {
+            log(`Failed to read file: ${file.name}`);
+        };
+
+        // Read the image file as a data URL
+        reader.readAsDataURL(file);
+    }
+
+    function createImageComparisonSlider(originalSrc, processedSrc, fileName) {
+        // Create a container for the slider
+        const container = document.createElement('div');
+        container.className = 'image-container';
+
+        // Create the slider wrapper
+        const sliderWrapper = document.createElement('div');
+        sliderWrapper.className = 'image-comparison-slider';
+
+        // Create the images container
+        const imagesDiv = document.createElement('div');
+        imagesDiv.className = 'images';
+
+        // Create the original image div
+        const img1Div = document.createElement('div');
+        img1Div.className = 'img-1';
+        img1Div.style.backgroundImage = `url(${originalSrc})`;
+
+        // Create the processed image div
+        const img2Div = document.createElement('div');
+        img2Div.className = 'img-2';
+        img2Div.style.backgroundImage = `url(${processedSrc})`;
+
+        // Append images to imagesDiv
+        imagesDiv.appendChild(img1Div);
+        imagesDiv.appendChild(img2Div);
+
+        // Create the slider control
+        const sliderDiv = document.createElement('div');
+        sliderDiv.className = 'slider';
+
+        const dragLineDiv = document.createElement('div');
+        dragLineDiv.className = 'drag-line';
+        const dragSpan = document.createElement('span');
+        dragLineDiv.appendChild(dragSpan);
+
+        const inputRange = document.createElement('input');
+        inputRange.type = 'range';
+        inputRange.min = '0';
+        inputRange.max = '100';
+        inputRange.value = '50';
+
+        // Event listener for the slider input
+        inputRange.addEventListener('input', function() {
+            let sliderVal = inputRange.value;
+            dragLineDiv.style.left = sliderVal + '%';
+            img2Div.style.width = sliderVal + '%';
+        });
+
+        // Initialize the positions
+        dragLineDiv.style.left = '50%';
+        img2Div.style.width = '50%';
+
+        // Append elements to sliderDiv
+        sliderDiv.appendChild(dragLineDiv);
+        sliderDiv.appendChild(inputRange);
+
+        // Append images and slider to sliderWrapper
+        sliderWrapper.appendChild(imagesDiv);
+        sliderWrapper.appendChild(sliderDiv);
+
+        // Append the sliderWrapper to the container
+        container.appendChild(sliderWrapper);
+
+        // Create a download link for the processed image
+        const downloadLink = document.createElement('a');
+        downloadLink.href = processedSrc;
+        downloadLink.download = `processed_${fileName.replace(/\.\w+$/, '.png')}`;
+        downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
+        downloadLink.className = 'download-link';
+
+        // Append the download link to the container
+        container.appendChild(downloadLink);
+
+        // Append the container to the output div
+        outputDiv.appendChild(container);
+    }
+
+    function log(message) {
+        const p = document.createElement('p');
+        p.textContent = message;
+        logDiv.appendChild(p);
+        console.log(message);
+    }
+</script>
+
 </body>
 </html>
