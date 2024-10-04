@@ -28,9 +28,6 @@
         #fileInput:hover {
             background-color: #535353;
         }
-        #log {
-            margin-top: 20px;
-        }
         .image-container {
             position: relative;
             background-color: #424242;
@@ -72,6 +69,27 @@
         .remove-button:hover {
             background-color: #e64a19;
         }
+        /* Loading animation */
+        .loading {
+            font-size: 18px;
+            color: #ffffff;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-left: 5px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            animation: loading 1s infinite alternate;
+        }
+        @keyframes loading {
+            from { transform: scale(1); }
+            to { transform: scale(1.5); }
+        }
     </style>
 </head>
 <body>
@@ -81,9 +99,6 @@
 <!-- File input for uploading multiple images -->
 <input type="file" id="fileInput" accept="image/*" multiple>
 
-<!-- Container for logs -->
-<div id="log"></div>
-
 <!-- Container for processed images and download links -->
 <div id="output"></div>
 
@@ -91,7 +106,6 @@
 <script>
     // Get references to DOM elements
     const fileInput = document.getElementById('fileInput');
-    const logDiv = document.getElementById('log');
     const outputDiv = document.getElementById('output');
 
     // Event listener for file input change
@@ -115,6 +129,19 @@
      * @param {File} file - The image file to process.
      */
     function processImage(file) {
+        // Create a container for the processed image and controls
+        const container = document.createElement('div');
+        container.className = 'image-container';
+
+        // Add the container to the output div
+        outputDiv.appendChild(container);
+
+        // Create a loading message
+        const loadingMessage = document.createElement('div');
+        loadingMessage.className = 'loading';
+        loadingMessage.textContent = `Processing ${file.name}`;
+        container.appendChild(loadingMessage);
+
         // Create a FileReader to read the image file
         const reader = new FileReader();
 
@@ -190,18 +217,8 @@
 
                 // Convert the canvas to a data URL (PNG format)
                 canvas.toBlob(function(blob) {
-                    // Create a container for the processed image and download link
-                    const container = document.createElement('div');
-                    container.className = 'image-container';
-
-                    // Create a remove button
-                    const removeButton = document.createElement('button');
-                    removeButton.className = 'remove-button';
-                    removeButton.textContent = '×';
-                    removeButton.title = 'Remove this image';
-                    removeButton.onclick = function() {
-                        outputDiv.removeChild(container);
-                    };
+                    // Remove the loading message
+                    container.removeChild(loadingMessage);
 
                     // Create an image element to display the processed image
                     const processedImg = document.createElement('img');
@@ -214,22 +231,30 @@
                     downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
                     downloadLink.className = 'download-link';
 
-                    // Append the remove button, image, and link to the container
+                    // Create a remove button
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'remove-button';
+                    removeButton.textContent = 'X';
+                    removeButton.onclick = function() {
+                        outputDiv.removeChild(container);
+                    };
+
+                    // Append elements to the container
                     container.appendChild(removeButton);
                     container.appendChild(processedImg);
                     container.appendChild(downloadLink);
-
-                    // Append the container to the output div
-                    outputDiv.appendChild(container);
-
-                    // Log the processing of this image
-                    log(`Processed image: ${file.name}`);
                 }, 'image/png');
             };
 
             // Error handling for image loading
             img.onerror = function() {
-                log(`Failed to load image: ${file.name}`);
+                // Remove the loading message
+                container.removeChild(loadingMessage);
+
+                // Show an error message
+                const errorMessage = document.createElement('div');
+                errorMessage.textContent = `Failed to load image: ${file.name}`;
+                container.appendChild(errorMessage);
             };
 
             // Set the Image source to the data URL from the FileReader
@@ -238,22 +263,6 @@
 
         // Read the image file as a data URL
         reader.readAsDataURL(file);
-    }
-
-    /**
-     * Logs messages to the logDiv and console.
-     * @param {string} message - The message to log.
-     */
-    function log(message) {
-        // Create a new paragraph element for the message
-        const p = document.createElement('p');
-        p.textContent = message;
-
-        // Append the message to the logDiv
-        logDiv.appendChild(p);
-
-        // Also log to the console
-        console.log(message);
     }
 </script>
 
