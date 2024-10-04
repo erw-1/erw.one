@@ -107,11 +107,27 @@
                     // Compute luminance (perceived brightness)
                     const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
 
-                    // Invert luminance to get darkness (0 = white, 1 = black)
+                    // Compute darkness
                     const darkness = 1 - luminance;
 
-                    // Adjust the existing alpha channel
-                    data[i + 3] = a * (1 - darkness);
+                    // Calculate new alpha
+                    const newAlpha = a * darkness;
+
+                    // Avoid division by zero
+                    if (newAlpha > 0) {
+                        // Adjust RGB values to maintain appearance over black background
+                        data[i] = Math.min(255, (r * a) / newAlpha);
+                        data[i + 1] = Math.min(255, (g * a) / newAlpha);
+                        data[i + 2] = Math.min(255, (b * a) / newAlpha);
+                    } else {
+                        // If new alpha is zero, set RGB to black
+                        data[i] = 0;
+                        data[i + 1] = 0;
+                        data[i + 2] = 0;
+                    }
+
+                    // Update alpha channel
+                    data[i + 3] = newAlpha;
                 }
 
                 // Put the processed data back onto the canvas
