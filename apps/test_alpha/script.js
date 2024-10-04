@@ -127,7 +127,11 @@ function processImage(file) {
             imageHeading.textContent = `Processed Image: ${file.name}`;
             container.appendChild(imageHeading);
 
-            // Create the checkerboard background
+            // Create the black background for the original image
+            const blackBackground = document.createElement('div');
+            blackBackground.className = 'black-background';
+
+            // Create the checkerboard background for the processed image
             const checkerboard = document.createElement('div');
             checkerboard.className = 'checkerboard';
 
@@ -157,9 +161,10 @@ function processImage(file) {
             sliderWrapper.appendChild(overlay);
             sliderWrapper.appendChild(handle);
 
-            // Append the checkerboard and slider to the container
-            container.appendChild(checkerboard);
-            container.appendChild(sliderWrapper);
+            // Append backgrounds and slider to the container
+            container.appendChild(blackBackground);  // Original black background
+            container.appendChild(checkerboard);     // Checkerboard behind processed image
+            container.appendChild(sliderWrapper);    // Image slider
 
             // Create a download link for the processed image
             const downloadLink = document.createElement('a');
