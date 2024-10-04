@@ -39,74 +39,116 @@
 
 <!-- JavaScript code -->
 <script>
-function processImage(file) {
-    const reader = new FileReader();
+    // Get references to DOM elements
+    const fileInput = document.getElementById('fileInput');
+    const logDiv = document.getElementById('log');
+    const outputDiv = document.getElementById('output');
 
-    reader.onload = function(event) {
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
+    // Event listener for file input change
+    fileInput.addEventListener('change', handleFiles);
 
-        img.onload = function() {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
+    /**
+     * Handles the files selected by the user.
+     * @param {Event} event - The change event from the file input.
+     */
+    function handleFiles(event) {
+        const files = event.target.files;
 
-            canvas.width = img.width;
-            canvas.height = img.height;
+        // Clear previous output and logs
+        outputDiv.innerHTML = '';
+        logDiv.innerHTML = '';
 
-            ctx.drawImage(img, 0, 0);
+        // Process each selected file
+        for (let i = 0; i < files.length; i++) {
+            processImage(files[i]);
+        }
+    }
 
-            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            const data = imageData.data;
+    /**
+     * Processes a single image file.
+     * @param {File} file - The image file to process.
+     */
+    function processImage(file) {
+        const reader = new FileReader();
 
-            const BLACK_LUMINANCE_THRESHOLD = 0.05; // Adjust this value if needed
+        reader.onload = function(event) {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
 
-            for (let i = 0; i < data.length; i += 4) {
-                const r = data[i];
-                const g = data[i + 1];
-                const b = data[i + 2];
-                const a = data[i + 3];
+            img.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
 
-                const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+                canvas.width = img.width;
+                canvas.height = img.height;
 
-                if (luminance <= BLACK_LUMINANCE_THRESHOLD) {
-                    data[i + 3] = 0; // Set alpha to 0 for black pixels
+                ctx.drawImage(img, 0, 0);
+
+                const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                const data = imageData.data;
+
+                const BLACK_LUMINANCE_THRESHOLD = 0.05; // Adjust this value if needed
+
+                for (let i = 0; i < data.length; i += 4) {
+                    const r = data[i];
+                    const g = data[i + 1];
+                    const b = data[i + 2];
+                    const a = data[i + 3];
+
+                    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+                    if (luminance <= BLACK_LUMINANCE_THRESHOLD) {
+                        data[i + 3] = 0; // Set alpha to 0 for black pixels
+                    }
+                    // No need to adjust RGB values
                 }
-                // No need to adjust RGB values
-            }
 
-            ctx.putImageData(imageData, 0, 0);
+                ctx.putImageData(imageData, 0, 0);
 
-            const dataURL = canvas.toDataURL('image/png');
+                const dataURL = canvas.toDataURL('image/png');
 
-            const container = document.createElement('div');
-            container.className = 'image-container';
+                const container = document.createElement('div');
+                container.className = 'image-container';
 
-            const processedImg = document.createElement('img');
-            processedImg.src = dataURL;
+                const processedImg = document.createElement('img');
+                processedImg.src = dataURL;
 
-            const downloadLink = document.createElement('a');
-            downloadLink.href = dataURL;
-            downloadLink.download = `processed_${file.name.replace(/\.\w+$/, '.png')}`;
-            downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
-            downloadLink.className = 'download-link';
+                const downloadLink = document.createElement('a');
+                downloadLink.href = dataURL;
+                downloadLink.download = `processed_${file.name.replace(/\.\w+$/, '.png')}`;
+                downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
+                downloadLink.className = 'download-link';
 
-            container.appendChild(processedImg);
-            container.appendChild(downloadLink);
+                container.appendChild(processedImg);
+                container.appendChild(downloadLink);
 
-            outputDiv.appendChild(container);
+                outputDiv.appendChild(container);
 
-            log(`Processed image: ${file.name}`);
+                log(`Processed image: ${file.name}`);
+            };
+
+            img.onerror = function() {
+                log(`Failed to load image: ${file.name}`);
+            };
+
+            img.src = event.target.result;
         };
 
-        img.onerror = function() {
-            log(`Failed to load image: ${file.name}`);
-        };
+        reader.readAsDataURL(file);
+    }
 
-        img.src = event.target.result;
-    };
+    /**
+     * Logs messages to the logDiv and console.
+     * @param {string} message - The message to log.
+     */
+    function log(message) {
+        const p = document.createElement('p');
+        p.textContent = message;
 
-    reader.readAsDataURL(file);
-}
+        logDiv.appendChild(p);
+
+        console.log(message);
+    }
 </script>
 
 </body>
