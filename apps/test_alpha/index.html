@@ -60,7 +60,6 @@
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
-            text-align: center;
             transition: all 0.5s ease;
             opacity: 0;
             transform: translateY(-20px);
@@ -69,10 +68,21 @@
             opacity: 1;
             transform: translateY(0);
         }
-        .image-container img {
+        .images-wrapper {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .image-box {
+            text-align: center;
+        }
+        .image-box img {
             max-width: 400px;
             height: auto;
             border-radius: 4px;
+        }
+        .image-box p {
+            margin-top: 10px;
         }
         .download-link {
             display: inline-block;
@@ -161,24 +171,24 @@
 
         // Load event handler for the FileReader
         reader.onload = function(event) {
-            // Create an Image object
-            const img = new Image();
+            // Create an Image object for the original image
+            const originalImg = new Image();
 
             // Ensure CORS is handled for cross-origin images
-            img.crossOrigin = 'Anonymous';
+            originalImg.crossOrigin = 'Anonymous';
 
-            // Load event handler for the Image
-            img.onload = function() {
-                // Create an off-screen canvas
+            // Load event handler for the original image
+            originalImg.onload = function() {
+                // Create an off-screen canvas for processing
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
 
                 // Set canvas dimensions to the image dimensions
-                canvas.width = img.width;
-                canvas.height = img.height;
+                canvas.width = originalImg.width;
+                canvas.height = originalImg.height;
 
                 // Draw the image onto the canvas
-                ctx.drawImage(img, 0, 0);
+                ctx.drawImage(originalImg, 0, 0);
 
                 // Get image data from the canvas
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -242,13 +252,43 @@
                     const container = document.createElement('div');
                     container.className = 'image-container';
 
-                    // Create an image element to display the processed image
-                    const processedImg = document.createElement('img');
-                    processedImg.src = URL.createObjectURL(blob);
+                    // Create a wrapper for both images
+                    const imagesWrapper = document.createElement('div');
+                    imagesWrapper.className = 'images-wrapper';
+
+                    // Original image box
+                    const originalBox = document.createElement('div');
+                    originalBox.className = 'image-box';
+
+                    const originalPreview = document.createElement('img');
+                    originalPreview.src = event.target.result;
+
+                    const originalLabel = document.createElement('p');
+                    originalLabel.textContent = 'Original Image';
+
+                    originalBox.appendChild(originalPreview);
+                    originalBox.appendChild(originalLabel);
+
+                    // Processed image box
+                    const processedBox = document.createElement('div');
+                    processedBox.className = 'image-box';
+
+                    const processedPreview = document.createElement('img');
+                    processedPreview.src = URL.createObjectURL(blob);
+
+                    const processedLabel = document.createElement('p');
+                    processedLabel.textContent = 'Processed Image';
+
+                    processedBox.appendChild(processedPreview);
+                    processedBox.appendChild(processedLabel);
+
+                    // Append both boxes to the wrapper
+                    imagesWrapper.appendChild(originalBox);
+                    imagesWrapper.appendChild(processedBox);
 
                     // Create a download link for the processed image
                     const downloadLink = document.createElement('a');
-                    downloadLink.href = processedImg.src;
+                    downloadLink.href = processedPreview.src;
                     downloadLink.download = `processed_${file.name.replace(/\.\w+$/, '.png')}`;
                     downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
                     downloadLink.className = 'download-link';
@@ -263,7 +303,7 @@
 
                     // Append elements to the container
                     container.appendChild(removeButton);
-                    container.appendChild(processedImg);
+                    container.appendChild(imagesWrapper);
                     container.appendChild(downloadLink);
 
                     // Insert the container at the top of the output div
@@ -278,7 +318,7 @@
             };
 
             // Error handling for image loading
-            img.onerror = function() {
+            originalImg.onerror = function() {
                 processingCount--;
 
                 // Hide the processing message if all images are processed
@@ -298,8 +338,8 @@
                 }, 10);
             };
 
-            // Set the Image source to the data URL from the FileReader
-            img.src = event.target.result;
+            // Set the original Image source to the data URL from the FileReader
+            originalImg.src = event.target.result;
         };
 
         // Read the image file as a data URL
