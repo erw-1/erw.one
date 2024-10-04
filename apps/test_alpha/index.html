@@ -2,96 +2,97 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Black to Alpha Converter with Slider</title>
+    <title>Black to Alpha Converter - Optimized</title>
+    <!-- Include Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Include Google Fonts for Material Design -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
+    <!-- Include JSZip for bulk download -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <!-- Include FileSaver.js to save the zip file -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
-        /* Reset and base styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
         body {
-            font-family: Arial, sans-serif;
-            background: #efefef;
+            font-family: 'Roboto', sans-serif;
+            background-color: #303030;
+            color: #ffffff;
+            margin: 0;
             padding: 20px;
-            text-align: center;
         }
         h1 {
-            margin-bottom: 20px;
+            color: #ffffff;
+            text-align: center;
         }
         #fileInput {
-            margin-bottom: 20px;
+            display: block;
+            margin: 20px auto;
+            background-color: #424242;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        #fileInput:hover {
+            background-color: #535353;
         }
         #log {
             margin-top: 20px;
         }
-        #output {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+        .image-container {
+            background-color: #424242;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: center;
+        }
+        .image-container img {
+            max-width: 400px;
+            height: auto;
+            border-radius: 4px;
         }
         .download-link {
-            display: block;
+            display: inline-block;
             margin-top: 10px;
+            background-color: #616161;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 10px 20px;
+            border-radius: 4px;
         }
-        .image-container {
-            position: relative;
-            width: 500px; /* Fixed manageable width */
-            height: 300px; /* Fixed manageable height */
-            margin-bottom: 40px;
-            overflow: hidden;
-            background: #fff;
-            border: 1px solid #ccc;
+        .download-link:hover {
+            background-color: #757575;
         }
-        .images {
-            display: flex;
-            height: 100%;
-            width: 200%; /* To allow sliding effect */
-            transition: transform 0.3s ease;
+        #bulkDownloadBtn {
+            display: none;
+            margin: 20px auto;
+            background-color: #ff5722;
+            color: #ffffff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            cursor: pointer;
         }
-        .img-1,
-        .img-2 {
-            width: 50%; /* Each image takes half of the total width */
-            height: 100%;
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-        }
-        .slider {
-            position: absolute;
-            bottom: -30px; /* Position the slider below the images */
-            width: 100%;
-        }
-        .slider input {
-            width: 100%;
+        #bulkDownloadBtn:hover {
+            background-color: #e64a19;
         }
     </style>
 </head>
 <body>
 
-<h1>Black to Alpha Converter with Slider</h1>
+<h1>Black to Alpha Converter - Optimized</h1>
 
 <!-- File input for uploading multiple images -->
 <input type="file" id="fileInput" accept="image/*" multiple>
 
+<!-- Bulk download button -->
+<button id="bulkDownloadBtn">Download All Processed Images</button>
+
 <!-- Container for logs -->
 <div id="log"></div>
 
-<!-- Container for processed images and sliders -->
+<!-- Container for processed images and download links -->
 <div id="output"></div>
-
-<!-- Slider Template -->
-<template id="slider-template">
-    <div class="image-container">
-        <div class="images">
-            <div class="img-1"></div>
-            <div class="img-2"></div>
-        </div>
-        <div class="slider">
-            <input type="range" min="0" max="100" value="0">
-        </div>
-    </div>
-</template>
 
 <!-- JavaScript code -->
 <script>
@@ -99,31 +100,43 @@
     const fileInput = document.getElementById('fileInput');
     const logDiv = document.getElementById('log');
     const outputDiv = document.getElementById('output');
-    const sliderTemplate = document.getElementById('slider-template').content;
+    const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
+
+    // Store processed images data
+    const processedImages = [];
 
     // Event listener for file input change
     fileInput.addEventListener('change', handleFiles);
 
+    // Event listener for bulk download button
+    bulkDownloadBtn.addEventListener('click', bulkDownload);
+
+    /**
+     * Handles the files selected by the user.
+     * @param {Event} event - The change event from the file input.
+     */
     function handleFiles(event) {
         const files = event.target.files;
 
         // Clear previous output and logs
         outputDiv.innerHTML = '';
         logDiv.innerHTML = '';
+        processedImages.length = 0;
+        bulkDownloadBtn.style.display = 'none';
 
         // Process each selected file
         for (let i = 0; i < files.length; i++) {
-            processImage(files[i]);
+            processImage(files[i], i, files.length);
         }
     }
 
-    function processImage(file) {
-        // Validate file type
-        if (!file.type.startsWith('image/')) {
-            log(`File is not an image: ${file.name}`);
-            return;
-        }
-
+    /**
+     * Processes a single image file.
+     * @param {File} file - The image file to process.
+     * @param {number} index - The index of the current file.
+     * @param {number} total - The total number of files.
+     */
+    function processImage(file, index, total) {
         // Create a FileReader to read the image file
         const reader = new FileReader();
 
@@ -131,6 +144,9 @@
         reader.onload = function(event) {
             // Create an Image object
             const img = new Image();
+
+            // Ensure CORS is handled for cross-origin images
+            img.crossOrigin = 'Anonymous';
 
             // Load event handler for the Image
             img.onload = function() {
@@ -149,29 +165,35 @@
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
 
-                // Process each pixel
+                // Process each pixel in a single loop
                 for (let i = 0; i < data.length; i += 4) {
                     const r = data[i];     // Red channel
                     const g = data[i + 1]; // Green channel
                     const b = data[i + 2]; // Blue channel
                     const a = data[i + 3]; // Alpha channel
 
+                    // Compute the maximum of the RGB channels
                     const maxRGB = Math.max(r, g, b);
 
+                    // If the pixel is black, make it fully transparent
                     if (maxRGB === 0) {
                         data[i + 3] = 0; // Set alpha to 0 (fully transparent)
                         continue;
                     }
 
+                    // Compute alpha factor
                     const alphaFactor = maxRGB / 255;
+
+                    // Compute new alpha
                     const newAlpha = a * alphaFactor;
 
-                    const epsilon = 0.00001;
-                    if (newAlpha < epsilon) {
+                    // Avoid division by zero
+                    if (newAlpha === 0) {
                         data[i + 3] = 0;
                         continue;
                     }
 
+                    // Adjust RGB values to preserve appearance
                     data[i] = (r * a) / newAlpha;
                     data[i + 1] = (g * a) / newAlpha;
                     data[i + 2] = (b * a) / newAlpha;
@@ -181,6 +203,7 @@
                     data[i + 1] = Math.min(255, Math.max(0, data[i + 1]));
                     data[i + 2] = Math.min(255, Math.max(0, data[i + 2]));
 
+                    // Update alpha channel
                     data[i + 3] = newAlpha;
                 }
 
@@ -188,14 +211,43 @@
                 ctx.putImageData(imageData, 0, 0);
 
                 // Convert the canvas to a data URL (PNG format)
-                const processedDataURL = canvas.toDataURL('image/png');
-                const originalDataURL = img.src;
+                canvas.toBlob(function(blob) {
+                    // Create a container for the processed image and download link
+                    const container = document.createElement('div');
+                    container.className = 'image-container';
 
-                // Now create the slider for this image
-                createImageComparisonSlider(originalDataURL, processedDataURL, file.name);
+                    // Create an image element to display the processed image
+                    const processedImg = document.createElement('img');
+                    processedImg.src = URL.createObjectURL(blob);
 
-                // Log the processing of this image
-                log(`Processed image: ${file.name}`);
+                    // Create a download link for the processed image
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = processedImg.src;
+                    downloadLink.download = `processed_${file.name.replace(/\.\w+$/, '.png')}`;
+                    downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
+                    downloadLink.className = 'download-link';
+
+                    // Append the image and link to the container
+                    container.appendChild(processedImg);
+                    container.appendChild(downloadLink);
+
+                    // Append the container to the output div
+                    outputDiv.appendChild(container);
+
+                    // Store the processed image data for bulk download
+                    processedImages.push({
+                        name: downloadLink.download,
+                        blob: blob
+                    });
+
+                    // Show bulk download button if all images are processed
+                    if (processedImages.length === total && total > 1) {
+                        bulkDownloadBtn.style.display = 'block';
+                    }
+
+                    // Log the processing of this image
+                    log(`Processed image: ${file.name}`);
+                }, 'image/png');
             };
 
             // Error handling for image loading
@@ -207,62 +259,40 @@
             img.src = event.target.result;
         };
 
-        // Error handling for FileReader
-        reader.onerror = function() {
-            log(`Failed to read file: ${file.name}`);
-        };
-
         // Read the image file as a data URL
         reader.readAsDataURL(file);
     }
 
-    function createImageComparisonSlider(originalSrc, processedSrc, fileName) {
-        // Clone the slider template
-        const sliderClone = document.importNode(sliderTemplate, true);
+    /**
+     * Handles bulk downloading of processed images.
+     */
+    function bulkDownload() {
+        const zip = new JSZip();
+        const folder = zip.folder('processed_images');
 
-        // Set the images
-        const img1Div = sliderClone.querySelector('.img-1');
-        const img2Div = sliderClone.querySelector('.img-2');
-        const imagesDiv = sliderClone.querySelector('.images');
+        processedImages.forEach(image => {
+            folder.file(image.name, image.blob);
+        });
 
-        img1Div.style.backgroundImage = `url(${originalSrc})`;
-        img2Div.style.backgroundImage = `url(${processedSrc})`;
-
-        // Initialize the slider
-        initializeSlider(sliderClone);
-
-        // Append the slider to the output
-        outputDiv.appendChild(sliderClone);
-
-        // Create a download link for the processed image
-        const downloadLink = document.createElement('a');
-        downloadLink.href = processedSrc;
-        downloadLink.download = `processed_${fileName.replace(/\.\w+$/, '.png')}`;
-        downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
-        downloadLink.className = 'download-link';
-
-        // Append the download link to outputDiv
-        outputDiv.appendChild(downloadLink);
+        zip.generateAsync({ type: 'blob' })
+            .then(function(content) {
+                saveAs(content, 'processed_images.zip');
+            });
     }
 
-    function initializeSlider(container) {
-        const slider = container.querySelector(".slider input");
-        const imagesDiv = container.querySelector(".images");
-
-        slider.oninput = () => {
-            let sliderVal = slider.value;
-            imagesDiv.style.transform = `translateX(-${sliderVal}%)`;
-        };
-
-        // Initialize position
-        slider.value = 0;
-        imagesDiv.style.transform = `translateX(0%)`;
-    }
-
+    /**
+     * Logs messages to the logDiv and console.
+     * @param {string} message - The message to log.
+     */
     function log(message) {
+        // Create a new paragraph element for the message
         const p = document.createElement('p');
         p.textContent = message;
+
+        // Append the message to the logDiv
         logDiv.appendChild(p);
+
+        // Also log to the console
         console.log(message);
     }
 </script>
