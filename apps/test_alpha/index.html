@@ -3,17 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <title>Black to Alpha Converter - Optimized</title>
-    <!-- Include Material Icons -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <!-- Include Google Fonts for Material Design -->
-    <link href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet">
-    <!-- Include JSZip for bulk download -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <!-- Include FileSaver.js to save the zip file -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: Arial, sans-serif;
             background-color: #303030;
             color: #ffffff;
             margin: 0;
@@ -63,19 +55,6 @@
         .download-link:hover {
             background-color: #757575;
         }
-        #bulkDownloadBtn {
-            display: none;
-            margin: 20px auto;
-            background-color: #ff5722;
-            color: #ffffff;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        #bulkDownloadBtn:hover {
-            background-color: #e64a19;
-        }
     </style>
 </head>
 <body>
@@ -84,9 +63,6 @@
 
 <!-- File input for uploading multiple images -->
 <input type="file" id="fileInput" accept="image/*" multiple>
-
-<!-- Bulk download button -->
-<button id="bulkDownloadBtn">Download All Processed Images</button>
 
 <!-- Container for logs -->
 <div id="log"></div>
@@ -100,16 +76,9 @@
     const fileInput = document.getElementById('fileInput');
     const logDiv = document.getElementById('log');
     const outputDiv = document.getElementById('output');
-    const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
-
-    // Store processed images data
-    const processedImages = [];
 
     // Event listener for file input change
     fileInput.addEventListener('change', handleFiles);
-
-    // Event listener for bulk download button
-    bulkDownloadBtn.addEventListener('click', bulkDownload);
 
     /**
      * Handles the files selected by the user.
@@ -121,22 +90,18 @@
         // Clear previous output and logs
         outputDiv.innerHTML = '';
         logDiv.innerHTML = '';
-        processedImages.length = 0;
-        bulkDownloadBtn.style.display = 'none';
 
         // Process each selected file
         for (let i = 0; i < files.length; i++) {
-            processImage(files[i], i, files.length);
+            processImage(files[i]);
         }
     }
 
     /**
      * Processes a single image file.
      * @param {File} file - The image file to process.
-     * @param {number} index - The index of the current file.
-     * @param {number} total - The total number of files.
      */
-    function processImage(file, index, total) {
+    function processImage(file) {
         // Create a FileReader to read the image file
         const reader = new FileReader();
 
@@ -234,17 +199,6 @@
                     // Append the container to the output div
                     outputDiv.appendChild(container);
 
-                    // Store the processed image data for bulk download
-                    processedImages.push({
-                        name: downloadLink.download,
-                        blob: blob
-                    });
-
-                    // Show bulk download button if all images are processed
-                    if (processedImages.length === total && total > 1) {
-                        bulkDownloadBtn.style.display = 'block';
-                    }
-
                     // Log the processing of this image
                     log(`Processed image: ${file.name}`);
                 }, 'image/png');
@@ -261,23 +215,6 @@
 
         // Read the image file as a data URL
         reader.readAsDataURL(file);
-    }
-
-    /**
-     * Handles bulk downloading of processed images.
-     */
-    function bulkDownload() {
-        const zip = new JSZip();
-        const folder = zip.folder('processed_images');
-
-        processedImages.forEach(image => {
-            folder.file(image.name, image.blob);
-        });
-
-        zip.generateAsync({ type: 'blob' })
-            .then(function(content) {
-                saveAs(content, 'processed_images.zip');
-            });
     }
 
     /**
