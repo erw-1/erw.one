@@ -108,7 +108,7 @@
                     const minRGB = Math.min(r, g, b);
 
                     // Compute alpha factor
-                    const alphaFactor = 1 - (minRGB / 255);
+                    const alphaFactor = minRGB / 255;
 
                     // If alphaFactor is zero, set pixel to transparent black
                     if (alphaFactor === 0) {
