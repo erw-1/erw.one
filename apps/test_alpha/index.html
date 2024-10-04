@@ -79,7 +79,7 @@
             flex: 1 1 300px;
             max-width: 100%;
             text-align: center;
-            margin: 10px;
+            margin: 40px;
         }
         .image-box img {
             width: 100%;
@@ -97,6 +97,7 @@
             text-decoration: none;
             padding: 10px 20px;
             border-radius: 4px;
+            text-align: center;
         }
         .download-link:hover {
             background-color: #757575;
@@ -116,6 +117,21 @@
         }
         .remove-button:hover {
             background-color: #e64a19;
+        }
+        /* Bulk download button */
+        #bulkDownloadBtn {
+            display: block;
+            margin: 20px auto;
+            background-color: #ff9800;
+            color: #ffffff;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        #bulkDownloadBtn:hover {
+            background-color: #fb8c00;
         }
         /* Responsive adjustments */
         @media (max-width: 768px) {
@@ -147,6 +163,9 @@
     <div id="processingMessage">Processing...</div>
 </div>
 
+<!-- Bulk download button -->
+<button id="bulkDownloadBtn" style="display: none;">Download All Processed Images</button>
+
 <!-- Container for processed images and download links -->
 <div id="output"></div>
 
@@ -156,12 +175,19 @@
     const fileInput = document.getElementById('fileInput');
     const outputDiv = document.getElementById('output');
     const processingMessage = document.getElementById('processingMessage');
+    const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
 
     // Counter for tracking processing images
     let processingCount = 0;
 
+    // Array to store download links of processed images
+    const processedImages = [];
+
     // Event listener for file input change
     fileInput.addEventListener('change', handleFiles);
+
+    // Event listener for bulk download button
+    bulkDownloadBtn.addEventListener('click', bulkDownload);
 
     /**
      * Handles the files selected by the user.
@@ -315,12 +341,25 @@
                     downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
                     downloadLink.className = 'download-link';
 
+                    // Center the download link
+                    downloadLink.style.display = 'block';
+                    downloadLink.style.margin = '10px auto';
+
                     // Create a remove button
                     const removeButton = document.createElement('button');
                     removeButton.className = 'remove-button';
                     removeButton.textContent = 'X';
                     removeButton.onclick = function() {
                         outputDiv.removeChild(container);
+                        // Remove from processedImages array
+                        const index = processedImages.findIndex(item => item.container === container);
+                        if (index !== -1) {
+                            processedImages.splice(index, 1);
+                        }
+                        // Hide bulk download button if no images left
+                        if (processedImages.length === 0) {
+                            bulkDownloadBtn.style.display = 'none';
+                        }
                     };
 
                     // Append elements to the container
@@ -335,6 +374,17 @@
                     setTimeout(function() {
                         container.classList.add('show');
                     }, 10);
+
+                    // Add to processedImages array
+                    processedImages.push({
+                        downloadLink: downloadLink,
+                        container: container
+                    });
+
+                    // Show bulk download button if there are processed images
+                    if (processedImages.length > 0) {
+                        bulkDownloadBtn.style.display = 'block';
+                    }
 
                 }, 'image/png');
             };
@@ -366,6 +416,16 @@
 
         // Read the image file as a data URL
         reader.readAsDataURL(file);
+    }
+
+    /**
+     * Handles bulk downloading of processed images.
+     */
+    function bulkDownload() {
+        // Loop through each processed image and trigger the download
+        processedImages.forEach(item => {
+            item.downloadLink.click();
+        });
     }
 </script>
 
