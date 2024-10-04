@@ -110,14 +110,6 @@
                     // Compute new alpha value
                     const newAlpha = a * luminance;
 
-                    // Avoid division by zero
-                    if (a === 0) continue;
-
-                    // Update RGB values to maintain color saturation
-                    data[i] = r * (newAlpha / a);
-                    data[i + 1] = g * (newAlpha / a);
-                    data[i + 2] = b * (newAlpha / a);
-
                     // Update alpha channel
                     data[i + 3] = newAlpha;
                 }
