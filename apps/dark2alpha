@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Dark to Alpha Converter</title>
+	<style>
+	* {
+		font-family: Century Gothic !important;
+	}
+
+	body {
+		background-color: #303030;
+		color: #ffffff;
+		margin: 0;
+		padding: 20px;
+	}
+
+	h1 {
+		color: #ffffff;
+		text-align: center;
+		font-size: 25px;
+	}
+
+	#uploadContainer {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-wrap: wrap;
+		margin: 20px auto;
+	}
+
+	#fileInput {
+		background-color: #424242;
+		color: #ffffff;
+		border: none;
+		padding: 10px 20px;
+		border-radius: 4px;
+		cursor: pointer;
+	}
+
+	#fileInput:hover {
+		background-color: #535353;
+	}
+
+	#processingMessage {
+		margin-left: 20px;
+		font-size: 18px;
+		color: #ffffff;
+		display: none;
+		position: relative;
+	}
+
+	/* Loading animation */
+	#processingMessage::after {
+		content: '';
+		display: inline-block;
+		width: 10px;
+		height: 10px;
+		margin-left: 15px;
+		border-radius: 50%;
+		background-color: #ffffff;
+		animation: loading 1s infinite alternate;
+	}
+
+	@keyframes loading {
+		from {
+			transform: scale(-1);
+		}
+
+		to {
+			transform: scale(2);
+		}
+	}
+
+	.image-container {
+		position: relative;
+		background-color: #424242;
+		border-radius: 8px;
+		padding: 20px;
+		margin: 0 100px 20px 100px;
+		transition: all 0.5s ease;
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+
+	.image-container.show {
+		opacity: 1;
+		transform: translateY(0);
+	}
+
+	.images-wrapper {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		align-items: flex-start;
+		margin-bottom: -40px;
+	}
+
+	.image-box {
+		flex: 1 1 300px;
+		max-width: 100%;
+		text-align: center;
+		margin: 40px;
+	}
+
+	.image-box img {
+		width: 100%;
+		height: auto%;
+		border-radius: 6px;
+	}
+
+	.image-box p {
+		font-weight: bold;
+		margin-top: 10px;
+	}
+
+	.download-link {
+		display: block;
+		margin: auto;
+		background-color: #616161;
+		color: #ffffff;
+		text-decoration: none;
+		padding: 10px 20px;
+		border-radius: 4px;
+		text-align: center;
+		width: fit-content;
+	}
+
+	.download-link:hover {
+		background-color: #757575;
+	}
+
+	.remove-button {
+		position: absolute;
+		top: 15px;
+		right: 15px;
+		background-color: #616161;
+		color: #ffffff;
+		border: none;
+		padding: 7px 12px;
+		border-radius: 50px;
+		cursor: pointer;
+		font-size: 22px;
+		font-weight: bold;
+		line-height: 1;
+	}
+
+	.remove-button:hover {
+		background-color: #757575;
+	}
+
+	/* Bulk download and empty list buttons */
+	#actionButtons {
+		display: flex;
+		justify-content: center;
+		margin: 20px auto;
+	}
+
+	.action-button {
+		background-color: #53932d;
+		color: #ffffff;
+		border: none;
+		padding: 15px 30px;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 20px;
+		margin: 0 10px;
+	}
+
+	.action-button:hover {
+		background-color: #6ebb40;
+	}
+
+	#emptyListBtn {
+		background-color: #424242;
+	}
+
+	#emptyListBtn:hover {
+		background-color: #535353;
+	}
+
+	/* Responsive adjustments */
+	@media (max-width: 768px) {
+		#processingMessage {
+			margin-top: 10px;
+			margin-left: 0;
+		}
+
+		#uploadContainer {
+			flex-direction: column;
+		}
+
+		.images-wrapper {
+			flex-direction: column;
+			align-items: center;
+		}
+
+		.image-box {
+			margin: 10px 0;
+		}
+
+		#actionButtons {
+			flex-direction: column;
+		}
+
+		.action-button {
+			margin: 10px 0;
+		}
+	}
+	</style>
+</head>
+
+<body>
+	<h1>Dark to Alpha Converter</h1>
+	<div id="uploadContainer">
+		<!-- File input for uploading multiple images -->
+		<input type="file" id="fileInput" accept="image/*" multiple>
+		<!-- Processing message -->
+		<div id="processingMessage">Processing...</div>
+	</div>
+	<!-- Action buttons -->
+	<div id="actionButtons" style="display: none;">
+		<button id="bulkDownloadBtn" class="action-button">Download All Processed Images</button>
+		<button id="emptyListBtn" class="action-button">Empty List</button>
+	</div>
+	<!-- Container for processed images and download links -->
+	<div id="output"></div>
+	<!-- JavaScript code -->
+	<script>
+	// Get references to DOM elements
+	const fileInput = document.getElementById('fileInput');
+	const outputDiv = document.getElementById('output');
+	const processingMessage = document.getElementById('processingMessage');
+	const bulkDownloadBtn = document.getElementById('bulkDownloadBtn');
+	const emptyListBtn = document.getElementById('emptyListBtn');
+	const actionButtons = document.getElementById('actionButtons');
+	// Counter for tracking processing images
+	let processingCount = 0;
+	// Array to store download links of processed images
+	const processedImages = [];
+	// Event listener for file input change
+	fileInput.addEventListener('change', handleFiles);
+	// Event listener for bulk download button
+	bulkDownloadBtn.addEventListener('click', bulkDownload);
+	// Event listener for empty list button
+	emptyListBtn.addEventListener('click', emptyList);
+	/**
+	 * Handles the files selected by the user.
+	 * @param {Event} event - The change event from the file input.
+	 */
+	function handleFiles(event) {
+		const files = event.target.files;
+		if(files.length > 0) {
+			// Show the processing message
+			processingMessage.style.display = 'block';
+		}
+		// Process each selected file
+		for(let i = 0; i < files.length; i++) {
+			processImage(files[i]);
+		}
+	}
+	/**
+	 * Processes a single image file.
+	 * @param {File} file - The image file to process.
+	 */
+	function processImage(file) {
+		processingCount++;
+		// Create a FileReader to read the image file
+		const reader = new FileReader();
+		// Load event handler for the FileReader
+		reader.onload = function(event) {
+			// Create an Image object for the original image
+			const originalImg = new Image();
+			// Ensure CORS is handled for cross-origin images
+			originalImg.crossOrigin = 'Anonymous';
+			// Load event handler for the original image
+			originalImg.onload = function() {
+				// Create an off-screen canvas for processing
+				const canvas = document.createElement('canvas');
+				const ctx = canvas.getContext('2d');
+				// Set canvas dimensions to the image dimensions
+				canvas.width = originalImg.width;
+				canvas.height = originalImg.height;
+				// Draw the image onto the canvas
+				ctx.drawImage(originalImg, 0, 0);
+				// Get image data from the canvas
+				const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+				const data = imageData.data;
+				// Process each pixel in a single loop
+				for(let i = 0; i < data.length; i += 4) {
+					const r = data[i]; // Red channel
+					const g = data[i + 1]; // Green channel
+					const b = data[i + 2]; // Blue channel
+					const a = data[i + 3]; // Alpha channel
+					// Compute the maximum of the RGB channels
+					const maxRGB = Math.max(r, g, b);
+					// If the pixel is black, make it fully transparent
+					if(maxRGB === 0) {
+						data[i + 3] = 0; // Set alpha to 0 (fully transparent)
+						continue;
+					}
+					// Compute alpha factor
+					const alphaFactor = maxRGB / 255;
+					// Compute new alpha
+					const newAlpha = a * alphaFactor;
+					// Avoid division by zero
+					if(newAlpha === 0) {
+						data[i + 3] = 0;
+						continue;
+					}
+					// Adjust RGB values to preserve appearance
+					data[i] = (r * a) / newAlpha;
+					data[i + 1] = (g * a) / newAlpha;
+					data[i + 2] = (b * a) / newAlpha;
+					// Clamp RGB values
+					data[i] = Math.min(255, Math.max(0, data[i]));
+					data[i + 1] = Math.min(255, Math.max(0, data[i + 1]));
+					data[i + 2] = Math.min(255, Math.max(0, data[i + 2]));
+					// Update alpha channel
+					data[i + 3] = newAlpha;
+				}
+				// Put the processed data back onto the canvas
+				ctx.putImageData(imageData, 0, 0);
+				// Convert the canvas to a data URL (PNG format)
+				canvas.toBlob(function(blob) {
+					processingCount--;
+					// Hide the processing message if all images are processed
+					if(processingCount === 0) {
+						processingMessage.style.display = 'none';
+					}
+					// Create a container for the processed image and controls
+					const container = document.createElement('div');
+					container.className = 'image-container';
+					// Create a wrapper for both images
+					const imagesWrapper = document.createElement('div');
+					imagesWrapper.className = 'images-wrapper';
+					// Original image box
+					const originalBox = document.createElement('div');
+					originalBox.className = 'image-box';
+					const originalPreview = document.createElement('img');
+					originalPreview.src = event.target.result;
+					const originalLabel = document.createElement('p');
+					originalLabel.textContent = 'Original Image';
+					originalBox.appendChild(originalPreview);
+					originalBox.appendChild(originalLabel);
+					// Processed image box
+					const processedBox = document.createElement('div');
+					processedBox.className = 'image-box';
+					const processedPreview = document.createElement('img');
+					processedPreview.src = URL.createObjectURL(blob);
+					const processedLabel = document.createElement('p');
+					processedLabel.textContent = 'Processed Image';
+					processedBox.appendChild(processedPreview);
+					processedBox.appendChild(processedLabel);
+					// Append both boxes to the wrapper
+					imagesWrapper.appendChild(originalBox);
+					imagesWrapper.appendChild(processedBox);
+					// Create a download link for the processed image
+					const downloadLink = document.createElement('a');
+					downloadLink.href = processedPreview.src;
+					downloadLink.download = `processed_${file.name.replace(/\.\w+$/, '.png')}`;
+					downloadLink.textContent = `Download Processed Image`;
+					downloadLink.className = 'download-link';
+					// Create a remove button
+					const removeButton = document.createElement('button');
+					removeButton.className = 'remove-button';
+					removeButton.textContent = 'X';
+					removeButton.onclick = function() {
+						outputDiv.removeChild(container);
+						// Remove from processedImages array
+						const index = processedImages.findIndex(item => item.container === container);
+						if(index !== -1) {
+							processedImages.splice(index, 1);
+						}
+						// Hide action buttons if no images left
+						if(processedImages.length === 0) {
+							actionButtons.style.display = 'none';
+						}
+					};
+					// Append elements to the container
+					container.appendChild(removeButton);
+					container.appendChild(imagesWrapper);
+					container.appendChild(downloadLink);
+					// Insert the container at the top of the output div
+					outputDiv.insertBefore(container, outputDiv.firstChild);
+					// Trigger the animation
+					setTimeout(function() {
+						container.classList.add('show');
+					}, 1);
+					// Add to processedImages array
+					processedImages.push({
+						downloadLink: downloadLink,
+						container: container
+					});
+					// Show action buttons if there are processed images
+					if(processedImages.length > 0) {
+						actionButtons.style.display = 'flex';
+					}
+				}, 'image/png');
+			};
+			// Error handling for image loading
+			originalImg.onerror = function() {
+				processingCount--;
+				// Hide the processing message if all images are processed
+				if(processingCount === 0) {
+					processingMessage.style.display = 'none';
+				}
+				// Show an error message
+				const errorMessage = document.createElement('div');
+				errorMessage.className = 'image-container';
+				errorMessage.textContent = `Failed to load image: ${file.name}`;
+				outputDiv.insertBefore(errorMessage, outputDiv.firstChild);
+				// Trigger the animation
+				setTimeout(function() {
+					errorMessage.classList.add('show');
+				}, 1);
+			};
+			// Set the original Image source to the data URL from the FileReader
+			originalImg.src = event.target.result;
+		};
+		// Read the image file as a data URL
+		reader.readAsDataURL(file);
+	}
+	/**
+	 * Handles bulk downloading of processed images.
+	 */
+	function bulkDownload() {
+		// Loop through each processed image and trigger the download
+		processedImages.forEach(item => {
+			item.downloadLink.click();
+		});
+	}
+	/**
+	 * Handles emptying the list of processed images.
+	 */
+	function emptyList() {
+		// Remove all image containers from the output div
+		processedImages.forEach(item => {
+			outputDiv.removeChild(item.container);
+		});
+		// Clear the processedImages array
+		processedImages.length = 0;
+		// Hide action buttons
+		actionButtons.style.display = 'none';
+	}
+	</script>
+</body>
+
+</html>
