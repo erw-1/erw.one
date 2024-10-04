@@ -15,9 +15,13 @@
             color: #ffffff;
             text-align: center;
         }
-        #fileInput {
-            display: block;
+        #uploadContainer {
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin: 20px auto;
+        }
+        #fileInput {
             background-color: #424242;
             color: #ffffff;
             border: none;
@@ -28,6 +32,28 @@
         #fileInput:hover {
             background-color: #535353;
         }
+        #processingMessage {
+            margin-left: 20px;
+            font-size: 18px;
+            color: #ffffff;
+            display: none;
+            position: relative;
+        }
+        /* Loading animation */
+        #processingMessage::after {
+            content: '';
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            margin-left: 5px;
+            border-radius: 50%;
+            background-color: #ffffff;
+            animation: loading 1s infinite alternate;
+        }
+        @keyframes loading {
+            from { transform: scale(1); }
+            to { transform: scale(1.5); }
+        }
         .image-container {
             position: relative;
             background-color: #424242;
@@ -35,6 +61,13 @@
             padding: 20px;
             margin: 20px 0;
             text-align: center;
+            transition: all 0.5s ease;
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+        .image-container.show {
+            opacity: 1;
+            transform: translateY(0);
         }
         .image-container img {
             max-width: 400px;
@@ -69,35 +102,18 @@
         .remove-button:hover {
             background-color: #e64a19;
         }
-        /* Loading animation */
-        .loading {
-            font-size: 18px;
-            color: #ffffff;
-            margin-top: 20px;
-            text-align: center;
-        }
-        .loading::after {
-            content: '';
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            margin-left: 5px;
-            border-radius: 50%;
-            background-color: #ffffff;
-            animation: loading 1s infinite alternate;
-        }
-        @keyframes loading {
-            from { transform: scale(1); }
-            to { transform: scale(1.5); }
-        }
     </style>
 </head>
 <body>
 
 <h1>Black to Alpha Converter - Optimized</h1>
 
-<!-- File input for uploading multiple images -->
-<input type="file" id="fileInput" accept="image/*" multiple>
+<div id="uploadContainer">
+    <!-- File input for uploading multiple images -->
+    <input type="file" id="fileInput" accept="image/*" multiple>
+    <!-- Processing message -->
+    <div id="processingMessage">Processing...</div>
+</div>
 
 <!-- Container for processed images and download links -->
 <div id="output"></div>
@@ -107,6 +123,10 @@
     // Get references to DOM elements
     const fileInput = document.getElementById('fileInput');
     const outputDiv = document.getElementById('output');
+    const processingMessage = document.getElementById('processingMessage');
+
+    // Counter for tracking processing images
+    let processingCount = 0;
 
     // Event listener for file input change
     fileInput.addEventListener('change', handleFiles);
@@ -117,6 +137,11 @@
      */
     function handleFiles(event) {
         const files = event.target.files;
+
+        if (files.length > 0) {
+            // Show the processing message
+            processingMessage.style.display = 'block';
+        }
 
         // Process each selected file
         for (let i = 0; i < files.length; i++) {
@@ -129,18 +154,7 @@
      * @param {File} file - The image file to process.
      */
     function processImage(file) {
-        // Create a container for the processed image and controls
-        const container = document.createElement('div');
-        container.className = 'image-container';
-
-        // Add the container to the output div
-        outputDiv.appendChild(container);
-
-        // Create a loading message
-        const loadingMessage = document.createElement('div');
-        loadingMessage.className = 'loading';
-        loadingMessage.textContent = `Processing ${file.name}`;
-        container.appendChild(loadingMessage);
+        processingCount++;
 
         // Create a FileReader to read the image file
         const reader = new FileReader();
@@ -217,8 +231,16 @@
 
                 // Convert the canvas to a data URL (PNG format)
                 canvas.toBlob(function(blob) {
-                    // Remove the loading message
-                    container.removeChild(loadingMessage);
+                    processingCount--;
+
+                    // Hide the processing message if all images are processed
+                    if (processingCount === 0) {
+                        processingMessage.style.display = 'none';
+                    }
+
+                    // Create a container for the processed image and controls
+                    const container = document.createElement('div');
+                    container.className = 'image-container';
 
                     // Create an image element to display the processed image
                     const processedImg = document.createElement('img');
@@ -243,18 +265,37 @@
                     container.appendChild(removeButton);
                     container.appendChild(processedImg);
                     container.appendChild(downloadLink);
+
+                    // Insert the container at the top of the output div
+                    outputDiv.insertBefore(container, outputDiv.firstChild);
+
+                    // Trigger the animation
+                    setTimeout(function() {
+                        container.classList.add('show');
+                    }, 10);
+
                 }, 'image/png');
             };
 
             // Error handling for image loading
             img.onerror = function() {
-                // Remove the loading message
-                container.removeChild(loadingMessage);
+                processingCount--;
+
+                // Hide the processing message if all images are processed
+                if (processingCount === 0) {
+                    processingMessage.style.display = 'none';
+                }
 
                 // Show an error message
                 const errorMessage = document.createElement('div');
+                errorMessage.className = 'image-container';
                 errorMessage.textContent = `Failed to load image: ${file.name}`;
-                container.appendChild(errorMessage);
+                outputDiv.insertBefore(errorMessage, outputDiv.firstChild);
+
+                // Trigger the animation
+                setTimeout(function() {
+                    errorMessage.classList.add('show');
+                }, 10);
             };
 
             // Set the Image source to the data URL from the FileReader
