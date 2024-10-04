@@ -4,136 +4,142 @@
     <meta charset="UTF-8">
     <title>Black to Alpha Converter with Slider</title>
     <style>
-        /* Existing styles */
+        /* Your slider's exact CSS code */
+        *{
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        html,body{
+          display: grid;
+          height: 100%;
+          place-items: center;
+          background: #efefef;
+        }
+        .copyright{
+          font-size: 150%;
+        }
+        .wrapper{
+          position: relative;
+          height: 500px;
+          width: 750px;
+          overflow: hidden;
+          background: #fff;
+          border: 7px solid #fff;
+          box-shadow: 0px 0px 15px rgba(0,0,0,0.15);
+        }
+        .wrapper .images{
+          height: 100%;
+          width: 100%;
+          display: flex;
+        }
+        .wrapper .images .img-1{
+          height: 100%;
+          width: 100%;
+          background-size: cover;
+          background-position: center;
+        }
+        .wrapper .images .img-2{
+          position: absolute;
+          height: 100%;
+          width: 50%;
+          background-size: cover;
+          background-position: center;
+        }
+        .wrapper .slider{
+          position: absolute;
+          top: 0;
+          width: 100%;
+          z-index: 99;
+        }
+        .wrapper .slider input{
+          width: 100%;
+          outline: none;
+          background: none;
+          -webkit-appearance: none;
+        }
+        .slider input::-webkit-slider-thumb{
+          height: 486px;
+          width: 3px;
+          background: none;
+          -webkit-appearance: none;
+          cursor: col-resize;
+        }
+        .slider .drag-line{
+          width: 3px;
+          height: 486px;
+          position: absolute;
+          left: 49.85%;
+          pointer-events: none;
+        }
+        .slider .drag-line::before,
+        .slider .drag-line::after{
+          position: absolute;
+          content: "";
+          width: 100%;
+          height: 222px;
+          background: #fff;
+        }
+        .slider .drag-line::before{
+          top: 0;
+        }
+        .slider .drag-line::after{
+          bottom: 0;
+        }
+        .slider .drag-line span{
+          height: 42px;
+          width: 42px;
+          border: 3px solid #fff;
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          border-radius: 50%;
+          transform: translate(-50%, -50%);
+        }
+        .slider .drag-line span::before,
+        .slider .drag-line span::after{
+          position: absolute;
+          content: "";
+          top: 50%;
+          border: 10px solid transparent;
+          border-bottom-width: 0px;
+          border-right-width: 0px;
+          transform: translate(-50%, -50%) rotate(45deg);
+        }
+        .slider .drag-line span::before{
+          left: 40%;
+          border-left-color: #fff;
+        }
+        .slider .drag-line span::after{
+          left: 60%;
+          border-top-color: #fff;
+        }
+        /* Additional styles */
         body {
-            font-family: Arial, sans-serif;
             margin: 20px;
             background: #efefef;
         }
-
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #fileInput {
+            display: block;
+            margin: 0 auto 20px;
+        }
         #log {
             margin-top: 20px;
+            text-align: center;
         }
-
+        #output {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
         .download-link {
             display: block;
             margin-top: 10px;
-        }
-
-        /* Slider styles from your example */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        .image-container {
-            margin-top: 20px;
-            position: relative;
-            width: 100%;
-            max-width: 750px;
-            overflow: hidden;
-            background: #fff;
-            border: 7px solid #fff;
-            box-shadow: 0px 0px 15px rgba(0,0,0,0.15);
-        }
-
-        .image-container .images {
-            height: 100%;
-            width: 100%;
-            display: flex;
-        }
-
-        .image-container .images .img-1,
-        .image-container .images .img-2 {
-            height: 100%;
-            width: 100%;
-            background-size: cover;
-            background-position: center;
-        }
-
-        .image-container .images .img-2 {
-            position: absolute;
-            width: 50%;
-        }
-
-        .image-container .slider {
-            position: absolute;
-            top: 0;
-            width: 100%;
-            z-index: 99;
-        }
-
-        .image-container .slider input {
-            width: 100%;
-            outline: none;
-            background: none;
-            -webkit-appearance: none;
-        }
-
-        .image-container .slider input::-webkit-slider-thumb {
-            height: 100%;
-            width: 3px;
-            background: none;
-            -webkit-appearance: none;
-            cursor: col-resize;
-        }
-
-        .image-container .slider .drag-line {
-            width: 3px;
-            height: 100%;
-            position: absolute;
-            left: 49.85%;
-            pointer-events: none;
-        }
-
-        .image-container .slider .drag-line::before,
-        .image-container .slider .drag-line::after {
-            position: absolute;
-            content: "";
-            width: 100%;
-            height: 50%;
-            background: #fff;
-        }
-
-        .image-container .slider .drag-line::before {
-            top: 0;
-        }
-
-        .image-container .slider .drag-line::after {
-            bottom: 0;
-        }
-
-        .image-container .slider .drag-line span {
-            height: 42px;
-            width: 42px;
-            border: 3px solid #fff;
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-        }
-
-        .image-container .slider .drag-line span::before,
-        .image-container .slider .drag-line span::after {
-            position: absolute;
-            content: "";
-            top: 50%;
-            border: 10px solid transparent;
-            border-bottom-width: 0px;
-            border-right-width: 0px;
-            transform: translate(-50%, -50%) rotate(45deg);
-        }
-
-        .image-container .slider .drag-line span::before {
-            left: 40%;
-            border-left-color: #fff;
-        }
-
-        .image-container .slider .drag-line span::after {
-            left: 60%;
-            border-top-color: #fff;
+            text-align: center;
         }
     </style>
 </head>
@@ -150,12 +156,29 @@
 <!-- Container for processed images and sliders -->
 <div id="output"></div>
 
+<!-- Slider Template -->
+<template id="slider-template">
+    <div class="wrapper">
+        <div class="images">
+            <div class="img-1"></div>
+            <div class="img-2"></div>
+        </div>
+        <div class="slider">
+            <div class="drag-line">
+                <span></span>
+            </div>
+            <input type="range" min="0" max="100" value="50">
+        </div>
+    </div>
+</template>
+
 <!-- JavaScript code -->
 <script>
     // Get references to DOM elements
     const fileInput = document.getElementById('fileInput');
     const logDiv = document.getElementById('log');
     const outputDiv = document.getElementById('output');
+    const sliderTemplate = document.getElementById('slider-template').content;
 
     // Event listener for file input change
     fileInput.addEventListener('change', handleFiles);
@@ -245,9 +268,10 @@
 
                 // Convert the canvas to a data URL (PNG format)
                 const processedDataURL = canvas.toDataURL('image/png');
+                const originalDataURL = img.src;
 
                 // Now create the slider for this image
-                createImageComparisonSlider(img.src, processedDataURL, file.name, img.width, img.height);
+                createImageComparisonSlider(originalDataURL, processedDataURL, file.name, img.width, img.height);
 
                 // Log the processing of this image
                 log(`Processed image: ${file.name}`);
@@ -272,66 +296,30 @@
     }
 
     function createImageComparisonSlider(originalSrc, processedSrc, fileName, imgWidth, imgHeight) {
-        // Create a container for the slider
-        const container = document.createElement('div');
-        container.className = 'image-container';
-        container.style.width = imgWidth + 'px';
-        container.style.height = imgHeight + 'px';
+        // Clone the slider template
+        const sliderClone = document.importNode(sliderTemplate, true);
 
-        // Create the images container
-        const imagesDiv = document.createElement('div');
-        imagesDiv.className = 'images';
+        // Set the images
+        const img1Div = sliderClone.querySelector('.img-1');
+        const img2Div = sliderClone.querySelector('.img-2');
 
-        // Create the original image div
-        const img1Div = document.createElement('div');
-        img1Div.className = 'img-1';
         img1Div.style.backgroundImage = `url(${originalSrc})`;
-
-        // Create the processed image div
-        const img2Div = document.createElement('div');
-        img2Div.className = 'img-2';
         img2Div.style.backgroundImage = `url(${processedSrc})`;
 
-        // Append images to imagesDiv
-        imagesDiv.appendChild(img1Div);
-        imagesDiv.appendChild(img2Div);
+        // Adjust the wrapper dimensions
+        const wrapper = sliderClone.querySelector('.wrapper');
+        wrapper.style.width = imgWidth + 'px';
+        wrapper.style.height = imgHeight + 'px';
 
-        // Create the slider control
-        const sliderDiv = document.createElement('div');
-        sliderDiv.className = 'slider';
+        // Initialize the slider
+        initializeSlider(wrapper);
 
-        const dragLineDiv = document.createElement('div');
-        dragLineDiv.className = 'drag-line';
-        const dragSpan = document.createElement('span');
-        dragLineDiv.appendChild(dragSpan);
+        // Create a container for the slider and download link
+        const container = document.createElement('div');
+        container.style.marginBottom = '40px';
 
-        const inputRange = document.createElement('input');
-        inputRange.type = 'range';
-        inputRange.min = '0';
-        inputRange.max = '100';
-        inputRange.value = '50';
-
-        // Event listener for the slider input
-        inputRange.oninput = function() {
-            let sliderVal = inputRange.value;
-            dragLineDiv.style.left = sliderVal + '%';
-            img2Div.style.width = sliderVal + '%';
-        };
-
-        // Initialize the positions
-        dragLineDiv.style.left = '50%';
-        img2Div.style.width = '50%';
-
-        // Append elements to sliderDiv
-        sliderDiv.appendChild(dragLineDiv);
-        sliderDiv.appendChild(inputRange);
-
-        // Append images and slider to container
-        container.appendChild(imagesDiv);
-        container.appendChild(sliderDiv);
-
-        // Append the container to the output div
-        outputDiv.appendChild(container);
+        // Append the slider to the container
+        container.appendChild(wrapper);
 
         // Create a download link for the processed image
         const downloadLink = document.createElement('a');
@@ -340,8 +328,28 @@
         downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
         downloadLink.className = 'download-link';
 
-        // Append the download link to outputDiv
-        outputDiv.appendChild(downloadLink);
+        // Append the download link to the container
+        container.appendChild(downloadLink);
+
+        // Append the container to the output
+        outputDiv.appendChild(container);
+    }
+
+    function initializeSlider(container) {
+        const slider = container.querySelector(".slider input");
+        const img = container.querySelector(".images .img-2");
+        const dragLine = container.querySelector(".slider .drag-line");
+
+        slider.oninput = () => {
+            let sliderVal = slider.value;
+            dragLine.style.left = sliderVal + "%";
+            img.style.width = sliderVal + "%";
+        };
+
+        // Initialize positions
+        let initialSliderVal = 50;
+        dragLine.style.left = initialSliderVal + "%";
+        img.style.width = initialSliderVal + "%";
     }
 
     function log(message) {
