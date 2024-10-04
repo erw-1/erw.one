@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Black to Alpha Converter</title>
+    <title>Black to Alpha Converter - Optimized</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -26,7 +26,7 @@
 </head>
 <body>
 
-<h1>Black to Alpha Converter</h1>
+<h1>Black to Alpha Converter - Optimized</h1>
 
 <!-- File input for uploading multiple images -->
 <input type="file" id="fileInput" accept="image/*" multiple>
@@ -97,7 +97,7 @@
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
 
-                // Process each pixel
+                // Process each pixel in a single loop
                 for (let i = 0; i < data.length; i += 4) {
                     const r = data[i];     // Red channel
                     const g = data[i + 1]; // Green channel
@@ -107,17 +107,23 @@
                     // Compute the maximum of the RGB channels
                     const maxRGB = Math.max(r, g, b);
 
-                    // Compute alpha factor
-                    const alphaFactor = maxRGB / 255;
-
-                    // If maxRGB is 0 (black pixel), set alpha to 0
+                    // If the pixel is black, make it fully transparent
                     if (maxRGB === 0) {
-                        data[i + 3] = 0; // Fully transparent
+                        data[i + 3] = 0; // Set alpha to 0 (fully transparent)
                         continue;
                     }
 
+                    // Compute alpha factor
+                    const alphaFactor = maxRGB / 255;
+
                     // Compute new alpha
                     const newAlpha = a * alphaFactor;
+
+                    // Avoid division by zero
+                    if (newAlpha === 0) {
+                        data[i + 3] = 0;
+                        continue;
+                    }
 
                     // Adjust RGB values to preserve appearance
                     data[i] = (r * a) / newAlpha;
