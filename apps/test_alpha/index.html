@@ -97,13 +97,6 @@
                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
                 const data = imageData.data;
 
-                // Invert colors before processing
-                for (let i = 0; i < data.length; i += 4) {
-                    data[i] = 255 - data[i];       // Invert Red
-                    data[i + 1] = 255 - data[i + 1]; // Invert Green
-                    data[i + 2] = 255 - data[i + 2]; // Invert Blue
-                }
-
                 // Process each pixel
                 for (let i = 0; i < data.length; i += 4) {
                     const r = data[i];     // Red channel
@@ -112,14 +105,17 @@
                     const a = data[i + 3]; // Alpha channel
 
                     // Compute the minimum of the RGB channels
-                    const minRGB = Math.min(r, g, b);
+                    const minRGB = Math.max(r, g, b);
 
                     // Compute alpha factor
-                    const alphaFactor = minRGB / 255;
+                    const alphaFactor = 1 - (minRGB / 255);
 
                     // If alphaFactor is zero, set pixel to transparent black
                     if (alphaFactor === 0) {
-                        data[i + 3] = 0; // Set alpha to 0 (fully transparent)
+                        data[i] = 0;
+                        data[i + 1] = 0;
+                        data[i + 2] = 0;
+                        data[i + 3] = 0;
                         continue;
                     }
 
@@ -127,19 +123,12 @@
                     const newAlpha = a * alphaFactor;
 
                     // Adjust RGB values
-                    data[i] = Math.min(255, (r / alphaFactor));
-                    data[i + 1] = Math.min(255, (g / alphaFactor));
-                    data[i + 2] = Math.min(255, (b / alphaFactor));
+                    data[i] = Math.min(255, (r - minRGB) / alphaFactor);
+                    data[i + 1] = Math.min(255, (g - minRGB) / alphaFactor);
+                    data[i + 2] = Math.min(255, (b - minRGB) / alphaFactor);
 
                     // Update alpha channel
                     data[i + 3] = newAlpha;
-                }
-
-                // Invert colors after processing
-                for (let i = 0; i < data.length; i += 4) {
-                    data[i] = 255 - data[i];       // Invert Red
-                    data[i + 1] = 255 - data[i + 1]; // Invert Green
-                    data[i + 2] = 255 - data[i + 2]; // Invert Blue
                 }
 
                 // Put the processed data back onto the canvas
