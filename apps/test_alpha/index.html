@@ -32,6 +32,7 @@
             margin-top: 20px;
         }
         .image-container {
+            position: relative;
             background-color: #424242;
             border-radius: 8px;
             padding: 20px;
@@ -54,6 +55,22 @@
         }
         .download-link:hover {
             background-color: #757575;
+        }
+        .remove-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #ff5722;
+            color: #ffffff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+        }
+        .remove-button:hover {
+            background-color: #e64a19;
         }
     </style>
 </head>
@@ -86,10 +103,6 @@
      */
     function handleFiles(event) {
         const files = event.target.files;
-
-        // Clear previous output and logs
-        outputDiv.innerHTML = '';
-        logDiv.innerHTML = '';
 
         // Process each selected file
         for (let i = 0; i < files.length; i++) {
@@ -181,6 +194,15 @@
                     const container = document.createElement('div');
                     container.className = 'image-container';
 
+                    // Create a remove button
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'remove-button';
+                    removeButton.textContent = '×';
+                    removeButton.title = 'Remove this image';
+                    removeButton.onclick = function() {
+                        outputDiv.removeChild(container);
+                    };
+
                     // Create an image element to display the processed image
                     const processedImg = document.createElement('img');
                     processedImg.src = URL.createObjectURL(blob);
@@ -192,7 +214,8 @@
                     downloadLink.textContent = `Download Processed Image (${downloadLink.download})`;
                     downloadLink.className = 'download-link';
 
-                    // Append the image and link to the container
+                    // Append the remove button, image, and link to the container
+                    container.appendChild(removeButton);
                     container.appendChild(processedImg);
                     container.appendChild(downloadLink);
 
