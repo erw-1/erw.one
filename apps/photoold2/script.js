@@ -31,11 +31,20 @@ function showError(message) {
 }
 
 // Create a div with a background image and event handler
-function createDivElement(className, backgroundImage, onClick) {
+function createDivElement(className, backgroundImage, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
     div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
+
+    // Optionally add a title element
+    if (titleText) {
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'title';
+        titleDiv.textContent = titleText;
+        div.appendChild(titleDiv);
+    }
+
     observeBackgroundImageChange(div);
     return div;
 }
@@ -72,7 +81,8 @@ async function showFolders() {
             const folderDiv = createDivElement(
                 'folder',
                 `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`,
-                () => showPhotos(folder.path)
+                () => showPhotos(folder.path),
+                folder.name // Adding the folder name as the title
             );
             galleryContainer.appendChild(folderDiv);
         }
