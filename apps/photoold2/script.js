@@ -196,61 +196,62 @@ function clearGallery() {
 
 // Open the lightbox for a specific image
 function openLightbox(index) {
-    currentIndex = index;
-    const selectedImage = currentImages[currentIndex];
-    if (!lightbox) createLightbox();
-    const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
-    updateLightbox(imageUrl); // Pass the full URL to the lightbox
-    lightbox.style.display = 'flex';
+    currentIndex = index;  // Set the current index to the clicked image's index
+    const selectedImage = currentImages[currentIndex];  // Get the selected image path
+    if (!lightbox) createLightbox();  // Create the lightbox if it doesn't exist
+    updateLightbox(selectedImage);  // Update the lightbox with the selected image
+    lightbox.style.display = 'flex';  // Show the lightbox
 }
 
-// Create and display lightbox for image viewing
+// Create the lightbox for viewing images
 function createLightbox() {
-    lightbox = document.createElement('div');
-    lightbox.id = 'lightbox';
-    lightbox.className = 'lightbox';
-    document.body.appendChild(lightbox);
+    lightbox = document.createElement('div');  // Create a lightbox div
+    lightbox.id = 'lightbox';  // Set its ID
+    lightbox.className = 'lightbox';  // Set its class
+    document.body.appendChild(lightbox);  // Append it to the body
 
-    lightboxImg = document.createElement('div');
-    lightboxImg.id = 'lightbox-img';
-    lightboxImg.className = 'lightbox-img';
-    lightbox.appendChild(lightboxImg);
+    lightboxImg = document.createElement('div');  // Create a div for the lightbox image
+    lightboxImg.id = 'lightbox-img';  // Set its ID
+    lightboxImg.className = 'lightbox-img';  // Set its class
+    lightbox.appendChild(lightboxImg);  // Append the image div to the lightbox
 
-    createNavButton('prev', '&#10094;', -1);
-    createNavButton('next', '&#10095;', 1);
+    createNavButton('prev', '&#10094;', -1);  // Create the previous navigation button
+    createNavButton('next', '&#10095;', 1);  // Create the next navigation button
 
-    lightbox.onclick = closeLightbox;
+    lightbox.onclick = closeLightbox;  // Close the lightbox when it's clicked
 }
 
-// Create navigation buttons for lightbox
+
+// Create navigation buttons for the lightbox
 function createNavButton(id, content, direction) {
-    const btn = document.createElement('span');
-    btn.id = id;
-    btn.className = 'nav';
-    btn.innerHTML = content;
+    const btn = document.createElement('span');  // Create a span element for the button
+    btn.id = id;  // Set its ID
+    btn.className = 'nav';  // Set its class
+    btn.innerHTML = content;  // Set its inner content (arrows for next/prev)
     btn.onclick = (e) => {
-        e.stopPropagation();
-        navigate(direction);
+        e.stopPropagation();  // Prevent closing the lightbox when clicking the nav button
+        navigate(direction);  // Navigate in the specified direction
     };
-    lightbox.appendChild(btn);
+    lightbox.appendChild(btn);  // Append the button to the lightbox
 }
 
-// Update the lightbox with the current image URL (no 'url()' wrapping here)
-function updateLightbox(imageUrl) {
-    lightboxImg.style.backgroundImage = `url('${imageUrl}')`; // Set the actual image URL directly
+// Update the lightbox with the current image
+function updateLightbox(imagePath) {
+    lightboxImg.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}')`;  // Set the image URL for the lightbox background
 }
 
 // Close the lightbox
 function closeLightbox() {
-    if (lightbox) lightbox.style.display = 'none';
+    if (lightbox) {
+        lightbox.style.display = 'none';  // Hide the lightbox
+    }
 }
 
-// Navigate between lightbox images
+// Navigate between images in the lightbox
 function navigate(direction) {
-    currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
-    const selectedImage = currentImages[currentIndex];
-    const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
-    updateLightbox(imageUrl); // Update lightbox with the new image URL
+    currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;  // Calculate the new index
+    const selectedImage = currentImages[currentIndex];  // Get the image path for the new index
+    updateLightbox(selectedImage);  // Update the lightbox with the new image
 }
 
 // Handle fragment-based navigation (e.g., #nature#insects)
