@@ -37,30 +37,43 @@ async function fetchGitHubTree() {
 function createBreadcrumbs(folderPath) {
     breadcrumbContainer.innerHTML = ''; // Clear previous breadcrumbs
 
-    const parts = folderPath.replace(basePath, '').split('/');
-    let accumulatedPath = basePath;
+    // Add a "Home" link to go back to the top level
+    const homeLink = document.createElement('a');
+    homeLink.href = '#';
+    homeLink.textContent = 'Home';
+    homeLink.onclick = (event) => {
+        event.preventDefault();
+        window.location.hash = ''; // Clear the hash to go to the home view
+        showTopLevelFolders();
+    };
+    breadcrumbContainer.appendChild(homeLink);
+
+    const parts = folderPath.replace(basePath, '').split('/').filter(Boolean);
+    let accumulatedPath = '';
 
     parts.forEach((part, index) => {
-        if (part) {
-            accumulatedPath += part + '/';
+        accumulatedPath += part;
 
-            const breadcrumbLink = document.createElement('a');
-            breadcrumbLink.href = '#';
-            breadcrumbLink.textContent = part;
-            breadcrumbLink.onclick = () => {
-                showFolderContents(accumulatedPath);
-            };
+        const breadcrumbLink = document.createElement('a');
+        breadcrumbLink.href = `#${accumulatedPath.replace(/\//g, '#')}`; // Use fragment for navigation
+        breadcrumbLink.textContent = part;
+        breadcrumbLink.onclick = (event) => {
+            event.preventDefault();
+            window.location.hash = breadcrumbLink.href.split('#')[1]; // Update URL hash
+            navigateToHash(); // Navigate to the folder
+        };
 
-            breadcrumbContainer.appendChild(breadcrumbLink);
+        breadcrumbContainer.appendChild(breadcrumbLink);
 
-            // Add separator (if not the last item)
-            if (index < parts.length - 1) {
-                const separator = document.createElement('span');
-                separator.textContent = '/';
-                separator.className = 'separator';
-                breadcrumbContainer.appendChild(separator);
-            }
+        // Add separator (if not the last item)
+        if (index < parts.length - 1) {
+            const separator = document.createElement('span');
+            separator.textContent = '/';
+            separator.className = 'separator';
+            breadcrumbContainer.appendChild(separator);
         }
+
+        accumulatedPath += '/';
     });
 }
 
@@ -130,7 +143,7 @@ async function showTopLevelFolders() {
         galleryContainer.appendChild(folderDiv);
     });
 
-    createBreadcrumbs(basePath); // Initialize with an empty breadcrumb for the base path
+    createBreadcrumbs(basePath); // Initialize with "Home" breadcrumb for the base path
 }
 
 // Show folders and images within a specific directory
@@ -236,5 +249,17 @@ function navigate(direction) {
     updateLightbox(selectedImage.style.backgroundImage);
 }
 
-// Initialize with the root folder contents
-showTopLevelFolders();
+// Handle fragment-based navigation (e.g., #nature#insects)
+function navigateToHash() {
+    const hash = window.location.hash.slice(1); // Remove the leading '#'
+    if (hash) {
+        const folderPath = `${basePath}${hash.replace(/#/g, '/')}/`; // Convert hash to folder path
+        showFolderContents(folderPath);
+    } else {
+        showTopLevelFolders(); // If no hash, show the top level
+    }
+}
+
+// Initialize page with fragment navigation
+window.addEventListener('hashchange', navigateToHash); // Respond to hash changes
+navigateToHash(); // On initial page load, navigate based on hash
