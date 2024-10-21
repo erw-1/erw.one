@@ -199,7 +199,7 @@ function openLightbox(index) {
     currentIndex = index;
     const selectedImage = currentImages[currentIndex];
     if (!lightbox) createLightbox();
-    const imageUrl = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}')`;
+    const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
     updateLightbox(imageUrl); // Pass the full URL to the lightbox
     lightbox.style.display = 'flex';
 }
@@ -235,9 +235,9 @@ function createNavButton(id, content, direction) {
     lightbox.appendChild(btn);
 }
 
-// Update the lightbox with the current image
+// Update the lightbox with the current image URL (no 'url()' wrapping here)
 function updateLightbox(imageUrl) {
-    lightboxImg.style.backgroundImage = imageUrl;
+    lightboxImg.style.backgroundImage = `url('${imageUrl}')`; // Set the actual image URL directly
 }
 
 // Close the lightbox
@@ -249,10 +249,9 @@ function closeLightbox() {
 function navigate(direction) {
     currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
     const selectedImage = currentImages[currentIndex];
-    const imageUrl = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}')`;
+    const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
     updateLightbox(imageUrl); // Update lightbox with the new image URL
 }
-
 
 // Handle fragment-based navigation (e.g., #nature#insects)
 function navigateToHash() {
