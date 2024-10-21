@@ -67,6 +67,9 @@ async function showFolders() {
             folderDiv.innerHTML = `<div class="title">${folder.name}</div>`;
             folderDiv.onclick = () => showPhotos(folder.path);
             galleryContainer.appendChild(folderDiv);
+
+            // Observe the div for background image changes
+            observeBackgroundImageChange(folderDiv);
         }
     });
 
