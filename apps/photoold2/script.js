@@ -221,7 +221,6 @@ function createLightbox() {
     lightbox.onclick = closeLightbox;  // Close the lightbox when it's clicked
 }
 
-
 // Create navigation buttons for the lightbox
 function createNavButton(id, content, direction) {
     const btn = document.createElement('span');  // Create a span element for the button
@@ -237,7 +236,9 @@ function createNavButton(id, content, direction) {
 
 // Update the lightbox with the current image
 function updateLightbox(imagePath) {
-    lightboxImg.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}')`;  // Set the image URL for the lightbox background
+    // Clear the previous background image and update it with the new image
+    lightboxImg.style.backgroundImage = ''; // Clear the previous image
+    lightboxImg.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}')`;  // Set the new image URL for the lightbox background
 }
 
 // Close the lightbox
