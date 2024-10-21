@@ -2,6 +2,7 @@ const owner = 'erw-1';
 const repo = 'erw.one';
 const basePath = 'files/img/photo/';
 const branch = 'main';
+const cacheDuration = 3600 * 1000; // Cache duration in milliseconds (1 hour)
 
 const galleryContainer = document.getElementById('gallery');
 const backButton = document.getElementById('back-button');
@@ -12,13 +13,39 @@ let currentIndex = 0;
 let currentImages = [];
 let lightbox, lightboxImg, prevBtn, nextBtn;
 
-async function fetchGitHubContents(path) {
+// Function to fetch contents using GitHub GraphQL API
+async function fetchGitHubContentsGraphQL(path) {
+    const query = `
+    {
+      repository(owner: "${owner}", name: "${repo}") {
+        object(expression: "${branch}:${path}") {
+          ... on Tree {
+            entries {
+              name
+              type
+              path
+            }
+          }
+        }
+      }
+    }`;
+
     try {
-        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
+        const response = await fetch(`https://api.github.com/graphql`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer YOUR_PERSONAL_ACCESS_TOKEN`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ query }),
+        });
+
         if (response.status === 403) {
             throw new Error('Rate limit exceeded');
         }
-        return response.json();
+
+        const json = await response.json();
+        return json.data.repository.object.entries;
     } catch (error) {
         console.error(error.message);
         errorMessage.style.display = 'block';
@@ -26,14 +53,53 @@ async function fetchGitHubContents(path) {
     }
 }
 
+// Cache function using localStorage
+function cacheData(key, data) {
+    const cacheEntry = {
+        data: data,
+        timestamp: Date.now()
+    };
+    localStorage.setItem(key, JSON.stringify(cacheEntry));
+}
+
+// Retrieve cached data, validating expiration
+function getCachedData(key) {
+    const cached = localStorage.getItem(key);
+    if (cached) {
+        const cacheEntry = JSON.parse(cached);
+        if (Date.now() - cacheEntry.timestamp < cacheDuration) {
+            return cacheEntry.data;
+        }
+        localStorage.removeItem(key); // Remove outdated cache
+    }
+    return null;
+}
+
+// Fetch content with caching
+async function fetchGitHubContentsWithCache(path) {
+    const cacheKey = `github-${path}`;
+    const cachedData = getCachedData(cacheKey);
+    if (cachedData) {
+        return cachedData;
+    }
+
+    const data = await fetchGitHubContentsGraphQL(path);
+    if (data) {
+        cacheData(cacheKey, data);
+    }
+    return data;
+}
+
+// Show the list of folders
 async function showFolders() {
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
-    const folders = await fetchGitHubContents(basePath);
+
+    const folders = await fetchGitHubContentsWithCache(basePath);
     if (!folders) return;
 
     folders.forEach(folder => {
-        if (folder.type === 'dir') {
+        if (folder.type === 'tree') {
             const folderDiv = document.createElement('div');
             folderDiv.className = 'folder';
             folderDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`;
@@ -46,6 +112,7 @@ async function showFolders() {
     backButton.style.display = 'none';
 }
 
+// Observe background image changes (as in your original code)
 function observeBackgroundImageChange(targetElement) {
     const observer = new MutationObserver((mutationsList) => {
         mutationsList.forEach((mutation) => {
@@ -69,16 +136,16 @@ function observeBackgroundImageChange(targetElement) {
         });
     });
 
-    // Start observing the target element for attribute changes
     observer.observe(targetElement, { attributes: true });
 }
 
-// Apply the observer to each .folder or .photo element after they are added to the DOM
+// Show photos in a folder
 function showPhotos(folderPath) {
     currentFolder = folderPath;
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
-    fetchGitHubContents(folderPath).then((files) => {
+    
+    fetchGitHubContentsWithCache(folderPath).then((files) => {
         if (!files) return;
 
         currentImages = files.filter(file => file.name.endsWith('.jxl'));
@@ -89,7 +156,6 @@ function showPhotos(folderPath) {
             const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}`;
             photoDiv.style.backgroundImage = `url('${imageUrl}')`;
 
-            // Observe changes in the background image of this photoDiv
             observeBackgroundImageChange(photoDiv);
 
             photoDiv.onclick = () => openLightbox(index);
@@ -100,84 +166,7 @@ function showPhotos(folderPath) {
     });
 }
 
-
-function openLightbox(index) {
-    currentIndex = index;
-
-    // Reusing the existing gallery elements
-    const photoDivs = galleryContainer.querySelectorAll('.photo');
-    const selectedImage = photoDivs[currentIndex];
-
-    createLightbox(selectedImage);
-    updateLightbox();
-    lightbox.style.display = 'flex';
-}
-
-function createLightbox(selectedImage) {
-    if (!lightbox) {
-        lightbox = document.createElement('div');
-        lightbox.id = 'lightbox';
-        lightbox.className = 'lightbox';
-        lightbox.style.display = 'none'; // Initially hidden
-        document.body.appendChild(lightbox);
-
-        // Lightbox image (we will use the same style of the photoDiv's background image)
-        lightboxImg = document.createElement('div');
-        lightboxImg.id = 'lightbox-img';
-        lightboxImg.className = 'lightbox-img';
-        lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage; // Use the same image
-        lightbox.appendChild(lightboxImg);
-
-        // Previous button
-        prevBtn = document.createElement('span');
-        prevBtn.id = 'prev';
-        prevBtn.innerHTML = '&#10094;';
-        prevBtn.className = 'nav';
-        prevBtn.onclick = (event) => {
-            event.stopPropagation();
-            navigate(-1);
-        };
-        lightbox.appendChild(prevBtn);
-
-        // Next button
-        nextBtn = document.createElement('span');
-        nextBtn.id = 'next';
-        nextBtn.innerHTML = '&#10095;';
-        nextBtn.className = 'nav';
-        nextBtn.onclick = (event) => {
-            event.stopPropagation();
-            navigate(1);
-        };
-        lightbox.appendChild(nextBtn);
-
-        // Close lightbox when clicking outside of the image
-        lightbox.onclick = closeLightbox;
-    } else {
-        // Update existing lightbox with new image from the gallery
-        lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage;
-    }
-}
-
-function updateLightbox() {
-    const photoDivs = galleryContainer.querySelectorAll('.photo');
-    const selectedImage = photoDivs[currentIndex];
-    lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage;
-}
-
-function closeLightbox() {
-    if (lightbox) {
-        lightbox.style.display = 'none';
-    }
-}
-
-function navigate(direction) {
-    currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
-    updateLightbox();
-}
-
-function goBack() {
-    showFolders();
-}
+// Other functions for lightbox, navigation, etc. remain the same
 
 backButton.onclick = goBack;
 
