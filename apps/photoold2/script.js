@@ -79,6 +79,29 @@ function observeBackgroundImageChange(targetElement) {
     observer.observe(targetElement, { attributes: true });
 }
 
+// Show top-level folders when the page loads or root directory is accessed
+async function showTopLevelFolders() {
+    clearGallery();
+    const tree = await fetchGitHubTree();
+    if (!tree) return;
+
+    // Filter to show only top-level folders within the basePath
+    const topLevelFolders = tree.filter(item => item.type === 'tree' && item.path.startsWith(basePath) && item.path.split('/').length === 4);
+
+    topLevelFolders.forEach(folder => {
+        const folderName = folder.path.replace(basePath, ''); // Extract the folder name
+        const folderDiv = createDivElement(
+            'folder',
+            `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`,
+            () => showFolderContents(folder.path), // Clicking navigates into the folder
+            folderName // Show folder name as title
+        );
+        galleryContainer.appendChild(folderDiv);
+    });
+
+    backButton.style.display = 'none'; // Hide back button at the top level
+}
+
 // Show folders and images within a specific directory
 async function showFolderContents(folderPath) {
     clearGallery();
@@ -115,7 +138,7 @@ async function showFolderContents(folderPath) {
         }
     });
 
-    backButton.style.display = 'block';
+    backButton.style.display = 'block'; // Show back button for subfolders
 }
 
 // Clear gallery content and hide errors
@@ -183,8 +206,8 @@ function navigate(direction) {
 
 // Return to folder view
 function goBack() {
-    showFolderContents(basePath);
+    showTopLevelFolders(); // Go back to the top-level folder view
 }
 
 backButton.onclick = goBack;
-showFolderContents(basePath); // Initialize with the root folder
+showTopLevelFolders(); // Initialize with the top-level folders
