@@ -26,6 +26,33 @@ async function fetchGitHubContents(path) {
     }
 }
 
+function observeBackgroundImageChange(targetElement) {
+    const observer = new MutationObserver((mutationsList) => {
+        mutationsList.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                const bgImage = targetElement.style.backgroundImage;
+                if (bgImage && bgImage.startsWith('url("blob:')) {
+                    const blobUrl = bgImage.slice(5, -2); // Extract blob URL
+
+                    // Create an Image object to load the blob and get its dimensions
+                    const img = new Image();
+                    img.src = blobUrl;
+                    img.onload = function() {
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+
+                        // Resize the div to match the aspect ratio
+                        targetElement.style.width = `${200 * aspectRatio}px`; // Keeping the initial height as 200px
+                        targetElement.style.height = 'auto';
+                    };
+                }
+            }
+        });
+    });
+
+    // Start observing the target element for attribute changes
+    observer.observe(targetElement, { attributes: true });
+}
+
 async function showFolders() {
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
@@ -61,6 +88,9 @@ async function showPhotos(folderPath) {
         photoDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}')`;
         photoDiv.onclick = () => openLightbox(index);
         galleryContainer.appendChild(photoDiv);
+
+        // Observe the div for background image changes
+        observeBackgroundImageChange(photoDiv);
     });
 
     backButton.style.display = 'block';
