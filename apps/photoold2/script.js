@@ -4,7 +4,7 @@ const basePath = 'files/img/photo/';
 const branch = 'main';
 
 const galleryContainer = document.getElementById('gallery');
-const backButton = document.getElementById('back-button');
+const breadcrumbContainer = document.getElementById('breadcrumb');
 const errorMessage = document.getElementById('error-message');
 
 let currentFolder = '';
@@ -31,6 +31,37 @@ async function fetchGitHubTree() {
         showError('Rate limit exceeded or API error');
         return null;
     }
+}
+
+// Create a breadcrumb navigation dynamically
+function createBreadcrumbs(folderPath) {
+    breadcrumbContainer.innerHTML = ''; // Clear previous breadcrumbs
+
+    const parts = folderPath.replace(basePath, '').split('/');
+    let accumulatedPath = basePath;
+
+    parts.forEach((part, index) => {
+        if (part) {
+            accumulatedPath += part + '/';
+
+            const breadcrumbLink = document.createElement('a');
+            breadcrumbLink.href = '#';
+            breadcrumbLink.textContent = part;
+            breadcrumbLink.onclick = () => {
+                showFolderContents(accumulatedPath);
+            };
+
+            breadcrumbContainer.appendChild(breadcrumbLink);
+
+            // Add separator (if not the last item)
+            if (index < parts.length - 1) {
+                const separator = document.createElement('span');
+                separator.textContent = '/';
+                separator.className = 'separator';
+                breadcrumbContainer.appendChild(separator);
+            }
+        }
+    });
 }
 
 // Display error messages
@@ -79,35 +110,15 @@ function observeBackgroundImageChange(targetElement) {
     observer.observe(targetElement, { attributes: true });
 }
 
-// Show top-level folders when the page loads or root directory is accessed
-async function showTopLevelFolders() {
-    clearGallery();
-    const tree = await fetchGitHubTree();
-    if (!tree) return;
-
-    // Filter to show only top-level folders within the basePath
-    const topLevelFolders = tree.filter(item => item.type === 'tree' && item.path.startsWith(basePath) && item.path.split('/').length === 4);
-
-    topLevelFolders.forEach(folder => {
-        const folderName = folder.path.replace(basePath, ''); // Extract the folder name
-        const folderDiv = createDivElement(
-            'folder',
-            `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`,
-            () => showFolderContents(folder.path), // Clicking navigates into the folder
-            folderName // Show folder name as title
-        );
-        galleryContainer.appendChild(folderDiv);
-    });
-
-    backButton.style.display = 'none'; // Hide back button at the top level
-}
-
 // Show folders and images within a specific directory
 async function showFolderContents(folderPath) {
     clearGallery();
     currentFolder = folderPath;
     const tree = await fetchGitHubTree();
     if (!tree) return;
+
+    // Create breadcrumbs for the current folder path
+    createBreadcrumbs(folderPath);
 
     // Filter contents of the current folder (both subfolders and images)
     const folderContents = tree.filter(item => {
@@ -137,8 +148,6 @@ async function showFolderContents(folderPath) {
             currentImages.push(item.path); // Add the image to the list for lightbox navigation
         }
     });
-
-    backButton.style.display = 'block'; // Show back button for subfolders
 }
 
 // Clear gallery content and hide errors
@@ -204,10 +213,5 @@ function navigate(direction) {
     updateLightbox(selectedImage.style.backgroundImage);
 }
 
-// Return to folder view
-function goBack() {
-    showTopLevelFolders(); // Go back to the top-level folder view
-}
-
-backButton.onclick = goBack;
-showTopLevelFolders(); // Initialize with the top-level folders
+// Initialize with the root folder contents
+showFolderContents(basePath);
