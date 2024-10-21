@@ -12,12 +12,21 @@ let currentIndex = 0;
 let currentImages = [];
 let lightbox, lightboxImg, prevBtn, nextBtn;
 
-// Fetch contents from GitHub and handle errors
-async function fetchGitHubContents(path) {
+let cachedTree = null; // Cached tree structure to prevent multiple API calls
+
+// Fetch contents from GitHub's recursive tree API and handle errors
+async function fetchGitHubTree() {
+    if (cachedTree) {
+        return cachedTree; // Return cached tree if it exists
+    }
+
+    const treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
     try {
-        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
-        if (!response.ok) throw new Error('Failed to fetch');
-        return await response.json();
+        const response = await fetch(treeUrl);
+        if (!response.ok) throw new Error('Failed to fetch recursive tree');
+        const data = await response.json();
+        cachedTree = data.tree; // Cache the tree for future use
+        return cachedTree;
     } catch (error) {
         showError('Rate limit exceeded or API error');
         return null;
@@ -73,20 +82,23 @@ function observeBackgroundImageChange(targetElement) {
 // Display folders in the gallery
 async function showFolders() {
     clearGallery();
-    const folders = await fetchGitHubContents(basePath);
-    if (!folders) return;
+    const tree = await fetchGitHubTree();
+    if (!tree) return;
+
+    // Filter only the directories from the tree
+    const folders = tree.filter(item => item.type === 'tree' && item.path.startsWith(basePath));
 
     folders.forEach(folder => {
-        if (folder.type === 'dir') {
-            const folderDiv = createDivElement(
-                'folder',
-                `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`,
-                () => showPhotos(folder.path),
-                folder.name // Adding the folder name as the title
-            );
-            galleryContainer.appendChild(folderDiv);
-        }
+        const folderName = folder.path.replace(basePath, ''); // Extract folder name
+        const folderDiv = createDivElement(
+            'folder',
+            `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`,
+            () => showPhotos(folder.path),
+            folderName.split('/').pop() // Display only the last part of the path as the folder name
+        );
+        galleryContainer.appendChild(folderDiv);
     });
+
     backButton.style.display = 'none';
 }
 
@@ -94,22 +106,26 @@ async function showFolders() {
 async function showPhotos(folderPath) {
     clearGallery();
     currentFolder = folderPath;
-    const files = await fetchGitHubContents(folderPath);
-    if (!files) return;
+    const tree = await fetchGitHubTree();
+    if (!tree) return;
 
-    currentImages = files.filter(file => file.name.endsWith('.jxl'));
-    currentImages.forEach((image, index) => {
+    // Filter the files in the current folder
+    const files = tree.filter(item => item.type === 'blob' && item.path.startsWith(folderPath) && item.path.endsWith('.jxl'));
+
+    currentImages = files.map(file => file.path);
+    currentImages.forEach((imagePath, index) => {
         const photoDiv = createDivElement(
             'photo',
-            `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}')`,
+            `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}')`,
             () => openLightbox(index)
         );
         galleryContainer.appendChild(photoDiv);
     });
+
     backButton.style.display = 'block';
 }
 
-// Clear the gallery container
+// Clear the gallery container and hide the error message
 function clearGallery() {
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
