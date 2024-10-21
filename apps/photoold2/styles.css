@@ -110,3 +110,28 @@ div#lightbox-img {
     margin-top: 20px;
     font-size: 18px;
 }
+
+/* Breadcrumb Navigation */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #3498db;
+    font-weight: 500;
+}
+
+.breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+.breadcrumb .separator {
+    margin: 0 5px;
+    color: #ccc;
+}
+
