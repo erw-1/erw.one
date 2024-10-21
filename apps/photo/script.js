@@ -166,7 +166,72 @@ function showPhotos(folderPath) {
     });
 }
 
-// Other functions for lightbox, navigation, etc. remain the same
+function openLightbox(index) {
+    currentIndex = index;
+    // Reusing the existing gallery elements
+    const photoDivs = galleryContainer.querySelectorAll('.photo');
+    const selectedImage = photoDivs[currentIndex];
+    createLightbox(selectedImage);
+    updateLightbox();
+    lightbox.style.display = 'flex';
+}
+function createLightbox(selectedImage) {
+    if (!lightbox) {
+        lightbox = document.createElement('div');
+        lightbox.id = 'lightbox';
+        lightbox.className = 'lightbox';
+        lightbox.style.display = 'none'; // Initially hidden
+        document.body.appendChild(lightbox);
+        // Lightbox image (we will use the same style of the photoDiv's background image)
+        lightboxImg = document.createElement('div');
+        lightboxImg.id = 'lightbox-img';
+        lightboxImg.className = 'lightbox-img';
+        lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage; // Use the same image
+        lightbox.appendChild(lightboxImg);
+        // Previous button
+        prevBtn = document.createElement('span');
+        prevBtn.id = 'prev';
+        prevBtn.innerHTML = '&#10094;';
+        prevBtn.className = 'nav';
+        prevBtn.onclick = (event) => {
+            event.stopPropagation();
+            navigate(-1);
+        };
+        lightbox.appendChild(prevBtn);
+        // Next button
+        nextBtn = document.createElement('span');
+        nextBtn.id = 'next';
+        nextBtn.innerHTML = '&#10095;';
+        nextBtn.className = 'nav';
+        nextBtn.onclick = (event) => {
+            event.stopPropagation();
+            navigate(1);
+        };
+        lightbox.appendChild(nextBtn);
+        // Close lightbox when clicking outside of the image
+        lightbox.onclick = closeLightbox;
+    } else {
+        // Update existing lightbox with new image from the gallery
+        lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage;
+    }
+}
+function updateLightbox() {
+    const photoDivs = galleryContainer.querySelectorAll('.photo');
+    const selectedImage = photoDivs[currentIndex];
+    lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage;
+}
+function closeLightbox() {
+    if (lightbox) {
+        lightbox.style.display = 'none';
+    }
+}
+function navigate(direction) {
+    currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
+    updateLightbox();
+}
+function goBack() {
+    showFolders();
+}
 
 backButton.onclick = goBack;
 
