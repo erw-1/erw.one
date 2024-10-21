@@ -150,6 +150,7 @@ async function showTopLevelFolders() {
 async function showFolderContents(folderPath) {
     clearGallery();
     currentFolder = folderPath;
+    currentImages = []; // Reset currentImages for the new folder
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
@@ -175,13 +176,14 @@ async function showFolderContents(folderPath) {
             galleryContainer.appendChild(folderDiv);
         } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
             // Handle images
+            currentImages.push(item.path); // Add the image to the list for lightbox navigation
+            const imageIndex = currentImages.length - 1; // Get the index of this image
             const photoDiv = createDivElement(
                 'photo',
                 `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`,
-                () => openLightbox(currentImages.indexOf(item.path)) // Clicking opens the image in lightbox
+                () => openLightbox(imageIndex) // Use the correct image index for the lightbox
             );
             galleryContainer.appendChild(photoDiv);
-            currentImages.push(item.path); // Add the image to the list for lightbox navigation
         }
     });
 }
@@ -192,12 +194,12 @@ function clearGallery() {
     errorMessage.style.display = 'none';
 }
 
-// Create and display lightbox for images
+// Open the lightbox for a specific image
 function openLightbox(index) {
     currentIndex = index;
-    const selectedImage = galleryContainer.querySelectorAll('.photo')[index];
+    const selectedImage = currentImages[currentIndex];
     if (!lightbox) createLightbox();
-    updateLightbox(selectedImage.style.backgroundImage);
+    updateLightbox(`url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}')`);
     lightbox.style.display = 'flex';
 }
 
@@ -232,7 +234,7 @@ function createNavButton(id, content, direction) {
     lightbox.appendChild(btn);
 }
 
-// Update lightbox with the current image
+// Update the lightbox with the current image
 function updateLightbox(imageUrl) {
     lightboxImg.style.backgroundImage = imageUrl;
 }
