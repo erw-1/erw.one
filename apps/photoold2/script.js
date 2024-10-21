@@ -14,10 +14,10 @@ let lightbox, lightboxImg, prevBtn, nextBtn;
 
 let cachedTree = null; // Cached tree structure to prevent multiple API calls
 
-// Fetch contents from GitHub's recursive tree API and handle errors
+// Fetch the recursive file tree from GitHub and handle errors
 async function fetchGitHubTree() {
     if (cachedTree) {
-        return cachedTree; // Return cached tree if it exists
+        return cachedTree; // Use cached tree if available
     }
 
     const treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
@@ -33,20 +33,20 @@ async function fetchGitHubTree() {
     }
 }
 
-// Show error message
+// Display error messages
 function showError(message) {
     errorMessage.textContent = message;
     errorMessage.style.display = 'block';
 }
 
-// Create a div with a background image and event handler
+// Create a div for either folders or images, with a background and an event handler
 function createDivElement(className, backgroundImage, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
     div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
 
-    // Optionally add a title element
+    // Add title text (for folders or images)
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
@@ -58,7 +58,7 @@ function createDivElement(className, backgroundImage, onClick, titleText = null)
     return div;
 }
 
-// Observe background image change to adjust the size
+// Adjust div size based on background image's aspect ratio
 function observeBackgroundImageChange(targetElement) {
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -79,53 +79,32 @@ function observeBackgroundImageChange(targetElement) {
     observer.observe(targetElement, { attributes: true });
 }
 
-// Display folders in the gallery
-async function showFolders() {
-    clearGallery();
-    const tree = await fetchGitHubTree();
-    if (!tree) return;
-
-    // Filter only the directories from the tree
-    const folders = tree.filter(item => item.type === 'tree' && item.path.startsWith(basePath));
-
-    folders.forEach(folder => {
-        const folderName = folder.path.replace(basePath, ''); // Extract folder name
-        const folderDiv = createDivElement(
-            'folder',
-            `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`,
-            () => showPhotos(folder.path),
-            folderName.split('/').pop() // Display only the last part of the path as the folder name
-        );
-        galleryContainer.appendChild(folderDiv);
-    });
-
-    backButton.style.display = 'none';
-}
-
-async function showPhotos(folderPath) {
+// Show folders and images within a specific directory
+async function showFolderContents(folderPath) {
     clearGallery();
     currentFolder = folderPath;
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
-    // Filter the contents of the current folder (both folders and files)
-    const folderContents = tree.filter(item => item.path.startsWith(folderPath) && item.path !== folderPath);
+    // Filter contents of the current folder (both subfolders and images)
+    const folderContents = tree.filter(item => {
+        const relativePath = item.path.replace(`${folderPath}/`, '');
+        return item.path.startsWith(folderPath) && relativePath.indexOf('/') === -1;
+    });
 
     folderContents.forEach(item => {
-        // Handle subfolders
         if (item.type === 'tree') {
-            const folderName = item.path.replace(`${folderPath}/`, ''); // Extract folder name
+            // Handle subfolders
+            const folderName = item.path.replace(`${folderPath}/`, ''); // Get the folder name
             const folderDiv = createDivElement(
                 'folder',
                 `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl')`,
-                () => showPhotos(item.path), // Clicking opens the folder
-                folderName.split('/').pop() // Show only the last part of the path as the folder name
+                () => showFolderContents(item.path), // Clicking navigates into the folder
+                folderName // Display the folder name
             );
             galleryContainer.appendChild(folderDiv);
-        }
-
-        // Handle images
-        else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
+        } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
+            // Handle images
             const photoDiv = createDivElement(
                 'photo',
                 `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`,
@@ -139,13 +118,13 @@ async function showPhotos(folderPath) {
     backButton.style.display = 'block';
 }
 
-// Clear the gallery container and hide the error message
+// Clear gallery content and hide errors
 function clearGallery() {
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
 }
 
-// Create and display lightbox
+// Create and display lightbox for images
 function openLightbox(index) {
     currentIndex = index;
     const selectedImage = galleryContainer.querySelectorAll('.photo')[index];
@@ -154,7 +133,7 @@ function openLightbox(index) {
     lightbox.style.display = 'flex';
 }
 
-// Create lightbox if it doesn't exist
+// Create lightbox for image viewing
 function createLightbox() {
     lightbox = document.createElement('div');
     lightbox.id = 'lightbox';
@@ -172,7 +151,7 @@ function createLightbox() {
     lightbox.onclick = closeLightbox;
 }
 
-// Helper function to create navigation buttons
+// Create navigation buttons for lightbox
 function createNavButton(id, content, direction) {
     const btn = document.createElement('span');
     btn.id = id;
@@ -185,17 +164,17 @@ function createNavButton(id, content, direction) {
     lightbox.appendChild(btn);
 }
 
-// Update lightbox with new image
+// Update lightbox with the current image
 function updateLightbox(imageUrl) {
     lightboxImg.style.backgroundImage = imageUrl;
 }
 
-// Close lightbox
+// Close the lightbox
 function closeLightbox() {
     if (lightbox) lightbox.style.display = 'none';
 }
 
-// Navigate through lightbox images
+// Navigate between lightbox images
 function navigate(direction) {
     currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
     const selectedImage = galleryContainer.querySelectorAll('.photo')[currentIndex];
@@ -204,8 +183,8 @@ function navigate(direction) {
 
 // Return to folder view
 function goBack() {
-    showFolders();
+    showFolderContents(basePath);
 }
 
 backButton.onclick = goBack;
-showFolders();
+showFolderContents(basePath); // Initialize with the root folder
