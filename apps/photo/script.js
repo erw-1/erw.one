@@ -14,7 +14,7 @@ let lightbox, lightboxImg, prevBtn, nextBtn;
 
 async function fetchGitHubContents(path) {
     try {
-        const response = await fetch(https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch});
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
         if (response.status === 403) {
             throw new Error('Rate limit exceeded');
         }
@@ -36,8 +36,8 @@ async function showFolders() {
         if (folder.type === 'dir') {
             const folderDiv = document.createElement('div');
             folderDiv.className = 'folder';
-            folderDiv.style.backgroundImage = url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl');
-            folderDiv.innerHTML = <div class="title">${folder.name}</div>;
+            folderDiv.style.backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`;
+            folderDiv.innerHTML = `<div class="title">${folder.name}</div>`;
             folderDiv.onclick = () => showPhotos(folder.path);
             galleryContainer.appendChild(folderDiv);
         }
@@ -61,7 +61,7 @@ function observeBackgroundImageChange(targetElement) {
                         const aspectRatio = img.naturalWidth / img.naturalHeight;
 
                         // Resize the div to match the aspect ratio
-                        targetElement.style.width = ${200 * aspectRatio}px; // Keeping the initial height as 200px
+                        targetElement.style.width = `${200 * aspectRatio}px`; // Keeping the initial height as 200px
                         targetElement.style.height = 'auto';
                     };
                 }
@@ -86,8 +86,8 @@ function showPhotos(folderPath) {
         currentImages.forEach((image, index) => {
             const photoDiv = document.createElement('div');
             photoDiv.className = 'photo';
-            const imageUrl = https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path};
-            photoDiv.style.backgroundImage = url('${imageUrl}');
+            const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}`;
+            photoDiv.style.backgroundImage = `url('${imageUrl}')`;
 
             // Observe changes in the background image of this photoDiv
             observeBackgroundImageChange(photoDiv);
