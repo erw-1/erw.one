@@ -12,35 +12,35 @@ let currentIndex = 0;
 let currentImages = [];
 let lightbox, lightboxImg, prevBtn, nextBtn;
 
-// Helper function to fetch content from GitHub
+// Fetch contents from GitHub and handle errors
 async function fetchGitHubContents(path) {
     try {
         const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}?ref=${branch}`);
-        if (response.status === 403) throw new Error('Rate limit exceeded');
-        return response.json();
+        if (!response.ok) throw new Error('Failed to fetch');
+        return await response.json();
     } catch (error) {
-        showError(error.message);
+        showError('Rate limit exceeded or API error');
         return null;
     }
 }
 
-// Helper function to show error messages
+// Show error message
 function showError(message) {
     errorMessage.textContent = message;
     errorMessage.style.display = 'block';
 }
 
-// Helper function to create div elements (for folders and photos)
+// Create a div with a background image and event handler
 function createDivElement(className, backgroundImage, onClick) {
     const div = document.createElement('div');
     div.className = className;
     div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
-    galleryContainer.appendChild(div);
-    observeBackgroundImageChange(div); // Adjust size based on image
+    observeBackgroundImageChange(div);
+    return div;
 }
 
-// Observe background image changes and adjust div size
+// Observe background image change to adjust the size
 function observeBackgroundImageChange(targetElement) {
     const observer = new MutationObserver((mutations) => {
         mutations.forEach((mutation) => {
@@ -48,7 +48,7 @@ function observeBackgroundImageChange(targetElement) {
                 const bgImage = targetElement.style.backgroundImage;
                 if (bgImage && bgImage.startsWith('url("blob:')) {
                     const img = new Image();
-                    img.src = bgImage.slice(5, -2); // Extract blob URL
+                    img.src = bgImage.slice(5, -2);
                     img.onload = () => {
                         const aspectRatio = img.naturalWidth / img.naturalHeight;
                         targetElement.style.width = `${200 * aspectRatio}px`;
@@ -61,18 +61,20 @@ function observeBackgroundImageChange(targetElement) {
     observer.observe(targetElement, { attributes: true });
 }
 
-// Display folders from the GitHub repository
+// Display folders in the gallery
 async function showFolders() {
     clearGallery();
     const folders = await fetchGitHubContents(basePath);
     if (!folders) return;
+
     folders.forEach(folder => {
         if (folder.type === 'dir') {
-            createDivElement(
+            const folderDiv = createDivElement(
                 'folder',
                 `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`,
                 () => showPhotos(folder.path)
             );
+            galleryContainer.appendChild(folderDiv);
         }
     });
     backButton.style.display = 'none';
@@ -80,60 +82,57 @@ async function showFolders() {
 
 // Display photos inside a folder
 async function showPhotos(folderPath) {
-    currentFolder = folderPath;
     clearGallery();
+    currentFolder = folderPath;
     const files = await fetchGitHubContents(folderPath);
     if (!files) return;
 
     currentImages = files.filter(file => file.name.endsWith('.jxl'));
     currentImages.forEach((image, index) => {
-        createDivElement(
+        const photoDiv = createDivElement(
             'photo',
             `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${image.path}')`,
             () => openLightbox(index)
         );
+        galleryContainer.appendChild(photoDiv);
     });
-
     backButton.style.display = 'block';
 }
 
-// Clear the gallery container and hide the error message
+// Clear the gallery container
 function clearGallery() {
     galleryContainer.innerHTML = '';
     errorMessage.style.display = 'none';
 }
 
-// Open lightbox for viewing images
+// Create and display lightbox
 function openLightbox(index) {
     currentIndex = index;
-    const selectedImage = galleryContainer.querySelectorAll('.photo')[currentIndex];
-    createLightbox(selectedImage);
-    updateLightbox();
+    const selectedImage = galleryContainer.querySelectorAll('.photo')[index];
+    if (!lightbox) createLightbox();
+    updateLightbox(selectedImage.style.backgroundImage);
     lightbox.style.display = 'flex';
 }
 
-// Create lightbox if not already created
-function createLightbox(selectedImage) {
-    if (!lightbox) {
-        lightbox = document.createElement('div');
-        lightbox.id = 'lightbox';
-        lightbox.className = 'lightbox';
-        document.body.appendChild(lightbox);
+// Create lightbox if it doesn't exist
+function createLightbox() {
+    lightbox = document.createElement('div');
+    lightbox.id = 'lightbox';
+    lightbox.className = 'lightbox';
+    document.body.appendChild(lightbox);
 
-        lightboxImg = document.createElement('div');
-        lightboxImg.id = 'lightbox-img';
-        lightboxImg.className = 'lightbox-img';
-        lightbox.appendChild(lightboxImg);
+    lightboxImg = document.createElement('div');
+    lightboxImg.id = 'lightbox-img';
+    lightboxImg.className = 'lightbox-img';
+    lightbox.appendChild(lightboxImg);
 
-        prevBtn = createNavButton('prev', '&#10094;', -1);
-        nextBtn = createNavButton('next', '&#10095;', 1);
+    createNavButton('prev', '&#10094;', -1);
+    createNavButton('next', '&#10095;', 1);
 
-        lightbox.onclick = closeLightbox;
-    }
-    lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage;
+    lightbox.onclick = closeLightbox;
 }
 
-// Helper function to create navigation buttons for the lightbox
+// Helper function to create navigation buttons
 function createNavButton(id, content, direction) {
     const btn = document.createElement('span');
     btn.id = id;
@@ -144,13 +143,11 @@ function createNavButton(id, content, direction) {
         navigate(direction);
     };
     lightbox.appendChild(btn);
-    return btn;
 }
 
-// Update lightbox content with the current image
-function updateLightbox() {
-    const selectedImage = galleryContainer.querySelectorAll('.photo')[currentIndex];
-    lightboxImg.style.backgroundImage = selectedImage.style.backgroundImage;
+// Update lightbox with new image
+function updateLightbox(imageUrl) {
+    lightboxImg.style.backgroundImage = imageUrl;
 }
 
 // Close lightbox
@@ -158,13 +155,14 @@ function closeLightbox() {
     if (lightbox) lightbox.style.display = 'none';
 }
 
-// Navigate through images in the lightbox
+// Navigate through lightbox images
 function navigate(direction) {
     currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
-    updateLightbox();
+    const selectedImage = galleryContainer.querySelectorAll('.photo')[currentIndex];
+    updateLightbox(selectedImage.style.backgroundImage);
 }
 
-// Go back to the folder view
+// Return to folder view
 function goBack() {
     showFolders();
 }
