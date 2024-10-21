@@ -102,24 +102,38 @@ async function showFolders() {
     backButton.style.display = 'none';
 }
 
-// Display photos inside a folder
 async function showPhotos(folderPath) {
     clearGallery();
     currentFolder = folderPath;
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
-    // Filter the files in the current folder
-    const files = tree.filter(item => item.type === 'blob' && item.path.startsWith(folderPath) && item.path.endsWith('.jxl'));
+    // Filter the contents of the current folder (both folders and files)
+    const folderContents = tree.filter(item => item.path.startsWith(folderPath) && item.path !== folderPath);
 
-    currentImages = files.map(file => file.path);
-    currentImages.forEach((imagePath, index) => {
-        const photoDiv = createDivElement(
-            'photo',
-            `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imagePath}')`,
-            () => openLightbox(index)
-        );
-        galleryContainer.appendChild(photoDiv);
+    folderContents.forEach(item => {
+        // Handle subfolders
+        if (item.type === 'tree') {
+            const folderName = item.path.replace(`${folderPath}/`, ''); // Extract folder name
+            const folderDiv = createDivElement(
+                'folder',
+                `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl')`,
+                () => showPhotos(item.path), // Clicking opens the folder
+                folderName.split('/').pop() // Show only the last part of the path as the folder name
+            );
+            galleryContainer.appendChild(folderDiv);
+        }
+
+        // Handle images
+        else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
+            const photoDiv = createDivElement(
+                'photo',
+                `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`,
+                () => openLightbox(currentImages.indexOf(item.path)) // Clicking opens the image in lightbox
+            );
+            galleryContainer.appendChild(photoDiv);
+            currentImages.push(item.path); // Add the image to the list for lightbox navigation
+        }
     });
 
     backButton.style.display = 'block';
