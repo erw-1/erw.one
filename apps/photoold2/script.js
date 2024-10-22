@@ -135,7 +135,7 @@ async function showTopLevelFolders() {
     const folders = getFilteredItems(tree, basePath, 'tree');
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const imageUrl = getPreviewImageUrl(folder.path);
+        const imageUrl = getRandomImageUrl(folder.path);
         const folderDiv = createDivElement({
             className: 'folder',
             imageUrl,
@@ -209,15 +209,21 @@ function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
-// Get preview image URL
-function getPreviewImageUrl(path) {
-    return `${getGitHubRawUrl(path)}/preview.jxl`;
+// Get a random image URL from a folder
+function getRandomImageUrl(folderPath) {
+    const tree = cachedTree.filter(item => item.path.startsWith(folderPath) && item.path.endsWith('.jxl'));
+    if (tree.length > 0) {
+        const randomIndex = Math.floor(Math.random() * tree.length);
+        return getGitHubRawUrl(tree[randomIndex].path);
+    } else {
+        return 'path/to/placeholder-image.png'; // Fallback if no images are found
+    }
 }
 
 // Render gallery item (folder or photo)
 function renderGalleryItem({ type, path, name, onClick }) {
     const className = type === 'folder' ? 'folder' : 'photo';
-    const imageUrl = type === 'folder' ? getPreviewImageUrl(path) : getGitHubRawUrl(path);
+    const imageUrl = type === 'folder' ? getRandomImageUrl(path) : getGitHubRawUrl(path);
     const div = createDivElement({
         className,
         imageUrl,
