@@ -10,8 +10,7 @@ const errorMessage = document.getElementById('error-message');
 let currentFolder = '';
 let currentIndex = 0;
 let currentImages = [];
-let lightbox, lightboxImg, prevBtn, nextBtn;
-
+let lightbox, lightboxImg;
 let cachedTree = null; // Cached tree structure to prevent multiple API calls
 
 // Fetch the recursive file tree from GitHub and handle errors
@@ -28,7 +27,7 @@ async function fetchGitHubTree() {
         cachedTree = data.tree; // Cache the tree for future use
         return cachedTree;
     } catch (error) {
-        showError('Rate limit exceeded or API error');
+        showError(`Error fetching data: ${error.message}`);
         return null;
     }
 }
@@ -41,27 +40,17 @@ function createBreadcrumbs(folderPath) {
     const homeLink = document.createElement('a');
     homeLink.href = '#';
     homeLink.textContent = 'Home';
-    homeLink.onclick = (event) => {
-        event.preventDefault();
-        window.location.hash = ''; // Clear the hash to go to the home view
-        showTopLevelFolders();
-    };
     breadcrumbContainer.appendChild(homeLink);
 
     const parts = folderPath.replace(basePath, '').split('/').filter(Boolean);
     let accumulatedPath = '';
 
     parts.forEach((part, index) => {
-        accumulatedPath += part;
+        accumulatedPath += (accumulatedPath ? '/' : '') + part;
 
         const breadcrumbLink = document.createElement('a');
-        breadcrumbLink.href = `#${accumulatedPath.replace(/\//g, '#')}`; // Use fragment for navigation
+        breadcrumbLink.href = `#${encodeURIComponent(accumulatedPath)}`;
         breadcrumbLink.textContent = part;
-        breadcrumbLink.onclick = (event) => {
-            event.preventDefault();
-            window.location.hash = breadcrumbLink.href.split('#')[1]; // Update URL hash
-            navigateToHash(); // Navigate to the folder
-        };
 
         breadcrumbContainer.appendChild(breadcrumbLink);
 
@@ -72,8 +61,6 @@ function createBreadcrumbs(folderPath) {
             separator.className = 'separator';
             breadcrumbContainer.appendChild(separator);
         }
-
-        accumulatedPath += '/';
     });
 }
 
@@ -83,14 +70,21 @@ function showError(message) {
     errorMessage.style.display = 'block';
 }
 
-// Create a div for either folders or images, with a background and an event handler
-function createDivElement(className, backgroundImage, onClick, titleText = null) {
+// Create a gallery item (folder or image)
+function createGalleryItem(className, imageUrl, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
-    div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
 
-    // Add title text (for folders or images)
+    // Since we're dealing with .jxl images, we'll use a canvas to display them after decoding
+    const canvas = document.createElement('canvas');
+    canvas.className = 'gallery-image';
+    div.appendChild(canvas);
+
+    // Decode the .jxl image using the WASM module
+    decodeJXL(imageUrl, canvas);
+
+    // Add title text (for folders)
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
@@ -98,29 +92,24 @@ function createDivElement(className, backgroundImage, onClick, titleText = null)
         div.appendChild(titleDiv);
     }
 
-    observeBackgroundImageChange(div);
     return div;
 }
 
-// Adjust div size based on background image's aspect ratio
-function observeBackgroundImageChange(targetElement) {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                const bgImage = targetElement.style.backgroundImage;
-                if (bgImage && bgImage.startsWith('url("blob:')) {
-                    const img = new Image();
-                    img.src = bgImage.slice(5, -2);
-                    img.onload = () => {
-                        const aspectRatio = img.naturalWidth / img.naturalHeight;
-                        targetElement.style.width = `${200 * aspectRatio}px`;
-                        targetElement.style.height = 'auto';
-                    };
-                }
-            }
+// Decode .jxl images and draw them on a canvas
+function decodeJXL(imageUrl, canvas) {
+    // Assume `decodeJXLImage` is a function provided by your WASM module
+    fetch(imageUrl)
+        .then(response => response.arrayBuffer())
+        .then(buffer => decodeJXLImage(buffer)) // This function should return an ImageData object
+        .then(imageData => {
+            const ctx = canvas.getContext('2d');
+            canvas.width = imageData.width;
+            canvas.height = imageData.height;
+            ctx.putImageData(imageData, 0, 0);
+        })
+        .catch(error => {
+            console.error('Error decoding JXL image:', error);
         });
-    });
-    observer.observe(targetElement, { attributes: true });
 }
 
 // Show top-level folders when the page loads or root directory is accessed
@@ -129,16 +118,20 @@ async function showTopLevelFolders() {
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
-    // Filter to show only top-level folders within the basePath
-    const topLevelFolders = tree.filter(item => item.type === 'tree' && item.path.startsWith(basePath) && item.path.split('/').length === 4);
+    const topLevelFolders = tree.filter(item =>
+        item.type === 'tree' &&
+        item.path.startsWith(basePath) &&
+        item.path.split('/').length === 4
+    );
 
     topLevelFolders.forEach(folder => {
-        const folderName = folder.path.replace(basePath, ''); // Extract the folder name
-        const folderDiv = createDivElement(
+        const folderName = folder.path.replace(basePath, '');
+        const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl`;
+        const folderDiv = createGalleryItem(
             'folder',
-            `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`,
-            () => showFolderContents(folder.path), // Clicking navigates into the folder
-            folderName // Show folder name as title
+            imageUrl,
+            () => showFolderContents(folder.path),
+            folderName
         );
         galleryContainer.appendChild(folderDiv);
     });
@@ -154,34 +147,32 @@ async function showFolderContents(folderPath) {
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
-    // Create breadcrumbs for the current folder path
     createBreadcrumbs(folderPath);
 
-    // Filter contents of the current folder (both subfolders and images)
     const folderContents = tree.filter(item => {
         const relativePath = item.path.replace(`${folderPath}/`, '');
-        return item.path.startsWith(folderPath) && relativePath.indexOf('/') === -1;
+        return item.path.startsWith(folderPath) && !relativePath.includes('/');
     });
 
     folderContents.forEach(item => {
         if (item.type === 'tree') {
-            // Handle subfolders
-            const folderName = item.path.replace(`${folderPath}/`, ''); // Get the folder name
-            const folderDiv = createDivElement(
+            const folderName = item.path.replace(`${folderPath}/`, '');
+            const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl`;
+            const folderDiv = createGalleryItem(
                 'folder',
-                `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl')`,
-                () => showFolderContents(item.path), // Clicking navigates into the folder
-                folderName // Display the folder name
+                imageUrl,
+                () => showFolderContents(item.path),
+                folderName
             );
             galleryContainer.appendChild(folderDiv);
         } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
-            // Handle images
-            currentImages.push(item.path); // Add the image to the list for lightbox navigation
-            const imageIndex = currentImages.length - 1; // Get the index of this image
-            const photoDiv = createDivElement(
+            currentImages.push(item.path);
+            const imageIndex = currentImages.length - 1;
+            const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}`;
+            const photoDiv = createGalleryItem(
                 'photo',
-                `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`,
-                () => openLightbox(imageIndex) // Use the correct image index for the lightbox
+                imageUrl,
+                () => openLightbox(imageIndex)
             );
             galleryContainer.appendChild(photoDiv);
         }
@@ -204,34 +195,34 @@ function openLightbox(index) {
 
 // Create the new lightbox
 function createNewLightbox() {
-    // Remove existing lightbox if it exists to ensure fresh start
-    if (lightbox) lightbox.remove();
+    if (!lightbox) {
+        lightbox = document.createElement('div');
+        lightbox.id = 'lightbox';
+        lightbox.className = 'lightbox';
+        document.body.appendChild(lightbox);
 
-    lightbox = document.createElement('div');
-    lightbox.id = 'lightbox';
-    lightbox.className = 'lightbox';
-    document.body.appendChild(lightbox);
+        // Since we're dealing with .jxl images, we'll use a canvas
+        lightboxImg = document.createElement('canvas');
+        lightboxImg.id = 'lightbox-img';
+        lightboxImg.className = 'lightbox-img';
+        lightbox.appendChild(lightboxImg);
 
-    lightboxImg = document.createElement('img'); // Use img tag for better control over images
-    lightboxImg.id = 'lightbox-img';
-    lightboxImg.className = 'lightbox-img';
-    lightbox.appendChild(lightboxImg);
+        // Create Previous and Next navigation buttons
+        createNavButton('prev', '&#10094;', -1);
+        createNavButton('next', '&#10095;', 1);
 
-    // Create Previous and Next navigation buttons
-    createNavButton('prev', '&#10094;', -1);
-    createNavButton('next', '&#10095;', 1);
-
-    // Close lightbox on click outside of image
-    lightbox.onclick = (e) => {
-        if (e.target === lightbox) closeLightbox(); // Close only when clicking outside the image
-    };
+        // Close lightbox on click outside of image
+        lightbox.addEventListener('click', (e) => {
+            if (e.target === lightbox) closeLightbox();
+        });
+    }
 }
 
 // Load image into the lightbox based on the current index
 function loadImage(index) {
     const selectedImage = currentImages[index];
     const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
-    lightboxImg.src = imageUrl;
+    decodeJXL(imageUrl, lightboxImg);
 }
 
 // Create navigation buttons for the lightbox
@@ -249,8 +240,8 @@ function createNavButton(id, content, direction) {
 
 // Navigate between images in the lightbox
 function navigate(direction) {
-    currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length; // Calculate the new index
-    loadImage(currentIndex); // Load the new image
+    currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
+    loadImage(currentIndex);
 }
 
 // Close the lightbox
@@ -258,18 +249,17 @@ function closeLightbox() {
     lightbox.style.display = 'none';
 }
 
-// Handle fragment-based navigation (e.g., #nature#insects)
+// Handle fragment-based navigation (e.g., #nature/insects)
 function navigateToHash() {
-    const hash = window.location.hash.slice(1); // Remove the leading '#'
+    const hash = decodeURIComponent(window.location.hash.slice(1));
     if (hash) {
-        const folderPath = `${basePath}${hash.replace(/#/g, '/')}/`; // Convert hash to folder path
+        const folderPath = `${basePath}${hash}/`;
         showFolderContents(folderPath);
     } else {
-        showTopLevelFolders(); // If no hash, show the top level
+        showTopLevelFolders();
     }
 }
 
 // Initialize page with fragment navigation
 window.addEventListener('hashchange', navigateToHash); // Respond to hash changes
 navigateToHash(); // On initial page load, navigate based on hash
-
