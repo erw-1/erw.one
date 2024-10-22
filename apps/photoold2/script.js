@@ -203,8 +203,8 @@ async function showFolderContents(folderPath) {
 // Get filtered items from the tree
 function getFilteredItems(tree, path, type) {
     return tree.filter((treeItem) => {
-        const relativePath = treeItem.path.replace(`${path}`, '');
-        const isDirectChild = relativePath.indexOf('/') === -1;
+        const relativePath = treeItem.path.substring(path.length);
+        const isDirectChild = relativePath.indexOf('/') === -1 || relativePath === '';
         return (
             treeItem.type === type &&
             treeItem.path.startsWith(path) &&
@@ -216,10 +216,10 @@ function getFilteredItems(tree, path, type) {
 // Get contents of a folder
 function getFolderContents(tree, folderPath) {
     return tree.filter((treeItem) => {
-        const relativePath = treeItem.path.replace(`${folderPath}/`, '');
+        const relativePath = treeItem.path.substring(folderPath.length + 1);
         return (
-            treeItem.path.startsWith(folderPath) &&
-            relativePath.indexOf('/') === -1
+            treeItem.path.startsWith(folderPath + '/') &&
+            !relativePath.includes('/')
         );
     });
 }
@@ -241,11 +241,12 @@ async function getFirstThreeImages(folderPath) {
 
     const images = tree
         .filter((treeItem) => {
+            const relativePath = treeItem.path.substring(folderPath.length + 1);
             return (
-                treeItem.path.startsWith(folderPath) &&
+                treeItem.path.startsWith(folderPath + '/') &&
                 treeItem.type === 'blob' &&
                 treeItem.path.endsWith('.jxl') &&
-                treeItem.path.replace(`${folderPath}/`, '').indexOf('/') === -1
+                !relativePath.includes('/')
             );
         })
         .slice(0, 3)
