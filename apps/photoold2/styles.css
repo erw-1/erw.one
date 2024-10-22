@@ -25,12 +25,14 @@ body {
 .photo {
     border-radius: 6px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    height: 200px !important;
+    width: 200px;
+    height: 200px;
     margin: 6px;
     cursor: pointer;
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    transition: transform 0.3s ease;
 }
 
 .photo:hover {
@@ -43,91 +45,78 @@ body {
     width: 150px;
     margin: 10px;
     cursor: pointer;
+    transition: transform 0.3s ease;
 }
 
-.folder-icon {
+.folder:hover {
+    transform: scale(1.03);
+}
+
+.folder-shape {
     position: relative;
     width: 100%;
     height: 100px;
-    overflow: hidden;
-}
-
-.folder-top {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 30px;
     background-color: #f0c36d; /* Folder color */
-    border-radius: 5px 5px 0 0;
-    transform-origin: top;
-    transition: transform 0.3s ease;
-    z-index: 2;
-}
-
-.folder-bottom {
-    position: absolute;
-    top: 20px;
-    left: 0;
-    width: 100%;
-    height: 80px;
-    background-color: #f0c36d;
-    border-radius: 0 0 5px 5px;
-    z-index: 1;
-}
-
-.folder-images {
-    position: absolute;
-    top: 25px;
-    left: 5px;
-    width: calc(100% - 10px);
-    height: calc(100% - 30px);
+    border-radius: 5px;
     overflow: hidden;
-    z-index: 0;
 }
 
-.folder-images img {
+.folder-shape::before {
+    content: '';
     position: absolute;
-    width: 100%;
-    height: auto;
+    top: -20px;
+    left: 15px;
+    width: 60%;
+    height: 40px;
+    background-color: #f0c36d;
+    border-radius: 5px 5px 0 0;
+    transform: rotate(-5deg);
+}
+
+.folder-image {
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     opacity: 0;
     transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
-.folder-images .image-0 {
-    top: 0;
-    left: 0;
+.folder-image.image-0 {
+    top: 60%;
+    left: 10%;
+    transform: translate(-10%, -60%);
 }
 
-.folder-images .image-1 {
-    top: 10px;
-    left: 10px;
+.folder-image.image-1 {
+    top: 50%;
+    left: 20%;
+    transform: translate(-20%, -50%);
 }
 
-.folder-images .image-2 {
-    top: 20px;
-    left: 20px;
+.folder-image.image-2 {
+    top: 40%;
+    left: 30%;
+    transform: translate(-30%, -40%);
 }
 
 /* Hover Effects */
-.folder:hover .folder-top {
-    transform: rotateX(20deg);
-}
-
-.folder:hover .folder-images img {
+.folder:hover .folder-image {
     opacity: 1;
 }
 
-.folder:hover .folder-images .image-0 {
-    transform: translate(0, -5px);
+.folder:hover .folder-image.image-0 {
+    transform: translate(-10%, -70%);
 }
 
-.folder:hover .folder-images .image-1 {
-    transform: translate(0, -10px);
+.folder:hover .folder-image.image-1 {
+    transform: translate(-20%, -60%);
 }
 
-.folder:hover .folder-images .image-2 {
-    transform: translate(0, -15px);
+.folder:hover .folder-image.image-2 {
+    transform: translate(-30%, -50%);
 }
 
 /* Title Styles */
@@ -214,10 +203,6 @@ body {
 }
 
 /* Miscellaneous Styles */
-.folder:hover, .photo:hover {
-    transform: scale(1.03);
-}
-
 .title {
     position: relative;
     bottom: 0;
