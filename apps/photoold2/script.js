@@ -11,50 +11,74 @@ let currentFolder = '';
 let currentIndex = 0;
 let currentImages = [];
 let lightbox, lightboxImg;
+
 let cachedTree = null; // Cached tree structure to prevent multiple API calls
 
 // Fetch the recursive file tree from GitHub and handle errors
 async function fetchGitHubTree() {
     if (cachedTree) {
-        return cachedTree; // Use cached tree if available
+        return cachedTree;
     }
 
     const treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
     try {
-        const response = await fetch(treeUrl);
+        const response = await fetch(treeUrl, {
+            headers: { 'Accept': 'application/vnd.github.v3+json' },
+        });
         if (!response.ok) throw new Error('Failed to fetch recursive tree');
         const data = await response.json();
-        cachedTree = data.tree; // Cache the tree for future use
+        cachedTree = data.tree;
         return cachedTree;
     } catch (error) {
-        showError(`Error fetching data: ${error.message}`);
+        showError('Rate limit exceeded or API error');
         return null;
     }
 }
 
+// Display error messages
+function showError(message) {
+    errorMessage.textContent = message;
+    errorMessage.style.display = 'block';
+}
+
+// Clear gallery content and hide errors
+function clearGallery() {
+    galleryContainer.innerHTML = '';
+    errorMessage.style.display = 'none';
+}
+
 // Create a breadcrumb navigation dynamically
 function createBreadcrumbs(folderPath) {
-    breadcrumbContainer.innerHTML = ''; // Clear previous breadcrumbs
+    breadcrumbContainer.innerHTML = '';
 
-    // Add a "Home" link to go back to the top level
     const homeLink = document.createElement('a');
     homeLink.href = '#';
     homeLink.textContent = 'Home';
+    homeLink.onclick = (event) => {
+        event.preventDefault();
+        window.location.hash = '';
+        showTopLevelFolders();
+    };
     breadcrumbContainer.appendChild(homeLink);
 
     const parts = folderPath.replace(basePath, '').split('/').filter(Boolean);
-    let accumulatedPath = '';
+    let accumulatedParts = [];
 
     parts.forEach((part, index) => {
-        accumulatedPath += (accumulatedPath ? '/' : '') + part;
+        accumulatedParts.push(part);
+        const accumulatedPath = accumulatedParts.join('/');
 
         const breadcrumbLink = document.createElement('a');
-        breadcrumbLink.href = `#${encodeURIComponent(accumulatedPath)}`;
+        breadcrumbLink.href = `#${accumulatedPath.replace(/\//g, '#')}`;
         breadcrumbLink.textContent = part;
+        breadcrumbLink.onclick = (event) => {
+            event.preventDefault();
+            window.location.hash = breadcrumbLink.href.split('#')[1];
+            navigateToHash();
+        };
 
         breadcrumbContainer.appendChild(breadcrumbLink);
 
-        // Add separator (if not the last item)
         if (index < parts.length - 1) {
             const separator = document.createElement('span');
             separator.textContent = '/';
@@ -64,27 +88,27 @@ function createBreadcrumbs(folderPath) {
     });
 }
 
-// Display error messages
-function showError(message) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-}
-
-// Create a gallery item (folder or image)
-function createGalleryItem(className, imageUrl, onClick, titleText = null) {
+// Create a div for either folders or images, with a background and an event handler
+function createDivElement(className, imageUrl, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
     div.onclick = onClick;
 
-    // Since we're dealing with .jxl images, we'll use a canvas to display them after decoding
-    const canvas = document.createElement('canvas');
-    canvas.className = 'gallery-image';
-    div.appendChild(canvas);
+    // Load the image to get the aspect ratio
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => {
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
+        div.style.width = `${200 * aspectRatio}px`;
+        div.style.height = 'auto';
+        div.style.backgroundImage = `url('${imageUrl}')`;
+    };
+    img.onerror = () => {
+        // Handle image load error if necessary
+        div.style.backgroundColor = '#ccc'; // Placeholder color
+    };
 
-    // Decode the .jxl image using the WASM module
-    decodeJXL(imageUrl, canvas);
-
-    // Add title text (for folders)
+    // Add title text (for folders or images)
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
@@ -95,39 +119,24 @@ function createGalleryItem(className, imageUrl, onClick, titleText = null) {
     return div;
 }
 
-// Decode .jxl images and draw them on a canvas
-function decodeJXL(imageUrl, canvas) {
-    // Assume `decodeJXLImage` is a function provided by your WASM module
-    fetch(imageUrl)
-        .then(response => response.arrayBuffer())
-        .then(buffer => decodeJXLImage(buffer)) // This function should return an ImageData object
-        .then(imageData => {
-            const ctx = canvas.getContext('2d');
-            canvas.width = imageData.width;
-            canvas.height = imageData.height;
-            ctx.putImageData(imageData, 0, 0);
-        })
-        .catch(error => {
-            console.error('Error decoding JXL image:', error);
-        });
-}
-
 // Show top-level folders when the page loads or root directory is accessed
 async function showTopLevelFolders() {
     clearGallery();
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
-    const topLevelFolders = tree.filter(item =>
-        item.type === 'tree' &&
-        item.path.startsWith(basePath) &&
-        item.path.split('/').length === 4
+    const topLevelFolders = tree.filter(
+        (item) =>
+            item.type === 'tree' &&
+            item.path.startsWith(basePath) &&
+            item.path.split('/').length === basePath.split('/').length + 1
     );
 
-    topLevelFolders.forEach(folder => {
+    topLevelFolders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
         const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl`;
-        const folderDiv = createGalleryItem(
+
+        const folderDiv = createDivElement(
             'folder',
             imageUrl,
             () => showFolderContents(folder.path),
@@ -136,29 +145,33 @@ async function showTopLevelFolders() {
         galleryContainer.appendChild(folderDiv);
     });
 
-    createBreadcrumbs(basePath); // Initialize with "Home" breadcrumb for the base path
+    createBreadcrumbs(basePath);
 }
 
 // Show folders and images within a specific directory
 async function showFolderContents(folderPath) {
     clearGallery();
     currentFolder = folderPath;
-    currentImages = []; // Reset currentImages for the new folder
+    currentImages = [];
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
     createBreadcrumbs(folderPath);
 
-    const folderContents = tree.filter(item => {
+    const folderContents = tree.filter((item) => {
         const relativePath = item.path.replace(`${folderPath}/`, '');
-        return item.path.startsWith(folderPath) && !relativePath.includes('/');
+        return (
+            item.path.startsWith(folderPath) &&
+            relativePath.indexOf('/') === -1
+        );
     });
 
-    folderContents.forEach(item => {
+    folderContents.forEach((item) => {
         if (item.type === 'tree') {
             const folderName = item.path.replace(`${folderPath}/`, '');
             const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl`;
-            const folderDiv = createGalleryItem(
+
+            const folderDiv = createDivElement(
                 'folder',
                 imageUrl,
                 () => showFolderContents(item.path),
@@ -169,7 +182,8 @@ async function showFolderContents(folderPath) {
             currentImages.push(item.path);
             const imageIndex = currentImages.length - 1;
             const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}`;
-            const photoDiv = createGalleryItem(
+
+            const photoDiv = createDivElement(
                 'photo',
                 imageUrl,
                 () => openLightbox(imageIndex)
@@ -177,12 +191,6 @@ async function showFolderContents(folderPath) {
             galleryContainer.appendChild(photoDiv);
         }
     });
-}
-
-// Clear gallery content and hide errors
-function clearGallery() {
-    galleryContainer.innerHTML = '';
-    errorMessage.style.display = 'none';
 }
 
 // Open the lightbox for a specific image
@@ -201,20 +209,17 @@ function createNewLightbox() {
         lightbox.className = 'lightbox';
         document.body.appendChild(lightbox);
 
-        // Since we're dealing with .jxl images, we'll use a canvas
-        lightboxImg = document.createElement('canvas');
+        lightboxImg = document.createElement('img');
         lightboxImg.id = 'lightbox-img';
         lightboxImg.className = 'lightbox-img';
         lightbox.appendChild(lightboxImg);
 
-        // Create Previous and Next navigation buttons
         createNavButton('prev', '&#10094;', -1);
         createNavButton('next', '&#10095;', 1);
 
-        // Close lightbox on click outside of image
-        lightbox.addEventListener('click', (e) => {
+        lightbox.onclick = (e) => {
             if (e.target === lightbox) closeLightbox();
-        });
+        };
     }
 }
 
@@ -222,7 +227,7 @@ function createNewLightbox() {
 function loadImage(index) {
     const selectedImage = currentImages[index];
     const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
-    decodeJXL(imageUrl, lightboxImg);
+    lightboxImg.src = imageUrl;
 }
 
 // Create navigation buttons for the lightbox
@@ -232,7 +237,7 @@ function createNavButton(id, content, direction) {
     btn.className = 'nav';
     btn.innerHTML = content;
     btn.onclick = (e) => {
-        e.stopPropagation(); // Prevent closing the lightbox when clicking the nav button
+        e.stopPropagation();
         navigate(direction);
     };
     lightbox.appendChild(btn);
@@ -249,11 +254,11 @@ function closeLightbox() {
     lightbox.style.display = 'none';
 }
 
-// Handle fragment-based navigation (e.g., #nature/insects)
+// Handle fragment-based navigation (e.g., #nature#insects)
 function navigateToHash() {
     const hash = decodeURIComponent(window.location.hash.slice(1));
     if (hash) {
-        const folderPath = `${basePath}${hash}/`;
+        const folderPath = `${basePath}${hash.replace(/#/g, '/')}/`;
         showFolderContents(folderPath);
     } else {
         showTopLevelFolders();
@@ -261,5 +266,5 @@ function navigateToHash() {
 }
 
 // Initialize page with fragment navigation
-window.addEventListener('hashchange', navigateToHash); // Respond to hash changes
-navigateToHash(); // On initial page load, navigate based on hash
+window.addEventListener('hashchange', navigateToHash);
+navigateToHash();
