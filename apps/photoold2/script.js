@@ -90,21 +90,44 @@ function createLink(text, href, onClick) {
     return link;
 }
 
-// Show top-level folders when the page loads or root directory is accessed
+// Create a div for folder previews with 3 images
+function createFolderPreview(folderPath, folderName, images) {
+    const folderDiv = document.createElement('div');
+    folderDiv.className = 'folder';
+    
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'title';
+    titleDiv.textContent = folderName;
+    folderDiv.appendChild(titleDiv);
+
+    // Create 3 paper divs for folder image previews
+    for (let i = 0; i < 3; i++) {
+        const paperDiv = document.createElement('div');
+        paperDiv.className = `paper ${i === 0 ? 'one' : i === 1 ? 'two' : 'three'}`;
+        if (images[i]) {
+            const imageUrl = getGitHubRawUrl(images[i]);
+            paperDiv.style.backgroundImage = `url('${imageUrl}')`;
+        }
+        folderDiv.appendChild(paperDiv);
+    }
+
+    folderDiv.onclick = () => showFolderContents(folderPath); // Attach folder click event
+    return folderDiv;
+}
+
+// Show top-level folders with 3 image previews for each folder
 async function showTopLevelFolders() {
     clearGallery();
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
     const folders = getFilteredItems(tree, basePath, 'tree');
-    for (const folder of folders) {
+    folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        await renderFolderItem({
-            path: folder.path,
-            name: folderName,
-            onClick: () => showFolderContents(folder.path),
-        });
-    }
+        const folderImages = getFolderImages(tree, folder.path, 3); // Get 3 images from the folder
+        const folderDiv = createFolderPreview(folder.path, folderName, folderImages);
+        galleryContainer.appendChild(folderDiv);
+    });
 
     createBreadcrumbs(basePath);
 }
@@ -120,10 +143,11 @@ async function showFolderContents(folderPath) {
     createBreadcrumbs(folderPath);
 
     const items = getFolderContents(tree, folderPath);
-    for (const treeItem of items) {
+    items.forEach((treeItem) => {
         const relativeName = treeItem.path.replace(`${folderPath}/`, '');
         if (treeItem.type === 'tree') {
-            await renderFolderItem({
+            renderGalleryItem({
+                type: 'folder',
                 path: treeItem.path,
                 name: relativeName,
                 onClick: () => showFolderContents(treeItem.path),
@@ -131,12 +155,13 @@ async function showFolderContents(folderPath) {
         } else if (treeItem.type === 'blob' && treeItem.path.endsWith('.jxl')) {
             currentImages.push(treeItem.path);
             const imageIndex = currentImages.length - 1;
-            renderPhotoItem({
+            renderGalleryItem({
+                type: 'photo',
                 path: treeItem.path,
                 onClick: () => openLightbox(imageIndex),
             });
         }
-    }
+    });
 }
 
 // Get filtered items from the tree
@@ -163,98 +188,29 @@ function getFolderContents(tree, folderPath) {
     });
 }
 
+// Get a specific number of image paths from a folder
+function getFolderImages(tree, folderPath, count) {
+    const images = tree.filter((item) => {
+        return item.type === 'blob' && item.path.startsWith(folderPath) && item.path.endsWith('.jxl');
+    });
+    return images.slice(0, count).map(image => image.path); // Return the first 'count' number of images
+}
+
 // Get GitHub raw URL
 function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
-// Observe background image changes to adjust element size
-function observeBackgroundImageChange(targetElement) {
-    const observer = new MutationObserver(() => {
-        const bgImage = targetElement.style.backgroundImage;
-        if (bgImage && bgImage.startsWith('url("')) {
-            const imageUrl = bgImage.slice(5, -2);
-            const img = new Image();
-            img.src = imageUrl;
-            img.onload = () => {
-                const aspectRatio = img.naturalWidth / img.naturalHeight;
-                targetElement.style.width = `${200 * aspectRatio}px`;
-                targetElement.style.height = 'auto';
-            };
-        }
+// Render gallery item (folder or photo)
+function renderGalleryItem({ type, path, name, onClick }) {
+    const className = type === 'folder' ? 'folder' : 'photo';
+    const imageUrl = type === 'folder' ? getPreviewImageUrl(path) : getGitHubRawUrl(path);
+    const div = createDivElement({
+        className,
+        imageUrl,
+        onClick,
+        titleText: type === 'folder' ? name : null,
     });
-    observer.observe(targetElement, { attributes: true });
-}
-
-// Render folder item with sampled images
-async function renderFolderItem({ path, name, onClick }) {
-    const folderDiv = document.createElement('div');
-    folderDiv.className = 'folder';
-    folderDiv.onclick = onClick;
-
-    const titleDiv = document.createElement('div');
-    titleDiv.className = 'title';
-    titleDiv.textContent = name;
-    folderDiv.appendChild(titleDiv);
-
-    // Create paper elements
-    const paperClasses = ['one', 'two', 'three'];
-    const paperDivs = paperClasses.map((cls) => {
-        const paperDiv = document.createElement('div');
-        paperDiv.className = `paper ${cls}`;
-        folderDiv.appendChild(paperDiv);
-        return paperDiv;
-    });
-
-    // Sample up to 3 images from the folder
-    const tree = await fetchGitHubTree();
-    const images = tree.filter(
-        (item) =>
-            item.type === 'blob' &&
-            item.path.startsWith(`${path}/`) &&
-            item.path.endsWith('.jxl') &&
-            item.path.replace(`${path}/`, '').indexOf('/') === -1
-    );
-    const sampledImages = images.slice(0, 3);
-    let totalAspectRatio = 0;
-
-    for (let i = 0; i < sampledImages.length; i++) {
-        const imageItem = sampledImages[i];
-        const imageUrl = getGitHubRawUrl(imageItem.path);
-        paperDivs[i].style.backgroundImage = `url('${imageUrl}')`;
-
-        // Calculate aspect ratio for dynamic width
-        const img = new Image();
-        img.src = imageUrl;
-        await new Promise((resolve) => {
-            img.onload = () => {
-                const aspectRatio = img.naturalWidth / img.naturalHeight;
-                totalAspectRatio += aspectRatio;
-                if (i === sampledImages.length - 1) {
-                    // Set folder width based on average aspect ratio
-                    const averageAspectRatio = totalAspectRatio / sampledImages.length;
-                    folderDiv.style.width = `${200 * averageAspectRatio}px`;
-                    folderDiv.style.height = 'auto';
-                }
-                resolve();
-            };
-        });
-    }
-
-    observeBackgroundImageChange(folderDiv);
-    galleryContainer.appendChild(folderDiv);
-}
-
-// Render photo item
-function renderPhotoItem({ path, onClick }) {
-    const imageUrl = getGitHubRawUrl(path);
-    const div = document.createElement('div');
-    div.className = 'photo';
-    div.style.backgroundImage = `url('${imageUrl}')`;
-    div.onclick = onClick;
-
-    // Adjust dynamic width based on image aspect ratio
-    observeBackgroundImageChange(div);
     galleryContainer.appendChild(div);
 }
 
