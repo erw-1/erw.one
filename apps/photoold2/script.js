@@ -63,6 +63,13 @@ function createBreadcrumbs(folderPath) {
     const parts = folderPath.replace(basePath, '').split('/').filter(Boolean);
     let accumulatedParts = [];
 
+    if (parts.length > 0) {
+        const separator = document.createElement('span');
+        separator.textContent = '/';
+        separator.className = 'separator';
+        breadcrumbContainer.appendChild(separator);
+    }
+
     parts.forEach((part, index) => {
         accumulatedParts.push(part);
         const accumulatedPath = `${basePath}${accumulatedParts.join('/')}`;
@@ -133,12 +140,14 @@ async function showTopLevelFolders() {
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
-    const topLevelFolders = tree.filter(
-        (item) =>
+    const topLevelFolders = tree.filter((item) => {
+        const relativePath = item.path.replace(`${basePath}`, '');
+        return (
             item.type === 'tree' &&
             item.path.startsWith(basePath) &&
-            item.path.split('/').length === basePath.split('/').length + 1
-    );
+            relativePath.indexOf('/') === -1
+        );
+    });
 
     topLevelFolders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
