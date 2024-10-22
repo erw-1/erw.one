@@ -108,30 +108,8 @@ function createDivElement(className, backgroundImage, onClick, titleText = null)
         div.appendChild(titleDiv);
     }
 
-    observeBackgroundImageChange(div);
+    // Observe background image change to adjust size if necessary
     return div;
-}
-
-// Adjust div size based on background image's aspect ratio
-function observeBackgroundImageChange(targetElement) {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                const bgImage = targetElement.style.backgroundImage;
-                if (bgImage && bgImage.startsWith('url("')) {
-                    const imageUrl = bgImage.slice(5, -2);
-                    const img = new Image();
-                    img.src = imageUrl;
-                    img.onload = () => {
-                        const aspectRatio = img.naturalWidth / img.naturalHeight;
-                        targetElement.style.width = `${200 * aspectRatio}px`;
-                        targetElement.style.height = 'auto';
-                    };
-                }
-            }
-        });
-    });
-    observer.observe(targetElement, { attributes: true });
 }
 
 // Create folder element with sampled images
@@ -140,31 +118,23 @@ function createFolderElement(folderName, images, onClick) {
     folderDiv.className = 'folder';
     folderDiv.onclick = onClick;
 
-    // Folder structure elements
-    const folderIcon = document.createElement('div');
-    folderIcon.className = 'folder-icon';
-
-    const folderTop = document.createElement('div');
-    folderTop.className = 'folder-top';
-
-    const folderBottom = document.createElement('div');
-    folderBottom.className = 'folder-bottom';
+    // Folder shape
+    const folderShape = document.createElement('div');
+    folderShape.className = 'folder-shape';
 
     // Images inside the folder
-    const imagesContainer = document.createElement('div');
-    imagesContainer.className = 'folder-images';
-
     images.forEach((imageItem, index) => {
-        const imgElement = document.createElement('img');
-        imgElement.src = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imageItem.path}`;
-        imgElement.className = `folder-image image-${index}`;
-        imagesContainer.appendChild(imgElement);
+        const imagePath = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imageItem.path}`;
+        const backgroundImage = `url('${imagePath}')`;
+        const imageDiv = createDivElement(
+            `folder-image image-${index}`,
+            backgroundImage,
+            null // No onclick
+        );
+        folderShape.appendChild(imageDiv);
     });
 
-    folderIcon.appendChild(imagesContainer);
-    folderIcon.appendChild(folderTop);
-    folderIcon.appendChild(folderBottom);
-    folderDiv.appendChild(folderIcon);
+    folderDiv.appendChild(folderShape);
 
     // Add folder name
     const titleDiv = document.createElement('div');
