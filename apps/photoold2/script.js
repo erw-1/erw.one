@@ -104,19 +104,26 @@ function createDivElement({ className, imageUrl, onClick, titleText = null }) {
         div.appendChild(titleDiv);
     }
 
-    setElementAspectRatio(div, imageUrl);
+    observeBackgroundImageChange(div);
     return div;
 }
 
 // Adjust div size based on background image's aspect ratio
-function setElementAspectRatio(element, imageUrl) {
-    const img = new Image();
-    img.src = imageUrl;
-    img.onload = () => {
-        const aspectRatio = img.naturalWidth / img.naturalHeight;
-        element.style.width = `${200 * aspectRatio}px`;
-        element.style.height = 'auto';
-    };
+function observeBackgroundImageChange(targetElement) {
+    const observer = new MutationObserver(() => {
+        const bgImage = targetElement.style.backgroundImage;
+        if (bgImage && bgImage.startsWith('url("')) {
+            const imageUrl = bgImage.slice(5, -2);
+            const img = new Image();
+            img.src = imageUrl;
+            img.onload = () => {
+                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                targetElement.style.width = `${200 * aspectRatio}px`;
+                targetElement.style.height = 'auto';
+            };
+        }
+    });
+    observer.observe(targetElement, { attributes: true });
 }
 
 // Show top-level folders when the page loads or root directory is accessed
