@@ -23,9 +23,7 @@ let touchEndX = 0;
 
 // Fetch the recursive file tree from GitHub and handle errors
 async function fetchGitHubTree() {
-    if (cachedTree) {
-        return cachedTree;
-    }
+    if (cachedTree) return cachedTree;
 
     const treeUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
     try {
@@ -58,56 +56,52 @@ function clearGallery() {
 function createBreadcrumbs(folderPath) {
     breadcrumbContainer.innerHTML = '';
 
-    const homeLink = document.createElement('a');
-    homeLink.href = '#';
-    homeLink.textContent = 'Home';
-    homeLink.onclick = (event) => {
+    const homeLink = createLink('Home', '#', (event) => {
         event.preventDefault();
         showTopLevelFolders();
-    };
+    });
     breadcrumbContainer.appendChild(homeLink);
 
     const parts = folderPath.replace(basePath, '').split('/').filter(Boolean);
     let accumulatedParts = [];
 
-    if (parts.length > 0) {
-        const separator = document.createElement('span');
-        separator.textContent = '/';
-        separator.className = 'separator';
-        breadcrumbContainer.appendChild(separator);
-    }
-
     parts.forEach((part, index) => {
         accumulatedParts.push(part);
         const accumulatedPath = `${basePath}${accumulatedParts.join('/')}`;
 
-        const breadcrumbLink = document.createElement('a');
-        breadcrumbLink.href = '#';
-        breadcrumbLink.textContent = part;
-        breadcrumbLink.onclick = (event) => {
+        breadcrumbContainer.appendChild(createSeparator());
+        const breadcrumbLink = createLink(part, '#', (event) => {
             event.preventDefault();
             showFolderContents(accumulatedPath);
-        };
-
+        });
         breadcrumbContainer.appendChild(breadcrumbLink);
-
-        if (index < parts.length - 1) {
-            const separator = document.createElement('span');
-            separator.textContent = '/';
-            separator.className = 'separator';
-            breadcrumbContainer.appendChild(separator);
-        }
     });
 }
 
+// Create a separator for breadcrumbs
+function createSeparator() {
+    const separator = document.createElement('span');
+    separator.textContent = '/';
+    separator.className = 'separator';
+    return separator;
+}
+
+// Create a link element
+function createLink(text, href, onClick) {
+    const link = document.createElement('a');
+    link.href = href;
+    link.textContent = text;
+    link.onclick = onClick;
+    return link;
+}
+
 // Create a div for either folders or images, with a background and an event handler
-function createDivElement(className, backgroundImage, onClick, titleText = null) {
+function createDivElement({ className, backgroundImage, onClick, titleText = null }) {
     const div = document.createElement('div');
     div.className = className;
     div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
 
-    // Add title text (for folders or images)
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
@@ -121,22 +115,18 @@ function createDivElement(className, backgroundImage, onClick, titleText = null)
 
 // Adjust div size based on background image's aspect ratio
 function observeBackgroundImageChange(targetElement) {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                const bgImage = targetElement.style.backgroundImage;
-                if (bgImage && bgImage.startsWith('url("')) {
-                    const imageUrl = bgImage.slice(5, -2);
-                    const img = new Image();
-                    img.src = imageUrl;
-                    img.onload = () => {
-                        const aspectRatio = img.naturalWidth / img.naturalHeight;
-                        targetElement.style.width = `${200 * aspectRatio}px`;
-                        targetElement.style.height = 'auto';
-                    };
-                }
-            }
-        });
+    const observer = new MutationObserver(() => {
+        const bgImage = targetElement.style.backgroundImage;
+        if (bgImage && bgImage.startsWith('url("')) {
+            const imageUrl = bgImage.slice(5, -2);
+            const img = new Image();
+            img.src = imageUrl;
+            img.onload = () => {
+                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                targetElement.style.width = `${200 * aspectRatio}px`;
+                targetElement.style.height = 'auto';
+            };
+        }
     });
     observer.observe(targetElement, { attributes: true });
 }
@@ -147,25 +137,16 @@ async function showTopLevelFolders() {
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
-    const topLevelFolders = tree.filter((item) => {
-        const relativePath = item.path.replace(`${basePath}`, '');
-        return (
-            item.type === 'tree' &&
-            item.path.startsWith(basePath) &&
-            relativePath.indexOf('/') === -1
-        );
-    });
-
-    topLevelFolders.forEach((folder) => {
+    const folders = getFilteredItems(tree, basePath, 'tree', false);
+    folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`;
-
-        const folderDiv = createDivElement(
-            'folder',
+        const backgroundImage = getBackgroundImage(folder.path, 'preview.jxl');
+        const folderDiv = createDivElement({
+            className: 'folder',
             backgroundImage,
-            () => showFolderContents(folder.path),
-            folderName
-        );
+            onClick: () => showFolderContents(folder.path),
+            titleText: folderName,
+        });
         galleryContainer.appendChild(folderDiv);
     });
 
@@ -182,53 +163,70 @@ async function showFolderContents(folderPath) {
 
     createBreadcrumbs(folderPath);
 
-    const folderContents = tree.filter((item) => {
+    const items = getFolderContents(tree, folderPath);
+    items.forEach((item) => {
+        const relativeName = item.path.replace(`${folderPath}/`, '');
+        if (item.type === 'tree') {
+            const backgroundImage = getBackgroundImage(item.path, 'preview.jxl');
+            const folderDiv = createDivElement({
+                className: 'folder',
+                backgroundImage,
+                onClick: () => showFolderContents(item.path),
+                titleText: relativeName,
+            });
+            galleryContainer.appendChild(folderDiv);
+        } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
+            currentImages.push(item.path);
+            const imageIndex = currentImages.length - 1;
+            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`;
+            const photoDiv = createDivElement({
+                className: 'photo',
+                backgroundImage,
+                onClick: () => openLightbox(imageIndex),
+            });
+            galleryContainer.appendChild(photoDiv);
+        }
+    });
+}
+
+// Get filtered items from the tree
+function getFilteredItems(tree, path, type, includeSubfolders) {
+    return tree.filter((item) => {
+        const relativePath = item.path.replace(`${path}`, '');
+        const isDirectChild = relativePath.indexOf('/') === -1;
+        return (
+            item.type === type &&
+            item.path.startsWith(path) &&
+            (includeSubfolders || isDirectChild)
+        );
+    });
+}
+
+// Get contents of a folder
+function getFolderContents(tree, folderPath) {
+    return tree.filter((item) => {
         const relativePath = item.path.replace(`${folderPath}/`, '');
         return (
             item.path.startsWith(folderPath) &&
             relativePath.indexOf('/') === -1
         );
     });
+}
 
-    folderContents.forEach((item) => {
-        if (item.type === 'tree') {
-            const folderName = item.path.replace(`${folderPath}/`, '');
-            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl')`;
-
-            const folderDiv = createDivElement(
-                'folder',
-                backgroundImage,
-                () => showFolderContents(item.path),
-                folderName
-            );
-            galleryContainer.appendChild(folderDiv);
-        } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
-            currentImages.push(item.path);
-            const imageIndex = currentImages.length - 1;
-            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`;
-
-            const photoDiv = createDivElement(
-                'photo',
-                backgroundImage,
-                () => openLightbox(imageIndex)
-            );
-            galleryContainer.appendChild(photoDiv);
-        }
-    });
+// Get background image URL
+function getBackgroundImage(path, imageName) {
+    return `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/${imageName}')`;
 }
 
 // Open the lightbox for a specific image
 function openLightbox(index) {
     currentIndex = index;
-    createNewLightbox();
+    createLightbox();
     loadImage(currentIndex);
     lightbox.style.display = 'flex';
 
-    // Add keyboard event listener when lightbox is open
-    keydownHandler = handleKeyDown;
-    document.addEventListener('keydown', keydownHandler);
-
-    // Add touch event listeners for swipe gestures
+    // Add event listeners
+    document.addEventListener('keydown', handleKeyDown);
     lightbox.addEventListener('touchstart', handleTouchStart, false);
     lightbox.addEventListener('touchend', handleTouchEnd, false);
 }
@@ -237,34 +235,24 @@ function openLightbox(index) {
 function closeLightbox() {
     lightbox.style.display = 'none';
 
-    // Remove keyboard event listener when lightbox is closed
-    document.removeEventListener('keydown', keydownHandler);
-
-    // Remove touch event listeners
+    // Remove event listeners
+    document.removeEventListener('keydown', handleKeyDown);
     lightbox.removeEventListener('touchstart', handleTouchStart, false);
     lightbox.removeEventListener('touchend', handleTouchEnd, false);
 }
 
 // Handle keyboard navigation
 function handleKeyDown(e) {
-    if (e.key === 'ArrowLeft') {
-        // Navigate to previous image
-        navigate(-1);
-    } else if (e.key === 'ArrowRight') {
-        // Navigate to next image
-        navigate(1);
-    } else if (e.key === 'Escape') {
-        // Close the lightbox
-        closeLightbox();
-    }
+    if (e.key === 'ArrowLeft') navigate(-1);
+    else if (e.key === 'ArrowRight') navigate(1);
+    else if (e.key === 'Escape') closeLightbox();
 }
 
-// Handle touch start
+// Handle touch events
 function handleTouchStart(e) {
     touchStartX = e.changedTouches[0].screenX;
 }
 
-// Handle touch end
 function handleTouchEnd(e) {
     touchEndX = e.changedTouches[0].screenX;
     handleSwipeGesture();
@@ -273,37 +261,31 @@ function handleTouchEnd(e) {
 // Determine swipe direction and navigate
 function handleSwipeGesture() {
     const swipeThreshold = 50; // Minimum distance for a swipe action
-
-    if (touchEndX < touchStartX - swipeThreshold) {
-        // Swipe left to navigate to the next image
-        navigate(1);
-    } else if (touchEndX > touchStartX + swipeThreshold) {
-        // Swipe right to navigate to the previous image
-        navigate(-1);
-    }
+    if (touchEndX < touchStartX - swipeThreshold) navigate(1);
+    else if (touchEndX > touchStartX + swipeThreshold) navigate(-1);
 }
 
 // Create the lightbox
-function createNewLightbox() {
-    if (!lightbox) {
-        lightbox = document.createElement('div');
-        lightbox.id = 'lightbox';
-        lightbox.className = 'lightbox';
-        document.body.appendChild(lightbox);
+function createLightbox() {
+    if (lightbox) return;
 
-        lightboxImg = document.createElement('img');
-        lightboxImg.id = 'lightbox-img';
-        lightboxImg.className = 'lightbox-img';
-        lightbox.appendChild(lightboxImg);
+    lightbox = document.createElement('div');
+    lightbox.id = 'lightbox';
+    lightbox.className = 'lightbox';
+    document.body.appendChild(lightbox);
 
-        createNavButton('prev', '&#10094;', -1);
-        createNavButton('next', '&#10095;', 1);
+    lightboxImg = document.createElement('img');
+    lightboxImg.id = 'lightbox-img';
+    lightboxImg.className = 'lightbox-img';
+    lightbox.appendChild(lightboxImg);
 
-        // Close lightbox when clicking outside the image
-        lightbox.onclick = (e) => {
-            if (e.target === lightbox) closeLightbox();
-        };
-    }
+    createNavButton('prev', '&#10094;', -1);
+    createNavButton('next', '&#10095;', 1);
+
+    // Close lightbox when clicking outside the image
+    lightbox.onclick = (e) => {
+        if (e.target === lightbox) closeLightbox();
+    };
 }
 
 // Load image into the lightbox based on the current index
