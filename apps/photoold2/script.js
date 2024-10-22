@@ -97,9 +97,6 @@ function createDivElement({ className, imageUrl, onClick, titleText = null }) {
     div.onclick = onClick;
 
     if (className === 'folder') {
-        // Hide the folder until images are loaded
-        div.style.visibility = 'hidden';
-
         // Create animated folder structure
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
@@ -126,7 +123,7 @@ function createDivElement({ className, imageUrl, onClick, titleText = null }) {
 function observeBackgroundImageChange(targetElement) {
     const observer = new MutationObserver(() => {
         const bgImage = targetElement.style.backgroundImage;
-        if (bgImage && bgImage.startsWith('url("')) {
+        if (bgImage && bgImage.startsWith('url(')) {
             const imageUrl = bgImage.slice(5, -2);
             const img = new Image();
             img.src = imageUrl;
@@ -160,7 +157,7 @@ async function showTopLevelFolders() {
 
         // Populate the folder with images
         const images = await getFirstThreeImages(folder.path);
-        await populateFolderImages(folderDiv, images);
+        populateFolderImages(folderDiv, images);
     }
 
     createBreadcrumbs(basePath);
@@ -191,7 +188,7 @@ async function showFolderContents(folderPath) {
 
             // Populate the folder with images
             const images = await getFirstThreeImages(treeItem.path);
-            await populateFolderImages(folderDiv, images);
+            populateFolderImages(folderDiv, images);
         } else if (treeItem.type === 'blob' && treeItem.path.endsWith('.jxl')) {
             currentImages.push(treeItem.path);
             const imageIndex = currentImages.length - 1;
@@ -252,36 +249,25 @@ async function getFirstThreeImages(folderPath) {
     return images;
 }
 
-async function populateFolderImages(folderDiv, imageUrls) {
+// Populate the folder with images
+function populateFolderImages(folderDiv, imageUrls) {
     const papersNodeList = folderDiv.querySelectorAll('.paper');
     const papers = Array.from(papersNodeList); // Convert NodeList to Array
 
-    const imageLoadPromises = papers.map((paper, index) => {
-        return new Promise((resolve) => {
-            if (imageUrls[index]) {
-                const url = imageUrls[index];
-                const img = new Image();
-                img.src = url;
-                img.onload = () => {
-                    paper.style.backgroundImage = `url('${url}')`;
-                    resolve();
-                };
-                img.onerror = () => {
-                    // If image fails to load, don't set a background image
-                    resolve();
-                };
-            } else {
-                // If no image, do not set background image (solid color paper)
-                resolve();
-            }
-        });
+    papers.forEach((paper, index) => {
+        if (imageUrls[index]) {
+            const url = imageUrls[index];
+            // Set background image and call observeBackgroundImageChange
+            paper.style.backgroundImage = `url('${url}')`;
+            observeBackgroundImageChange(paper);
+        } else {
+            // If no image, do not set background image (solid color paper)
+        }
     });
 
-    // Wait for all images to load
-    await Promise.all(imageLoadPromises);
-
     // Make the folder visible
-    folderDiv.style.visibility = 'visible';
+    // If you hid the folder initially, you can set visibility here
+    // folderDiv.style.visibility = 'visible';
 }
 
 // Open the lightbox for a specific image
