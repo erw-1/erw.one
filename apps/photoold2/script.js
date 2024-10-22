@@ -1,18 +1,25 @@
+// Configuration variables
 const owner = 'erw-1';
 const repo = 'erw.one';
 const basePath = 'files/img/photo/';
 const branch = 'main';
 
+// DOM elements
 const galleryContainer = document.getElementById('gallery');
 const breadcrumbContainer = document.getElementById('breadcrumb');
 const errorMessage = document.getElementById('error-message');
 
+// State variables
 let currentFolder = '';
 let currentIndex = 0;
 let currentImages = [];
 let lightbox, lightboxImg;
-
 let cachedTree = null; // Cached tree structure to prevent multiple API calls
+
+// Variables for event handlers
+let keydownHandler;
+let touchStartX = 0;
+let touchEndX = 0;
 
 // Fetch the recursive file tree from GitHub and handle errors
 async function fetchGitHubTree() {
@@ -93,14 +100,14 @@ function createBreadcrumbs(folderPath) {
     });
 }
 
-// Create a div for either folders or images, with a background and an event handler
+// Create a div for either folders or images
 function createDivElement(className, backgroundImage, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
     div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
 
-    // Add title text (for folders or images)
+    // Add title text (for folders)
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
@@ -108,30 +115,7 @@ function createDivElement(className, backgroundImage, onClick, titleText = null)
         div.appendChild(titleDiv);
     }
 
-    observeBackgroundImageChange(div);
     return div;
-}
-
-// Adjust div size based on background image's aspect ratio
-function observeBackgroundImageChange(targetElement) {
-    const observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                const bgImage = targetElement.style.backgroundImage;
-                if (bgImage && bgImage.startsWith('url("')) {
-                    const imageUrl = bgImage.slice(5, -2);
-                    const img = new Image();
-                    img.src = imageUrl;
-                    img.onload = () => {
-                        const aspectRatio = img.naturalWidth / img.naturalHeight;
-                        targetElement.style.width = `${200 * aspectRatio}px`;
-                        targetElement.style.height = 'auto';
-                    };
-                }
-            }
-        });
-    });
-    observer.observe(targetElement, { attributes: true });
 }
 
 // Show top-level folders when the page loads or root directory is accessed
@@ -151,7 +135,7 @@ async function showTopLevelFolders() {
 
     topLevelFolders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`;
+        const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jpg')`;
 
         const folderDiv = createDivElement(
             'folder',
@@ -186,7 +170,7 @@ async function showFolderContents(folderPath) {
     folderContents.forEach((item) => {
         if (item.type === 'tree') {
             const folderName = item.path.replace(`${folderPath}/`, '');
-            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl')`;
+            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jpg')`;
 
             const folderDiv = createDivElement(
                 'folder',
@@ -195,7 +179,12 @@ async function showFolderContents(folderPath) {
                 folderName
             );
             galleryContainer.appendChild(folderDiv);
-        } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
+        } else if (
+            item.type === 'blob' &&
+            (item.path.endsWith('.jpg') ||
+                item.path.endsWith('.png') ||
+                item.path.endsWith('.webp'))
+        ) {
             currentImages.push(item.path);
             const imageIndex = currentImages.length - 1;
             const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`;
@@ -216,6 +205,64 @@ function openLightbox(index) {
     createNewLightbox();
     loadImage(currentIndex);
     lightbox.style.display = 'flex';
+
+    // Add keyboard event listener when lightbox is open
+    keydownHandler = handleKeyDown;
+    document.addEventListener('keydown', keydownHandler);
+
+    // Add touch event listeners for swipe gestures
+    lightbox.addEventListener('touchstart', handleTouchStart, false);
+    lightbox.addEventListener('touchend', handleTouchEnd, false);
+}
+
+// Close the lightbox
+function closeLightbox() {
+    lightbox.style.display = 'none';
+
+    // Remove keyboard event listener when lightbox is closed
+    document.removeEventListener('keydown', keydownHandler);
+
+    // Remove touch event listeners
+    lightbox.removeEventListener('touchstart', handleTouchStart, false);
+    lightbox.removeEventListener('touchend', handleTouchEnd, false);
+}
+
+// Handle keyboard navigation
+function handleKeyDown(e) {
+    if (e.key === 'ArrowLeft') {
+        // Navigate to previous image
+        navigate(-1);
+    } else if (e.key === 'ArrowRight') {
+        // Navigate to next image
+        navigate(1);
+    } else if (e.key === 'Escape') {
+        // Close the lightbox
+        closeLightbox();
+    }
+}
+
+// Handle touch start
+function handleTouchStart(e) {
+    touchStartX = e.changedTouches[0].screenX;
+}
+
+// Handle touch end
+function handleTouchEnd(e) {
+    touchEndX = e.changedTouches[0].screenX;
+    handleSwipeGesture();
+}
+
+// Determine swipe direction and navigate
+function handleSwipeGesture() {
+    const swipeThreshold = 50; // Minimum distance for a swipe action
+
+    if (touchEndX < touchStartX - swipeThreshold) {
+        // Swipe left to navigate to the next image
+        navigate(1);
+    } else if (touchEndX > touchStartX + swipeThreshold) {
+        // Swipe right to navigate to the previous image
+        navigate(-1);
+    }
 }
 
 // Create the lightbox
@@ -234,6 +281,7 @@ function createNewLightbox() {
         createNavButton('prev', '&#10094;', -1);
         createNavButton('next', '&#10095;', 1);
 
+        // Close lightbox when clicking outside the image
         lightbox.onclick = (e) => {
             if (e.target === lightbox) closeLightbox();
         };
@@ -264,11 +312,6 @@ function createNavButton(id, content, direction) {
 function navigate(direction) {
     currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
     loadImage(currentIndex);
-}
-
-// Close the lightbox
-function closeLightbox() {
-    lightbox.style.display = 'none';
 }
 
 // Initialize the gallery on page load
