@@ -90,9 +90,12 @@ function createLink(text, href, onClick) {
     return link;
 }
 
-// Get three random image URLs from a folder
+// Get three random image URLs only from the specific folder (not subfolders)
 function getThreeRandomImageUrls(folderPath) {
-    const tree = cachedTree.filter(item => item.path.startsWith(folderPath) && item.path.endsWith('.jxl'));
+    const tree = cachedTree.filter(item => {
+        const relativePath = item.path.replace(`${folderPath}/`, '');
+        return item.path.startsWith(folderPath) && item.path.endsWith('.jxl') && !relativePath.includes('/');
+    });
     
     // Select three random unique images from the folder
     const shuffled = tree.sort(() => 0.5 - Math.random());
