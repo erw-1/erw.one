@@ -153,7 +153,7 @@ async function showTopLevelFolders() {
 
         // Populate the folder with images
         const images = await getFirstThreeImages(folder.path);
-        populateFolderImages(folderDiv, images);
+        await populateFolderImages(folderDiv, images);
 
         galleryContainer.appendChild(folderDiv);
     }
@@ -183,7 +183,7 @@ async function showFolderContents(folderPath) {
 
             // Populate the folder with images
             const images = await getFirstThreeImages(treeItem.path);
-            populateFolderImages(folderDiv, images);
+            await populateFolderImages(folderDiv, images);
 
             galleryContainer.appendChild(folderDiv);
         } else if (treeItem.type === 'blob' && treeItem.path.endsWith('.jxl')) {
@@ -246,17 +246,32 @@ async function getFirstThreeImages(folderPath) {
     return images;
 }
 
-// Populate the folder with images
-function populateFolderImages(folderDiv, imageUrls) {
+// Populate the folder with images after preloading them
+async function populateFolderImages(folderDiv, imageUrls) {
     const papers = folderDiv.querySelectorAll('.paper');
-    papers.forEach((paper, index) => {
-        if (imageUrls[index]) {
-            paper.style.backgroundImage = `url('${imageUrls[index]}')`;
-        } else {
-            // Use a placeholder image if less than 3 images are available
-            paper.style.backgroundImage = `url('https://i.imgur.com/w9SCbrp.jpeg')`;
-        }
+    const imageLoadPromises = imageUrls.map((url, index) => {
+        return new Promise((resolve) => {
+            const img = new Image();
+            img.src = url;
+            img.onload = () => {
+                papers[index].style.backgroundImage = `url('${url}')`;
+                resolve();
+            };
+            img.onerror = () => {
+                // Use a placeholder image if the image fails to load
+                papers[index].style.backgroundImage = `url('https://i.imgur.com/w9SCbrp.jpeg')`;
+                resolve();
+            };
+        });
     });
+
+    // Handle cases where there are less than 3 images
+    for (let i = imageUrls.length; i < 3; i++) {
+        papers[i].style.backgroundImage = `url('https://i.imgur.com/w9SCbrp.jpeg')`;
+    }
+
+    // Wait for all images to load
+    await Promise.all(imageLoadPromises);
 }
 
 // Open the lightbox for a specific image
