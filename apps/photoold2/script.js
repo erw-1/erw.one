@@ -93,11 +93,14 @@ function createBreadcrumbs(folderPath) {
     });
 }
 
-// Modified createDivElement with lazy loading
+// Create a div for either folders or images, with a background and an event handler
 function createDivElement(className, backgroundImageUrl, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
     div.onclick = onClick;
+
+    // Set the background image immediately
+    div.style.backgroundImage = `url('${backgroundImageUrl}')`;
 
     // Add title text (for folders or images)
     if (titleText) {
@@ -107,25 +110,7 @@ function createDivElement(className, backgroundImageUrl, onClick, titleText = nu
         div.appendChild(titleDiv);
     }
 
-    // Lazy loading using Intersection Observer
-    const observer = new IntersectionObserver(
-        (entries, observer) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    div.style.backgroundImage = `url('${backgroundImageUrl}')`;
-                    observeBackgroundImageChange(div);
-                    observer.unobserve(div); // Stop observing once loaded
-                }
-            });
-        },
-        {
-            root: null, // Use the viewport as the root
-            rootMargin: '0px',
-            threshold: 0.1, // Trigger when 10% of the element is visible
-        }
-    );
-    observer.observe(div);
-
+    observeBackgroundImageChange(div);
     return div;
 }
 
@@ -181,8 +166,6 @@ async function showTopLevelFolders() {
 
     createBreadcrumbs(basePath);
 }
-
-
 
 // Show folders and images within a specific directory
 async function showFolderContents(folderPath) {
@@ -259,7 +242,7 @@ function createNewLightbox() {
     }
 }
 
-// Modified loadImage function with preloading
+// Load image into the lightbox based on the current index
 function loadImage(index) {
     const selectedImage = currentImages[index];
     const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
