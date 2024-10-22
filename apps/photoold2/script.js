@@ -90,11 +90,24 @@ function createLink(text, href, onClick) {
     return link;
 }
 
-// Create a div for either folders or images
-function createDivElement({ className, imageUrl, onClick, titleText = null }) {
+// Get three random image URLs from a folder
+function getThreeRandomImageUrls(folderPath) {
+    const tree = cachedTree.filter(item => item.path.startsWith(folderPath) && item.path.endsWith('.jxl'));
+    
+    // Select three random unique images from the folder
+    const shuffled = tree.sort(() => 0.5 - Math.random());
+    const selectedImages = shuffled.slice(0, 3);
+    
+    return selectedImages.map(image => getGitHubRawUrl(image.path));
+}
+
+// Create a div for folders with three background images
+function createDivElementWithMultipleImages({ className, imageUrls, onClick, titleText = null }) {
     const div = document.createElement('div');
     div.className = className;
-    div.style.backgroundImage = `url('${imageUrl}')`;
+
+    // Create a collage of three images by setting the background images dynamically
+    div.style.backgroundImage = imageUrls.map(url => `url('${url}')`).join(', ');
     div.onclick = onClick;
 
     if (titleText) {
@@ -135,10 +148,10 @@ async function showTopLevelFolders() {
     const folders = getFilteredItems(tree, basePath, 'tree');
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const imageUrl = getRandomImageUrl(folder.path);
-        const folderDiv = createDivElement({
+        const imageUrls = getThreeRandomImageUrls(folder.path);
+        const folderDiv = createDivElementWithMultipleImages({
             className: 'folder',
-            imageUrl,
+            imageUrls,
             onClick: () => showFolderContents(folder.path),
             titleText: folderName,
         });
@@ -209,24 +222,14 @@ function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
-// Get a random image URL from a folder
-function getRandomImageUrl(folderPath) {
-    const tree = cachedTree.filter(item => item.path.startsWith(folderPath) && item.path.endsWith('.jxl'));
-    if (tree.length > 0) {
-        const randomIndex = Math.floor(Math.random() * tree.length);
-        return getGitHubRawUrl(tree[randomIndex].path);
-    } else {
-        return 'path/to/placeholder-image.png'; // Fallback if no images are found
-    }
-}
-
 // Render gallery item (folder or photo)
 function renderGalleryItem({ type, path, name, onClick }) {
     const className = type === 'folder' ? 'folder' : 'photo';
-    const imageUrl = type === 'folder' ? getRandomImageUrl(path) : getGitHubRawUrl(path);
-    const div = createDivElement({
+    const imageUrls = type === 'folder' ? getThreeRandomImageUrls(path) : [getGitHubRawUrl(path)];
+    
+    const div = createDivElementWithMultipleImages({
         className,
-        imageUrl,
+        imageUrls,
         onClick,
         titleText: type === 'folder' ? name : null,
     });
