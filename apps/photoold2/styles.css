@@ -1,3 +1,4 @@
+/* Existing CSS */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
@@ -13,7 +14,7 @@ body {
     padding: 20px;
 }
 
-.photo, .folder {
+.photo {
     border-radius: 6px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     height: 200px !important;
@@ -22,8 +23,7 @@ body {
     background-size: cover;
 }
 
-
-.folder:hover, .photo:hover {
+.photo:hover {
     transform: scale(1.03);
 }
 
@@ -133,4 +133,88 @@ div#lightbox-img {
 .breadcrumb .separator {
     margin: 0 5px;
     color: #ccc;
+}
+
+/* New Animated Folder CSS */
+.folder {
+    cursor: pointer;
+    position: relative;
+    width: 200px;
+    height: 150px;
+    background-color: #FFD485;
+    border-radius: 10px;
+    margin: 6px;
+}
+
+.folder:before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: 0;
+    width: 55px;
+    height: 25px;
+    background-color: #FFD485;
+    border-radius: 5px;
+}
+
+.folder:after {
+    content: '';
+    position: absolute;
+    width: 200px;
+    height: 150px;
+    background-color: #ffe1a8;
+    border-radius: 10px;
+    transform: skew(0deg);
+    transition: all 0.2s;
+}
+
+.folder .title {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200px;
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    color: #333;
+    transition: all 0.2s;
+    z-index: 2;
+}
+
+.folder .paper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 190px;
+    height: 140px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 10px;
+    transform: translate(-50%, -50%);
+    transition: all 0.2s;
+}
+
+/* Hover effects */
+.folder:hover:after {
+    transform: skew(-20deg);
+    margin-left: 25px;
+}
+
+.folder:hover .title {
+    transform: skew(-20deg);
+    margin-left: 25px;
+}
+
+.folder:hover .paper:nth-child(2) {
+    transform: rotate(10deg) translate(-80px, -80px);
+}
+
+.folder:hover .paper:nth-child(3) {
+    transform: rotate(20deg) translate(-80px, -80px);
+}
+
+.folder:hover .paper:nth-child(4) {
+    transform: rotate(30deg) translate(-80px, -80px);
 }
