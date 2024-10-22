@@ -16,17 +16,13 @@ body {
 .photo, .folder {
     border-radius: 6px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 200px !important;
     margin: 6px;
     cursor: pointer;
     background-size: cover;
-    position: relative;
 }
 
-.photo {
-    height: 200px !important;
-}
-
-.photo:hover, .folder:hover {
+.folder:hover, .photo:hover {
     transform: scale(1.03);
 }
 
@@ -40,87 +36,6 @@ body {
     padding: 10px;
     font-size: 18px;
     box-sizing: border-box;
-}
-
-/* Folder Styles */
-.folder {
-    background-color: #FFD485;
-    width: 200px;
-    height: 150px;
-    border-radius: 10px;
-}
-
-.folder:before {
-    width: 55px;
-    height: 25px;
-    border-radius: 5px;
-    content: '';
-    background-color: #FFD485;
-    position: absolute;
-    top: -10px;
-    left: 0px;
-}
-
-.folder:after {
-    display: block;
-    width: 200px;
-    height: 150px;
-    border-radius: 10px;
-    content: '';
-    transform: skew(0deg);
-    background-color: #ffe1a8;
-    transition: all 0.2s;
-}
-
-.folder .title {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 200px;
-    height: 150px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    color: #333;
-    transition: all 0.2s;
-    z-index: 2;
-}
-
-.folder .folder-preview {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 190px;
-    height: 140px;
-    transition: all 0.2s;
-    background-size: cover;
-    background-position: center;
-    border-radius: 10px;
-}
-
-/* Hover effects */
-.folder:hover:after {
-    transform: skew(-20deg);
-    margin-left: 25px;
-}
-
-.folder:hover .title {
-    transform: skew(-8deg);
-    margin-left: 25px;
-}
-
-.folder:hover .folder-preview:nth-child(2) {
-    transform: rotate(10deg) translate(-80px, -80px);
-}
-
-.folder:hover .folder-preview:nth-child(3) {
-    transform: rotate(20deg) translate(-80px, -80px);
-}
-
-.folder:hover .folder-preview:nth-child(4) {
-    transform: rotate(30deg) translate(-80px, -80px);
 }
 
 #lightbox {
@@ -137,7 +52,7 @@ body {
     z-index: 1000;
 }
 
-#lightbox-img {
+div#lightbox-img {
     width: 100%;
     height: 100%;
     max-width: 98dvw;
@@ -171,6 +86,21 @@ body {
     right: 0;
 }
 
+#back-button {
+    display: none;
+    margin: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#back-button:hover {
+    background-color: #0056b3;
+}
+
 #error-message {
     display: none;
     color: red;
@@ -201,4 +131,42 @@ body {
 .breadcrumb .separator {
     margin: 0 5px;
     color: #ccc;
+}
+
+/* Folder preview */
+.folder-preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-size: cover;
+    background-position: center;
+    width: 190px;
+    height: 140px;
+    transition: all 0.2s;
+    border-radius: 10px;
+}
+
+.folder .folder-preview:nth-child(2) {
+    transform: rotate(10deg) translate(-80px, -80px);
+}
+
+.folder .folder-preview:nth-child(3) {
+    transform: rotate(20deg) translate(-80px, -80px);
+}
+
+.folder .folder-preview:nth-child(4) {
+    transform: rotate(30deg) translate(-80px, -80px);
+}
+
+.folder:hover .folder-preview:nth-child(2) {
+    transform: rotate(10deg) translate(-80px, -80px);
+}
+
+.folder:hover .folder-preview:nth-child(3) {
+    transform: rotate(20deg) translate(-80px, -80px);
+}
+
+.folder:hover .folder-preview:nth-child(4) {
+    transform: rotate(30deg) translate(-80px, -80px);
 }
