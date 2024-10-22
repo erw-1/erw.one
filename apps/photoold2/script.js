@@ -93,14 +93,14 @@ function createBreadcrumbs(folderPath) {
     });
 }
 
-// Create a div for either folders or images, with a background and an event handler
+// Create a div for images, with a background and an event handler
 function createDivElement(className, backgroundImage, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
     div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
 
-    // Add title text (for folders or images)
+    // Add title text (for images)
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
@@ -134,6 +134,47 @@ function observeBackgroundImageChange(targetElement) {
     observer.observe(targetElement, { attributes: true });
 }
 
+// Create folder element with sampled images
+function createFolderElement(folderName, images, onClick) {
+    const folderDiv = document.createElement('div');
+    folderDiv.className = 'folder';
+    folderDiv.onclick = onClick;
+
+    // Folder structure elements
+    const folderIcon = document.createElement('div');
+    folderIcon.className = 'folder-icon';
+
+    const folderTop = document.createElement('div');
+    folderTop.className = 'folder-top';
+
+    const folderBottom = document.createElement('div');
+    folderBottom.className = 'folder-bottom';
+
+    // Images inside the folder
+    const imagesContainer = document.createElement('div');
+    imagesContainer.className = 'folder-images';
+
+    images.forEach((imageItem, index) => {
+        const imgElement = document.createElement('img');
+        imgElement.src = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${imageItem.path}`;
+        imgElement.className = `folder-image image-${index}`;
+        imagesContainer.appendChild(imgElement);
+    });
+
+    folderIcon.appendChild(imagesContainer);
+    folderIcon.appendChild(folderTop);
+    folderIcon.appendChild(folderBottom);
+    folderDiv.appendChild(folderIcon);
+
+    // Add folder name
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'title';
+    titleDiv.textContent = folderName;
+    folderDiv.appendChild(titleDiv);
+
+    return folderDiv;
+}
+
 // Show top-level folders when the page loads or root directory is accessed
 async function showTopLevelFolders() {
     clearGallery();
@@ -149,18 +190,34 @@ async function showTopLevelFolders() {
         );
     });
 
-    topLevelFolders.forEach((folder) => {
+    for (const folder of topLevelFolders) {
         const folderName = folder.path.replace(basePath, '');
-        const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`;
 
-        const folderDiv = createDivElement(
-            'folder',
-            backgroundImage,
-            () => showFolderContents(folder.path),
-            folderName
+        // Get all images in the folder (including subfolders if desired)
+        const imagesInFolder = tree.filter((item) => {
+            return (
+                item.type === 'blob' &&
+                item.path.startsWith(folder.path) &&
+                item.path.endsWith('.jxl')
+            );
+        });
+
+        // Sample up to 3 random images
+        const sampledImages = [];
+        const imagesCopy = [...imagesInFolder];
+        const numImages = Math.min(3, imagesCopy.length);
+        for (let i = 0; i < numImages; i++) {
+            const randomIndex = Math.floor(Math.random() * imagesCopy.length);
+            sampledImages.push(imagesCopy.splice(randomIndex, 1)[0]);
+        }
+
+        const folderDiv = createFolderElement(
+            folderName,
+            sampledImages,
+            () => showFolderContents(folder.path)
         );
         galleryContainer.appendChild(folderDiv);
-    });
+    }
 
     createBreadcrumbs(basePath);
 }
@@ -183,16 +240,32 @@ async function showFolderContents(folderPath) {
         );
     });
 
-    folderContents.forEach((item) => {
+    for (const item of folderContents) {
         if (item.type === 'tree') {
             const folderName = item.path.replace(`${folderPath}/`, '');
-            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl')`;
 
-            const folderDiv = createDivElement(
-                'folder',
-                backgroundImage,
-                () => showFolderContents(item.path),
-                folderName
+            // Get all images in the subfolder
+            const imagesInFolder = tree.filter((subItem) => {
+                return (
+                    subItem.type === 'blob' &&
+                    subItem.path.startsWith(item.path) &&
+                    subItem.path.endsWith('.jxl')
+                );
+            });
+
+            // Sample up to 3 random images
+            const sampledImages = [];
+            const imagesCopy = [...imagesInFolder];
+            const numImages = Math.min(3, imagesCopy.length);
+            for (let i = 0; i < numImages; i++) {
+                const randomIndex = Math.floor(Math.random() * imagesCopy.length);
+                sampledImages.push(imagesCopy.splice(randomIndex, 1)[0]);
+            }
+
+            const folderDiv = createFolderElement(
+                folderName,
+                sampledImages,
+                () => showFolderContents(item.path)
             );
             galleryContainer.appendChild(folderDiv);
         } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
@@ -207,7 +280,7 @@ async function showFolderContents(folderPath) {
             );
             galleryContainer.appendChild(photoDiv);
         }
-    });
+    }
 }
 
 // Open the lightbox for a specific image
