@@ -229,28 +229,19 @@ function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
-// Get preview image URL
-function getPreviewImageUrl(path) {
-    return `${getGitHubRawUrl(path)}/preview.jxl`;
-}
-
-// Get the first three image URLs from a folder
+// Simplified getFirstThreeImages function
 async function getFirstThreeImages(folderPath) {
     const tree = await fetchGitHubTree();
     if (!tree) return [];
 
     const images = tree
-        .filter((treeItem) => {
-            const relativePath = treeItem.path.substring(folderPath.length + 1);
-            return (
-                treeItem.path.startsWith(folderPath + '/') &&
-                treeItem.type === 'blob' &&
-                treeItem.path.endsWith('.jxl') &&
-                !relativePath.includes('/')
-            );
-        })
-        .slice(0, 3)
-        .map((img) => getGitHubRawUrl(img.path));
+        .filter((treeItem) => 
+            treeItem.type === 'blob' &&
+            treeItem.path.endsWith('.jxl') &&
+            treeItem.path.startsWith(folderPath + '/')
+        )
+        .map((treeItem) => getGitHubRawUrl(treeItem.path))
+        .slice(0, 3);
 
     return images;
 }
