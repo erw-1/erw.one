@@ -16,11 +16,6 @@ let currentImages = [];
 let lightbox, lightboxImg;
 let cachedTree = null; // Cached tree structure to prevent multiple API calls
 
-// Variables for event handlers
-let keydownHandler;
-let touchStartX = 0;
-let touchEndX = 0;
-
 // Fetch the recursive file tree from GitHub and handle errors
 async function fetchGitHubTree() {
     if (cachedTree) return cachedTree;
@@ -65,7 +60,7 @@ function createBreadcrumbs(folderPath) {
     const parts = folderPath.replace(basePath, '').split('/').filter(Boolean);
     let accumulatedParts = [];
 
-    parts.forEach((part, index) => {
+    parts.forEach((part) => {
         accumulatedParts.push(part);
         const accumulatedPath = `${basePath}${accumulatedParts.join('/')}`;
 
@@ -95,11 +90,11 @@ function createLink(text, href, onClick) {
     return link;
 }
 
-// Create a div for either folders or images, with a background and an event handler
-function createDivElement({ className, backgroundImage, onClick, titleText = null }) {
+// Create a div for either folders or images
+function createDivElement({ className, imageUrl, onClick, titleText = null }) {
     const div = document.createElement('div');
     div.className = className;
-    div.style.backgroundImage = backgroundImage;
+    div.style.backgroundImage = `url('${imageUrl}')`;
     div.onclick = onClick;
 
     if (titleText) {
@@ -109,26 +104,19 @@ function createDivElement({ className, backgroundImage, onClick, titleText = nul
         div.appendChild(titleDiv);
     }
 
-    observeBackgroundImageChange(div);
+    setElementAspectRatio(div, imageUrl);
     return div;
 }
 
 // Adjust div size based on background image's aspect ratio
-function observeBackgroundImageChange(targetElement) {
-    const observer = new MutationObserver(() => {
-        const bgImage = targetElement.style.backgroundImage;
-        if (bgImage && bgImage.startsWith('url("')) {
-            const imageUrl = bgImage.slice(5, -2);
-            const img = new Image();
-            img.src = imageUrl;
-            img.onload = () => {
-                const aspectRatio = img.naturalWidth / img.naturalHeight;
-                targetElement.style.width = `${200 * aspectRatio}px`;
-                targetElement.style.height = 'auto';
-            };
-        }
-    });
-    observer.observe(targetElement, { attributes: true });
+function setElementAspectRatio(element, imageUrl) {
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => {
+        const aspectRatio = img.naturalWidth / img.naturalHeight;
+        element.style.width = `${200 * aspectRatio}px`;
+        element.style.height = 'auto';
+    };
 }
 
 // Show top-level folders when the page loads or root directory is accessed
@@ -137,13 +125,13 @@ async function showTopLevelFolders() {
     const tree = await fetchGitHubTree();
     if (!tree) return;
 
-    const folders = getFilteredItems(tree, basePath, 'tree', false);
+    const folders = getFilteredItems(tree, basePath, 'tree');
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const backgroundImage = getBackgroundImage(folder.path, 'preview.jxl');
+        const imageUrl = getPreviewImageUrl(folder.path);
         const folderDiv = createDivElement({
             className: 'folder',
-            backgroundImage,
+            imageUrl,
             onClick: () => showFolderContents(folder.path),
             titleText: folderName,
         });
@@ -164,58 +152,72 @@ async function showFolderContents(folderPath) {
     createBreadcrumbs(folderPath);
 
     const items = getFolderContents(tree, folderPath);
-    items.forEach((item) => {
-        const relativeName = item.path.replace(`${folderPath}/`, '');
-        if (item.type === 'tree') {
-            const backgroundImage = getBackgroundImage(item.path, 'preview.jxl');
-            const folderDiv = createDivElement({
-                className: 'folder',
-                backgroundImage,
-                onClick: () => showFolderContents(item.path),
-                titleText: relativeName,
+    items.forEach((treeItem) => {
+        const relativeName = treeItem.path.replace(`${folderPath}/`, '');
+        if (treeItem.type === 'tree') {
+            renderGalleryItem({
+                type: 'folder',
+                path: treeItem.path,
+                name: relativeName,
+                onClick: () => showFolderContents(treeItem.path),
             });
-            galleryContainer.appendChild(folderDiv);
-        } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
-            currentImages.push(item.path);
+        } else if (treeItem.type === 'blob' && treeItem.path.endsWith('.jxl')) {
+            currentImages.push(treeItem.path);
             const imageIndex = currentImages.length - 1;
-            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`;
-            const photoDiv = createDivElement({
-                className: 'photo',
-                backgroundImage,
+            renderGalleryItem({
+                type: 'photo',
+                path: treeItem.path,
                 onClick: () => openLightbox(imageIndex),
             });
-            galleryContainer.appendChild(photoDiv);
         }
     });
 }
 
 // Get filtered items from the tree
-function getFilteredItems(tree, path, type, includeSubfolders) {
-    return tree.filter((item) => {
-        const relativePath = item.path.replace(`${path}`, '');
+function getFilteredItems(tree, path, type) {
+    return tree.filter((treeItem) => {
+        const relativePath = treeItem.path.replace(`${path}`, '');
         const isDirectChild = relativePath.indexOf('/') === -1;
         return (
-            item.type === type &&
-            item.path.startsWith(path) &&
-            (includeSubfolders || isDirectChild)
+            treeItem.type === type &&
+            treeItem.path.startsWith(path) &&
+            isDirectChild
         );
     });
 }
 
 // Get contents of a folder
 function getFolderContents(tree, folderPath) {
-    return tree.filter((item) => {
-        const relativePath = item.path.replace(`${folderPath}/`, '');
+    return tree.filter((treeItem) => {
+        const relativePath = treeItem.path.replace(`${folderPath}/`, '');
         return (
-            item.path.startsWith(folderPath) &&
+            treeItem.path.startsWith(folderPath) &&
             relativePath.indexOf('/') === -1
         );
     });
 }
 
-// Get background image URL
-function getBackgroundImage(path, imageName) {
-    return `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}/${imageName}')`;
+// Get GitHub raw URL
+function getGitHubRawUrl(path) {
+    return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+}
+
+// Get preview image URL
+function getPreviewImageUrl(path) {
+    return `${getGitHubRawUrl(path)}/preview.jxl`;
+}
+
+// Render gallery item (folder or photo)
+function renderGalleryItem({ type, path, name, onClick }) {
+    const className = type === 'folder' ? 'folder' : 'photo';
+    const imageUrl = type === 'folder' ? getPreviewImageUrl(path) : getGitHubRawUrl(path);
+    const div = createDivElement({
+        className,
+        imageUrl,
+        onClick,
+        titleText: type === 'folder' ? name : null,
+    });
+    galleryContainer.appendChild(div);
 }
 
 // Open the lightbox for a specific image
@@ -227,8 +229,8 @@ function openLightbox(index) {
 
     // Add event listeners
     document.addEventListener('keydown', handleKeyDown);
-    lightbox.addEventListener('touchstart', handleTouchStart, false);
-    lightbox.addEventListener('touchend', handleTouchEnd, false);
+    lightbox.addEventListener('touchstart', handleTouchStart);
+    lightbox.addEventListener('touchend', handleTouchEnd);
 }
 
 // Close the lightbox
@@ -237,8 +239,8 @@ function closeLightbox() {
 
     // Remove event listeners
     document.removeEventListener('keydown', handleKeyDown);
-    lightbox.removeEventListener('touchstart', handleTouchStart, false);
-    lightbox.removeEventListener('touchend', handleTouchEnd, false);
+    lightbox.removeEventListener('touchstart', handleTouchStart);
+    lightbox.removeEventListener('touchend', handleTouchEnd);
 }
 
 // Handle keyboard navigation
@@ -250,16 +252,18 @@ function handleKeyDown(e) {
 
 // Handle touch events
 function handleTouchStart(e) {
-    touchStartX = e.changedTouches[0].screenX;
+    const touchStartX = e.changedTouches[0].screenX;
+    lightbox.dataset.touchStartX = touchStartX;
 }
 
 function handleTouchEnd(e) {
-    touchEndX = e.changedTouches[0].screenX;
-    handleSwipeGesture();
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchStartX = parseFloat(lightbox.dataset.touchStartX);
+    handleSwipeGesture(touchStartX, touchEndX);
 }
 
 // Determine swipe direction and navigate
-function handleSwipeGesture() {
+function handleSwipeGesture(touchStartX, touchEndX) {
     const swipeThreshold = 50; // Minimum distance for a swipe action
     if (touchEndX < touchStartX - swipeThreshold) navigate(1);
     else if (touchEndX > touchStartX + swipeThreshold) navigate(-1);
@@ -279,8 +283,8 @@ function createLightbox() {
     lightboxImg.className = 'lightbox-img';
     lightbox.appendChild(lightboxImg);
 
-    createNavButton('prev', '&#10094;', -1);
-    createNavButton('next', '&#10095;', 1);
+    createNavButton('prev', '&#10094;');
+    createNavButton('next', '&#10095;');
 
     // Close lightbox when clicking outside the image
     lightbox.onclick = (e) => {
@@ -291,21 +295,25 @@ function createLightbox() {
 // Load image into the lightbox based on the current index
 function loadImage(index) {
     const selectedImage = currentImages[index];
-    const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
+    const imageUrl = getGitHubRawUrl(selectedImage);
     lightboxImg.src = imageUrl;
 }
 
 // Create navigation buttons for the lightbox
-function createNavButton(id, content, direction) {
+function createNavButton(id, content) {
     const btn = document.createElement('span');
     btn.id = id;
     btn.className = 'nav';
     btn.innerHTML = content;
-    btn.onclick = (e) => {
-        e.stopPropagation();
-        navigate(direction);
-    };
+    btn.onclick = navigateLightbox;
     lightbox.appendChild(btn);
+}
+
+// Navigate lightbox
+function navigateLightbox(e) {
+    e.stopPropagation();
+    const direction = e.target.id === 'next' ? 1 : -1;
+    navigate(direction);
 }
 
 // Navigate between images in the lightbox
