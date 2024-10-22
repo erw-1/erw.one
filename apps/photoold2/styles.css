@@ -1,12 +1,10 @@
-/* Body Styles */
 body {
     font-family: Arial, sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #1e1f26; /* From your CSS */
+    background-color: #101010;
 }
 
-/* Gallery Container */
 .container {
     display: flex;
     flex-wrap: wrap;
@@ -15,113 +13,26 @@ body {
     padding: 20px;
 }
 
-/* Folder Styles */
-.folder {
-    cursor: pointer;
-    position: relative; /* Adjusted to work within the gallery grid */
-    background-color: #FFD485;
-    width: 200px;
-    height: 150px;
-    border-radius: 10px;
-    margin: 6px; /* Added margin to space out folders */
-}
-
-.folder:before {
-    content: '';
-    position: absolute;
-    top: -10px;
-    left: 0px;
-    width: 55px;
-    height: 25px;
-    background-color: #FFD485;
-    border-radius: 5px;
-}
-
-.folder:after {
-    display: block;
-    content: '';
-    position: absolute;
-    width: 200px;
-    height: 150px;
-    background-color: #ffe1a8;
-    border-radius: 10px;
-    transform: skew(0deg);
-    transition: all 0.2s;
-}
-
-.folder .title {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 200px;
-    height: 150px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
-    color: #333;
-    transition: all 0.2s;
-    z-index: 2;
-}
-
-/* Paper Styles */
-.folder .paper {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 190px;
-    height: 140px;
-    background-size: cover;
-    background-position: center;
-    border-radius: 10px;
-    transition: all 0.2s;
-}
-
-/* Hover Effects for Folder */
-.folder:hover:after {
-    transform: skew(-20deg);
-    margin-left: 25px;
-}
-
-.folder:hover .title {
-    transform: skew(-8deg);
-    margin-left: 25px;
-}
-
-.folder:hover .paper.one {
-    transform: rotate(10deg) translate(-80px, -80px);
-}
-
-.folder:hover .paper.two {
-    transform: rotate(20deg) translate(-80px, -80px);
-}
-
-.folder:hover .paper.three {
-    transform: rotate(30deg) translate(-80px, -80px);
-}
-
-/* Photo Styles */
-.photo {
+.photo, .folder {
     border-radius: 6px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     height: 200px !important;
     margin: 6px;
     cursor: pointer;
     background-size: cover;
-    background-position: center;
 }
 
-.photo:hover {
+
+.folder:hover, .photo:hover {
     transform: scale(1.03);
 }
 
-/* Title (used in lightbox or elsewhere if needed) */
 .title {
     position: relative;
     bottom: 0;
     left: 0;
     right: 0;
+    background: rgba(0, 0, 0, 0.5);
     color: #fff;
     text-align: center;
     padding: 10px;
@@ -129,7 +40,6 @@ body {
     box-sizing: border-box;
 }
 
-/* Lightbox Styles */
 #lightbox {
     position: fixed;
     top: 0;
@@ -144,15 +54,21 @@ body {
     z-index: 1000;
 }
 
-#lightbox-img {
-    max-width: 98vw;
-    max-height: 98vh;
-    display: block;
-    margin: 0 auto;
+div#lightbox-img {
+    width: 100%;
+    height: 100%;
+    max-width: 98dvw;
+    max-height: 98dvh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
 }
 
-/* Navigation Buttons in Lightbox */
-.nav {
+#prev, #next {
     position: absolute;
     top: 50%;
     transform: translateY(-50%);
@@ -172,7 +88,21 @@ body {
     right: 0;
 }
 
-/* Error Message */
+#back-button {
+    display: none;
+    margin: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#back-button:hover {
+    background-color: #0056b3;
+}
+
 #error-message {
     display: none;
     color: red;
