@@ -97,14 +97,14 @@ async function showTopLevelFolders() {
     if (!tree) return;
 
     const folders = getFilteredItems(tree, basePath, 'tree');
-    folders.forEach((folder) => {
+    for (const folder of folders) {
         const folderName = folder.path.replace(basePath, '');
-        renderFolderItem({
+        await renderFolderItem({
             path: folder.path,
             name: folderName,
             onClick: () => showFolderContents(folder.path),
         });
-    });
+    }
 
     createBreadcrumbs(basePath);
 }
@@ -120,10 +120,10 @@ async function showFolderContents(folderPath) {
     createBreadcrumbs(folderPath);
 
     const items = getFolderContents(tree, folderPath);
-    items.forEach((treeItem) => {
+    for (const treeItem of items) {
         const relativeName = treeItem.path.replace(`${folderPath}/`, '');
         if (treeItem.type === 'tree') {
-            renderFolderItem({
+            await renderFolderItem({
                 path: treeItem.path,
                 name: relativeName,
                 onClick: () => showFolderContents(treeItem.path),
@@ -136,7 +136,7 @@ async function showFolderContents(folderPath) {
                 onClick: () => openLightbox(imageIndex),
             });
         }
-    });
+    }
 }
 
 // Get filtered items from the tree
@@ -168,8 +168,26 @@ function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
+// Observe background image changes to adjust element size
+function observeBackgroundImageChange(targetElement) {
+    const observer = new MutationObserver(() => {
+        const bgImage = targetElement.style.backgroundImage;
+        if (bgImage && bgImage.startsWith('url("')) {
+            const imageUrl = bgImage.slice(5, -2);
+            const img = new Image();
+            img.src = imageUrl;
+            img.onload = () => {
+                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                targetElement.style.width = `${200 * aspectRatio}px`;
+                targetElement.style.height = 'auto';
+            };
+        }
+    });
+    observer.observe(targetElement, { attributes: true });
+}
+
 // Render folder item with sampled images
-function renderFolderItem({ path, name, onClick }) {
+async function renderFolderItem({ path, name, onClick }) {
     const folderDiv = document.createElement('div');
     folderDiv.className = 'folder';
     folderDiv.onclick = onClick;
@@ -189,21 +207,41 @@ function renderFolderItem({ path, name, onClick }) {
     });
 
     // Sample up to 3 images from the folder
-    fetchGitHubTree().then((tree) => {
-        const images = tree.filter(
-            (item) =>
-                item.type === 'blob' &&
-                item.path.startsWith(`${path}/`) &&
-                item.path.endsWith('.jxl') &&
-                item.path.replace(`${path}/`, '').indexOf('/') === -1
-        );
-        const sampledImages = images.slice(0, 3);
-        sampledImages.forEach((imageItem, index) => {
-            const imageUrl = getGitHubRawUrl(imageItem.path);
-            paperDivs[index].style.backgroundImage = `url('${imageUrl}')`;
-        });
-    });
+    const tree = await fetchGitHubTree();
+    const images = tree.filter(
+        (item) =>
+            item.type === 'blob' &&
+            item.path.startsWith(`${path}/`) &&
+            item.path.endsWith('.jxl') &&
+            item.path.replace(`${path}/`, '').indexOf('/') === -1
+    );
+    const sampledImages = images.slice(0, 3);
+    let totalAspectRatio = 0;
 
+    for (let i = 0; i < sampledImages.length; i++) {
+        const imageItem = sampledImages[i];
+        const imageUrl = getGitHubRawUrl(imageItem.path);
+        paperDivs[i].style.backgroundImage = `url('${imageUrl}')`;
+
+        // Calculate aspect ratio for dynamic width
+        const img = new Image();
+        img.src = imageUrl;
+        await new Promise((resolve) => {
+            img.onload = () => {
+                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                totalAspectRatio += aspectRatio;
+                if (i === sampledImages.length - 1) {
+                    // Set folder width based on average aspect ratio
+                    const averageAspectRatio = totalAspectRatio / sampledImages.length;
+                    folderDiv.style.width = `${200 * averageAspectRatio}px`;
+                    folderDiv.style.height = 'auto';
+                }
+                resolve();
+            };
+        });
+    }
+
+    observeBackgroundImageChange(folderDiv);
     galleryContainer.appendChild(folderDiv);
 }
 
@@ -214,6 +252,9 @@ function renderPhotoItem({ path, onClick }) {
     div.className = 'photo';
     div.style.backgroundImage = `url('${imageUrl}')`;
     div.onclick = onClick;
+
+    // Adjust dynamic width based on image aspect ratio
+    observeBackgroundImageChange(div);
     galleryContainer.appendChild(div);
 }
 
