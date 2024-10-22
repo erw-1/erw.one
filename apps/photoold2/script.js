@@ -56,7 +56,6 @@ function createBreadcrumbs(folderPath) {
     homeLink.textContent = 'Home';
     homeLink.onclick = (event) => {
         event.preventDefault();
-        window.location.hash = '';
         showTopLevelFolders();
     };
     breadcrumbContainer.appendChild(homeLink);
@@ -66,15 +65,14 @@ function createBreadcrumbs(folderPath) {
 
     parts.forEach((part, index) => {
         accumulatedParts.push(part);
-        const accumulatedPath = accumulatedParts.join('/');
+        const accumulatedPath = `${basePath}${accumulatedParts.join('/')}`;
 
         const breadcrumbLink = document.createElement('a');
-        breadcrumbLink.href = `#${accumulatedPath.replace(/\//g, '#')}`;
+        breadcrumbLink.href = '#';
         breadcrumbLink.textContent = part;
         breadcrumbLink.onclick = (event) => {
             event.preventDefault();
-            window.location.hash = breadcrumbLink.href.split('#')[1];
-            navigateToHash();
+            showFolderContents(accumulatedPath);
         };
 
         breadcrumbContainer.appendChild(breadcrumbLink);
@@ -264,17 +262,5 @@ function closeLightbox() {
     lightbox.style.display = 'none';
 }
 
-// Handle fragment-based navigation (e.g., #nature#insects)
-function navigateToHash() {
-    const hash = decodeURIComponent(window.location.hash.slice(1));
-    if (hash) {
-        const folderPath = `${basePath}${hash.replace(/#/g, '/')}/`;
-        showFolderContents(folderPath);
-    } else {
-        showTopLevelFolders();
-    }
-}
-
-// Initialize page with fragment navigation
-window.addEventListener('hashchange', navigateToHash);
-navigateToHash();
+// Initialize the gallery on page load
+showTopLevelFolders();
