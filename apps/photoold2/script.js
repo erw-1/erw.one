@@ -101,24 +101,28 @@ function getThreeRandomImageUrls(folderPath) {
     return selectedImages.map(image => getGitHubRawUrl(image.path));
 }
 
-// Create a div for folders with three background images
-function createDivElementWithMultipleImages({ className, imageUrls, onClick, titleText = null }) {
-    const div = document.createElement('div');
-    div.className = className;
-
-    // Create a collage of three images by setting the background images dynamically
-    div.style.backgroundImage = imageUrls.map(url => `url('${url}')`).join(', ');
-    div.onclick = onClick;
+// Create a div for folders with three individual image divs inside
+function createDivElementWithMultipleImageDivs({ className, imageUrls, onClick, titleText = null }) {
+    const folderDiv = document.createElement('div');
+    folderDiv.className = className;
+    folderDiv.onclick = onClick;
 
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
         titleDiv.textContent = titleText;
-        div.appendChild(titleDiv);
+        folderDiv.appendChild(titleDiv);
     }
 
-    observeBackgroundImageChange(div);
-    return div;
+    // Create separate divs for each of the three images
+    imageUrls.forEach(url => {
+        const imageDiv = document.createElement('div');
+        imageDiv.className = 'folder-image';
+        imageDiv.style.backgroundImage = `url('${url}')`;
+        folderDiv.appendChild(imageDiv);
+    });
+
+    return folderDiv;
 }
 
 // Adjust div size based on background image's aspect ratio
@@ -149,7 +153,7 @@ async function showTopLevelFolders() {
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
         const imageUrls = getThreeRandomImageUrls(folder.path);
-        const folderDiv = createDivElementWithMultipleImages({
+        const folderDiv = createDivElementWithMultipleImageDivs({
             className: 'folder',
             imageUrls,
             onClick: () => showFolderContents(folder.path),
@@ -227,7 +231,7 @@ function renderGalleryItem({ type, path, name, onClick }) {
     const className = type === 'folder' ? 'folder' : 'photo';
     const imageUrls = type === 'folder' ? getThreeRandomImageUrls(path) : [getGitHubRawUrl(path)];
     
-    const div = createDivElementWithMultipleImages({
+    const div = createDivElementWithMultipleImageDivs({
         className,
         imageUrls,
         onClick,
