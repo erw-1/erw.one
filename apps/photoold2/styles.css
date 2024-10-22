@@ -1,12 +1,8 @@
-* {
-    font-family: 'Century Gothic', Arial, sans-serif !important;
-}
-
 body {
-    background-color: #303030;
-    color: #ffffff;
+    font-family: Arial, sans-serif;
     margin: 0;
-    padding: 20px;
+    padding: 0;
+    background-color: #101010;
 }
 
 .container {
@@ -19,15 +15,13 @@ body {
 
 .photo, .folder {
     border-radius: 6px;
-    background-color: #424242;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     height: 200px !important;
     margin: 6px;
     cursor: pointer;
     background-size: cover;
-    background-position: center;
-    transition: transform 0.5s ease;
 }
+
 
 .folder:hover, .photo:hover {
     transform: scale(1.03);
@@ -39,7 +33,7 @@ body {
     left: 0;
     right: 0;
     background: rgba(0, 0, 0, 0.5);
-    color: #ffffff;
+    color: #fff;
     text-align: center;
     padding: 10px;
     font-size: 18px;
@@ -60,12 +54,15 @@ body {
     z-index: 1000;
 }
 
-#lightbox-img {
-    max-width: 98vw;
-    max-height: 98vh;
+div#lightbox-img {
+    width: 100%;
+    height: 100%;
+    max-width: 98dvw;
+    max-height: 98dvh;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
     background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
@@ -76,7 +73,7 @@ body {
     top: 50%;
     transform: translateY(-50%);
     font-size: 50px;
-    color: #ffffff;
+    color: #fff;
     cursor: pointer;
     user-select: none;
     padding: 20px;
@@ -91,7 +88,23 @@ body {
     right: 0;
 }
 
+#back-button {
+    display: none;
+    margin: 20px;
+    padding: 10px 20px;
+    font-size: 18px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#back-button:hover {
+    background-color: #0056b3;
+}
+
 #error-message {
+    display: none;
     color: red;
     text-align: center;
     margin-top: 20px;
@@ -104,7 +117,7 @@ body {
     align-items: center;
     font-size: 16px;
     margin-bottom: 20px;
-    color: #ffffff;
+    color: #fff;
 }
 
 .breadcrumb a {
@@ -120,49 +133,4 @@ body {
 .breadcrumb .separator {
     margin: 0 5px;
     color: #ccc;
-}
-
-/* Animation */
-@keyframes loading {
-    from {
-        transform: scale(1);
-    }
-    to {
-        transform: scale(2);
-    }
-}
-
-#processingMessage {
-    margin-left: 20px;
-    font-size: 18px;
-    color: #ffffff;
-    display: none;
-    position: relative;
-}
-
-#processingMessage::after {
-    content: '';
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    margin-left: 15px;
-    border-radius: 50%;
-    background-color: #ffffff;
-    animation: loading 1s infinite alternate;
-}
-
-/* Responsive design */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-        align-items: center;
-    }
-    .photo, .folder {
-        width: 100%;
-        height: auto;
-    }
-    #prev, #next {
-        font-size: 30px;
-        padding: 10px;
-    }
 }
