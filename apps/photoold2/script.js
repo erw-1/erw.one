@@ -100,14 +100,14 @@ function createBreadcrumbs(folderPath) {
     });
 }
 
-// Create a div for either folders or images
+// Create a div for either folders or images, with a background and an event handler
 function createDivElement(className, backgroundImage, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
     div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
 
-    // Add title text (for folders)
+    // Add title text (for folders or images)
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
@@ -115,7 +115,30 @@ function createDivElement(className, backgroundImage, onClick, titleText = null)
         div.appendChild(titleDiv);
     }
 
+    observeBackgroundImageChange(div);
     return div;
+}
+
+// Adjust div size based on background image's aspect ratio
+function observeBackgroundImageChange(targetElement) {
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                const bgImage = targetElement.style.backgroundImage;
+                if (bgImage && bgImage.startsWith('url("')) {
+                    const imageUrl = bgImage.slice(5, -2);
+                    const img = new Image();
+                    img.src = imageUrl;
+                    img.onload = () => {
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+                        targetElement.style.width = `${200 * aspectRatio}px`;
+                        targetElement.style.height = 'auto';
+                    };
+                }
+            }
+        });
+    });
+    observer.observe(targetElement, { attributes: true });
 }
 
 // Show top-level folders when the page loads or root directory is accessed
@@ -135,7 +158,7 @@ async function showTopLevelFolders() {
 
     topLevelFolders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jpg')`;
+        const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${folder.path}/preview.jxl')`;
 
         const folderDiv = createDivElement(
             'folder',
@@ -170,7 +193,7 @@ async function showFolderContents(folderPath) {
     folderContents.forEach((item) => {
         if (item.type === 'tree') {
             const folderName = item.path.replace(`${folderPath}/`, '');
-            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jpg')`;
+            const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}/preview.jxl')`;
 
             const folderDiv = createDivElement(
                 'folder',
@@ -179,12 +202,7 @@ async function showFolderContents(folderPath) {
                 folderName
             );
             galleryContainer.appendChild(folderDiv);
-        } else if (
-            item.type === 'blob' &&
-            (item.path.endsWith('.jpg') ||
-                item.path.endsWith('.png') ||
-                item.path.endsWith('.webp'))
-        ) {
+        } else if (item.type === 'blob' && item.path.endsWith('.jxl')) {
             currentImages.push(item.path);
             const imageIndex = currentImages.length - 1;
             const backgroundImage = `url('https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${item.path}')`;
