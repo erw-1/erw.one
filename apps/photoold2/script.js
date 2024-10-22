@@ -90,28 +90,21 @@ function createLink(text, href, onClick) {
     return link;
 }
 
-// Create a div for folder preview with 3 random images
-function createFolderDiv({ className, imageUrls, onClick, titleText = null }) {
+// Create a div for either folders or images
+function createDivElement({ className, imageUrl, onClick, titleText = null }) {
     const div = document.createElement('div');
     div.className = className;
-
-    // Create title div
-    const titleDiv = document.createElement('div');
-    titleDiv.className = 'folder-title';
-    titleDiv.textContent = titleText;
-    div.appendChild(titleDiv);
-
-    // Create preview divs for each image
-    imageUrls.forEach((imageUrl, index) => {
-        const previewDiv = document.createElement('div');
-        previewDiv.className = `folder-preview ${['one', 'two', 'three'][index]}`;
-        previewDiv.style.backgroundImage = `url('${imageUrl}')`;
-        div.appendChild(previewDiv);
-
-        observeBackgroundImageChange(previewDiv);
-    });
-
+    div.style.backgroundImage = `url('${imageUrl}')`;
     div.onclick = onClick;
+
+    if (titleText) {
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'title';
+        titleDiv.textContent = titleText;
+        div.appendChild(titleDiv);
+    }
+
+    observeBackgroundImageChange(div);
     return div;
 }
 
@@ -142,10 +135,10 @@ async function showTopLevelFolders() {
     const folders = getFilteredItems(tree, basePath, 'tree');
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const imageUrls = getSampledImageUrls(folder.path);
-        const folderDiv = createFolderDiv({
-            className: 'folder-animated',
-            imageUrls,
+        const imageUrl = getRandomImageUrl(folder.path);
+        const folderDiv = createDivElement({
+            className: 'folder',
+            imageUrl,
             onClick: () => showFolderContents(folder.path),
             titleText: folderName,
         });
@@ -216,36 +209,29 @@ function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
-// Get 3 random image URLs from a folder
-function getSampledImageUrls(folderPath) {
+// Get a random image URL from a folder
+function getRandomImageUrl(folderPath) {
     const tree = cachedTree.filter(item => {
         const relativePath = item.path.replace(`${folderPath}/`, '');
         return item.path.startsWith(folderPath) && item.path.endsWith('.jxl') && !relativePath.includes('/');
     });
-    const sampledImages = tree.sort(() => 0.5 - Math.random()).slice(0, 3); // Sample 3 random images
-    return sampledImages.map(item => getGitHubRawUrl(item.path));
+    if (tree.length > 0) {
+        const randomIndex = Math.floor(Math.random() * tree.length);
+        return getGitHubRawUrl(tree[randomIndex].path);
+    }
 }
 
 // Render gallery item (folder or photo)
 function renderGalleryItem({ type, path, name, onClick }) {
-    if (type === 'folder') {
-        const imageUrls = getSampledImageUrls(path);
-        const folderDiv = createFolderDiv({
-            className: 'folder-animated',
-            imageUrls,
-            onClick,
-            titleText: name,
-        });
-        galleryContainer.appendChild(folderDiv);
-    } else {
-        const imageUrl = getGitHubRawUrl(path);
-        const div = createDivElement({
-            className: 'photo',
-            imageUrl,
-            onClick,
-        });
-        galleryContainer.appendChild(div);
-    }
+    const className = type === 'folder' ? 'folder' : 'photo';
+    const imageUrl = type === 'folder' ? getRandomImageUrl(path) : getGitHubRawUrl(path);
+    const div = createDivElement({
+        className,
+        imageUrl,
+        onClick,
+        titleText: type === 'folder' ? name : null,
+    });
+    galleryContainer.appendChild(div);
 }
 
 // Open the lightbox for a specific image
