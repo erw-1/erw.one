@@ -93,11 +93,10 @@ function createBreadcrumbs(folderPath) {
     });
 }
 
-// Create a div for either folders or images, with a background and an event handler
-function createDivElement(className, backgroundImage, onClick, titleText = null) {
+// Modified createDivElement with lazy loading
+function createDivElement(className, backgroundImageUrl, onClick, titleText = null) {
     const div = document.createElement('div');
     div.className = className;
-    div.style.backgroundImage = backgroundImage;
     div.onclick = onClick;
 
     // Add title text (for folders or images)
@@ -108,7 +107,25 @@ function createDivElement(className, backgroundImage, onClick, titleText = null)
         div.appendChild(titleDiv);
     }
 
-    observeBackgroundImageChange(div);
+    // Lazy loading using Intersection Observer
+    const observer = new IntersectionObserver(
+        (entries, observer) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    div.style.backgroundImage = `url('${backgroundImageUrl}')`;
+                    observeBackgroundImageChange(div);
+                    observer.unobserve(div); // Stop observing once loaded
+                }
+            });
+        },
+        {
+            root: null, // Use the viewport as the root
+            rootMargin: '0px',
+            threshold: 0.1, // Trigger when 10% of the element is visible
+        }
+    );
+    observer.observe(div);
+
     return div;
 }
 
@@ -164,6 +181,8 @@ async function showTopLevelFolders() {
 
     createBreadcrumbs(basePath);
 }
+
+
 
 // Show folders and images within a specific directory
 async function showFolderContents(folderPath) {
@@ -240,11 +259,30 @@ function createNewLightbox() {
     }
 }
 
-// Load image into the lightbox based on the current index
+// Modified loadImage function with preloading
 function loadImage(index) {
     const selectedImage = currentImages[index];
     const imageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${selectedImage}`;
     lightboxImg.src = imageUrl;
+
+    // Preload next and previous images
+    preloadAdjacentImages(index);
+}
+
+function preloadAdjacentImages(index) {
+    // Preload next image
+    const nextIndex = (index + 1) % currentImages.length;
+    const nextImage = currentImages[nextIndex];
+    const nextImageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${nextImage}`;
+    const imgNext = new Image();
+    imgNext.src = nextImageUrl;
+
+    // Preload previous image
+    const prevIndex = (index - 1 + currentImages.length) % currentImages.length;
+    const prevImage = currentImages[prevIndex];
+    const prevImageUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${prevImage}`;
+    const imgPrev = new Image();
+    imgPrev.src = prevImageUrl;
 }
 
 // Create navigation buttons for the lightbox
