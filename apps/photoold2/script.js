@@ -252,9 +252,10 @@ async function getFirstThreeImages(folderPath) {
     return images;
 }
 
-// Populate the folder with images after preloading them
 async function populateFolderImages(folderDiv, imageUrls) {
-    const papers = folderDiv.querySelectorAll('.paper');
+    const papersNodeList = folderDiv.querySelectorAll('.paper');
+    const papers = Array.from(papersNodeList); // Convert NodeList to Array
+
     const imageLoadPromises = papers.map((paper, index) => {
         return new Promise((resolve) => {
             if (imageUrls[index]) {
