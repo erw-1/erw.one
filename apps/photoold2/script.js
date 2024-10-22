@@ -90,32 +90,43 @@ function createLink(text, href, onClick) {
     return link;
 }
 
-// Create a div for folder previews with 3 images
-function createFolderPreview(folderPath, folderName, images) {
-    const folderDiv = document.createElement('div');
-    folderDiv.className = 'folder';
-    
-    const titleDiv = document.createElement('div');
-    titleDiv.className = 'title';
-    titleDiv.textContent = folderName;
-    folderDiv.appendChild(titleDiv);
+// Create a div for either folders or images
+function createDivElement({ className, imageUrl, onClick, titleText = null }) {
+    const div = document.createElement('div');
+    div.className = className;
+    div.style.backgroundImage = `url('${imageUrl}')`;
+    div.onclick = onClick;
 
-    // Create 3 paper divs for folder image previews
-    for (let i = 0; i < 3; i++) {
-        const paperDiv = document.createElement('div');
-        paperDiv.className = `paper ${i === 0 ? 'one' : i === 1 ? 'two' : 'three'}`;
-        if (images[i]) {
-            const imageUrl = getGitHubRawUrl(images[i]);
-            paperDiv.style.backgroundImage = `url('${imageUrl}')`;
-        }
-        folderDiv.appendChild(paperDiv);
+    if (titleText) {
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'title';
+        titleDiv.textContent = titleText;
+        div.appendChild(titleDiv);
     }
 
-    folderDiv.onclick = () => showFolderContents(folderPath); // Attach folder click event
-    return folderDiv;
+    observeBackgroundImageChange(div);
+    return div;
 }
 
-// Show top-level folders with 3 image previews for each folder
+// Adjust div size based on background image's aspect ratio
+function observeBackgroundImageChange(targetElement) {
+    const observer = new MutationObserver(() => {
+        const bgImage = targetElement.style.backgroundImage;
+        if (bgImage && bgImage.startsWith('url("')) {
+            const imageUrl = bgImage.slice(5, -2);
+            const img = new Image();
+            img.src = imageUrl;
+            img.onload = () => {
+                const aspectRatio = img.naturalWidth / img.naturalHeight;
+                targetElement.style.width = `${200 * aspectRatio}px`;
+                targetElement.style.height = 'auto';
+            };
+        }
+    });
+    observer.observe(targetElement, { attributes: true });
+}
+
+// Show top-level folders when the page loads or root directory is accessed
 async function showTopLevelFolders() {
     clearGallery();
     const tree = await fetchGitHubTree();
@@ -124,8 +135,13 @@ async function showTopLevelFolders() {
     const folders = getFilteredItems(tree, basePath, 'tree');
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const folderImages = getFolderImages(tree, folder.path, 3); // Get 3 images from the folder
-        const folderDiv = createFolderPreview(folder.path, folderName, folderImages);
+        const imageUrl = getPreviewImageUrl(folder.path);
+        const folderDiv = createDivElement({
+            className: 'folder',
+            imageUrl,
+            onClick: () => showFolderContents(folder.path),
+            titleText: folderName,
+        });
         galleryContainer.appendChild(folderDiv);
     });
 
@@ -188,17 +204,14 @@ function getFolderContents(tree, folderPath) {
     });
 }
 
-// Get a specific number of image paths from a folder
-function getFolderImages(tree, folderPath, count) {
-    const images = tree.filter((item) => {
-        return item.type === 'blob' && item.path.startsWith(folderPath) && item.path.endsWith('.jxl');
-    });
-    return images.slice(0, count).map(image => image.path); // Return the first 'count' number of images
-}
-
 // Get GitHub raw URL
 function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
+}
+
+// Get preview image URL
+function getPreviewImageUrl(path) {
+    return `${getGitHubRawUrl(path)}/preview.jxl`;
 }
 
 // Render gallery item (folder or photo)
