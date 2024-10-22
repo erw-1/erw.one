@@ -97,16 +97,20 @@ function createDivElement({ className, imageUrl, onClick, titleText = null }) {
     div.onclick = onClick;
 
     if (className === 'folder') {
+        // Hide the folder until images are loaded
+        div.style.visibility = 'hidden';
+
         // Create animated folder structure
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
         titleDiv.textContent = titleText;
         div.appendChild(titleDiv);
 
-        // Create paper elements
+        // Create paper elements with classes 'one', 'two', 'three'
+        const paperClasses = ['one', 'two', 'three'];
         for (let i = 0; i < 3; i++) {
             const paperDiv = document.createElement('div');
-            paperDiv.className = `paper paper${i}`;
+            paperDiv.className = `paper ${paperClasses[i]}`;
             div.appendChild(paperDiv);
         }
     } else {
@@ -151,11 +155,12 @@ async function showTopLevelFolders() {
             titleText: folderName,
         });
 
+        // Append the folder to the gallery first
+        galleryContainer.appendChild(folderDiv);
+
         // Populate the folder with images
         const images = await getFirstThreeImages(folder.path);
         await populateFolderImages(folderDiv, images);
-
-        galleryContainer.appendChild(folderDiv);
     }
 
     createBreadcrumbs(basePath);
@@ -181,11 +186,12 @@ async function showFolderContents(folderPath) {
                 titleText: relativeName,
             });
 
+            // Append the folder to the gallery first
+            galleryContainer.appendChild(folderDiv);
+
             // Populate the folder with images
             const images = await getFirstThreeImages(treeItem.path);
             await populateFolderImages(folderDiv, images);
-
-            galleryContainer.appendChild(folderDiv);
         } else if (treeItem.type === 'blob' && treeItem.path.endsWith('.jxl')) {
             currentImages.push(treeItem.path);
             const imageIndex = currentImages.length - 1;
@@ -235,7 +241,7 @@ async function getFirstThreeImages(folderPath) {
     if (!tree) return [];
 
     const images = tree
-        .filter((treeItem) => 
+        .filter((treeItem) =>
             treeItem.type === 'blob' &&
             treeItem.path.endsWith('.jxl') &&
             treeItem.path.startsWith(folderPath + '/')
@@ -249,29 +255,32 @@ async function getFirstThreeImages(folderPath) {
 // Populate the folder with images after preloading them
 async function populateFolderImages(folderDiv, imageUrls) {
     const papers = folderDiv.querySelectorAll('.paper');
-    const imageLoadPromises = imageUrls.map((url, index) => {
+    const imageLoadPromises = papers.map((paper, index) => {
         return new Promise((resolve) => {
-            const img = new Image();
-            img.src = url;
-            img.onload = () => {
-                papers[index].style.backgroundImage = `url('${url}')`;
+            if (imageUrls[index]) {
+                const url = imageUrls[index];
+                const img = new Image();
+                img.src = url;
+                img.onload = () => {
+                    paper.style.backgroundImage = `url('${url}')`;
+                    resolve();
+                };
+                img.onerror = () => {
+                    // If image fails to load, don't set a background image
+                    resolve();
+                };
+            } else {
+                // If no image, do not set background image (solid color paper)
                 resolve();
-            };
-            img.onerror = () => {
-                // Use a placeholder image if the image fails to load
-                papers[index].style.backgroundImage = `url('https://i.imgur.com/w9SCbrp.jpeg')`;
-                resolve();
-            };
+            }
         });
     });
 
-    // Handle cases where there are less than 3 images
-    for (let i = imageUrls.length; i < 3; i++) {
-        papers[i].style.backgroundImage = `url('https://i.imgur.com/w9SCbrp.jpeg')`;
-    }
-
     // Wait for all images to load
     await Promise.all(imageLoadPromises);
+
+    // Make the folder visible
+    folderDiv.style.visibility = 'visible';
 }
 
 // Open the lightbox for a specific image
