@@ -11,6 +11,7 @@ const errorMessage = document.getElementById('error-message');
 
 // State variables
 let currentFolder = '';
+let currentIndex = 0;
 let currentImages = [];
 let lightbox, lightboxImg;
 let cachedTree = null; // Cached tree structure to prevent multiple API calls
@@ -118,7 +119,7 @@ function observeBackgroundImageChange(targetElement) {
             img.onload = () => {
                 const aspectRatio = img.naturalWidth / img.naturalHeight;
                 targetElement.style.width = `${200 * aspectRatio}px`;
-                targetElement.style.height = '200px';  // Maintaining the fixed height for consistency
+                targetElement.style.height = 'auto';
             };
         }
     });
@@ -134,7 +135,7 @@ async function showTopLevelFolders() {
     const folders = getFilteredItems(tree, basePath, 'tree');
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const imageUrl = getPreviewImageUrl(folder.path, folderName);  // Getting preview image from folder contents
+        const imageUrl = getPreviewImageUrl(folder.path);
         const folderDiv = createDivElement({
             className: 'folder',
             imageUrl,
@@ -208,21 +209,15 @@ function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
-// Get preview image URL, modified to pull specific images from the folder content
-function getPreviewImageUrl(folderPath, folderName) {
-    const specificImages = currentImages.slice(0, 3); // Simulate picking 3 images from the folder content
-    if (specificImages.length > 0) {
-        return specificImages.map(image => getGitHubRawUrl(image));
-    } else {
-        // Placeholder if no images are found
-        return 'https://via.placeholder.com/200x200';
-    }
+// Get preview image URL
+function getPreviewImageUrl(path) {
+    return `${getGitHubRawUrl(path)}/preview.jxl`;
 }
 
 // Render gallery item (folder or photo)
 function renderGalleryItem({ type, path, name, onClick }) {
     const className = type === 'folder' ? 'folder' : 'photo';
-    const imageUrl = type === 'folder' ? getPreviewImageUrl(path, name) : getGitHubRawUrl(path);
+    const imageUrl = type === 'folder' ? getPreviewImageUrl(path) : getGitHubRawUrl(path);
     const div = createDivElement({
         className,
         imageUrl,
