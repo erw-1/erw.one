@@ -119,7 +119,7 @@ function createDivElement({ className, imageUrl, onClick, titleText = null }) {
     return div;
 }
 
-// Adjust div size based on background image's aspect ratio
+// Adjust div size based on background image's aspect ratio (for photos only)
 function observeBackgroundImageChange(targetElement) {
     const observer = new MutationObserver(() => {
         const bgImage = targetElement.style.backgroundImage;
@@ -249,7 +249,7 @@ async function getFirstThreeImages(folderPath) {
     return images;
 }
 
-// Populate the folder with images
+// Populate the folder with images (without width/height adjustments)
 function populateFolderImages(folderDiv, imageUrls) {
     const papersNodeList = folderDiv.querySelectorAll('.paper');
     const papers = Array.from(papersNodeList); // Convert NodeList to Array
@@ -257,17 +257,13 @@ function populateFolderImages(folderDiv, imageUrls) {
     papers.forEach((paper, index) => {
         if (imageUrls[index]) {
             const url = imageUrls[index];
-            // Set background image and call observeBackgroundImageChange
+            // Set background image (same as photos)
             paper.style.backgroundImage = `url('${url}')`;
-            observeBackgroundImageChange(paper);
+            // Do not call observeBackgroundImageChange to avoid width/height adjustments
         } else {
             // If no image, do not set background image (solid color paper)
         }
     });
-
-    // Make the folder visible
-    // If you hid the folder initially, you can set visibility here
-    // folderDiv.style.visibility = 'visible';
 }
 
 // Open the lightbox for a specific image
