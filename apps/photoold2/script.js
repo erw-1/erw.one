@@ -90,7 +90,7 @@ function createLink(text, href, onClick) {
     return link;
 }
 
-// Create a div for images
+// Create a div for either folders or images
 function createDivElement({ className, imageUrl, onClick, titleText = null }) {
     const div = document.createElement('div');
     div.className = className;
@@ -133,15 +133,25 @@ async function showTopLevelFolders() {
     if (!tree) return;
 
     const folders = getFilteredItems(tree, basePath, 'tree');
-    folders.forEach((folder) => {
+    for (const folder of folders) {
         const folderName = folder.path.replace(basePath, '');
+
+        // Get the first three images in the folder
+        const folderContents = getFolderContents(tree, folder.path);
+
+        const imagesInFolder = folderContents.filter(item => item.type === 'blob' && item.path.endsWith('.jxl'));
+
+        const previewImages = imagesInFolder.slice(0, 3).map(item => getGitHubRawUrl(item.path));
+
+        // Now render the folder
         renderGalleryItem({
             type: 'folder',
             path: folder.path,
             name: folderName,
             onClick: () => showFolderContents(folder.path),
+            previewImages: previewImages
         });
-    });
+    }
 
     createBreadcrumbs(basePath);
 }
@@ -160,11 +170,19 @@ async function showFolderContents(folderPath) {
     items.forEach((treeItem) => {
         const relativeName = treeItem.path.replace(`${folderPath}/`, '');
         if (treeItem.type === 'tree') {
+            // Get the first three images in the folder
+            const folderContents = getFolderContents(tree, treeItem.path);
+
+            const imagesInFolder = folderContents.filter(item => item.type === 'blob' && item.path.endsWith('.jxl'));
+
+            const previewImages = imagesInFolder.slice(0, 3).map(item => getGitHubRawUrl(item.path));
+
             renderGalleryItem({
                 type: 'folder',
                 path: treeItem.path,
                 name: relativeName,
                 onClick: () => showFolderContents(treeItem.path),
+                previewImages: previewImages
             });
         } else if (treeItem.type === 'blob' && treeItem.path.endsWith('.jxl')) {
             currentImages.push(treeItem.path);
@@ -207,56 +225,17 @@ function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
-// Function to get the first three images from a folder
-function getFirstThreeImagesFromFolder(folderPath) {
-    const images = cachedTree.filter((treeItem) => {
-        const relativePath = treeItem.path.replace(`${folderPath}/`, '');
-        return (
-            treeItem.path.startsWith(folderPath) &&
-            relativePath.indexOf('/') === -1 &&
-            treeItem.type === 'blob' &&
-            treeItem.path.endsWith('.jxl')
-        );
-    }).slice(0, 3); // Get first three images
-
-    return images.map((image) => image.path);
-}
-
 // Render gallery item (folder or photo)
-function renderGalleryItem({ type, path, name, onClick }) {
+function renderGalleryItem({ type, path, name, onClick, previewImages }) {
     if (type === 'folder') {
-        // Create the folder div
-        const folderDiv = document.createElement('div');
-        folderDiv.className = 'folder';
-        folderDiv.onclick = onClick;
-
-        // Create the title div
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'title';
-        titleDiv.textContent = name;
-        folderDiv.appendChild(titleDiv);
-
-        // Get the first three images from the folder
-        const images = getFirstThreeImagesFromFolder(path);
-
-        // Create the folder-preview divs
-        images.forEach((imagePath, index) => {
-            const folderPreviewDiv = document.createElement('div');
-            folderPreviewDiv.className = `folder-preview ${
-                index === 0 ? 'one' : index === 1 ? 'two' : 'three'
-            }`;
-            const imageUrl = getGitHubRawUrl(imagePath);
-            folderPreviewDiv.style.backgroundImage = `url('${imageUrl}')`;
-
-            // Use the same method as for photos to render images
-            observeBackgroundImageChange(folderPreviewDiv);
-
-            folderDiv.appendChild(folderPreviewDiv);
+        const div = createFolderElement({
+            name,
+            onClick,
+            previewImages
         });
-
-        galleryContainer.appendChild(folderDiv);
+        galleryContainer.appendChild(div);
     } else {
-        // Existing code for photos
+        // existing code for photos
         const className = 'photo';
         const imageUrl = getGitHubRawUrl(path);
         const div = createDivElement({
@@ -267,6 +246,33 @@ function renderGalleryItem({ type, path, name, onClick }) {
         });
         galleryContainer.appendChild(div);
     }
+}
+
+// Create folder element with three preview images
+function createFolderElement({ name, onClick, previewImages }) {
+    const folderDiv = document.createElement('div');
+    folderDiv.className = 'folder';
+    folderDiv.onclick = onClick;
+
+    // Create title div
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'title';
+    titleDiv.textContent = name;
+    folderDiv.appendChild(titleDiv);
+
+    // Create three folder-preview divs
+    const positions = ['one', 'two', 'three'];
+    for (let i = 0; i < 3; i++) {
+        const previewDiv = document.createElement('div');
+        previewDiv.className = `folder-preview ${positions[i]}`;
+        if (previewImages[i]) {
+            // Set background image
+            previewDiv.style.backgroundImage = `url('${previewImages[i]}')`;
+        }
+        folderDiv.appendChild(previewDiv);
+    }
+
+    return folderDiv;
 }
 
 // Open the lightbox for a specific image
