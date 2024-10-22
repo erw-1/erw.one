@@ -90,42 +90,22 @@ function createLink(text, href, onClick) {
     return link;
 }
 
-// Get three random image URLs only from the specific folder (not subfolders)
-function getThreeRandomImageUrls(folderPath) {
-    const tree = cachedTree.filter(item => {
-        const relativePath = item.path.replace(`${folderPath}/`, '');
-        return item.path.startsWith(folderPath) && item.path.endsWith('.jxl') && !relativePath.includes('/');
-    });
-    
-    // Select three random unique images from the folder
-    const shuffled = tree.sort(() => 0.5 - Math.random());
-    const selectedImages = shuffled.slice(0, 3);
-    
-    return selectedImages.map(image => getGitHubRawUrl(image.path));
-}
-
-// Create a div for folders with three individual image divs inside
-function createDivElementWithMultipleImageDivs({ className, imageUrls, onClick, titleText = null }) {
-    const folderDiv = document.createElement('div');
-    folderDiv.className = className;
-    folderDiv.onclick = onClick;
+// Create a div for either folders or images
+function createDivElement({ className, imageUrl, onClick, titleText = null }) {
+    const div = document.createElement('div');
+    div.className = className;
+    div.style.backgroundImage = `url('${imageUrl}')`;
+    div.onclick = onClick;
 
     if (titleText) {
         const titleDiv = document.createElement('div');
         titleDiv.className = 'title';
         titleDiv.textContent = titleText;
-        folderDiv.appendChild(titleDiv);
+        div.appendChild(titleDiv);
     }
 
-    // Create separate divs for each of the three images
-    imageUrls.forEach(url => {
-        const imageDiv = document.createElement('div');
-        imageDiv.className = 'folder-image';
-        imageDiv.style.backgroundImage = `url('${url}')`;
-        folderDiv.appendChild(imageDiv);
-    });
-
-    return folderDiv;
+    observeBackgroundImageChange(div);
+    return div;
 }
 
 // Adjust div size based on background image's aspect ratio
@@ -155,10 +135,10 @@ async function showTopLevelFolders() {
     const folders = getFilteredItems(tree, basePath, 'tree');
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const imageUrls = getThreeRandomImageUrls(folder.path);
-        const folderDiv = createDivElementWithMultipleImageDivs({
+        const imageUrl = getRandomImageUrl(folder.path);
+        const folderDiv = createDivElement({
             className: 'folder',
-            imageUrls,
+            imageUrl,
             onClick: () => showFolderContents(folder.path),
             titleText: folderName,
         });
@@ -229,14 +209,25 @@ function getGitHubRawUrl(path) {
     return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`;
 }
 
+// Get a random image URL from a folder
+function getRandomImageUrl(folderPath) {
+    const tree = cachedTree.filter(item => {
+        const relativePath = item.path.replace(`${folderPath}/`, '');
+        return item.path.startsWith(folderPath) && item.path.endsWith('.jxl') && !relativePath.includes('/');
+    });
+    if (tree.length > 0) {
+        const randomIndex = Math.floor(Math.random() * tree.length);
+        return getGitHubRawUrl(tree[randomIndex].path);
+    }
+}
+
 // Render gallery item (folder or photo)
 function renderGalleryItem({ type, path, name, onClick }) {
     const className = type === 'folder' ? 'folder' : 'photo';
-    const imageUrls = type === 'folder' ? getThreeRandomImageUrls(path) : [getGitHubRawUrl(path)];
-    
-    const div = createDivElementWithMultipleImageDivs({
+    const imageUrl = type === 'folder' ? getRandomImageUrl(path) : getGitHubRawUrl(path);
+    const div = createDivElement({
         className,
-        imageUrls,
+        imageUrl,
         onClick,
         titleText: type === 'folder' ? name : null,
     });
