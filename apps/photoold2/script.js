@@ -135,11 +135,36 @@ async function showTopLevelFolders() {
     const folders = getFilteredItems(tree, basePath, 'tree');
     folders.forEach((folder) => {
         const folderName = folder.path.replace(basePath, '');
-        const folderDiv = createFolderPreview(folder.path, folderName);
+        const folderDiv = await createFolderPreviewDiv(folder.path, folderName);
         galleryContainer.appendChild(folderDiv);
     });
 
     createBreadcrumbs(basePath);
+}
+
+// Create a folder preview div with 3 folder-preview images
+async function createFolderPreviewDiv(folderPath, folderName) {
+    const tree = await fetchGitHubTree();
+    const images = getFilteredItems(tree, folderPath, 'blob').filter(item => item.path.endsWith('.jxl'));
+    const previewImages = images.slice(0, 3).map(image => getGitHubRawUrl(image.path));
+
+    const folderDiv = document.createElement('div');
+    folderDiv.className = 'folder';
+    folderDiv.onclick = () => showFolderContents(folderPath);
+
+    const titleDiv = document.createElement('div');
+    titleDiv.className = 'title';
+    titleDiv.textContent = folderName;
+    folderDiv.appendChild(titleDiv);
+
+    previewImages.forEach((imageUrl, index) => {
+        const previewDiv = document.createElement('div');
+        previewDiv.className = `folder-preview ${index + 1}`;
+        previewDiv.style.backgroundImage = `url('${imageUrl}')`;
+        folderDiv.appendChild(previewDiv);
+    });
+
+    return folderDiv;
 }
 
 // Show folders and images within a specific directory
@@ -174,31 +199,6 @@ async function showFolderContents(folderPath) {
     });
 }
 
-// Create folder preview with three sampled images
-function createFolderPreview(folderPath, folderName) {
-    const div = document.createElement('div');
-    div.className = 'folder';
-    const titleDiv = document.createElement('div');
-    titleDiv.className = 'title';
-    titleDiv.textContent = folderName;
-    div.appendChild(titleDiv);
-
-    const tree = cachedTree || [];
-    const folderItems = getFolderContents(tree, folderPath).filter(item => item.path.endsWith('.jxl')).slice(0, 3);
-    
-    folderItems.forEach((imageItem, index) => {
-        const imageUrl = getGitHubRawUrl(imageItem.path);
-        const previewDiv = document.createElement('div');
-        previewDiv.className = `folder-preview ${['one', 'two', 'three'][index]}`;
-        previewDiv.style.backgroundImage = `url('${imageUrl}')`;
-        div.appendChild(previewDiv);
-    });
-
-    div.onclick = () => showFolderContents(folderPath);
-    observeBackgroundImageChange(div);
-    return div;
-}
-
 // Get filtered items from the tree
 function getFilteredItems(tree, path, type) {
     return tree.filter((treeItem) => {
@@ -231,7 +231,7 @@ function getGitHubRawUrl(path) {
 // Render gallery item (folder or photo)
 function renderGalleryItem({ type, path, name, onClick }) {
     const className = type === 'folder' ? 'folder' : 'photo';
-    const imageUrl = type === 'folder' ? '' : getGitHubRawUrl(path);
+    const imageUrl = type === 'folder' ? getGitHubRawUrl(path) : getGitHubRawUrl(path);
     const div = createDivElement({
         className,
         imageUrl,
@@ -252,6 +252,95 @@ function openLightbox(index) {
     document.addEventListener('keydown', handleKeyDown);
     lightbox.addEventListener('touchstart', handleTouchStart);
     lightbox.addEventListener('touchend', handleTouchEnd);
+}
+
+// Close the lightbox
+function closeLightbox() {
+    lightbox.style.display = 'none';
+
+    // Remove event listeners
+    document.removeEventListener('keydown', handleKeyDown);
+    lightbox.removeEventListener('touchstart', handleTouchStart);
+    lightbox.removeEventListener('touchend', handleTouchEnd);
+}
+
+// Handle keyboard navigation
+function handleKeyDown(e) {
+    if (e.key === 'ArrowLeft') navigate(-1);
+    else if (e.key === 'ArrowRight') navigate(1);
+    else if (e.key === 'Escape') closeLightbox();
+}
+
+// Handle touch events
+function handleTouchStart(e) {
+    const touchStartX = e.changedTouches[0].screenX;
+    lightbox.dataset.touchStartX = touchStartX;
+}
+
+function handleTouchEnd(e) {
+    const touchEndX = e.changedTouches[0].screenX;
+    const touchStartX = parseFloat(lightbox.dataset.touchStartX);
+    handleSwipeGesture(touchStartX, touchEndX);
+}
+
+// Determine swipe direction and navigate
+function handleSwipeGesture(touchStartX, touchEndX) {
+    const swipeThreshold = 50; // Minimum distance for a swipe action
+    if (touchEndX < touchStartX - swipeThreshold) navigate(1);
+    else if (touchEndX > touchStartX + swipeThreshold) navigate(-1);
+}
+
+// Create the lightbox
+function createLightbox() {
+    if (lightbox) return;
+
+    lightbox = document.createElement('div');
+    lightbox.id = 'lightbox';
+    lightbox.className = 'lightbox';
+    document.body.appendChild(lightbox);
+
+    lightboxImg = document.createElement('img');
+    lightboxImg.id = 'lightbox-img';
+    lightboxImg.className = 'lightbox-img';
+    lightbox.appendChild(lightboxImg);
+
+    createNavButton('prev', '&#10094;');
+    createNavButton('next', '&#10095;');
+
+    // Close lightbox when clicking outside the image
+    lightbox.onclick = (e) => {
+        if (e.target === lightbox) closeLightbox();
+    };
+}
+
+// Load image into the lightbox based on the current index
+function loadImage(index) {
+    const selectedImage = currentImages[index];
+    const imageUrl = getGitHubRawUrl(selectedImage);
+    lightboxImg.src = imageUrl;
+}
+
+// Create navigation buttons for the lightbox
+function createNavButton(id, content) {
+    const btn = document.createElement('span');
+    btn.id = id;
+    btn.className = 'nav';
+    btn.innerHTML = content;
+    btn.onclick = navigateLightbox;
+    lightbox.appendChild(btn);
+}
+
+// Navigate lightbox
+function navigateLightbox(e) {
+    e.stopPropagation();
+    const direction = e.target.id === 'next' ? 1 : -1;
+    navigate(direction);
+}
+
+// Navigate between images in the lightbox
+function navigate(direction) {
+    currentIndex = (currentIndex + direction + currentImages.length) % currentImages.length;
+    loadImage(currentIndex);
 }
 
 // Initialize the gallery on page load
