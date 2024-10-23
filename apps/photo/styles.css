@@ -16,7 +16,7 @@ body {
 
 .photo, .folder {
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
-    height: 200px !important;
+    height: 120px !important;
     margin: 0px;
     min-width: 40px;
     cursor: pointer;
