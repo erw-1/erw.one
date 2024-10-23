@@ -123,7 +123,6 @@ body {
     object-fit: contain; 
     box-shadow: 0 0px 1000px rgba(0,0,0,0.5);
     border-radius: 5px;
-    margin-bottom: 40px;
 }
 
 
@@ -221,7 +220,7 @@ footer {
     position: fixed; /* Stick to the bottom of the screen */
     bottom: 5px; /* Align to the bottom */
     font-size: 12pt !important;
-    left: 50%; /* Move to the center of the page */
+    left: 10%; /* Move to the center of the page */
     transform: translateX(-50%); /* Offset to truly center it */
     z-index: 100000; /* Ensure it stays above other content */
     padding: 3px 5px; /* Add padding for aesthetics */
