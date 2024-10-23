@@ -1,7 +1,7 @@
 // Configuration variables
 const owner = 'erw-1';
-const repo = 'erw.one';
-const basePath = 'files/img/photo/';
+const repo = 'files';
+const basePath = 'files/images/photography/';
 const branch = 'main';
 
 // DOM elements
