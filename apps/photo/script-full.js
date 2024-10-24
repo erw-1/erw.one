@@ -118,7 +118,7 @@ function observeBackgroundImageChange(targetElement) {
             img.src = imageUrl;
             img.onload = () => {
                 const aspectRatio = img.naturalWidth / img.naturalHeight;
-                targetElement.style.width = `${200 * aspectRatio}px`;
+                targetElement.style.width = `${120 * aspectRatio}px`;
                 targetElement.style.height = 'auto';
             };
         }
