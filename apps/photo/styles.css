@@ -29,6 +29,7 @@ body {
     background-color: rgba(66,66,66,0.48);
     border: #101010 solid 1px;
     padding: 1px;
+    box-sizing: border-box;
 }
 
 .photo:hover {
