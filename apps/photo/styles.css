@@ -1,6 +1,7 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;400;600&display=swap');
 
 body {
-    font-family: Century Gothic !important;
+    font-family: "Poppins", Century Gothic !important;
     margin: 0;
     padding-top: 20px;
     background-color: #101010;
