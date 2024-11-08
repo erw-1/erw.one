@@ -27,7 +27,7 @@ body {
 .photo {
     border-radius: 5px;
     transition: all 0.2s ease;
-    border: #101010 solid 4px;
+    border: #101010 solid 2px;
     padding: 1px;
     box-sizing: border-box;
     background-image: none;
