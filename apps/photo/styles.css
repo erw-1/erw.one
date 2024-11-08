@@ -35,8 +35,9 @@ body {
 }
 
 @keyframes gradient {
-  0% { background-color: rgba(66,66,66,0.48); }
-  100% { background-color: rgba(200,200,200,0.48); }
+  0% { background-color: rgba(66,66,66,0.48);}
+  50% { background-color: rgba(200,200,200,0.48);}
+  100% { background-color: rgba(66,66,66,0.48);}
 }
 
 .photo:hover {
