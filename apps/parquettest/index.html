@@ -1,15 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>GeoParquet to Leaflet</title>
+  <title>GeoParquet with Leaflet</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
   <div id="map" style="height: 600px;"></div>
   <script type="module">
-    import initWasm, { readParquet } from "https://unpkg.com/parquet-wasm@0.6.0/esm/parquet_wasm.js";
-    import * as arrow from "https://cdn.jsdelivr.net/npm/apache-arrow@10.0.1/+esm";
+    import initWasm, { readParquet } from "./arrow2.js"; // Path to arrow2.js
 
     (async function () {
       try {
@@ -17,39 +16,31 @@
         console.log("Initializing WebAssembly...");
         await initWasm();
 
-        // Step 2: Fetch and Read the GeoParquet File
-        console.log("Fetching GeoParquet file...");
-        const response = await fetch("./data.parquet"); // Replace with the correct file path
-        if (!response.ok) throw new Error("Failed to fetch GeoParquet file.");
+        // Step 2: Fetch and Read the Parquet File
+        console.log("Fetching Parquet file...");
+        const response = await fetch("./data.parquet"); // Replace with your Parquet file path
+        if (!response.ok) throw new Error("Failed to fetch Parquet file.");
         const parquetBytes = new Uint8Array(await response.arrayBuffer());
 
         console.log("Reading Parquet file...");
-        const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
-        const arrowTable = arrow.tableFromIPC(wasmTable.intoIPCStream());
-
+        const arrowTable = readParquet(parquetBytes);
         console.log("Arrow Table:", arrowTable);
-        console.log("Arrow Table Schema:", arrowTable.schema);
 
         // Step 3: Extract Data from the Arrow Table
         const geojson = {
           type: "FeatureCollection",
-          features: []
+          features: [],
         };
 
-        // Log schema fields
-        const schemaFields = arrowTable.schema.fields;
-        console.log("Schema Fields:", schemaFields);
-
-        // Try to find geometry column
-        const geometryColumn = arrowTable.getChild("geometry"); // Replace with the actual name if different
+        const geometryColumn = arrowTable.getChild("geometry"); // Adjust column name as needed
         if (!geometryColumn) throw new Error("Geometry column not found.");
 
         const flatCoordinates = geometryColumn.getChildAt(0)?.data?.[0]?.values;
         if (!flatCoordinates) throw new Error("Flat coordinates not found in geometry column.");
 
-        // Extract other properties
+        // Extract other columns as properties
         const properties = {};
-        schemaFields.forEach((field) => {
+        arrowTable.schema.fields.forEach((field) => {
           const column = arrowTable.getChild(field.name);
           if (column?.data?.[0]?.values) {
             properties[field.name] = column.data[0].values;
@@ -62,7 +53,7 @@
         for (let i = 0; i < flatCoordinates.length / 2; i++) {
           const coords = [
             flatCoordinates[i * 2], // Longitude
-            flatCoordinates[i * 2 + 1] // Latitude
+            flatCoordinates[i * 2 + 1], // Latitude
           ];
 
           const featureProps = {};
@@ -73,7 +64,7 @@
           geojson.features.push({
             type: "Feature",
             geometry: { type: "Point", coordinates: coords },
-            properties: featureProps
+            properties: featureProps,
           });
         }
 
@@ -82,7 +73,7 @@
         // Step 4: Render GeoJSON on Leaflet Map
         const map = L.map("map").setView([0, 0], 2); // Center at [0, 0], zoom level 2
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-          attribution: "&copy; OpenStreetMap contributors"
+          attribution: "&copy; OpenStreetMap contributors",
         }).addTo(map);
 
         L.geoJSON(geojson).addTo(map);
