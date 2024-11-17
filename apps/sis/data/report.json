@@ -1,0 +1,22 @@
+{
+    "Couple 1": {
+        "Zone": {
+            "name": "aea",
+            "source": "data/couple1_zone.geojson"
+        },
+        "Points": {
+            "name": "aeaeaea",
+            "source": "data/couple1_points.geojson"
+        }
+    },
+    "Couple 2": {
+        "Zone": {
+            "name": "eazeae",
+            "source": "data/couple2_zone.geojson"
+        },
+        "Points": {
+            "name": "aeezaae",
+            "source": "data/couple2_points.geojson"
+        }
+    }
+}
