@@ -31,71 +31,58 @@
                 console.log("Reading Parquet file...");
                 const arrowTable = readParquet(parquetUint8Array);
     
-                // Log the structure of the Arrow table
+                // Log the Arrow Table
                 console.log("Arrow Table:", arrowTable);
+                console.dir(arrowTable); // Deeply inspect object structure
+    
+                // Log the schema
                 console.log("Arrow Table Schema:", arrowTable.schema);
-                console.log("Arrow Table Number of Rows:", arrowTable.numRows);
+                console.dir(arrowTable.schema); // Deeply inspect schema object
     
-                // Step 4: Log columns for additional insights
-                const columnNames = arrowTable.schema.fields.map(field => field.name);
-                console.log("Column Names:", columnNames);
-    
-                // Step 5: Convert Arrow table to GeoJSON
-                console.log("Converting Arrow table to GeoJSON...");
-                const geojson = {
-                    type: "FeatureCollection",
-                    features: []
-                };
-    
-                // Step 6: Extract rows and log details
-                const rowCount = arrowTable.numRows;
-                console.log(`Processing ${rowCount} rows...`);
-                for (let i = 0; i < rowCount; i++) {
-                    const row = {};
-                    for (const columnName of columnNames) {
-                        const column = arrowTable.getColumn(columnName);
-                        if (column) {
-                            row[columnName] = column.get(i);
-                        } else {
-                            console.warn(`Column "${columnName}" not found in the table.`);
-                        }
-                    }
-                    console.log(`Row ${i + 1}:`, row);
-    
-                    // Convert row to GeoJSON feature
-                    if (row.longitude && row.latitude) { // Replace with actual column names
-                        const feature = {
-                            type: "Feature",
-                            geometry: {
-                                type: "Point",
-                                coordinates: [row.longitude, row.latitude]
-                            },
-                            properties: { ...row }
-                        };
-                        geojson.features.push(feature);
-                    } else {
-                        console.warn(`Row ${i + 1} is missing latitude/longitude:`, row);
-                    }
+                // Try to get number of rows
+                console.log("Attempting to get number of rows...");
+                if ('numRows' in arrowTable) {
+                    console.log("Arrow Table Number of Rows:", arrowTable.numRows);
+                } else {
+                    console.warn("The 'numRows' property is not present on the Arrow table.");
                 }
     
-                console.log("GeoJSON Data:", geojson);
+                // Try logging available columns
+                if (arrowTable.schema?.fields) {
+                    console.log("Schema Fields (Columns):", arrowTable.schema.fields);
+                    arrowTable.schema.fields.forEach((field, index) => {
+                        console.log(`Field ${index}:`, field.name, field);
+                    });
+                } else {
+                    console.warn("Schema fields are not available.");
+                }
     
-                // Step 7: Initialize Leaflet map
-                console.log("Initializing Leaflet map...");
-                const map = L.map('map').setView([0, 0], 2);
-                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    attribution: '&copy; OpenStreetMap contributors'
-                }).addTo(map);
+                // Debug: Check if rows can be iterated manually
+                console.log("Checking if rows can be iterated...");
+                if ('getColumn' in arrowTable && arrowTable.schema?.fields) {
+                    const columnNames = arrowTable.schema.fields.map(field => field.name);
+                    console.log("Extracted Column Names:", columnNames);
     
-                // Step 8: Add GeoJSON layer to the map
-                console.log("Adding GeoJSON layer to the map...");
-                L.geoJSON(geojson).addTo(map);
-                console.log("Map initialization complete.");
+                    const rowCount = arrowTable.numRows || 0;
+                    console.log(`Row Count: ${rowCount}`);
+    
+                    for (let i = 0; i < rowCount; i++) {
+                        const row = {};
+                        for (const columnName of columnNames) {
+                            const column = arrowTable.getColumn(columnName);
+                            row[columnName] = column?.get(i);
+                        }
+                        console.log(`Row ${i + 1}:`, row);
+                    }
+                } else {
+                    console.warn("'getColumn' method or schema fields are missing.");
+                }
             } catch (error) {
                 console.error("An error occurred:", error);
             }
         })();
     </script>
+
 
 </body>
 </html>
