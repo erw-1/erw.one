@@ -81,7 +81,7 @@ async function loadGeoParquet(url) {
 }
 
 // Replace with the URL to your GeoParquet file
-const geoParquetURL = 'data/data.parquet';
+const geoParquetURL = 'data.parquet';
 
 // Load the GeoParquet file
 loadGeoParquet(geoParquetURL);
