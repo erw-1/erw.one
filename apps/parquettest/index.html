@@ -1,97 +1,66 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Parquet Data Map</title>
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  
-  <style>
-    /* Style for the map container */
-    #map {
-      height: 100vh;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    body, html {
-      height: 100%;
-      margin: 0;
-    }
-  </style>
-</head>
-<body>
-  <div id="map"></div>
+<script type="module">
+  import init, { readParquet } from './parquet_wasm.js';
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  
-  <!-- Load parquet-wasm -->
-  <script type="module">
-    import init, { readParquet } from './parquet_wasm.js';
+  // Initialize the parquet-wasm module
+  async function initializeParquet() {
+    await init();
+  }
 
-    // Initialize the parquet-wasm module
-    async function initializeParquet() {
-      await init();
-    }
+  // Initialize the Leaflet map
+  const map = L.map('map').setView([0, 0], 2); // Centered at (0,0) with zoom level 2
 
-    // Initialize the Leaflet map
-    const map = L.map('map').setView([0, 0], 2); // Centered at (0,0) with zoom level 2
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+  // Function to load and display Parquet data
+  async function loadParquetData() {
+    try {
+      // Ensure parquet-wasm is initialized
+      await initializeParquet();
 
-    // Function to load and display Parquet data
-    async function loadParquetData() {
-      try {
-        // Ensure parquet-wasm is initialized
-        await initializeParquet();
-
-        // Fetch the Parquet file
-        const response = await fetch('data.parquet');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data.parquet: ${response.statusText}`);
-        }
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = new Uint8Array(arrayBuffer);
-
-        // Read the Parquet data into a Table
-        const table = readParquet(buffer);
-
-        // Iterate through the table's row groups and columns
-        for (let rowGroupIndex = 0; rowGroupIndex < table.numRowGroups(); rowGroupIndex++) {
-          const rowGroup = table.rowGroup(rowGroupIndex);
-          for (let colIndex = 0; colIndex < rowGroup.numColumns(); colIndex++) {
-            const column = rowGroup.column(colIndex);
-            const data = column.data();
-
-            // Assuming the data is structured with 'latitude' and 'longitude' fields
-            for (let i = 0; i < data.length; i++) {
-              const lat = data[i].latitude;
-              const lng = data[i].longitude;
-
-              if (typeof lat === 'number' && typeof lng === 'number') {
-                // Add a marker to the map
-                L.marker([lat, lng]).addTo(map)
-                  .bindPopup(`<b>${data[i].name || 'No Name'}</b><br>Latitude: ${lat}<br>Longitude: ${lng}`);
-              }
-            }
-          }
-        }
-
-        // Optionally, fit the map to the markers
-        // For simplicity, this example does not calculate bounds
-      } catch (error) {
-        console.error('Error loading Parquet data:', error);
+      // Fetch the Parquet file
+      const response = await fetch('data.parquet');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch data.parquet: ${response.statusText}`);
       }
-    }
+      const arrayBuffer = await response.arrayBuffer();
+      const buffer = new Uint8Array(arrayBuffer);
 
-    // Load data when the page is ready
-    document.addEventListener('DOMContentLoaded', loadParquetData);
-  </script>
-</body>
-</html>
+      // Read the Parquet data into an Arrow table
+      const table = readParquet(buffer);
+
+      // Extract data from the Arrow table
+      const latitudeColumn = table.getChild('latitude'); // Adjust the column name
+      const longitudeColumn = table.getChild('longitude'); // Adjust the column name
+      const nameColumn = table.getChild('name'); // Optional, adjust based on your schema
+
+      if (!latitudeColumn || !longitudeColumn) {
+        throw new Error('Missing latitude or longitude columns in the Parquet data.');
+      }
+
+      // Iterate through rows and add markers to the map
+      for (let i = 0; i < table.numRows; i++) {
+        const lat = latitudeColumn.get(i);
+        const lng = longitudeColumn.get(i);
+        const name = nameColumn ? nameColumn.get(i) : 'No Name';
+
+        if (typeof lat === 'number' && typeof lng === 'number') {
+          // Add a marker to the map
+          L.marker([lat, lng]).addTo(map)
+            .bindPopup(`<b>${name}</b><br>Latitude: ${lat}<br>Longitude: ${lng}`);
+        }
+      }
+
+      // Optionally, fit the map to the markers
+      // For simplicity, this example does not calculate bounds
+    } catch (error) {
+      console.error('Error loading Parquet data:', error);
+    }
+  }
+
+  // Load data when the page is ready
+  document.addEventListener('DOMContentLoaded', loadParquetData);
+</script>
