@@ -29,7 +29,12 @@
   
   <!-- Load parquet-wasm -->
   <script type="module">
-    import { ParquetWasm } from './parquet_wasm.js';
+    import init, { readParquet } from './parquet_wasm.js';
+
+    // Initialize the parquet-wasm module
+    async function initializeParquet() {
+      await init();
+    }
 
     // Initialize the Leaflet map
     const map = L.map('map').setView([0, 0], 2); // Centered at (0,0) with zoom level 2
@@ -43,8 +48,8 @@
     // Function to load and display Parquet data
     async function loadParquetData() {
       try {
-        // Initialize parquet-wasm
-        const parquet = await ParquetWasm();
+        // Ensure parquet-wasm is initialized
+        await initializeParquet();
 
         // Fetch the Parquet file
         const response = await fetch('data.parquet');
@@ -54,26 +59,29 @@
         const arrayBuffer = await response.arrayBuffer();
         const buffer = new Uint8Array(arrayBuffer);
 
-        // Open the Parquet reader
-        const reader = await parquet.ParquetReader.openBuffer(buffer);
+        // Read the Parquet data into a Table
+        const table = readParquet(buffer);
 
-        // Get a cursor to iterate through records
-        const cursor = reader.getCursor();
+        // Iterate through the table's row groups and columns
+        for (let rowGroupIndex = 0; rowGroupIndex < table.numRowGroups(); rowGroupIndex++) {
+          const rowGroup = table.rowGroup(rowGroupIndex);
+          for (let colIndex = 0; colIndex < rowGroup.numColumns(); colIndex++) {
+            const column = rowGroup.column(colIndex);
+            const data = column.data();
 
-        let record = null;
-        while ((record = await cursor.next()) !== null) {
-          // Replace 'latitude' and 'longitude' with your actual field names
-          const lat = record.latitude;
-          const lng = record.longitude;
+            // Assuming the data is structured with 'latitude' and 'longitude' fields
+            for (let i = 0; i < data.length; i++) {
+              const lat = data[i].latitude;
+              const lng = data[i].longitude;
 
-          if (typeof lat === 'number' && typeof lng === 'number') {
-            // Add a marker to the map
-            L.marker([lat, lng]).addTo(map)
-              .bindPopup(`<b>${record.name || 'No Name'}</b><br>Latitude: ${lat}<br>Longitude: ${lng}`);
+              if (typeof lat === 'number' && typeof lng === 'number') {
+                // Add a marker to the map
+                L.marker([lat, lng]).addTo(map)
+                  .bindPopup(`<b>${data[i].name || 'No Name'}</b><br>Latitude: ${lat}<br>Longitude: ${lng}`);
+              }
+            }
           }
         }
-
-        await reader.close();
 
         // Optionally, fit the map to the markers
         // For simplicity, this example does not calculate bounds
