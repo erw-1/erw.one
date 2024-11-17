@@ -4,15 +4,12 @@
     <meta charset="UTF-8">
     <title>GeoParquet to GeoJSON Map</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
     <!-- Leaflet CSS -->
-    <link 
-        rel="stylesheet" 
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
-        integrity="sha256-sA+4QX5BWrP1O58rFZWGs5kjNHz9dVbLRRrkn0QmXKk=" 
-        crossorigin=""
-    />
+    <link rel="stylesheet" href="leaflet.css" />
+    
     <style>
-        /* Optional: Set the map height */
+        /* Set the map height to occupy the full viewport */
         #map { height: 100vh; }
     </style>
 </head>
@@ -20,17 +17,14 @@
     <div id="map"></div>
 
     <!-- Apache Arrow JS -->
-    <script 
-        src="https://cdn.jsdelivr.net/npm/apache-arrow@8.0.0/dist/arrow.min.js"
-        integrity="sha384-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-        crossorigin="anonymous">
-    </script>
+    <script src="apache-arrow.js"></script>
+    
     <!-- Leaflet JS -->
-    <script 
-        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" 
-        integrity="sha256-o9N1j0WZLE2UXMq3RLxBFmPxAYozb+7btTg0klq2mRo=" 
-        crossorigin="">
-    </script>
+    <script src="leaflet.js"></script>
+    
+    <!-- wellknown.js for WKT parsing (if needed) -->
+    <script src="https://unpkg.com/wellknown@0.5.0/wellknown.min.js"></script>
+    
     <!-- Main JS -->
     <script src="main.js"></script>
 </body>
