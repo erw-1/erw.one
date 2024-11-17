@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Parquet File Reader</title>
+</head>
+<body>
+  <h1>Upload and Read Parquet File</h1>
+  <input type="file" id="fileInput" accept=".parquet" />
+  <pre id="output">Upload a file to see its contents.</pre>
+
+  <script type="module">
+    (async () => {
+      try {
+        // Import the hyparquet library
+        const { parquetRead } = await import('https://cdn.jsdelivr.net/npm/hyparquet/src/hyparquet.min.js');
+
+        // Get the file input element
+        const fileInput = document.getElementById('fileInput');
+        const output = document.getElementById('output');
+
+        // Handle file selection
+        fileInput.addEventListener('change', async (event) => {
+          const file = event.target.files[0];
+          if (!file) {
+            output.textContent = 'No file selected.';
+            return;
+          }
+
+          // Read the file into an ArrayBuffer
+          const arrayBuffer = await file.arrayBuffer();
+
+          // Process the Parquet file
+          try {
+            await parquetRead({
+              file: new Uint8Array(arrayBuffer),
+              onComplete: data => {
+                console.log(data); // Logs the Parquet data to the console
+                output.textContent = JSON.stringify(data, null, 2);
+              }
+            });
+          } catch (error) {
+            console.error('Error reading Parquet file:', error);
+            output.textContent = `Error: ${error.message}`;
+          }
+        });
+      } catch (error) {
+        console.error('Error setting up Parquet reader:', error);
+        document.getElementById('output').textContent = `Error: ${error.message}`;
+      }
+    })();
+  </script>
+</body>
+</html>
