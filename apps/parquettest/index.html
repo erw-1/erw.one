@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Parquet Data Map</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  
+  <style>
+    /* Style for the map container */
+    #map {
+      height: 100vh;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  
+  <!-- Load parquet-wasm -->
+  <script type="module">
+    import { ParquetWasm } from './parquet_wasm.js';
+
+    // Initialize the Leaflet map
+    const map = L.map('map').setView([0, 0], 2); // Centered at (0,0) with zoom level 2
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Function to load and display Parquet data
+    async function loadParquetData() {
+      try {
+        // Initialize parquet-wasm
+        const parquet = await ParquetWasm();
+
+        // Fetch the Parquet file
+        const response = await fetch('data.parquet');
+        if (!response.ok) {
+          throw new Error(`Failed to fetch data.parquet: ${response.statusText}`);
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = new Uint8Array(arrayBuffer);
+
+        // Open the Parquet reader
+        const reader = await parquet.ParquetReader.openBuffer(buffer);
+
+        // Get a cursor to iterate through records
+        const cursor = reader.getCursor();
+
+        let record = null;
+        while ((record = await cursor.next()) !== null) {
+          // Replace 'latitude' and 'longitude' with your actual field names
+          const lat = record.latitude;
+          const lng = record.longitude;
+
+          if (typeof lat === 'number' && typeof lng === 'number') {
+            // Add a marker to the map
+            L.marker([lat, lng]).addTo(map)
+              .bindPopup(`<b>${record.name || 'No Name'}</b><br>Latitude: ${lat}<br>Longitude: ${lng}`);
+          }
+        }
+
+        await reader.close();
+
+        // Optionally, fit the map to the markers
+        // For simplicity, this example does not calculate bounds
+      } catch (error) {
+        console.error('Error loading Parquet data:', error);
+      }
+    }
+
+    // Load data when the page is ready
+    document.addEventListener('DOMContentLoaded', loadParquetData);
+  </script>
+</body>
+</html>
