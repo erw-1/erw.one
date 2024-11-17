@@ -4,46 +4,53 @@
     <title>Leaflet Map with GeoJSON</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-    <script src="parquet_wasm.js"></script>
 </head>
 <body>
     <div id="map" style="height: 500px;"></div>
-    <script>
-    (async function() {
-        const parquetWasm = await import('./parquet_wasm.js');
-        await parquetWasm.default('./parquet_wasm_bg.wasm');
-        
-        const response = await fetch('./data.parquet');
-        const parquetArrayBuffer = await response.arrayBuffer();
-        const parquetUint8Array = new Uint8Array(parquetArrayBuffer);
-    
-        const arrowTable = parquetWasm.readParquet(parquetUint8Array);
-    
-        const geojson = {
-            type: "FeatureCollection",
-            features: []
-        };
-    
-        arrowTable.toArray().forEach(row => {
-            const feature = {
-                type: "Feature",
-                geometry: {
-                    type: "Point",
-                    coordinates: [row.longitude, row.latitude]
-                },
-                properties: { ...row }
-            };
-            geojson.features.push(feature);
-        });
-    
-        const map = L.map('map').setView([0, 0], 2);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; OpenStreetMap contributors'
-        }).addTo(map);
-    
-        L.geoJSON(geojson).addTo(map);
-    })();
-    </script>
+    <script type="module">
+        import initWasm, { readParquet } from './parquet_wasm.js';
 
+        (async function() {
+            // Initialize WebAssembly
+            await initWasm('./parquet_wasm_bg.wasm');
+
+            // Fetch and process the Parquet file
+            const response = await fetch('./data.parquet');
+            const parquetArrayBuffer = await response.arrayBuffer();
+            const parquetUint8Array = new Uint8Array(parquetArrayBuffer);
+
+            // Read Parquet file into an Arrow table
+            const arrowTable = readParquet(parquetUint8Array);
+
+            // Convert Arrow table to GeoJSON
+            const geojson = {
+                type: "FeatureCollection",
+                features: []
+            };
+
+            for (const batch of arrowTable.batches) {
+                for (const row of batch.toArray()) {
+                    const feature = {
+                        type: "Feature",
+                        geometry: {
+                            type: "Point",
+                            coordinates: [row.longitude, row.latitude] // Adjust column names
+                        },
+                        properties: { ...row }
+                    };
+                    geojson.features.push(feature);
+                }
+            }
+
+            // Initialize Leaflet map
+            const map = L.map('map').setView([0, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Add GeoJSON layer to the map
+            L.geoJSON(geojson).addTo(map);
+        })();
+    </script>
 </body>
 </html>
