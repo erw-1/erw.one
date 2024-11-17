@@ -1,88 +1,75 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Leaflet Map with GeoJSON</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <title>GeoParquet with Leaflet</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 </head>
 <body>
-    <div id="map" style="height: 500px;"></div>
-    <script type="module">
-        import initWasm, { readParquet } from './parquet_wasm.js';
-    
-        (async function() {
-            try {
-                // Step 1: Initialize WebAssembly
-                console.log("Initializing WebAssembly...");
-                await initWasm('./parquet_wasm_bg.wasm');
-                console.log("WebAssembly initialized.");
-    
-                // Step 2: Fetch and process the Parquet file
-                console.log("Fetching Parquet file...");
-                const response = await fetch('./data.parquet');
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch Parquet file: ${response.statusText}`);
-                }
-                const parquetArrayBuffer = await response.arrayBuffer();
-                const parquetUint8Array = new Uint8Array(parquetArrayBuffer);
-                console.log("Parquet file fetched and converted to Uint8Array.");
-    
-                // Step 3: Read Parquet file into an Arrow table
-                console.log("Reading Parquet file...");
-                const arrowTable = readParquet(parquetUint8Array);
-    
-                // Log the Arrow Table
-                console.log("Arrow Table:", arrowTable);
-                console.dir(arrowTable); // Deeply inspect object structure
-    
-                // Log the schema
-                console.log("Arrow Table Schema:", arrowTable.schema);
-                console.dir(arrowTable.schema); // Deeply inspect schema object
-    
-                // Try to get number of rows
-                console.log("Attempting to get number of rows...");
-                if ('numRows' in arrowTable) {
-                    console.log("Arrow Table Number of Rows:", arrowTable.numRows);
-                } else {
-                    console.warn("The 'numRows' property is not present on the Arrow table.");
-                }
-    
-                // Try logging available columns
-                if (arrowTable.schema?.fields) {
-                    console.log("Schema Fields (Columns):", arrowTable.schema.fields);
-                    arrowTable.schema.fields.forEach((field, index) => {
-                        console.log(`Field ${index}:`, field.name, field);
-                    });
-                } else {
-                    console.warn("Schema fields are not available.");
-                }
-    
-                // Debug: Check if rows can be iterated manually
-                console.log("Checking if rows can be iterated...");
-                if ('getColumn' in arrowTable && arrowTable.schema?.fields) {
-                    const columnNames = arrowTable.schema.fields.map(field => field.name);
-                    console.log("Extracted Column Names:", columnNames);
-    
-                    const rowCount = arrowTable.numRows || 0;
-                    console.log(`Row Count: ${rowCount}`);
-    
-                    for (let i = 0; i < rowCount; i++) {
-                        const row = {};
-                        for (const columnName of columnNames) {
-                            const column = arrowTable.getColumn(columnName);
-                            row[columnName] = column?.get(i);
-                        }
-                        console.log(`Row ${i + 1}:`, row);
-                    }
-                } else {
-                    console.warn("'getColumn' method or schema fields are missing.");
-                }
-            } catch (error) {
-                console.error("An error occurred:", error);
-            }
-        })();
-    </script>
+  <div id="map" style="height: 600px;"></div>
+  <script type="module">
+    import initWasm, { readParquet } from "https://unpkg.com/parquet-wasm@0.6.0/esm/parquet_wasm.js";
+    import * as arrow from "https://cdn.jsdelivr.net/npm/apache-arrow@10.0.1/+esm";
 
+    (async function () {
+      // Initialize WebAssembly
+      await initWasm();
 
+      // Fetch the Parquet file
+      const response = await fetch("./data.parquet"); // Replace with your Parquet file path
+      const parquetBytes = new Uint8Array(await response.arrayBuffer());
+
+      // Read the Parquet file
+      const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
+      const arrowTable = arrow.tableFromIPC(wasmTable.intoIPCStream());
+
+      // Inspect the table structure
+      console.log("Arrow Table:", arrowTable);
+
+      // Extract geometry column
+      const geometryColumn = arrowTable.getChild("geometry");
+      const flatCoordinates = geometryColumn.getChildAt(0).data[0].values;
+
+      // Extract other columns for properties
+      const properties = {};
+      arrowTable.schema.fields.forEach((field) => {
+        const column = arrowTable.getChild(field.name);
+        properties[field.name] = column.data[0].values;
+      });
+
+      // Create GeoJSON
+      const geojson = {
+        type: "FeatureCollection",
+        features: [],
+      };
+
+      for (let i = 0; i < arrowTable.numRows; i++) {
+        const coords = [
+          flatCoordinates[i * 2], // Longitude
+          flatCoordinates[i * 2 + 1], // Latitude
+        ];
+        const props = {};
+        for (const key in properties) {
+          props[key] = properties[key][i];
+        }
+        geojson.features.push({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: coords },
+          properties: props,
+        });
+      }
+
+      console.log("GeoJSON Data:", geojson);
+
+      // Initialize Leaflet map
+      const map = L.map("map").setView([0, 0], 2);
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors",
+      }).addTo(map);
+
+      // Add GeoJSON to the map
+      L.geoJSON(geojson).addTo(map);
+    })();
+  </script>
 </body>
 </html>
