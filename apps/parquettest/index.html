@@ -1,97 +1,54 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Parquet Data Map</title>
-  
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-  
-  <style>
-    /* Style for the map container */
-    #map {
-      height: 100vh;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    body, html {
-      height: 100%;
-      margin: 0;
-    }
-  </style>
+    <title>Leaflet Map with GeoJSON</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="parquet_wasm.js"></script>
 </head>
 <body>
-  <div id="map"></div>
+    <div id="map" style="height: 500px;"></div>
+    <script>
+        (async function() {
+            // Load the WebAssembly module
+            const parquetWasm = await import('./parquet_wasm.js');
+            await parquetWasm.default('./parquet_wasm_bg.wasm');
+            
+            // Fetch and process the Parquet file
+            const response = await fetch('./data.parquet');
+            const parquetArrayBuffer = await response.arrayBuffer();
+            const parquetUint8Array = new Uint8Array(parquetArrayBuffer);
 
-  <!-- Leaflet JS -->
-  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  
-  <!-- Load parquet-wasm -->
-  <script type="module">
-    import init, { readParquet } from './parquet_wasm.js';
+            // Parse Parquet file using the WASM module
+            const arrowTable = parquetWasm.readParquet(parquetUint8Array);
 
-    // Initialize the parquet-wasm module
-    async function initializeParquet() {
-      await init();
-    }
+            // Convert the Arrow table to GeoJSON
+            const geojson = {
+                type: "FeatureCollection",
+                features: []
+            };
 
-    // Initialize the Leaflet map
-    const map = L.map('map').setView([0, 0], 2); // Centered at (0,0) with zoom level 2
+            arrowTable.toArray().forEach(row => {
+                const feature = {
+                    type: "Feature",
+                    geometry: {
+                        type: "Point",
+                        coordinates: [row.longitude, row.latitude]
+                    },
+                    properties: { ...row }
+                };
+                geojson.features.push(feature);
+            });
 
-    // Add OpenStreetMap tiles
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+            // Initialize Leaflet map
+            const map = L.map('map').setView([0, 0], 2); // Center at [0, 0], zoom level 2
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
 
-    // Function to load and display Parquet data
-    async function loadParquetData() {
-      try {
-        // Ensure parquet-wasm is initialized
-        await initializeParquet();
-
-        // Fetch the Parquet file
-        const response = await fetch('data.parquet');
-        if (!response.ok) {
-          throw new Error(`Failed to fetch data.parquet: ${response.statusText}`);
-        }
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = new Uint8Array(arrayBuffer);
-
-        // Read the Parquet data into a Table
-        const table = readParquet(buffer);
-
-        // Iterate through the table's row groups and columns
-        for (let rowGroupIndex = 0; rowGroupIndex < table.numRowGroups(); rowGroupIndex++) {
-          const rowGroup = table.rowGroup(rowGroupIndex);
-          for (let colIndex = 0; colIndex < rowGroup.numColumns(); colIndex++) {
-            const column = rowGroup.column(colIndex);
-            const data = column.data();
-
-            // Assuming the data is structured with 'latitude' and 'longitude' fields
-            for (let i = 0; i < data.length; i++) {
-              const lat = data[i].latitude;
-              const lng = data[i].longitude;
-
-              if (typeof lat === 'number' && typeof lng === 'number') {
-                // Add a marker to the map
-                L.marker([lat, lng]).addTo(map)
-                  .bindPopup(`<b>${data[i].name || 'No Name'}</b><br>Latitude: ${lat}<br>Longitude: ${lng}`);
-              }
-            }
-          }
-        }
-
-        // Optionally, fit the map to the markers
-        // For simplicity, this example does not calculate bounds
-      } catch (error) {
-        console.error('Error loading Parquet data:', error);
-      }
-    }
-
-    // Load data when the page is ready
-    document.addEventListener('DOMContentLoaded', loadParquetData);
-  </script>
+            // Add GeoJSON layer to the map
+            L.geoJSON(geojson).addTo(map);
+        })();
+    </script>
 </body>
 </html>
