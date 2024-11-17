@@ -9,48 +9,93 @@
     <div id="map" style="height: 500px;"></div>
     <script type="module">
         import initWasm, { readParquet } from './parquet_wasm.js';
-
+    
         (async function() {
-            // Initialize WebAssembly
-            await initWasm('./parquet_wasm_bg.wasm');
-
-            // Fetch and process the Parquet file
-            const response = await fetch('./data.parquet');
-            const parquetArrayBuffer = await response.arrayBuffer();
-            const parquetUint8Array = new Uint8Array(parquetArrayBuffer);
-
-            // Read Parquet file into an Arrow table
-            const arrowTable = readParquet(parquetUint8Array);
-
-            // Convert Arrow table to GeoJSON
-            const geojson = {
-                type: "FeatureCollection",
-                features: []
-            };
-
-            for (const batch of arrowTable.batches) {
-                for (const row of batch.toArray()) {
-                    const feature = {
-                        type: "Feature",
-                        geometry: {
-                            type: "Point",
-                            coordinates: [row.longitude, row.latitude] // Adjust column names
-                        },
-                        properties: { ...row }
-                    };
-                    geojson.features.push(feature);
+            try {
+                // Step 1: Initialize WebAssembly
+                console.log("Initializing WebAssembly...");
+                await initWasm('./parquet_wasm_bg.wasm');
+                console.log("WebAssembly initialized.");
+    
+                // Step 2: Fetch and process the Parquet file
+                console.log("Fetching Parquet file...");
+                const response = await fetch('./data.parquet');
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch Parquet file: ${response.statusText}`);
                 }
+                const parquetArrayBuffer = await response.arrayBuffer();
+                const parquetUint8Array = new Uint8Array(parquetArrayBuffer);
+                console.log("Parquet file fetched and converted to Uint8Array.");
+    
+                // Step 3: Read Parquet file into an Arrow table
+                console.log("Reading Parquet file...");
+                const arrowTable = readParquet(parquetUint8Array);
+    
+                // Log the structure of the Arrow table
+                console.log("Arrow Table:", arrowTable);
+                console.log("Arrow Table Schema:", arrowTable.schema);
+                console.log("Arrow Table Number of Rows:", arrowTable.numRows);
+    
+                // Step 4: Log columns for additional insights
+                const columnNames = arrowTable.schema.fields.map(field => field.name);
+                console.log("Column Names:", columnNames);
+    
+                // Step 5: Convert Arrow table to GeoJSON
+                console.log("Converting Arrow table to GeoJSON...");
+                const geojson = {
+                    type: "FeatureCollection",
+                    features: []
+                };
+    
+                // Step 6: Extract rows and log details
+                const rowCount = arrowTable.numRows;
+                console.log(`Processing ${rowCount} rows...`);
+                for (let i = 0; i < rowCount; i++) {
+                    const row = {};
+                    for (const columnName of columnNames) {
+                        const column = arrowTable.getColumn(columnName);
+                        if (column) {
+                            row[columnName] = column.get(i);
+                        } else {
+                            console.warn(`Column "${columnName}" not found in the table.`);
+                        }
+                    }
+                    console.log(`Row ${i + 1}:`, row);
+    
+                    // Convert row to GeoJSON feature
+                    if (row.longitude && row.latitude) { // Replace with actual column names
+                        const feature = {
+                            type: "Feature",
+                            geometry: {
+                                type: "Point",
+                                coordinates: [row.longitude, row.latitude]
+                            },
+                            properties: { ...row }
+                        };
+                        geojson.features.push(feature);
+                    } else {
+                        console.warn(`Row ${i + 1} is missing latitude/longitude:`, row);
+                    }
+                }
+    
+                console.log("GeoJSON Data:", geojson);
+    
+                // Step 7: Initialize Leaflet map
+                console.log("Initializing Leaflet map...");
+                const map = L.map('map').setView([0, 0], 2);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '&copy; OpenStreetMap contributors'
+                }).addTo(map);
+    
+                // Step 8: Add GeoJSON layer to the map
+                console.log("Adding GeoJSON layer to the map...");
+                L.geoJSON(geojson).addTo(map);
+                console.log("Map initialization complete.");
+            } catch (error) {
+                console.error("An error occurred:", error);
             }
-
-            // Initialize Leaflet map
-            const map = L.map('map').setView([0, 0], 2);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; OpenStreetMap contributors'
-            }).addTo(map);
-
-            // Add GeoJSON layer to the map
-            L.geoJSON(geojson).addTo(map);
         })();
     </script>
+
 </body>
 </html>
