@@ -14,20 +14,47 @@ async function loadGeoParquet(url) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
         const arrayBuffer = await response.arrayBuffer();
-        const parquetReader = await arrow.Table.from(arrayBuffer, { format: 'parquet' });
         
-        // Assuming GeoParquet has 'geometry' column in WKB or GeoJSON format
+        // Parse the Parquet data using Apache Arrow
+        const table = arrow.Table.from(arrayBuffer, { format: 'parquet' });
+
+        // Check if 'geometry' column exists
+        if (!table.schema.fields.some(field => field.name === 'geometry')) {
+            throw new Error("No 'geometry' column found in the GeoParquet file.");
+        }
+
+        const geometryColumn = table.getColumn('geometry');
         const geoJSONFeatures = [];
 
-        // Example: Iterate through rows and extract geometries
-        for (let i = 0; i < parquetReader.numRows; i++) {
-            const geometry = parquetReader.getColumn('geometry').get(i);
+        // Iterate through rows and extract geometries
+        for (let i = 0; i < table.numRows; i++) {
+            const geometry = geometryColumn.get(i);
             const properties = {}; // Extract other properties as needed
 
-            // Convert WKB to GeoJSON if necessary
-            // This requires a WKB parser, e.g., wellknown or Terraformer
-            // For simplicity, assuming geometry is already GeoJSON
-            const geoJSON = JSON.parse(geometry);
+            let geoJSON;
+
+            // Determine the format of the geometry (GeoJSON string, WKT, WKB, etc.)
+            if (typeof geometry === 'string') {
+                try {
+                    // Try parsing as GeoJSON
+                    geoJSON = JSON.parse(geometry);
+                } catch (e) {
+                    // If failed, try parsing as WKT
+                    geoJSON = wellknown.parse(geometry);
+                    if (!geoJSON) {
+                        console.warn(`Row ${i}: Unable to parse geometry.`);
+                        continue; // Skip this feature
+                    }
+                }
+            } else if (geometry instanceof Uint8Array) {
+                // If geometry is in WKB format, you'll need a WKB parser
+                // Example: Using the 'wkb' library (not included here)
+                console.warn(`Row ${i}: WKB geometry parsing not implemented.`);
+                continue; // Skip this feature
+            } else {
+                console.warn(`Row ${i}: Unknown geometry format.`);
+                continue; // Skip this feature
+            }
 
             geoJSONFeatures.push({
                 type: "Feature",
@@ -42,15 +69,19 @@ async function loadGeoParquet(url) {
         };
 
         // Add GeoJSON layer to the map
-        L.geoJSON(geoJSON).addTo(map);
+        const geoLayer = L.geoJSON(geoJSON).addTo(map);
+
+        // Fit the map to the GeoJSON layer bounds
+        map.fitBounds(geoLayer.getBounds());
 
     } catch (error) {
         console.error("Error loading GeoParquet:", error);
+        alert("Failed to load GeoParquet data. Check the console for details.");
     }
 }
 
 // Replace with the URL to your GeoParquet file
-const geoParquetURL = 'data.parquet';
+const geoParquetURL = 'data/data.parquet';
 
 // Load the GeoParquet file
 loadGeoParquet(geoParquetURL);
