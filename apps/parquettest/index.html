@@ -4,95 +4,143 @@
   <title>Render GeoParquet on Leaflet</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <script src="./wellknown.min.js"></script> <!-- WKT Parser -->
+  <script src="./wellknown.min.js"></script>
 </head>
 <body>
   <h1>Load GeoParquet on Leaflet</h1>
-  <input type="file" id="fileInput" />
-  <br />
-  Or load from URL:
-  <input type="text" id="urlInput" value="https://example.com/geo.parquet" />
-  <button id="loadButton">Load</button>
-  <div id="map" style="height: 600px;"></div>
-  
+  <div>
+    <label for="fileInput">Upload GeoParquet file:</label>
+    <input type="file" id="fileInput" accept=".parquet">
+  </div>
+  <div>
+    <label for="urlInput">Or load from URL:</label>
+    <input type="text" id="urlInput" placeholder="Enter GeoParquet file URL">
+    <button id="loadUrl">Load</button>
+  </div>
+  <div id="map" style="height: 600px; margin-top: 20px;"></div>
+
   <script type="module">
     import initParquetWasm, { readParquet } from "./parquet_wasm.js";
     import * as arrow from "https://cdn.jsdelivr.net/npm/apache-arrow@10.0.1/+esm";
 
-    const fileInput = document.getElementById("fileInput");
-    const urlInput = document.getElementById("urlInput");
-    const loadButton = document.getElementById("loadButton");
+    async function renderGeoParquet(parquetBytes) {
+      try {
+        console.log("Initializing WebAssembly...");
+        await initParquetWasm();
 
-    const initializeMap = () => {
-      const map = L.map("map").setView([0, 0], 2);
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap contributors",
-      }).addTo(map);
-      return map;
-    };
+        console.log("Reading Parquet file...");
+        const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
+        console.log("WASM Table:", wasmTable);
 
-    const renderGeoParquet = async (parquetBytes, map) => {
-      console.log("Initializing WebAssembly...");
-      await initParquetWasm();
+        console.log("Converting Parquet data to Arrow IPC...");
+        const ipcStream = wasmTable.intoIPCStream();
+        const arrowTable = arrow.tableFromIPC(ipcStream);
+        console.log("Arrow Table:", arrowTable);
 
-      console.log("Reading Parquet file...");
-      const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
-      const ipcStream = wasmTable.intoIPCStream();
-      const arrowTable = arrow.tableFromIPC(ipcStream);
+        // Inspect schema to find the geometry column
+        const schemaFields = arrowTable.schema.fields;
+        console.log("Schema Fields:", schemaFields.map((field) => field.name));
 
-      console.log("Extracting geometries...");
-      const geometryColumn = arrowTable.getChild("geometry");
-      if (!geometryColumn) {
-        console.error("No geometry column found.");
-        return;
-      }
+        const geometryField = schemaFields.find((field) => field.name === "geometry");
+        if (!geometryField) throw new Error("Geometry column not found in schema.");
 
-      const binaryGeometries = geometryColumn.data[0].values;
-      if (!binaryGeometries || binaryGeometries.length === 0) {
-        console.error("No valid geometries found.");
-        return;
-      }
+        const geometryColumn = arrowTable.getChild("geometry");
+        console.log("Geometry Column:", geometryColumn);
 
-      console.log("Rendering geometries...");
-      binaryGeometries.forEach((binary) => {
-        const wkt = new TextDecoder("utf-8").decode(binary);
-        const geometry = wellknown.parse(wkt);
+        // Check if the geometry column has data
+        if (!geometryColumn) throw new Error("Geometry column is missing from the table.");
+        const binaryGeometries = geometryColumn.data[0]?.values || [];
+        console.log("Binary Geometries:", binaryGeometries);
 
-        if (geometry.type === "Point") {
-          L.marker([geometry.coordinates[1], geometry.coordinates[0]]).addTo(map);
-        } else if (geometry.type === "Polygon") {
-          L.polygon(
-            geometry.coordinates.map((ring) => ring.map(([lng, lat]) => [lat, lng]))
-          ).addTo(map);
-        } else if (geometry.type === "LineString") {
-          L.polyline(
-            geometry.coordinates.map(([lng, lat]) => [lat, lng])
-          ).addTo(map);
-        } else {
-          console.warn(`Unsupported geometry type: ${geometry.type}`);
+        if (binaryGeometries.length === 0) {
+          throw new Error("No geometry data found in the geometry column.");
         }
-      });
-    };
 
-    const map = initializeMap();
+        // Attempt to decode binary geometries
+        const decodeBinary = (binary) => {
+          try {
+            return new TextDecoder("utf-8").decode(binary);
+          } catch (error) {
+            console.warn("Failed to decode binary geometry:", error);
+            return null;
+          }
+        };
 
-    fileInput.addEventListener("change", async (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const parquetBytes = new Uint8Array(await file.arrayBuffer());
-        renderGeoParquet(parquetBytes, map);
+        // Try interpreting as WKT or GeoJSON
+        const geometries = binaryGeometries.map((binary, index) => {
+          const decoded = decodeBinary(binary);
+          console.log(`Decoded geometry at index ${index}:`, decoded);
+          return decoded;
+        });
+
+        // Initialize Leaflet Map
+        const map = L.map("map").setView([0, 0], 2);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+          attribution: "&copy; OpenStreetMap contributors",
+        }).addTo(map);
+
+        // Render geometries
+        console.log("Rendering geometries...");
+        geometries.forEach((geometry, index) => {
+          if (!geometry) {
+            console.warn(`No valid geometry at index ${index}`);
+            return;
+          }
+
+          let geoJSONGeometry;
+          try {
+            // Try parsing as WKT first
+            geoJSONGeometry = wellknown.parse(geometry);
+          } catch (error) {
+            console.warn("Failed to parse WKT:", error);
+            return;
+          }
+
+          if (geoJSONGeometry.type === "Point") {
+            L.marker([geoJSONGeometry.coordinates[1], geoJSONGeometry.coordinates[0]]).addTo(map);
+          } else if (geoJSONGeometry.type === "Polygon") {
+            L.polygon(
+              geoJSONGeometry.coordinates.map((ring) => ring.map(([lng, lat]) => [lat, lng]))
+            ).addTo(map);
+          } else if (geoJSONGeometry.type === "LineString") {
+            L.polyline(
+              geoJSONGeometry.coordinates.map(([lng, lat]) => [lat, lng])
+            ).addTo(map);
+          } else {
+            console.warn(`Unsupported geometry type: ${geoJSONGeometry.type}`);
+          }
+        });
+
+        console.log("Rendering complete!");
+      } catch (error) {
+        console.error("An error occurred:", error);
       }
+    }
+
+    document.getElementById("fileInput").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      console.log("Loading file:", file.name);
+      const parquetBytes = new Uint8Array(await file.arrayBuffer());
+      await renderGeoParquet(parquetBytes);
     });
 
-    loadButton.addEventListener("click", async () => {
-      const url = urlInput.value;
-      if (!url) return;
-      const response = await fetch(url);
-      if (response.ok) {
+    document.getElementById("loadUrl").addEventListener("click", async () => {
+      const url = document.getElementById("urlInput").value;
+      if (!url) {
+        alert("Please enter a valid URL.");
+        return;
+      }
+
+      console.log("Fetching file from URL:", url);
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Failed to fetch file from URL.");
         const parquetBytes = new Uint8Array(await response.arrayBuffer());
-        renderGeoParquet(parquetBytes, map);
-      } else {
-        console.error("Failed to fetch file from URL.");
+        await renderGeoParquet(parquetBytes);
+      } catch (error) {
+        console.error("Failed to fetch and load file:", error);
       }
     });
   </script>
