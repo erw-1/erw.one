@@ -1,16 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>GeoParquet with Leaflet</title>
+  <title>Render GeoParquet on Leaflet</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
   <script src="./wellknown.min.js"></script> <!-- Include WKT parser -->
-  <script src="./apache-arrow.js"></script> <!-- Include Apache Arrow -->
 </head>
 <body>
   <div id="map" style="height: 600px;"></div>
   <script type="module">
-    import initParquetWasm, { readParquet as readParquetWasm } from "./parquet_wasm.js";
+    import initParquetWasm, { readParquet } from "./parquet_wasm.js";
 
     (async function () {
       try {
@@ -23,68 +22,48 @@
         const parquetBytes = new Uint8Array(await response.arrayBuffer());
 
         console.log("Reading Parquet file...");
-        const wasmTable = readParquetWasm(parquetBytes, { batchSize: Math.pow(2, 31) });
-
-        // Convert to Arrow Table using apache-arrow.js
-        console.log("Converting to Arrow Table...");
-        const arrowTable = arrow.tableFromIPC(wasmTable.intoIPCStream());
+        const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
+        const arrowTable = wasmTable.toArrowTable(); // Direct conversion to Arrow table
         console.log("Arrow Table:", arrowTable);
 
-        // Extract schema and data
-        console.log("Extracting Schema and Data...");
-        const schema = arrowTable.schema.fields;
-        console.log("Schema Fields:", schema.map((f) => f.name));
-
-        // Process geometry column (assuming "geometry" contains WKT)
-        const geojson = {
-          type: "FeatureCollection",
-          features: [],
-        };
-
-        const geometryColumn = arrowTable.getChild("geometry"); // Adjust the column name as needed
+        // Extract geometry column
+        console.log("Extracting Geometry...");
+        const geometryColumn = arrowTable.getChild("geometry"); // Replace "geometry" with your actual column name
         if (!geometryColumn) throw new Error("Geometry column not found.");
 
-        // Extract WKT values and convert to GeoJSON geometries
-        const wktValues = geometryColumn.data[0].toArray(); // Adjust based on Arrow data format
-        const properties = {};
+        const wktValues = geometryColumn.data[0].toArray(); // Assuming WKT geometries are stored
 
-        schema.forEach((field) => {
-          if (field.name !== "geometry") {
-            const column = arrowTable.getChild(field.name);
-            properties[field.name] = column.data[0].toArray(); // Adjust based on Arrow data format
-          }
-        });
-
-        // Construct GeoJSON features
-        for (let i = 0; i < wktValues.length; i++) {
-          const geometry = wellknown.parse(wktValues[i]);
-          if (!geometry) {
-            console.warn(`Invalid WKT geometry at row ${i}`);
-            continue;
-          }
-
-          const featureProps = {};
-          for (const key in properties) {
-            featureProps[key] = properties[key][i] || null;
-          }
-
-          geojson.features.push({
-            type: "Feature",
-            geometry: geometry,
-            properties: featureProps,
-          });
-        }
-
-        console.log("GeoJSON Data:", geojson);
-
-        // Render GeoJSON on Leaflet Map
-        const map = L.map("map").setView([0, 0], 2);
+        // Initialize Leaflet Map
+        const map = L.map("map").setView([0, 0], 2); // Center at [0, 0], zoom level 2
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "&copy; OpenStreetMap contributors",
         }).addTo(map);
 
-        L.geoJSON(geojson).addTo(map);
-        console.log("Map rendering complete!");
+        // Render geometries directly
+        console.log("Rendering Geometries...");
+        wktValues.forEach((wkt, index) => {
+          const geometry = wellknown.parse(wkt); // Parse WKT to Leaflet-compatible geometry
+          if (!geometry) {
+            console.warn(`Invalid WKT geometry at index ${index}:`, wkt);
+            return;
+          }
+
+          if (geometry.type === "Point") {
+            L.marker([geometry.coordinates[1], geometry.coordinates[0]]).addTo(map);
+          } else if (geometry.type === "Polygon") {
+            L.polygon(
+              geometry.coordinates.map((ring) => ring.map(([lng, lat]) => [lat, lng]))
+            ).addTo(map);
+          } else if (geometry.type === "LineString") {
+            L.polyline(
+              geometry.coordinates.map(([lng, lat]) => [lat, lng])
+            ).addTo(map);
+          } else {
+            console.warn(`Unsupported geometry type at index ${index}:`, geometry.type);
+          }
+        });
+
+        console.log("Rendering complete!");
       } catch (error) {
         console.error("An error occurred:", error);
       }
