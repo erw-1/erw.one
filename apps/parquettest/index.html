@@ -18,28 +18,34 @@
         await initParquetWasm();
 
         console.log("Fetching GeoParquet file...");
-        const response = await fetch("./data.parquet"); // Replace with your file path
+        const response = await fetch("./data.parquet");
         if (!response.ok) throw new Error("Failed to fetch GeoParquet file.");
         const parquetBytes = new Uint8Array(await response.arrayBuffer());
 
         console.log("Reading Parquet file...");
-        const wasmTable = readParquet(parquetBytes); // This is the correct call
+        const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
         console.log("WASM Table:", wasmTable);
 
-        // Convert Parquet data to Arrow IPC Stream
-        console.log("Converting to Arrow Table...");
-        const arrowTable = arrow.tableFromIPC(wasmTable.intoIPCStream());
+        console.log("Converting Parquet data to Arrow IPC...");
+        const ipcStream = wasmTable.intoIPCStream();
+        const arrowTable = arrow.tableFromIPC(ipcStream);
         console.log("Arrow Table:", arrowTable);
 
-        // Extract geometry column
-        console.log("Extracting Geometry...");
-        const geometryColumn = arrowTable.getChild("geometry"); // Adjust column name as needed
-        if (!geometryColumn) throw new Error("Geometry column not found.");
+        // Dynamically inspect schema to locate the geometry column
+        const schemaFields = arrowTable.schema.fields;
+        console.log("Schema Fields:", schemaFields.map((field) => field.name));
 
-        const binaryGeometries = geometryColumn.data[0].values; // Extract binary geometries
+        const geometryField = schemaFields.find((field) => field.name === "geometry");
+        if (!geometryField) throw new Error("Geometry column not found in schema.");
+
+        const geometryColumn = arrowTable.getChild("geometry");
+        if (!geometryColumn) throw new Error("Geometry column is missing from the table.");
+
+        console.log("Extracting geometries...");
+        const binaryGeometries = geometryColumn.data[0].values;
         console.log("Binary Geometries:", binaryGeometries);
 
-        // Decode Binary to WKT or GeoJSON
+        // Decode Binary Data to WKT
         const decodeBinaryToWKT = (binary) => {
           try {
             return new TextDecoder("utf-8").decode(binary);
@@ -57,15 +63,15 @@
           attribution: "&copy; OpenStreetMap contributors",
         }).addTo(map);
 
-        // Render geometries directly
-        console.log("Rendering Geometries...");
+        // Render geometries directly on the map
+        console.log("Rendering geometries on the map...");
         wktGeometries.forEach((wkt, index) => {
           if (!wkt) {
             console.warn(`No WKT geometry found for row ${index}`);
             return;
           }
 
-          const geometry = wellknown.parse(wkt); // Parse WKT to Leaflet-compatible geometry
+          const geometry = wellknown.parse(wkt);
           if (!geometry) {
             console.warn(`Invalid WKT geometry at index ${index}:`, wkt);
             return;
