@@ -31,11 +31,21 @@
         console.log("Initializing WebAssembly...");
         await initParquetWasm(); // Initialize WASM
 
-        console.log("Reading GeoParquet file...");
-        const stream = isFile
-          ? await readParquetStream(source) // Local file: Pass Uint8Array
-          : await readParquetStream(source); // URL: Pass as string
+        let stream;
+        if (isFile) {
+          console.log("Processing local file...");
+          // Convert file data into an async buffer
+          const asyncBuffer = {
+            byteLength: source.byteLength,
+            slice: async (start, end) => source.slice(start, end),
+          };
+          stream = await readParquetStream(asyncBuffer);
+        } else {
+          console.log("Processing URL...");
+          stream = await readParquetStream(source); // URL: Pass directly
+        }
 
+        console.log("Rendering GeoParquet...");
         for await (const wasmRecordBatch of stream) {
           const ipcBatch = wasmRecordBatch.intoIPC();
           const table = apacheArrow.tableFromIPC(ipcBatch);
@@ -87,7 +97,7 @@
       // Read the file as Uint8Array
       const arrayBuffer = await file.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
-      renderGeoParquet(uint8Array, true);
+      renderGeoParquet(uint8Array, true); // Set `isFile` to true
     });
 
     document.getElementById('loadUrlButton').addEventListener('click', () => {
