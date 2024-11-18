@@ -10,6 +10,7 @@
   <div id="map" style="height: 600px;"></div>
   <script type="module">
     import initParquetWasm, { readParquet } from "./parquet_wasm.js";
+    import * as arrow from "https://cdn.jsdelivr.net/npm/apache-arrow@10.0.1/+esm";
 
     (async function () {
       try {
@@ -23,7 +24,7 @@
 
         console.log("Reading Parquet file...");
         const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
-        const arrowTable = wasmTable.toArrowTable(); // Direct conversion to Arrow table
+        const arrowTable = arrow.tableFromIPC(wasmTable.intoIPCStream());
         console.log("Arrow Table:", arrowTable);
 
         // Extract geometry column
@@ -31,7 +32,7 @@
         const geometryColumn = arrowTable.getChild("geometry"); // Replace "geometry" with your actual column name
         if (!geometryColumn) throw new Error("Geometry column not found.");
 
-        const wktValues = geometryColumn.data[0].toArray(); // Assuming WKT geometries are stored
+        const wktValues = geometryColumn.toArray(); // Assuming WKT geometries are stored
 
         // Initialize Leaflet Map
         const map = L.map("map").setView([0, 0], 2); // Center at [0, 0], zoom level 2
