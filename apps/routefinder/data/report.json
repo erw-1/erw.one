@@ -1,0 +1,22 @@
+{
+    "Couple 1": {
+        "Zone": {
+            "name": "Haute-Saône",
+            "source": "data/couple1_zone.fgb"
+        },
+        "Points": {
+            "name": "PRs",
+            "source": "data/couple1_points.fgb"
+        }
+    },
+    "Couple 2": {
+        "Zone": {
+            "name": "Vesoul",
+            "source": "data/couple2_zone.fgb"
+        },
+        "Points": {
+            "name": "PRs",
+            "source": "data/couple2_points.fgb"
+        }
+    }
+}
