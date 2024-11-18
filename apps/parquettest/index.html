@@ -4,7 +4,7 @@
   <title>Render GeoParquet on Leaflet</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <script src="./wellknown.min.js"></script> <!-- Include WKT parser -->
+  <script src="./wellknown.min.js"></script>
 </head>
 <body>
   <h1>Load GeoParquet on Leaflet</h1>
@@ -37,7 +37,7 @@
         const arrowTable = arrow.tableFromIPC(ipcStream);
         console.log("Arrow Table:", arrowTable);
 
-        // Dynamically inspect schema to locate the geometry column
+        // Inspect schema to find the geometry column
         const schemaFields = arrowTable.schema.fields;
         console.log("Schema Fields:", schemaFields.map((field) => field.name));
 
@@ -47,8 +47,8 @@
         const geometryColumn = arrowTable.getChild("geometry");
         console.log("Geometry Column:", geometryColumn);
 
+        // Check if the geometry column has data
         if (!geometryColumn) throw new Error("Geometry column is missing from the table.");
-
         const binaryGeometries = geometryColumn.data[0]?.values || [];
         console.log("Binary Geometries:", binaryGeometries);
 
@@ -56,8 +56,8 @@
           throw new Error("No geometry data found in the geometry column.");
         }
 
-        // Decode Binary Data to WKT
-        const decodeBinaryToWKT = (binary) => {
+        // Attempt to decode binary geometries
+        const decodeBinary = (binary) => {
           try {
             return new TextDecoder("utf-8").decode(binary);
           } catch (error) {
@@ -66,40 +66,48 @@
           }
         };
 
-        const wktGeometries = binaryGeometries.map(decodeBinaryToWKT);
+        // Try interpreting as WKT or GeoJSON
+        const geometries = binaryGeometries.map((binary, index) => {
+          const decoded = decodeBinary(binary);
+          console.log(`Decoded geometry at index ${index}:`, decoded);
+          return decoded;
+        });
 
         // Initialize Leaflet Map
-        const map = L.map("map").setView([0, 0], 2); // Center at [0, 0], zoom level 2
+        const map = L.map("map").setView([0, 0], 2);
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "&copy; OpenStreetMap contributors",
         }).addTo(map);
 
-        // Render geometries directly on the map
-        console.log("Rendering geometries on the map...");
-        wktGeometries.forEach((wkt, index) => {
-          if (!wkt) {
-            console.warn(`No WKT geometry found for row ${index}`);
-            return;
-          }
-
-          const geometry = wellknown.parse(wkt);
+        // Render geometries
+        console.log("Rendering geometries...");
+        geometries.forEach((geometry, index) => {
           if (!geometry) {
-            console.warn(`Invalid WKT geometry at index ${index}:`, wkt);
+            console.warn(`No valid geometry at index ${index}`);
             return;
           }
 
-          if (geometry.type === "Point") {
-            L.marker([geometry.coordinates[1], geometry.coordinates[0]]).addTo(map);
-          } else if (geometry.type === "Polygon") {
+          let geoJSONGeometry;
+          try {
+            // Try parsing as WKT first
+            geoJSONGeometry = wellknown.parse(geometry);
+          } catch (error) {
+            console.warn("Failed to parse WKT:", error);
+            return;
+          }
+
+          if (geoJSONGeometry.type === "Point") {
+            L.marker([geoJSONGeometry.coordinates[1], geoJSONGeometry.coordinates[0]]).addTo(map);
+          } else if (geoJSONGeometry.type === "Polygon") {
             L.polygon(
-              geometry.coordinates.map((ring) => ring.map(([lng, lat]) => [lat, lng]))
+              geoJSONGeometry.coordinates.map((ring) => ring.map(([lng, lat]) => [lat, lng]))
             ).addTo(map);
-          } else if (geometry.type === "LineString") {
+          } else if (geoJSONGeometry.type === "LineString") {
             L.polyline(
-              geometry.coordinates.map(([lng, lat]) => [lat, lng])
+              geoJSONGeometry.coordinates.map(([lng, lat]) => [lat, lng])
             ).addTo(map);
           } else {
-            console.warn(`Unsupported geometry type at index ${index}:`, geometry.type);
+            console.warn(`Unsupported geometry type: ${geoJSONGeometry.type}`);
           }
         });
 
