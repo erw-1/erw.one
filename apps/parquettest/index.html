@@ -1,88 +1,72 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>HyParquet GeoParquet Viewer</title>
+  <title>GeoParquet Viewer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/wellknown"></script> <!-- For WKT parsing -->
 </head>
 <body>
-  <h1>HyParquet GeoParquet Viewer</h1>
-  <input type="text" id="urlInput" placeholder="Enter GeoParquet URL" value="https://hyperparam-public.s3.amazonaws.com/bunnies.parquet" />
-  <button id="loadButton">Load</button>
-  <div id="map" style="height: 600px; margin-top: 20px;"></div>
+  <h1>GeoParquet Viewer</h1>
+  <button id="loadButton">Load GeoParquet</button>
+  <div id="map" style="height: 600px;"></div>
 
   <script type="module">
-    import { asyncBufferFromUrl, parquetRead } from 'https://cdn.jsdelivr.net/npm/hyparquet/src/hyparquet.min.js';
+    import { readParquetStream } from 'https://unpkg.com/parquet-wasm@0.5.0-alpha.1/esm/arrow1.js';
 
-    const map = L.map('map').setView([0, 0], 2);
+    const map = L.map('map').setView([38.8543844, -99.5243335], 4);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
-    const renderGeoParquet = async (url) => {
+    const renderGeoParquet = async () => {
       try {
-        // Load GeoParquet data
-        console.log('Fetching GeoParquet file from URL:', url);
-        const asyncBuffer = await asyncBufferFromUrl(url);
+        const url = 'https://r2-public.kylebarron.dev/observable/2023/streaming-parquet-wasm/UScounties2.parquet/UScounties.parquet';
+        const stream = await readParquetStream(url);
 
-        console.log('Reading Parquet data...');
-        await parquetRead({
-          file: asyncBuffer,
-          onComplete: (data) => {
-            console.log('Parquet Data:', data);
+        for await (const wasmRecordBatch of stream) {
+          const ipcBatch = wasmRecordBatch.intoIPC();
+          const table = apacheArrow.tableFromIPC(ipcBatch);
+          const recordBatch = table.batches[0];
 
-            // Dynamically identify geometry column
-            const geoColumn = Object.keys(data).find((key) => key.toLowerCase().includes('geometry'));
-            if (!geoColumn) {
-              console.error('No geometry column found in the dataset.');
-              return;
+          // Geometry Column Index
+          const geometryColumnIdx = 6;
+
+          // Extract geometry data
+          const geometryColumn = recordBatch.getChildAt(geometryColumnIdx);
+          const geometryOffsets = geometryColumn.data[0].valueOffsets;
+          const polygonOffsets = geometryColumn.getChildAt(0).data[0].valueOffsets;
+          const ringOffsets = geometryColumn.getChildAt(0).getChildAt(0).data[0].valueOffsets;
+          const flatCoordinateArray = geometryColumn
+            .getChildAt(0)
+            .getChildAt(0)
+            .getChildAt(0)
+            .getChildAt(0).data[0].values;
+
+          // Resolve polygon offsets
+          const resolvedPolygonOffsets = new Int32Array(polygonOffsets.length);
+          for (let i = 0; i < resolvedPolygonOffsets.length; ++i) {
+            resolvedPolygonOffsets[i] = ringOffsets[polygonOffsets[i]];
+          }
+
+          // Extract coordinates and render them
+          for (let i = 0; i < resolvedPolygonOffsets.length; i++) {
+            const start = resolvedPolygonOffsets[i];
+            const end = resolvedPolygonOffsets[i + 1] || flatCoordinateArray.length / 2;
+            const coordinates = [];
+            for (let j = start; j < end; j++) {
+              const lat = flatCoordinateArray[j * 2 + 1];
+              const lng = flatCoordinateArray[j * 2];
+              coordinates.push([lat, lng]);
             }
-
-            // Decode geometries and render on the map
-            console.log('Rendering geometries...');
-            const geometries = data[geoColumn];
-            geometries.forEach((binary, index) => {
-              const wkt = new TextDecoder('utf-8').decode(binary);
-              const geometry = wellknown.parse(wkt);
-
-              if (!geometry) {
-                console.warn(`Invalid geometry at index ${index}:`, wkt);
-                return;
-              }
-
-              // Render based on geometry type
-              if (geometry.type === 'Point') {
-                L.marker([geometry.coordinates[1], geometry.coordinates[0]]).addTo(map);
-              } else if (geometry.type === 'Polygon') {
-                L.polygon(
-                  geometry.coordinates.map((ring) => ring.map(([lng, lat]) => [lat, lng]))
-                ).addTo(map);
-              } else if (geometry.type === 'LineString') {
-                L.polyline(
-                  geometry.coordinates.map(([lng, lat]) => [lat, lng])
-                ).addTo(map);
-              } else {
-                console.warn(`Unsupported geometry type at index ${index}:`, geometry.type);
-              }
-            });
-
-            console.log('Rendering complete!');
-          },
-        });
+            L.polygon(coordinates).addTo(map);
+          }
+        }
       } catch (error) {
         console.error('An error occurred while rendering GeoParquet:', error);
       }
     };
 
-    document.getElementById('loadButton').addEventListener('click', () => {
-      const url = document.getElementById('urlInput').value;
-      if (!url) {
-        alert('Please enter a valid URL.');
-        return;
-      }
-      renderGeoParquet(url);
-    });
+    document.getElementById('loadButton').addEventListener('click', renderGeoParquet);
   </script>
 </body>
 </html>
