@@ -10,6 +10,7 @@
   <div id="map" style="height: 600px;"></div>
   <script type="module">
     import initParquetWasm, { readParquet } from "./parquet_wasm.js";
+    import * as arrow from "https://cdn.jsdelivr.net/npm/apache-arrow@10.0.1/+esm";
 
     (async function () {
       try {
@@ -22,8 +23,12 @@
         const parquetBytes = new Uint8Array(await response.arrayBuffer());
 
         console.log("Reading Parquet file...");
-        const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
-        const arrowTable = wasmTable.toArrowTable(); // Replace if necessary
+        const wasmTable = readParquet(parquetBytes); // This is the correct call
+        console.log("WASM Table:", wasmTable);
+
+        // Convert Parquet data to Arrow IPC Stream
+        console.log("Converting to Arrow Table...");
+        const arrowTable = arrow.tableFromIPC(wasmTable.intoIPCStream());
         console.log("Arrow Table:", arrowTable);
 
         // Extract geometry column
@@ -31,7 +36,7 @@
         const geometryColumn = arrowTable.getChild("geometry"); // Adjust column name as needed
         if (!geometryColumn) throw new Error("Geometry column not found.");
 
-        const binaryGeometries = geometryColumn.data[0].toArray(); // Extract binary geometries
+        const binaryGeometries = geometryColumn.data[0].values; // Extract binary geometries
         console.log("Binary Geometries:", binaryGeometries);
 
         // Decode Binary to WKT or GeoJSON
