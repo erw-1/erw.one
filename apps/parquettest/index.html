@@ -26,15 +26,15 @@
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
-    const renderGeoParquet = async (source) => {
+    const renderGeoParquet = async (source, isFile = false) => {
       try {
         console.log("Initializing WebAssembly...");
         await initParquetWasm(); // Initialize WASM
 
         console.log("Reading GeoParquet file...");
-        const stream = typeof source === "string"
-          ? await readParquetStream(source) // URL input
-          : await readParquetStream(source); // File input (Uint8Array)
+        const stream = isFile
+          ? await readParquetStream(source) // Local file: Pass Uint8Array
+          : await readParquetStream(source); // URL: Pass as string
 
         for await (const wasmRecordBatch of stream) {
           const ipcBatch = wasmRecordBatch.intoIPC();
@@ -80,18 +80,14 @@
       }
     };
 
-    document.getElementById('fileInput').addEventListener('change', (event) => {
+    document.getElementById('fileInput').addEventListener('change', async (event) => {
       const file = event.target.files[0];
-      if (!file) {
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const arrayBuffer = e.target.result;
-        const uint8Array = new Uint8Array(arrayBuffer);
-        renderGeoParquet(uint8Array);
-      };
-      reader.readAsArrayBuffer(file);
+      if (!file) return;
+
+      // Read the file as Uint8Array
+      const arrayBuffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      renderGeoParquet(uint8Array, true);
     });
 
     document.getElementById('loadUrlButton').addEventListener('click', () => {
