@@ -8,37 +8,50 @@
 <body>
   <div id="map" style="height: 600px;"></div>
   <script type="module">
-    import initWasm, { readParquet } from "./arrow2.js"; // Path to arrow2.js
+    import initParquetWasm, { readParquet as readParquetWasm } from "./parquet_wasm.js";
+    import initArrow2, { readParquet as readParquetArrow2 } from "./arrow2.js";
+    import * as arrow from "https://cdn.jsdelivr.net/npm/apache-arrow@10.0.1/+esm";
 
     (async function () {
       try {
-        // Step 1: Initialize WebAssembly
-        console.log("Initializing WebAssembly...");
-        await initWasm();
+        // Initialize both libraries
+        console.log("Initializing WebAssembly modules...");
+        await initParquetWasm();
+        await initArrow2();
 
-        // Step 2: Fetch and Read the Parquet File
-        console.log("Fetching Parquet file...");
+        // Fetch Parquet file
+        console.log("Fetching GeoParquet file...");
         const response = await fetch("./data.parquet"); // Replace with your Parquet file path
-        if (!response.ok) throw new Error("Failed to fetch Parquet file.");
+        if (!response.ok) throw new Error("Failed to fetch GeoParquet file.");
         const parquetBytes = new Uint8Array(await response.arrayBuffer());
 
-        console.log("Reading Parquet file...");
-        const arrowTable = readParquet(parquetBytes);
+        // Use parquet_wasm.js to read the Parquet file
+        console.log("Reading Parquet file with parquet_wasm...");
+        const wasmTable = readParquetWasm(parquetBytes, { batchSize: Math.pow(2, 31) });
+
+        // Convert to Arrow Table using Apache Arrow
+        console.log("Converting to Arrow Table...");
+        const arrowTable = arrow.tableFromIPC(wasmTable.intoIPCStream());
         console.log("Arrow Table:", arrowTable);
 
-        // Step 3: Extract Data from the Arrow Table
+        // Use arrow2.js as a fallback for compatibility
+        if (!arrowTable || arrowTable.numRows === 0) {
+          console.log("Fallback to arrow2.js...");
+          const arrow2Table = readParquetArrow2(parquetBytes);
+          console.log("Arrow Table from arrow2.js:", arrow2Table);
+        }
+
+        // Process Arrow Table to extract GeoJSON
+        console.log("Processing Arrow Table...");
         const geojson = {
           type: "FeatureCollection",
           features: [],
         };
 
-        const geometryColumn = arrowTable.getChild("geometry"); // Adjust column name as needed
-        if (!geometryColumn) throw new Error("Geometry column not found.");
-
+        const geometryColumn = arrowTable.getChild("geometry"); // Replace "geometry" with the correct column name
         const flatCoordinates = geometryColumn.getChildAt(0)?.data?.[0]?.values;
-        if (!flatCoordinates) throw new Error("Flat coordinates not found in geometry column.");
 
-        // Extract other columns as properties
+        // Extract properties
         const properties = {};
         arrowTable.schema.fields.forEach((field) => {
           const column = arrowTable.getChild(field.name);
@@ -49,18 +62,13 @@
           }
         });
 
-        // Generate GeoJSON
+        // Generate GeoJSON features
         for (let i = 0; i < flatCoordinates.length / 2; i++) {
-          const coords = [
-            flatCoordinates[i * 2], // Longitude
-            flatCoordinates[i * 2 + 1], // Latitude
-          ];
-
+          const coords = [flatCoordinates[i * 2], flatCoordinates[i * 2 + 1]];
           const featureProps = {};
           for (const key in properties) {
             featureProps[key] = properties[key]?.[i] || null;
           }
-
           geojson.features.push({
             type: "Feature",
             geometry: { type: "Point", coordinates: coords },
@@ -70,7 +78,7 @@
 
         console.log("GeoJSON Data:", geojson);
 
-        // Step 4: Render GeoJSON on Leaflet Map
+        // Render GeoJSON on Leaflet map
         const map = L.map("map").setView([0, 0], 2); // Center at [0, 0], zoom level 2
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: "&copy; OpenStreetMap contributors",
