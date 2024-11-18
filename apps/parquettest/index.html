@@ -11,7 +11,8 @@
   <div id="map" style="height: 600px;"></div>
 
   <script type="module">
-    import { readParquetStream } from 'https://unpkg.com/parquet-wasm@0.5.0-alpha.1/esm/arrow1.js';
+    import initParquetWasm, { readParquetStream } from 'https://unpkg.com/parquet-wasm@0.5.0-alpha.1/esm/arrow1.js';
+    import * as apacheArrow from 'https://cdn.jsdelivr.net/npm/apache-arrow@10.0.1/+esm';
 
     const map = L.map('map').setView([38.8543844, -99.5243335], 4);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -20,7 +21,11 @@
 
     const renderGeoParquet = async () => {
       try {
+        console.log("Initializing WebAssembly...");
+        await initParquetWasm(); // Initialize WASM
+
         const url = 'https://r2-public.kylebarron.dev/observable/2023/streaming-parquet-wasm/UScounties2.parquet/UScounties.parquet';
+        console.log("Fetching GeoParquet file...");
         const stream = await readParquetStream(url);
 
         for await (const wasmRecordBatch of stream) {
@@ -62,7 +67,7 @@
           }
         }
       } catch (error) {
-        console.error('An error occurred while rendering GeoParquet:', error);
+        console.error("An error occurred while rendering GeoParquet:", error);
       }
     };
 
