@@ -1,114 +1,87 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>GeoParquet Viewer</title>
+  <title>HyParquet GeoParquet Viewer</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/proj4/dist/proj4.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/wellknown"></script>
+  <script src="https://cdn.jsdelivr.net/npm/wellknown"></script> <!-- For WKT parsing -->
 </head>
 <body>
-  <h1>GeoParquet Viewer</h1>
-  <input type="file" id="fileInput" accept=".parquet" />
-  <br />
-  Or load from URL:
-  <input type="text" id="urlInput" placeholder="Enter GeoParquet URL" />
+  <h1>HyParquet GeoParquet Viewer</h1>
+  <input type="text" id="urlInput" placeholder="Enter GeoParquet URL" value="https://hyperparam-public.s3.amazonaws.com/bunnies.parquet" />
   <button id="loadButton">Load</button>
-  <h3>Metadata</h3>
-  <div id="metadata"></div>
   <div id="map" style="height: 600px; margin-top: 20px;"></div>
-  <script type="module">
-    import { parquetRead, parquetMetadataAsync } from 'https://cdn.jsdelivr.net/npm/hyparquet';
-    import { snappyUncompressor } from 'https://cdn.jsdelivr.net/npm/hysnappy';
-    import { compressors as hycompressors } from 'https://cdn.jsdelivr.net/npm/hyparquet-compressors';
 
-    const compressors = {
-      ...hycompressors,
-      snappy: snappyUncompressor()
-    };
+  <script type="module">
+    import { asyncBufferFromUrl, parquetRead } from 'https://cdn.jsdelivr.net/npm/hyparquet/src/hyparquet.min.js';
 
     const map = L.map('map').setView([0, 0], 2);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map);
 
-    const loadFile = async (file) => {
-      const arrayBuffer = await file.arrayBuffer();
-      const metadata = await parquetMetadataAsync(arrayBuffer);
-      displayMetadata(metadata);
+    const renderGeoParquet = async (url) => {
+      try {
+        // Load GeoParquet data
+        console.log('Fetching GeoParquet file from URL:', url);
+        const asyncBuffer = await asyncBufferFromUrl(url);
 
-      const geoColumn = findGeoColumn(metadata);
-      if (!geoColumn) {
-        alert('No valid geometry column found.');
-        return;
+        console.log('Reading Parquet data...');
+        await parquetRead({
+          file: asyncBuffer,
+          onComplete: (data) => {
+            console.log('Parquet Data:', data);
+
+            // Dynamically identify geometry column
+            const geoColumn = Object.keys(data).find((key) => key.toLowerCase().includes('geometry'));
+            if (!geoColumn) {
+              console.error('No geometry column found in the dataset.');
+              return;
+            }
+
+            // Decode geometries and render on the map
+            console.log('Rendering geometries...');
+            const geometries = data[geoColumn];
+            geometries.forEach((binary, index) => {
+              const wkt = new TextDecoder('utf-8').decode(binary);
+              const geometry = wellknown.parse(wkt);
+
+              if (!geometry) {
+                console.warn(`Invalid geometry at index ${index}:`, wkt);
+                return;
+              }
+
+              // Render based on geometry type
+              if (geometry.type === 'Point') {
+                L.marker([geometry.coordinates[1], geometry.coordinates[0]]).addTo(map);
+              } else if (geometry.type === 'Polygon') {
+                L.polygon(
+                  geometry.coordinates.map((ring) => ring.map(([lng, lat]) => [lat, lng]))
+                ).addTo(map);
+              } else if (geometry.type === 'LineString') {
+                L.polyline(
+                  geometry.coordinates.map(([lng, lat]) => [lat, lng])
+                ).addTo(map);
+              } else {
+                console.warn(`Unsupported geometry type at index ${index}:`, geometry.type);
+              }
+            });
+
+            console.log('Rendering complete!');
+          },
+        });
+      } catch (error) {
+        console.error('An error occurred while rendering GeoParquet:', error);
       }
-
-      const data = await parquetRead({
-        file: arrayBuffer,
-        metadata,
-        compressors,
-      });
-
-      renderGeoData(data[geoColumn]);
     };
 
-    const findGeoColumn = (metadata) => {
-      const geoMetadata = metadata.key_value_metadata?.find((kv) => kv.key === 'geo');
-      if (!geoMetadata) return null;
-      const geo = JSON.parse(geoMetadata.value);
-      return geo.columns[geo.primary_column];
-    };
-
-    const renderGeoData = (geometryData) => {
-      geometryData.forEach((geometry) => {
-        const wkt = new TextDecoder('utf-8').decode(geometry);
-        const geoJSON = wellknown.parse(wkt);
-
-        if (geoJSON.type === 'Point') {
-          L.marker([geoJSON.coordinates[1], geoJSON.coordinates[0]]).addTo(map);
-        } else if (geoJSON.type === 'Polygon') {
-          L.polygon(geoJSON.coordinates.map((ring) => ring.map(([lng, lat]) => [lat, lng]))).addTo(map);
-        } else if (geoJSON.type === 'LineString') {
-          L.polyline(geoJSON.coordinates.map(([lng, lat]) => [lat, lng])).addTo(map);
-        }
-      });
-    };
-
-    const displayMetadata = (metadata) => {
-      const container = document.getElementById('metadata');
-      container.innerHTML = `
-        <p><strong>Number of Rows:</strong> ${metadata.num_rows}</p>
-        <p><strong>Columns:</strong> ${metadata.schema.fields.map((f) => f.name).join(', ')}</p>
-      `;
-    };
-
-    document.getElementById('fileInput').addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (file) loadFile(file);
-    });
-
-    document.getElementById('loadButton').addEventListener('click', async () => {
+    document.getElementById('loadButton').addEventListener('click', () => {
       const url = document.getElementById('urlInput').value;
-      if (!url) return;
-
-      const response = await fetch(url);
-      const arrayBuffer = await response.arrayBuffer();
-      const metadata = await parquetMetadataAsync(arrayBuffer);
-      displayMetadata(metadata);
-
-      const geoColumn = findGeoColumn(metadata);
-      if (!geoColumn) {
-        alert('No valid geometry column found.');
+      if (!url) {
+        alert('Please enter a valid URL.');
         return;
       }
-
-      const data = await parquetRead({
-        file: arrayBuffer,
-        metadata,
-        compressors,
-      });
-
-      renderGeoData(data[geoColumn]);
+      renderGeoParquet(url);
     });
   </script>
 </body>
