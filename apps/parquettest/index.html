@@ -10,7 +10,6 @@
   <div id="map" style="height: 600px;"></div>
   <script type="module">
     import initParquetWasm, { readParquet } from "./parquet_wasm.js";
-    import * as arrow from "https://cdn.jsdelivr.net/npm/apache-arrow@10.0.1/+esm";
 
     (async function () {
       try {
@@ -24,15 +23,28 @@
 
         console.log("Reading Parquet file...");
         const wasmTable = readParquet(parquetBytes, { batchSize: Math.pow(2, 31) });
-        const arrowTable = arrow.tableFromIPC(wasmTable.intoIPCStream());
+        const arrowTable = wasmTable.toArrowTable(); // Replace if necessary
         console.log("Arrow Table:", arrowTable);
 
         // Extract geometry column
         console.log("Extracting Geometry...");
-        const geometryColumn = arrowTable.getChild("geometry"); // Replace "geometry" with your actual column name
+        const geometryColumn = arrowTable.getChild("geometry"); // Adjust column name as needed
         if (!geometryColumn) throw new Error("Geometry column not found.");
 
-        const wktValues = geometryColumn.toArray(); // Assuming WKT geometries are stored
+        const binaryGeometries = geometryColumn.data[0].toArray(); // Extract binary geometries
+        console.log("Binary Geometries:", binaryGeometries);
+
+        // Decode Binary to WKT or GeoJSON
+        const decodeBinaryToWKT = (binary) => {
+          try {
+            return new TextDecoder("utf-8").decode(binary);
+          } catch (error) {
+            console.warn("Failed to decode binary geometry:", error);
+            return null;
+          }
+        };
+
+        const wktGeometries = binaryGeometries.map(decodeBinaryToWKT);
 
         // Initialize Leaflet Map
         const map = L.map("map").setView([0, 0], 2); // Center at [0, 0], zoom level 2
@@ -42,7 +54,12 @@
 
         // Render geometries directly
         console.log("Rendering Geometries...");
-        wktValues.forEach((wkt, index) => {
+        wktGeometries.forEach((wkt, index) => {
+          if (!wkt) {
+            console.warn(`No WKT geometry found for row ${index}`);
+            return;
+          }
+
           const geometry = wellknown.parse(wkt); // Parse WKT to Leaflet-compatible geometry
           if (!geometry) {
             console.warn(`Invalid WKT geometry at index ${index}:`, wkt);
