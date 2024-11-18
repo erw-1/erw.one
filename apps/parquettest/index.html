@@ -45,11 +45,16 @@
         if (!geometryField) throw new Error("Geometry column not found in schema.");
 
         const geometryColumn = arrowTable.getChild("geometry");
+        console.log("Geometry Column:", geometryColumn);
+
         if (!geometryColumn) throw new Error("Geometry column is missing from the table.");
 
-        console.log("Extracting geometries...");
-        const binaryGeometries = geometryColumn.data[0].values;
+        const binaryGeometries = geometryColumn.data[0]?.values || [];
         console.log("Binary Geometries:", binaryGeometries);
+
+        if (binaryGeometries.length === 0) {
+          throw new Error("No geometry data found in the geometry column.");
+        }
 
         // Decode Binary Data to WKT
         const decodeBinaryToWKT = (binary) => {
