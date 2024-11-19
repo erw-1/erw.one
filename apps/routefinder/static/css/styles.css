@@ -63,20 +63,20 @@ select,
 /* Title styling */
 h1 {
     top: 20px;
-    left: 20px;
+    left: 10px;
     font-size: 20px;
 }
 
 /* Label and dropdown styling (stacked under the title) */
 label {
     top: 150px;
-    left: 20px;
+    left: 10px;
     font-size: 16px;
 }
 
 select {
     top: 200px;
-    left: 20px;
+    left: 10px;
     position: absolute;
     font-size: var(--font-size-base);
     background-color: var(--background-color);
@@ -108,7 +108,7 @@ select option:checked {
 /* Legend (bottom left corner, clean alignment) */
 #legend {
     bottom: 20px;
-    left: 20px;
+    left: 10px;
     padding: 10px;
     background: var(--background-color);
     backdrop-filter: var(--blur-effect);
