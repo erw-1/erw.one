@@ -9,7 +9,7 @@ const svg = d3.select("svg")
   .attr("width", width)
   .attr("height", height);
 
-// Updated data with "Backup and Energy Storage" node
+// Updated data with enhanced Methanisation role
 const data = {
   nodes: [
     { id: "Solar Panels", group: "Sun", value: 875 },
@@ -17,7 +17,7 @@ const data = {
     { id: "Wind Turbines", group: "Wind and Water", value: 500 },
     { id: "Marine Hydrokinetic Turbines", group: "Wind and Water", value: 75 },
     { id: "Wave Energy Converters", group: "Wind and Water", value: 50 },
-    { id: "Methanisation Plants", group: "Waste", value: 300 },
+    { id: "Methanisation Plants", group: "Waste", value: 1200 }, // Massive contribution
     { id: "Zero Waste Culture", group: "Waste", value: 0 },
     { id: "District Heating Network", group: "Heat", value: 600 },
     { id: "Urban Heat Recovery", group: "Heat", value: 200 },
@@ -25,7 +25,7 @@ const data = {
     { id: "Gravitational Storage", group: "Backup", value: 100 },
     { id: "Power2Gas", group: "Backup", value: 200 },
     { id: "Small Nuclear Plant (SMR)", group: "Backup", value: 50 },
-    { id: "Backup and Energy Storage", group: "Storage", value: 350 }, // New central backup node
+    { id: "Backup and Energy Storage", group: "Storage", value: 350 },
     { id: "Electricity Grid", group: "Output", value: 1600 },
     { id: "Heat for Buildings", group: "Output", value: 600 },
   ],
@@ -35,7 +35,9 @@ const data = {
     { source: "Wind Turbines", target: "Electricity Grid", value: 500 },
     { source: "Marine Hydrokinetic Turbines", target: "Electricity Grid", value: 75 },
     { source: "Wave Energy Converters", target: "Electricity Grid", value: 50 },
-    { source: "Methanisation Plants", target: "District Heating Network", value: 300 },
+    { source: "Methanisation Plants", target: "District Heating Network", value: 400 }, // Heat from methanisation
+    { source: "Methanisation Plants", target: "Electricity Grid", value: 600 }, // Electricity generation
+    { source: "Methanisation Plants", target: "Backup and Energy Storage", value: 200 }, // Methane storage
     { source: "Zero Waste Culture", target: "Methanisation Plants", value: 0 },
     { source: "Urban Heat Recovery", target: "District Heating Network", value: 200 },
     { source: "Thermal Energy Storage", target: "District Heating Network", value: 150 },
@@ -50,12 +52,12 @@ const data = {
 
 // Scales for visual representation
 const edgeScale = d3.scaleLinear()
-  .domain([0, 875]) // Adjust domain based on max link value
+  .domain([0, 1200]) // Adjusted domain for massive Methanisation contribution
   .range([1, 10]);
 
 const sizeScale = d3.scaleSqrt()
-  .domain([0, 875]) // Adjust domain based on max node value
-  .range([5, 20]);
+  .domain([0, 1200]) // Adjusted domain for massive Methanisation contribution
+  .range([5, 25]);
 
 // Create a force simulation
 const simulation = d3.forceSimulation(data.nodes)
