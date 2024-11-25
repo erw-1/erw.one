@@ -1,4 +1,15 @@
-// Updated data with energy values (in GWh/year)
+// Define SVG dimensions
+const width = 960, height = 600;
+
+// Tooltip for displaying information
+const tooltip = d3.select("#tooltip");
+
+// Create the SVG canvas
+const svg = d3.select("svg")
+  .attr("width", width)
+  .attr("height", height);
+
+// Data with energy values (in GWh/year)
 const data = {
   nodes: [
     { id: "Solar Panels", group: "Sun", value: 875 },
@@ -35,12 +46,22 @@ const data = {
   ],
 };
 
-// Add scale for edge thickness
+// Scales for visual representation
 const edgeScale = d3.scaleLinear()
   .domain([0, 875]) // Adjust domain based on max link value
   .range([1, 10]);
 
-// Draw links with varying thickness
+const sizeScale = d3.scaleSqrt()
+  .domain([0, 875]) // Adjust domain based on max node value
+  .range([5, 20]);
+
+// Create a force simulation
+const simulation = d3.forceSimulation(data.nodes)
+  .force("link", d3.forceLink(data.links).id(d => d.id).distance(150))
+  .force("charge", d3.forceManyBody().strength(-300))
+  .force("center", d3.forceCenter(width / 2, height / 2));
+
+// Draw links
 const link = svg.append("g")
   .selectAll("line")
   .data(data.links)
@@ -49,11 +70,7 @@ const link = svg.append("g")
   .attr("stroke-width", d => edgeScale(d.value))
   .attr("stroke", "#999");
 
-// Draw nodes with varying sizes
-const sizeScale = d3.scaleSqrt()
-  .domain([0, 875]) // Adjust domain based on max node value
-  .range([5, 20]);
-
+// Draw nodes
 const node = svg.append("g")
   .selectAll("circle")
   .data(data.nodes)
@@ -84,7 +101,16 @@ const node = svg.append("g")
     tooltip.style("visibility", "hidden");
   });
 
-// Update simulation for positions
+// Add node labels
+const label = svg.append("g")
+  .selectAll("text")
+  .data(data.nodes)
+  .join("text")
+  .attr("x", 12)
+  .attr("y", 3)
+  .text(d => d.id);
+
+// Update simulation
 simulation.on("tick", () => {
   link
     .attr("x1", d => d.source.x)
@@ -100,3 +126,25 @@ simulation.on("tick", () => {
     .attr("x", d => d.x + 10)
     .attr("y", d => d.y + 5);
 });
+
+// Drag functionality
+function drag(simulation) {
+  function dragstarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+  function dragended(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+  return d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended);
+}
