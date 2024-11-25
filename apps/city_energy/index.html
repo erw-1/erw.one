@@ -8,7 +8,36 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
 </head>
 <body>
-  <div id="tooltip" class="tooltip"></div>
-  <script src="script-nodes.js"></script>
+  <div class="tab">
+    <button class="tablinks active" onclick="switchTab(event, 'Nodes')">Node Visualization</button>
+    <button class="tablinks" onclick="switchTab(event, 'Sankey')">Sankey Diagram</button>
+  </div>
+
+  <div id="Nodes" class="tab-content active">
+    <div id="tooltip" class="tooltip"></div>
+    <script src="script-nodes.js"></script>
+  </div>
+
+  <div id="Sankey" class="tab-content">
+    <!-- Sankey diagram will be inserted here -->
+    <div id="sankey-container"></div>
+    <script id="sankey-script" src="script-sankey.js" type="text/javascript" defer></script>
+  </div>
+
+  <script>
+    function switchTab(evt, tabName) {
+      // Hide all tab contents
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach(content => content.classList.remove('active'));
+
+      // Remove "active" class from all buttons
+      const buttons = document.querySelectorAll('.tab button');
+      buttons.forEach(button => button.classList.remove('active'));
+
+      // Show the selected tab and mark the button as active
+      document.getElementById(tabName).classList.add('active');
+      evt.currentTarget.classList.add('active');
+    }
+  </script>
 </body>
 </html>
