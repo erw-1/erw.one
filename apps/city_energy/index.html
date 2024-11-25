@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Energy Mix Visualization</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .node {
+      stroke: #fff;
+      stroke-width: 1.5px;
+    }
+    .link {
+      stroke: #999;
+      stroke-opacity: 0.6;
+    }
+    .tooltip {
+      position: absolute;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      padding: 5px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      pointer-events: none;
+      visibility: hidden;
+    }
+  </style>
+</head>
+<body>
+  <h1>City Energy Mix Visualization</h1>
+  <svg width="960" height="600"></svg>
+  <div id="tooltip" class="tooltip"></div>
+
+  <script src="graph.js"></script>
+</body>
+</html>
