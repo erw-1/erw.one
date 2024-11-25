@@ -5,16 +5,23 @@ const height = window.innerHeight;
 // Tooltip for displaying information
 const tooltip = d3.select("#tooltip");
 
+// Tooltip configuration
+const tooltipConfig = {
+  format: d => `
+    <b>${d.id}</b><br>
+    Group: ${d.group}<br>
+    Value: ${d.value} (GWh/year)
+  `
+};
+
 // Create the SVG canvas
 const svg = d3.select("body")
   .append("svg")
   .attr("width", width)
-  .attr("height", height)
-  .call(d3.zoom()
-    .scaleExtent([0.5, 5])
-    .on("zoom", (event) => {
-      svg.attr("transform", event.transform);
-    }));
+  .attr("height", height);
+
+// Disable scrollwheel zoom and panning
+svg.on("wheel", (event) => event.preventDefault());
 
 // Load data from external JSON file
 d3.json("data.json").then(data => {
@@ -63,10 +70,7 @@ d3.json("data.json").then(data => {
     .attr("fill", d => groupColors[d.group] || "#ccc")
     .call(drag(simulation))
     .on("mouseover", (event, d) => {
-      const tooltipContent = Object.entries(d)
-        .map(([key, value]) => `<b>${key}</b>: ${value}`)
-        .join("<br>");
-      tooltip.style("visibility", "visible").html(tooltipContent);
+      tooltip.style("visibility", "visible").html(tooltipConfig.format(d));
     })
     .on("mousemove", event => {
       tooltip.style("top", `${event.pageY + 10}px`)
