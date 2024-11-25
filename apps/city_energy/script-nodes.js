@@ -13,11 +13,44 @@ const svg = d3.select("body")
 
 // Load data from external JSON file
 d3.json("data.json").then(data => {
-  // Create a dictionary of colors based on the groups in the JSON file
-  const groupColors = {};
-  data.groups.forEach(group => {
-    groupColors[group.name] = group.color;
-  });
+  // Create a map to store hierarchy levels
+  const hierarchyLevels = {};
+
+  // Determine the central node (node with no incoming links)
+  const allTargets = new Set(data.links.map(link => link.target));
+  const allSources = new Set(data.links.map(link => link.source));
+  const centralNode = [...allSources].find(node => !allTargets.has(node));
+  hierarchyLevels[centralNode] = 1; // Central node is level 1
+
+  // Propagate hierarchy levels dynamically
+  function calculateHierarchyLevels() {
+    const queue = [centralNode]; // Start with the central node
+    while (queue.length > 0) {
+      const currentNode = queue.shift();
+      const currentLevel = hierarchyLevels[currentNode];
+
+      // Find all outgoing links from the current node
+      const children = data.links
+        .filter(link => link.source === currentNode)
+        .map(link => link.target);
+
+      // Assign levels to children if not already assigned
+      children.forEach(child => {
+        if (!(child in hierarchyLevels)) {
+          hierarchyLevels[child] = currentLevel + 1;
+          queue.push(child);
+        }
+      });
+    }
+  }
+
+  calculateHierarchyLevels();
+
+  // Scales for dynamic text size based on hierarchy
+  const maxLevel = Math.max(...Object.values(hierarchyLevels));
+  const textSizeScale = d3.scaleLinear()
+    .domain([1, maxLevel]) // Map levels dynamically
+    .range([18, 12]); // Adjust font size for larger hierarchies
 
   // Scales for visual representation
   const edgeScale = d3.scaleLinear()
@@ -48,7 +81,13 @@ d3.json("data.json").then(data => {
     .data(data.nodes)
     .join("circle")
     .attr("r", d => sizeScale(d.value))
-    .attr("fill", d => groupColors[d.group] || "#ccc")
+    .attr("fill", d => {
+      const groupColors = {};
+      data.groups.forEach(group => {
+        groupColors[group.name] = group.color;
+      });
+      return groupColors[d.group] || "#ccc";
+    })
     .call(drag(simulation))
     .on("mouseover", (event, d) => {
       tooltip.style("visibility", "visible")
@@ -62,7 +101,7 @@ d3.json("data.json").then(data => {
       tooltip.style("visibility", "hidden");
     });
 
-  // Add centered node labels
+  // Add centered node labels with dynamic text sizing
   const label = svg.append("g")
     .selectAll("text")
     .data(data.nodes)
@@ -71,30 +110,9 @@ d3.json("data.json").then(data => {
     .attr("dy", ".35em") // Center vertically
     .text(d => d.id)
     .style("pointer-events", "none") // Prevent interference with dragging
-    .style("font-size", "12px") // Adjust font size for clarity
-    .style("fill", "#000"); // Black text color
-
-  // Add legend in the bottom-left corner
-  const legend = svg.append("g")
-    .attr("transform", `translate(20, ${height - 150})`);
-  
-  legend.selectAll("rect")
-    .data(data.groups)
-    .join("rect")
-    .attr("class", "legend-rect") // Class for additional rectangle styles
-    .attr("x", 0)
-    .attr("y", (d, i) => i * 20)
-    .attr("width", 15)
-    .attr("height", 15)
-    .attr("fill", d => d.color); // Keep dynamic fill color in JS
-  
-  legend.selectAll("text")
-    .data(data.groups)
-    .join("text")
-    .attr("class", "legend-text") // Class for additional text styles
-    .attr("x", 20) // Position text to the right of the rectangles
-    .attr("y", (d, i) => i * 20 + 12) // Align text with the rectangles
-    .text(d => d.name);
+    .style("font-size", d => `${textSizeScale(hierarchyLevels[d.id] || maxLevel)}px`) // Dynamic font size
+    .style("font-family", "Poppins")
+    .style("fill", "#000");
 
   // Update simulation
   simulation.on("tick", () => {
