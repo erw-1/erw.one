@@ -81,21 +81,17 @@ d3.json("data.json").then(data => {
   legend.selectAll("rect")
     .data(data.groups)
     .join("rect")
+    .attr("class", "legend-rect") // Assign a class for rectangles
     .attr("x", 0)
-    .attr("y", (d, i) => i * 20)
-    .attr("width", 15)
-    .attr("height", 15)
-    .attr("fill", d => d.color);
+    .attr("y", (d, i) => i * 20);
   
   legend.selectAll("text")
     .data(data.groups)
     .join("text")
-    .attr("x", 25) // Offset text to the right of the rectangle
-    .attr("y", (d, i) => i * 20 + 12) // Align text vertically with the rectangles
-    .text(d => d.name)
-    .style("font-size", "12px")
-    .style("font-family", "Poppins")
-    .style("fill", "#000");
+    .attr("class", "legend-text") // Assign a class for text
+    .attr("x", 20) // Position text to the right of the rectangles
+    .attr("y", (d, i) => i * 20 + 12) // Align text with the rectangles
+    .text(d => d.name);
 
   // Update simulation
   simulation.on("tick", () => {
