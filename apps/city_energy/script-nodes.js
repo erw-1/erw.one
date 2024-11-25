@@ -1,18 +1,51 @@
-// Define SVG dimensions for full screen
-const width = window.innerWidth;
-const height = window.innerHeight;
+// Configuration object
+const config = {
+  // SVG Dimensions
+  width: window.innerWidth,
+  height: window.innerHeight,
+
+  // Tooltip configuration
+  tooltip: {
+    selector: "#tooltip",
+    format: d => `
+      <b>${d.id}</b><br>
+      Group: ${d.group}<br>
+      ${d.value} (GWh/year)
+    `
+  },
+
+  // Simulation parameters
+  simulation: {
+    chargeStrength: -300,
+    linkDistance: 150,
+    nodeSizeRange: [5, 30],
+    linkWidthRange: [1, 10],
+  },
+
+  // Legend positioning
+  legend: {
+    x: 20,
+    yOffset: 150, // Distance from bottom
+    rectWidth: 15,
+    rectHeight: 15,
+    textXOffset: 20,
+    textYOffset: 12
+  },
+
+  // Link and node styling
+  defaultLinkColor: "#999",
+  defaultNodeColor: "#ccc",
+  label: {
+    fontSize: "12px",
+    fill: "#000",
+  },
+};
+
+// Define SVG dimensions
+const { width, height } = config;
 
 // Tooltip for displaying information
-const tooltip = d3.select("#tooltip");
-
-// Tooltip configuration
-const tooltipConfig = {
-  format: d => `
-    <b>${d.id}</b><br>
-    Group: ${d.group}<br>
-    ${d.value} (GWh/year)
-  `
-};
+const tooltip = d3.select(config.tooltip.selector);
 
 // Create the SVG canvas
 const svg = d3.select("body")
@@ -30,13 +63,6 @@ d3.json("data.json").then(data => {
     return;
   }
 
-  const config = {
-    chargeStrength: -300,
-    linkDistance: 150,
-    nodeSizeRange: [5, 30],
-    linkWidthRange: [1, 10],
-  };
-
   const groupColors = {};
   data.groups.forEach(group => {
     groupColors[group.name] = group.color;
@@ -44,15 +70,15 @@ d3.json("data.json").then(data => {
 
   const edgeScale = d3.scaleLinear()
     .domain(d3.extent(data.links, d => d.value))
-    .range(config.linkWidthRange);
+    .range(config.simulation.linkWidthRange);
 
   const sizeScale = d3.scaleSqrt()
     .domain(d3.extent(data.nodes, d => d.value))
-    .range(config.nodeSizeRange);
+    .range(config.simulation.nodeSizeRange);
 
   const simulation = d3.forceSimulation(data.nodes)
-    .force("link", d3.forceLink(data.links).id(d => d.id).distance(config.linkDistance))
-    .force("charge", d3.forceManyBody().strength(config.chargeStrength))
+    .force("link", d3.forceLink(data.links).id(d => d.id).distance(config.simulation.linkDistance))
+    .force("charge", d3.forceManyBody().strength(config.simulation.chargeStrength))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
   const link = svg.append("g")
@@ -60,17 +86,17 @@ d3.json("data.json").then(data => {
     .data(data.links)
     .join("line")
     .attr("stroke-width", d => edgeScale(d.value))
-    .attr("stroke", "#999");
+    .attr("stroke", config.defaultLinkColor);
 
   const node = svg.append("g")
     .selectAll("circle")
     .data(data.nodes)
     .join("circle")
     .attr("r", d => sizeScale(d.value))
-    .attr("fill", d => groupColors[d.group] || "#ccc")
+    .attr("fill", d => groupColors[d.group] || config.defaultNodeColor)
     .call(drag(simulation))
     .on("mouseover", (event, d) => {
-      tooltip.style("visibility", "visible").html(tooltipConfig.format(d));
+      tooltip.style("visibility", "visible").html(config.tooltip.format(d));
     })
     .on("mousemove", event => {
       tooltip.style("top", `${event.pageY + 10}px`)
@@ -88,8 +114,8 @@ d3.json("data.json").then(data => {
     .attr("dy", ".35em")
     .text(d => d.id)
     .style("pointer-events", "none")
-    .style("font-size", "12px")
-    .style("fill", "#000");
+    .style("font-size", config.label.fontSize)
+    .style("fill", config.label.fill);
 
   createLegend(svg, data.groups, height);
 
@@ -132,24 +158,22 @@ d3.json("data.json").then(data => {
 
   function createLegend(svg, groups, height) {
     const legend = svg.append("g")
-      .attr("transform", `translate(20, ${height - 150})`);
+      .attr("transform", `translate(${config.legend.x}, ${height - config.legend.yOffset})`);
 
     legend.selectAll("rect")
       .data(groups)
       .join("rect")
-      .attr("class", "legend-rect")
       .attr("x", 0)
       .attr("y", (d, i) => i * 20)
-      .attr("width", 15)
-      .attr("height", 15)
+      .attr("width", config.legend.rectWidth)
+      .attr("height", config.legend.rectHeight)
       .attr("fill", d => d.color);
 
     legend.selectAll("text")
       .data(groups)
       .join("text")
-      .attr("class", "legend-text")
-      .attr("x", 20)
-      .attr("y", (d, i) => i * 20 + 12)
+      .attr("x", config.legend.textXOffset)
+      .attr("y", (d, i) => i * 20 + config.legend.textYOffset)
       .text(d => d.name);
   }
 });
