@@ -9,10 +9,10 @@ const svg = d3.select("svg")
   .attr("width", width)
   .attr("height", height);
 
-// Updated data with central node and new groupings
+// Ensure parent nodes' values are the sum of their children
 const data = {
   nodes: [
-    { id: "Chevilly-la-Plage's Energetic Mix", group: "Central", value: 2000 },
+    { id: "Chevilly-la-Plage's Energetic Mix", group: "Central", value: 2200 },
     { id: "Solar Panels", group: "Sun", value: 875 },
     { id: "Thermophotovoltaics", group: "Sun", value: 100 },
     { id: "Wind Turbines", group: "Wind and Water", value: 500 },
@@ -22,18 +22,17 @@ const data = {
     { id: "Urban Organic Waste", group: "Waste", value: 500 },
     { id: "Sewage", group: "Waste", value: 400 },
     { id: "Agricultural Organic Waste", group: "Waste", value: 300 },
-    { id: "District Heating Network", group: "Heat", value: 600 },
+    { id: "District Heating Network", group: "Heat", value: 750 }, // Includes Urban Heat Recovery and Thermal Energy Storage
     { id: "Urban Heat Recovery", group: "Heat", value: 200 },
     { id: "Thermal Energy Storage", group: "Heat", value: 150 },
     { id: "Heat for Buildings", group: "Heat", value: 600 },
-    { id: "Electricity Grid", group: "Electricity", value: 1600 },
+    { id: "Electricity Grid", group: "Electricity", value: 1600 }, // Includes Methanisation output
     { id: "Gravitational Storage", group: "Backup", value: 100 },
     { id: "Power2Gas", group: "Backup", value: 200 },
     { id: "Small Nuclear Plant (SMR)", group: "Backup", value: 50 },
-    { id: "Backup and Energy Storage", group: "Backup", value: 350 },
+    { id: "Backup and Energy Storage", group: "Backup", value: 350 }, // Sum of Backup components
   ],
   links: [
-    // Converging to Chevilly-la-Plage's Energetic Mix
     { source: "Electricity Grid", target: "Chevilly-la-Plage's Energetic Mix", value: 1600 },
     { source: "District Heating Network", target: "Chevilly-la-Plage's Energetic Mix", value: 600 },
     { source: "Solar Panels", target: "Electricity Grid", value: 875 },
@@ -46,26 +45,23 @@ const data = {
     { source: "Agricultural Organic Waste", target: "Methanisation Plants", value: 300 },
     { source: "Methanisation Plants", target: "District Heating Network", value: 400 },
     { source: "Methanisation Plants", target: "Electricity Grid", value: 600 },
-    { source: "Methanisation Plants", target: "Backup and Energy Storage", value: 200 },
     { source: "Urban Heat Recovery", target: "District Heating Network", value: 200 },
     { source: "Thermal Energy Storage", target: "District Heating Network", value: 150 },
-    // Bidirectional arrows for storage
-    { source: "Gravitational Storage", target: "Backup and Energy Storage", value: 100, bidirectional: true },
-    { source: "Power2Gas", target: "Backup and Energy Storage", value: 200, bidirectional: true },
+    { source: "Gravitational Storage", target: "Backup and Energy Storage", value: 100 },
+    { source: "Power2Gas", target: "Backup and Energy Storage", value: 200 },
     { source: "Small Nuclear Plant (SMR)", target: "Backup and Energy Storage", value: 50 },
-    { source: "Backup and Energy Storage", target: "Electricity Grid", value: 250, bidirectional: true },
-    { source: "Backup and Energy Storage", target: "District Heating Network", value: 100, bidirectional: true },
+    { source: "Backup and Energy Storage", target: "Electricity Grid", value: 250 },
     { source: "District Heating Network", target: "Heat for Buildings", value: 600 },
   ],
 };
 
 // Scales for visual representation
 const edgeScale = d3.scaleLinear()
-  .domain([0, 2000]) // Adjusted for central node
+  .domain([0, 2200]) // Adjusted for central node
   .range([1, 10]);
 
 const sizeScale = d3.scaleSqrt()
-  .domain([0, 2000]) // Adjusted for central node
+  .domain([0, 2200]) // Adjusted for central node
   .range([5, 30]);
 
 // Force simulation
@@ -74,28 +70,13 @@ const simulation = d3.forceSimulation(data.nodes)
   .force("charge", d3.forceManyBody().strength(-300))
   .force("center", d3.forceCenter(width / 2, height / 2));
 
-// Add arrow marker for directional links
-svg.append("defs")
-  .append("marker")
-  .attr("id", "arrow")
-  .attr("viewBox", "0 0 10 10")
-  .attr("refX", 12) // Adjust refX to move arrow outside the node
-  .attr("refY", 5)
-  .attr("markerWidth", 6)
-  .attr("markerHeight", 6)
-  .attr("orient", "auto")
-  .append("path")
-  .attr("d", "M0,0 L10,5 L0,10 Z")
-  .attr("fill", "#999");
-
-// Draw links with arrows
+// Draw links
 const link = svg.append("g")
   .selectAll("line")
   .data(data.links)
   .join("line")
   .attr("stroke-width", d => edgeScale(d.value))
-  .attr("stroke", d => (d.bidirectional ? "#888" : "#999"))
-  .attr("marker-end", d => (d.bidirectional ? "" : "url(#arrow)")); // Add arrow for one-way links
+  .attr("stroke", "#999");
 
 // Draw nodes
 const node = svg.append("g")
@@ -110,9 +91,8 @@ const node = svg.append("g")
       Waste: "#32CD32",
       Heat: "#FF4500",
       Electricity: "#87CEEB",
-      Storage: "#8A2BE2",
       Backup: "#A9A9A9",
-      Central: "#FF6347",
+      Central: "#FFC0CB", // Pink for central node
     };
     return groupColors[d.group] || "#ccc";
   })
