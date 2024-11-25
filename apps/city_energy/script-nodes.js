@@ -10,7 +10,7 @@ const tooltipConfig = {
   format: d => `
     <b>${d.id}</b><br>
     Group: ${d.group}<br>
-    Value: ${d.value} (GWh/year)
+    ${d.value} (GWh/year)
   `
 };
 
