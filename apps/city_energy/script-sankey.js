@@ -1,12 +1,13 @@
-// Load and transform the data
+// Load and fix the data
 d3.json("data.json").then((originalData) => {
-  // Transform nodes to have 'name' and 'category'
+  // Transform nodes: map 'id' to 'name' and add 'category'
   const nodes = originalData.nodes.map((node) => ({
-    name: node.id, // Map 'id' to 'name'
-    category: node.group || node.id.split(" ")[0], // Use 'group' or first word as 'category'
+    name: node.id, // Rename 'id' to 'name'
+    category: node.group || node.id.split(" ")[0], // Use 'group' or the first word of 'id'
+    value: node.value // Retain value for visualization
   }));
 
-  // Ensure links match the transformed node names
+  // Validate and filter links
   const nodeNames = new Set(nodes.map((node) => node.name));
   const links = originalData.links.filter((link) => {
     const validSource = nodeNames.has(link.source);
@@ -16,15 +17,15 @@ d3.json("data.json").then((originalData) => {
     return validSource && validTarget;
   });
 
-  // Log and save the transformed data
-  const transformedData = { nodes, links };
-  console.log("Transformed Data:", transformedData);
+  // Log the transformed data
+  const fixedData = { nodes, links };
+  console.log("Fixed Data:", fixedData);
 
-  // Use transformedData in the Sankey diagram
-  drawSankey(transformedData);
+  // Use this data to render the Sankey diagram
+  drawSankey(fixedData);
 });
 
-// Sankey diagram drawing logic (adapted from example)
+// Sankey diagram logic
 function drawSankey(data) {
   const width = 928;
   const height = 600;
