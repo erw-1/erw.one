@@ -12,24 +12,24 @@ const svg = d3.select("svg")
 // Updated data with precise fixed positions for the desired layout
 const data = {
   nodes: [
-    { id: "Solar Panels", group: "Sun", value: 875, fx: 700, fy: 100 },
-    { id: "Thermophotovoltaics", group: "Sun", value: 100, fx: 700, fy: 200 },
-    { id: "Wind Turbines", group: "Wind and Water", value: 500, fx: 800, fy: 150 },
-    { id: "Marine Hydrokinetic Turbines", group: "Wind and Water", value: 75, fx: 850, fy: 250 },
-    { id: "Wave Energy Converters", group: "Wind and Water", value: 50, fx: 850, fy: 350 },
-    { id: "Methanisation Plants", group: "Waste", value: 1200, fx: 480, fy: 300 },
-    { id: "Urban Organic Waste", group: "Waste", value: 500, fx: 300, fy: 250 },
-    { id: "Sewage", group: "Waste", value: 400, fx: 300, fy: 350 },
-    { id: "Agricultural Organic Waste", group: "Waste", value: 300, fx: 300, fy: 450 },
-    { id: "District Heating Network", group: "Heat", value: 600, fx: 480, fy: 400 },
-    { id: "Urban Heat Recovery", group: "Heat", value: 200, fx: 380, fy: 500 },
-    { id: "Thermal Energy Storage", group: "Heat", value: 150, fx: 580, fy: 500 },
-    { id: "Gravitational Storage", group: "Backup", value: 100, fx: 480, fy: 100 },
-    { id: "Power2Gas", group: "Backup", value: 200, fx: 580, fy: 100 },
-    { id: "Small Nuclear Plant (SMR)", group: "Backup", value: 50, fx: 380, fy: 100 },
-    { id: "Backup and Energy Storage", group: "Storage", value: 350, fx: 480, fy: 200 },
-    { id: "Electricity Grid", group: "Output", value: 1600, fx: 600, fy: 300 },
-    { id: "Heat for Buildings", group: "Output", value: 600, fx: 480, fy: 500 },
+    { id: "Solar Panels", group: "Sun", value: 875 },
+    { id: "Thermophotovoltaics", group: "Sun", value: 100 },
+    { id: "Wind Turbines", group: "Wind and Water", value: 500 },
+    { id: "Marine Hydrokinetic Turbines", group: "Wind and Water", value: 75 },
+    { id: "Wave Energy Converters", group: "Wind and Water", value: 50 },
+    { id: "Methanisation Plants", group: "Waste", value: 1200 },
+    { id: "Urban Organic Waste", group: "Waste", value: 500 },
+    { id: "Sewage", group: "Waste", value: 400 },
+    { id: "Agricultural Organic Waste", group: "Waste", value: 300 },
+    { id: "District Heating Network", group: "Heat", value: 600 },
+    { id: "Urban Heat Recovery", group: "Heat", value: 200 },
+    { id: "Thermal Energy Storage", group: "Heat", value: 150 },
+    { id: "Gravitational Storage", group: "Backup", value: 100 },
+    { id: "Power2Gas", group: "Backup", value: 200 },
+    { id: "Small Nuclear Plant (SMR)", group: "Backup", value: 50 },
+    { id: "Backup and Energy Storage", group: "Storage", value: 350 },
+    { id: "Electricity Grid", group: "Output", value: 1600 },
+    { id: "Heat for Buildings", group: "Output", value: 600 },
   ],
   links: [
     { source: "Solar Panels", target: "Electricity Grid", value: 875 },
@@ -54,13 +54,98 @@ const data = {
   ],
 };
 
+// Force simulation with fixed positions
+const simulation = d3.forceSimulation(data.nodes)
+  .force("link", d3.forceLink(data.links).id(d => d.id).distance(150))
+  .force("charge", d3.forceManyBody().strength(-500))
+  .force("center", d3.forceCenter(width / 2, height / 2))
+  .stop(); // Stop the simulation for manual node positioning
+
+// Manually position the nodes for the desired layout
+data.nodes.forEach(node => {
+  switch (node.id) {
+    case "Solar Panels":
+      node.fx = 150;
+      node.fy = 100;
+      break;
+    case "Thermophotovoltaics":
+      node.fx = 150;
+      node.fy = 200;
+      break;
+    case "Wind Turbines":
+      node.fx = 250;
+      node.fy = 150;
+      break;
+    case "Marine Hydrokinetic Turbines":
+      node.fx = 300;
+      node.fy = 250;
+      break;
+    case "Wave Energy Converters":
+      node.fx = 300;
+      node.fy = 350;
+      break;
+    case "Methanisation Plants":
+      node.fx = 450;
+      node.fy = 300;
+      break;
+    case "Urban Organic Waste":
+      node.fx = 350;
+      node.fy = 250;
+      break;
+    case "Sewage":
+      node.fx = 350;
+      node.fy = 350;
+      break;
+    case "Agricultural Organic Waste":
+      node.fx = 350;
+      node.fy = 450;
+      break;
+    case "District Heating Network":
+      node.fx = 550;
+      node.fy = 400;
+      break;
+    case "Urban Heat Recovery":
+      node.fx = 450;
+      node.fy = 450;
+      break;
+    case "Thermal Energy Storage":
+      node.fx = 650;
+      node.fy = 450;
+      break;
+    case "Gravitational Storage":
+      node.fx = 450;
+      node.fy = 100;
+      break;
+    case "Power2Gas":
+      node.fx = 550;
+      node.fy = 100;
+      break;
+    case "Small Nuclear Plant (SMR)":
+      node.fx = 350;
+      node.fy = 100;
+      break;
+    case "Backup and Energy Storage":
+      node.fx = 500;
+      node.fy = 200;
+      break;
+    case "Electricity Grid":
+      node.fx = 700;
+      node.fy = 300;
+      break;
+    case "Heat for Buildings":
+      node.fx = 700;
+      node.fy = 400;
+      break;
+  }
+});
+
 // Scales for visual representation
 const edgeScale = d3.scaleLinear()
-  .domain([0, 1200]) // Adjusted domain for Methanisation role
+  .domain([0, 1200])
   .range([1, 10]);
 
 const sizeScale = d3.scaleSqrt()
-  .domain([0, 1200]) // Adjusted domain for Methanisation role
+  .domain([0, 1200])
   .range([5, 25]);
 
 // Draw links
@@ -68,7 +153,6 @@ const link = svg.append("g")
   .selectAll("line")
   .data(data.links)
   .join("line")
-  .attr("class", "link")
   .attr("stroke-width", d => edgeScale(d.value))
   .attr("stroke", "#999");
 
@@ -103,17 +187,10 @@ const node = svg.append("g")
   });
 
 // Add node labels
-const label = svg.append("g")
+svg.append("g")
   .selectAll("text")
   .data(data.nodes)
   .join("text")
-  .attr("x", 12)
-  .attr("y", 3)
+  .attr("x", d => d.fx + 15)
+  .attr("y", d => d.fy + 5)
   .text(d => d.id);
-
-// Stop simulation to fix positions
-const simulation = d3.forceSimulation(data.nodes)
-  .force("link", d3.forceLink(data.links).id(d => d.id).distance(150))
-  .force("charge", d3.forceManyBody().strength(-300))
-  .force("center", d3.forceCenter(width / 2, height / 2))
-  .stop(); // Stop the simulation
