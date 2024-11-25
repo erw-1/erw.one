@@ -37,14 +37,13 @@ text {
 
 /* Legend rectangles */
 .legend-rect {
-  width: 15px;
-  height: 15px;
+  stroke: none; /* No border */
 }
 
 /* Legend text */
 .legend-text {
   font-size: 12px;
-  font-family: inherit;
+  font-family: 'Poppins', sans-serif;
   fill: #000; /* Text color */
-  text-anchor: start; /* Align text to the left for clean layout */
+  text-anchor: start; /* Align text to the left */
 }
