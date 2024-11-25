@@ -9,8 +9,7 @@ const tooltip = d3.select("#tooltip");
 const svg = d3.select("body")
   .append("svg")
   .attr("width", width)
-  .attr("height", height)
-  .style("font-family", "Poppins"); // Apply Poppins font globally
+  .attr("height", height);
 
 // Ensure parent nodes' values are the sum of their children
 const data = {
@@ -120,7 +119,7 @@ const label = svg.append("g")
   .attr("text-anchor", "middle")
   .attr("dy", ".35em") // Center vertically
   .text(d => d.id)
-  .style("pointer-events", "none") // Prevent interfering with dragging
+  .style("pointer-events", "none") // Prevent interference with dragging
   .style("font-size", "12px") // Adjust font size for clarity
   .style("fill", "#000"); // Black text color
 
