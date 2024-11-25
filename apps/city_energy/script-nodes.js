@@ -9,32 +9,45 @@ const tooltip = d3.select("#tooltip");
 const svg = d3.select("body")
   .append("svg")
   .attr("width", width)
-  .attr("height", height);
+  .attr("height", height)
+  .call(d3.zoom()
+    .scaleExtent([0.5, 5])
+    .on("zoom", (event) => {
+      svg.attr("transform", event.transform);
+    }));
 
 // Load data from external JSON file
 d3.json("data.json").then(data => {
-  // Create a dictionary of colors based on the groups in the JSON file
+  if (!data.nodes || !data.links || !data.groups) {
+    console.error("JSON structure invalid: Ensure 'nodes', 'links', and 'groups' are defined.");
+    return;
+  }
+
+  const config = {
+    chargeStrength: -300,
+    linkDistance: 150,
+    nodeSizeRange: [5, 30],
+    linkWidthRange: [1, 10],
+  };
+
   const groupColors = {};
   data.groups.forEach(group => {
     groupColors[group.name] = group.color;
   });
 
-  // Scales for visual representation
   const edgeScale = d3.scaleLinear()
-    .domain([0, 2200]) // Adjusted for central node
-    .range([1, 10]);
+    .domain(d3.extent(data.links, d => d.value))
+    .range(config.linkWidthRange);
 
   const sizeScale = d3.scaleSqrt()
-    .domain([0, 2200]) // Adjusted for central node
-    .range([5, 30]);
+    .domain(d3.extent(data.nodes, d => d.value))
+    .range(config.nodeSizeRange);
 
-  // Force simulation
   const simulation = d3.forceSimulation(data.nodes)
-    .force("link", d3.forceLink(data.links).id(d => d.id).distance(150))
-    .force("charge", d3.forceManyBody().strength(-300))
+    .force("link", d3.forceLink(data.links).id(d => d.id).distance(config.linkDistance))
+    .force("charge", d3.forceManyBody().strength(config.chargeStrength))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
-  // Draw links
   const link = svg.append("g")
     .selectAll("line")
     .data(data.links)
@@ -42,7 +55,6 @@ d3.json("data.json").then(data => {
     .attr("stroke-width", d => edgeScale(d.value))
     .attr("stroke", "#999");
 
-  // Draw nodes
   const node = svg.append("g")
     .selectAll("circle")
     .data(data.nodes)
@@ -51,8 +63,10 @@ d3.json("data.json").then(data => {
     .attr("fill", d => groupColors[d.group] || "#ccc")
     .call(drag(simulation))
     .on("mouseover", (event, d) => {
-      tooltip.style("visibility", "visible")
-        .html(`<b>${d.id}</b><br>Group: ${d.group}<br>Energy: ${d.value} GWh/year`);
+      const tooltipContent = Object.entries(d)
+        .map(([key, value]) => `<b>${key}</b>: ${value}`)
+        .join("<br>");
+      tooltip.style("visibility", "visible").html(tooltipContent);
     })
     .on("mousemove", event => {
       tooltip.style("top", `${event.pageY + 10}px`)
@@ -62,41 +76,19 @@ d3.json("data.json").then(data => {
       tooltip.style("visibility", "hidden");
     });
 
-  // Add centered node labels
   const label = svg.append("g")
     .selectAll("text")
     .data(data.nodes)
     .join("text")
     .attr("text-anchor", "middle")
-    .attr("dy", ".35em") // Center vertically
+    .attr("dy", ".35em")
     .text(d => d.id)
-    .style("pointer-events", "none") // Prevent interference with dragging
-    .style("font-size", "12px") // Adjust font size for clarity
-    .style("fill", "#000"); // Black text color
+    .style("pointer-events", "none")
+    .style("font-size", "12px")
+    .style("fill", "#000");
 
-  // Add legend in the bottom-left corner
-  const legend = svg.append("g")
-    .attr("transform", `translate(20, ${height - 150})`);
-  
-  legend.selectAll("rect")
-    .data(data.groups)
-    .join("rect")
-    .attr("class", "legend-rect") // Class for additional rectangle styles
-    .attr("x", 0)
-    .attr("y", (d, i) => i * 20)
-    .attr("width", 15)
-    .attr("height", 15)
-    .attr("fill", d => d.color); // Keep dynamic fill color in JS
-  
-  legend.selectAll("text")
-    .data(data.groups)
-    .join("text")
-    .attr("class", "legend-text") // Class for additional text styles
-    .attr("x", 20) // Position text to the right of the rectangles
-    .attr("y", (d, i) => i * 20 + 12) // Align text with the rectangles
-    .text(d => d.name);
+  createLegend(svg, data.groups, height);
 
-  // Update simulation
   simulation.on("tick", () => {
     link
       .attr("x1", d => d.source.x)
@@ -113,7 +105,6 @@ d3.json("data.json").then(data => {
       .attr("y", d => d.y);
   });
 
-  // Drag functionality
   function drag(simulation) {
     function dragstarted(event, d) {
       if (!event.active) simulation.alphaTarget(0.3).restart();
@@ -133,5 +124,28 @@ d3.json("data.json").then(data => {
       .on("start", dragstarted)
       .on("drag", dragged)
       .on("end", dragended);
+  }
+
+  function createLegend(svg, groups, height) {
+    const legend = svg.append("g")
+      .attr("transform", `translate(20, ${height - 150})`);
+
+    legend.selectAll("rect")
+      .data(groups)
+      .join("rect")
+      .attr("class", "legend-rect")
+      .attr("x", 0)
+      .attr("y", (d, i) => i * 20)
+      .attr("width", 15)
+      .attr("height", 15)
+      .attr("fill", d => d.color);
+
+    legend.selectAll("text")
+      .data(groups)
+      .join("text")
+      .attr("class", "legend-text")
+      .attr("x", 20)
+      .attr("y", (d, i) => i * 20 + 12)
+      .text(d => d.name);
   }
 });
