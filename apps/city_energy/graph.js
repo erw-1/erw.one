@@ -74,6 +74,20 @@ const simulation = d3.forceSimulation(data.nodes)
   .force("charge", d3.forceManyBody().strength(-300))
   .force("center", d3.forceCenter(width / 2, height / 2));
 
+// Add arrow marker for directional links
+svg.append("defs")
+  .append("marker")
+  .attr("id", "arrow")
+  .attr("viewBox", "0 0 10 10")
+  .attr("refX", 12) // Adjust refX to move arrow outside the node
+  .attr("refY", 5)
+  .attr("markerWidth", 6)
+  .attr("markerHeight", 6)
+  .attr("orient", "auto")
+  .append("path")
+  .attr("d", "M0,0 L10,5 L0,10 Z")
+  .attr("fill", "#999");
+
 // Draw links with arrows
 const link = svg.append("g")
   .selectAll("line")
@@ -82,20 +96,6 @@ const link = svg.append("g")
   .attr("stroke-width", d => edgeScale(d.value))
   .attr("stroke", d => (d.bidirectional ? "#888" : "#999"))
   .attr("marker-end", d => (d.bidirectional ? "" : "url(#arrow)")); // Add arrow for one-way links
-
-// Add arrow marker for directional links
-svg.append("defs")
-  .append("marker")
-  .attr("id", "arrow")
-  .attr("viewBox", "0 0 10 10")
-  .attr("refX", 10)
-  .attr("refY", 5)
-  .attr("markerWidth", 6)
-  .attr("markerHeight", 6)
-  .attr("orient", "auto")
-  .append("path")
-  .attr("d", "M0,0 L10,5 L0,10 Z")
-  .attr("fill", "#999");
 
 // Draw nodes
 const node = svg.append("g")
