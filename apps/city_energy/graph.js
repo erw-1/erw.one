@@ -1,13 +1,16 @@
-// Define SVG dimensions
-const width = 960, height = 600;
+// Define SVG dimensions for full screen
+const width = window.innerWidth;
+const height = window.innerHeight;
 
 // Tooltip for displaying information
 const tooltip = d3.select("#tooltip");
 
 // Create the SVG canvas
-const svg = d3.select("svg")
+const svg = d3.select("body")
+  .append("svg")
   .attr("width", width)
-  .attr("height", height);
+  .attr("height", height)
+  .style("font-family", "Poppins"); // Apply Poppins font globally
 
 // Ensure parent nodes' values are the sum of their children
 const data = {
@@ -109,14 +112,17 @@ const node = svg.append("g")
     tooltip.style("visibility", "hidden");
   });
 
-// Add node labels
+// Add centered node labels
 const label = svg.append("g")
   .selectAll("text")
   .data(data.nodes)
   .join("text")
-  .attr("x", 12)
-  .attr("y", 3)
-  .text(d => d.id);
+  .attr("text-anchor", "middle")
+  .attr("dy", ".35em") // Center vertically
+  .text(d => d.id)
+  .style("pointer-events", "none") // Prevent interfering with dragging
+  .style("font-size", "12px") // Adjust font size for clarity
+  .style("fill", "#000"); // Black text color
 
 // Update simulation
 simulation.on("tick", () => {
@@ -131,8 +137,8 @@ simulation.on("tick", () => {
     .attr("cy", d => d.y);
 
   label
-    .attr("x", d => d.x + 10)
-    .attr("y", d => d.y + 5);
+    .attr("x", d => d.x)
+    .attr("y", d => d.y);
 });
 
 // Drag functionality
