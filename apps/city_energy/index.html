@@ -9,16 +9,21 @@
   <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12"></script>
 </head>
 <body>
+  <!-- Tab buttons -->
   <div class="tab">
     <button class="tablinks active" onclick="switchTab(event, 'Nodes')">Node Visualization</button>
     <button class="tablinks" onclick="switchTab(event, 'Sankey')">Sankey Diagram</button>
   </div>
 
+  <!-- Tab content for Nodes -->
   <div id="Nodes" class="tab-content active">
-    <div id="tooltip" class="tooltip"></div>
-    <script src="script-nodes.js"></script>
+    <div id="nodes-container">
+      <div id="tooltip" class="tooltip"></div>
+      <script src="script-nodes.js" defer></script>
+    </div>
   </div>
 
+  <!-- Tab content for Sankey -->
   <div id="Sankey" class="tab-content">
     <div id="sankey-container"></div>
     <script src="script-sankey.js" defer></script>
