@@ -9,9 +9,10 @@ const svg = d3.select("svg")
   .attr("width", width)
   .attr("height", height);
 
-// Updated data with precise fixed positions for the desired layout
+// Updated data with central node and new groupings
 const data = {
   nodes: [
+    { id: "Chevilly-la-Plage's Energetic Mix", group: "Central", value: 2000 },
     { id: "Solar Panels", group: "Sun", value: 875 },
     { id: "Thermophotovoltaics", group: "Sun", value: 100 },
     { id: "Wind Turbines", group: "Wind and Water", value: 500 },
@@ -24,14 +25,17 @@ const data = {
     { id: "District Heating Network", group: "Heat", value: 600 },
     { id: "Urban Heat Recovery", group: "Heat", value: 200 },
     { id: "Thermal Energy Storage", group: "Heat", value: 150 },
+    { id: "Heat for Buildings", group: "Heat", value: 600 },
+    { id: "Electricity Grid", group: "Electricity", value: 1600 },
     { id: "Gravitational Storage", group: "Backup", value: 100 },
     { id: "Power2Gas", group: "Backup", value: 200 },
     { id: "Small Nuclear Plant (SMR)", group: "Backup", value: 50 },
-    { id: "Backup and Energy Storage", group: "Storage", value: 350 },
-    { id: "Electricity Grid", group: "Output", value: 1600 },
-    { id: "Heat for Buildings", group: "Output", value: 600 },
+    { id: "Backup and Energy Storage", group: "Backup", value: 350 },
   ],
   links: [
+    // Converging to Chevilly-la-Plage's Energetic Mix
+    { source: "Electricity Grid", target: "Chevilly-la-Plage's Energetic Mix", value: 1600 },
+    { source: "District Heating Network", target: "Chevilly-la-Plage's Energetic Mix", value: 600 },
     { source: "Solar Panels", target: "Electricity Grid", value: 875 },
     { source: "Thermophotovoltaics", target: "Electricity Grid", value: 100 },
     { source: "Wind Turbines", target: "Electricity Grid", value: 500 },
@@ -45,116 +49,53 @@ const data = {
     { source: "Methanisation Plants", target: "Backup and Energy Storage", value: 200 },
     { source: "Urban Heat Recovery", target: "District Heating Network", value: 200 },
     { source: "Thermal Energy Storage", target: "District Heating Network", value: 150 },
-    { source: "Gravitational Storage", target: "Backup and Energy Storage", value: 100 },
-    { source: "Power2Gas", target: "Backup and Energy Storage", value: 200 },
+    // Bidirectional arrows for storage
+    { source: "Gravitational Storage", target: "Electricity Grid", value: 100, bidirectional: true },
+    { source: "Power2Gas", target: "Electricity Grid", value: 200, bidirectional: true },
     { source: "Small Nuclear Plant (SMR)", target: "Backup and Energy Storage", value: 50 },
-    { source: "Backup and Energy Storage", target: "Electricity Grid", value: 250 },
-    { source: "Backup and Energy Storage", target: "District Heating Network", value: 100 },
+    { source: "Backup and Energy Storage", target: "Electricity Grid", value: 250, bidirectional: true },
+    { source: "Backup and Energy Storage", target: "District Heating Network", value: 100, bidirectional: true },
     { source: "District Heating Network", target: "Heat for Buildings", value: 600 },
   ],
 };
 
-// Force simulation with fixed positions
-const simulation = d3.forceSimulation(data.nodes)
-  .force("link", d3.forceLink(data.links).id(d => d.id).distance(150))
-  .force("charge", d3.forceManyBody().strength(-500))
-  .force("center", d3.forceCenter(width / 2, height / 2))
-  .stop(); // Stop the simulation for manual node positioning
-
-// Manually position the nodes for the desired layout
-data.nodes.forEach(node => {
-  switch (node.id) {
-    case "Solar Panels":
-      node.fx = 150;
-      node.fy = 100;
-      break;
-    case "Thermophotovoltaics":
-      node.fx = 150;
-      node.fy = 200;
-      break;
-    case "Wind Turbines":
-      node.fx = 250;
-      node.fy = 150;
-      break;
-    case "Marine Hydrokinetic Turbines":
-      node.fx = 300;
-      node.fy = 250;
-      break;
-    case "Wave Energy Converters":
-      node.fx = 300;
-      node.fy = 350;
-      break;
-    case "Methanisation Plants":
-      node.fx = 450;
-      node.fy = 300;
-      break;
-    case "Urban Organic Waste":
-      node.fx = 350;
-      node.fy = 250;
-      break;
-    case "Sewage":
-      node.fx = 350;
-      node.fy = 350;
-      break;
-    case "Agricultural Organic Waste":
-      node.fx = 350;
-      node.fy = 450;
-      break;
-    case "District Heating Network":
-      node.fx = 550;
-      node.fy = 400;
-      break;
-    case "Urban Heat Recovery":
-      node.fx = 450;
-      node.fy = 450;
-      break;
-    case "Thermal Energy Storage":
-      node.fx = 650;
-      node.fy = 450;
-      break;
-    case "Gravitational Storage":
-      node.fx = 450;
-      node.fy = 100;
-      break;
-    case "Power2Gas":
-      node.fx = 550;
-      node.fy = 100;
-      break;
-    case "Small Nuclear Plant (SMR)":
-      node.fx = 350;
-      node.fy = 100;
-      break;
-    case "Backup and Energy Storage":
-      node.fx = 500;
-      node.fy = 200;
-      break;
-    case "Electricity Grid":
-      node.fx = 700;
-      node.fy = 300;
-      break;
-    case "Heat for Buildings":
-      node.fx = 700;
-      node.fy = 400;
-      break;
-  }
-});
-
 // Scales for visual representation
 const edgeScale = d3.scaleLinear()
-  .domain([0, 1200])
+  .domain([0, 2000]) // Adjusted for central node
   .range([1, 10]);
 
 const sizeScale = d3.scaleSqrt()
-  .domain([0, 1200])
-  .range([5, 25]);
+  .domain([0, 2000]) // Adjusted for central node
+  .range([5, 30]);
 
-// Draw links
+// Force simulation
+const simulation = d3.forceSimulation(data.nodes)
+  .force("link", d3.forceLink(data.links).id(d => d.id).distance(150))
+  .force("charge", d3.forceManyBody().strength(-300))
+  .force("center", d3.forceCenter(width / 2, height / 2));
+
+// Draw links with arrows
 const link = svg.append("g")
   .selectAll("line")
   .data(data.links)
   .join("line")
   .attr("stroke-width", d => edgeScale(d.value))
-  .attr("stroke", "#999");
+  .attr("stroke", d => (d.bidirectional ? "#888" : "#999"))
+  .attr("marker-end", d => (d.bidirectional ? "" : "url(#arrow)")); // Add arrow for one-way links
+
+// Add arrow marker for directional links
+svg.append("defs")
+  .append("marker")
+  .attr("id", "arrow")
+  .attr("viewBox", "0 0 10 10")
+  .attr("refX", 10)
+  .attr("refY", 5)
+  .attr("markerWidth", 6)
+  .attr("markerHeight", 6)
+  .attr("orient", "auto")
+  .append("path")
+  .attr("d", "M0,0 L10,5 L0,10 Z")
+  .attr("fill", "#999");
 
 // Draw nodes
 const node = svg.append("g")
@@ -168,12 +109,14 @@ const node = svg.append("g")
       "Wind and Water": "#1E90FF",
       Waste: "#32CD32",
       Heat: "#FF4500",
+      Electricity: "#87CEEB",
       Storage: "#8A2BE2",
       Backup: "#A9A9A9",
-      Output: "#FFA07A",
+      Central: "#FF6347",
     };
     return groupColors[d.group] || "#ccc";
   })
+  .call(drag(simulation))
   .on("mouseover", (event, d) => {
     tooltip.style("visibility", "visible")
       .html(`<b>${d.id}</b><br>Group: ${d.group}<br>Energy: ${d.value} GWh/year`);
@@ -187,10 +130,49 @@ const node = svg.append("g")
   });
 
 // Add node labels
-svg.append("g")
+const label = svg.append("g")
   .selectAll("text")
   .data(data.nodes)
   .join("text")
-  .attr("x", d => d.fx + 15)
-  .attr("y", d => d.fy + 5)
+  .attr("x", 12)
+  .attr("y", 3)
   .text(d => d.id);
+
+// Update simulation
+simulation.on("tick", () => {
+  link
+    .attr("x1", d => d.source.x)
+    .attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x)
+    .attr("y2", d => d.target.y);
+
+  node
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y);
+
+  label
+    .attr("x", d => d.x + 10)
+    .attr("y", d => d.y + 5);
+});
+
+// Drag functionality
+function drag(simulation) {
+  function dragstarted(event, d) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+  function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+  function dragended(event, d) {
+    if (!event.active) simulation.alphaTarget(0);
+    d.fx = null;
+    d.fy = null;
+  }
+  return d3.drag()
+    .on("start", dragstarted)
+    .on("drag", dragged)
+    .on("end", dragended);
+}
