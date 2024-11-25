@@ -9,7 +9,7 @@ const svg = d3.select("svg")
   .attr("width", width)
   .attr("height", height);
 
-// Data with energy values (in GWh/year)
+// Updated data with "Backup and Energy Storage" node
 const data = {
   nodes: [
     { id: "Solar Panels", group: "Sun", value: 875 },
@@ -22,9 +22,10 @@ const data = {
     { id: "District Heating Network", group: "Heat", value: 600 },
     { id: "Urban Heat Recovery", group: "Heat", value: 200 },
     { id: "Thermal Energy Storage", group: "Heat", value: 150 },
-    { id: "Gravitational Storage", group: "Storage", value: 100 },
-    { id: "Power2Gas", group: "Storage", value: 200 },
+    { id: "Gravitational Storage", group: "Backup", value: 100 },
+    { id: "Power2Gas", group: "Backup", value: 200 },
     { id: "Small Nuclear Plant (SMR)", group: "Backup", value: 50 },
+    { id: "Backup and Energy Storage", group: "Storage", value: 350 }, // New central backup node
     { id: "Electricity Grid", group: "Output", value: 1600 },
     { id: "Heat for Buildings", group: "Output", value: 600 },
   ],
@@ -38,10 +39,11 @@ const data = {
     { source: "Zero Waste Culture", target: "Methanisation Plants", value: 0 },
     { source: "Urban Heat Recovery", target: "District Heating Network", value: 200 },
     { source: "Thermal Energy Storage", target: "District Heating Network", value: 150 },
-    { source: "Gravitational Storage", target: "Electricity Grid", value: 100 },
-    { source: "Power2Gas", target: "Electricity Grid", value: 200 },
-    { source: "Power2Gas", target: "District Heating Network", value: 200 },
-    { source: "Small Nuclear Plant (SMR)", target: "Electricity Grid", value: 50 },
+    { source: "Gravitational Storage", target: "Backup and Energy Storage", value: 100 },
+    { source: "Power2Gas", target: "Backup and Energy Storage", value: 200 },
+    { source: "Small Nuclear Plant (SMR)", target: "Backup and Energy Storage", value: 50 },
+    { source: "Backup and Energy Storage", target: "Electricity Grid", value: 250 },
+    { source: "Backup and Energy Storage", target: "District Heating Network", value: 100 },
     { source: "District Heating Network", target: "Heat for Buildings", value: 600 },
   ],
 };
