@@ -17,6 +17,7 @@ svg {
 
 text {
   font-size: 12px;
+  font-weight: bold;
   fill: #000; /* Black text */
   text-anchor: middle; /* Center text horizontally */
   pointer-events: none; /* Prevent interference with dragging */
