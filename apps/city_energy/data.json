@@ -33,7 +33,7 @@
     { "source": "Electricity Grid", "target": "Chevilly-la-Plage's Energetic Mix", "value": 1600 },
     { "source": "District Heating Network", "target": "Chevilly-la-Plage's Energetic Mix", "value": 600 },
     { "source": "Solar Panels", "target": "Electricity Grid", "value": 875 },
-      { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 200 },
+    { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 200 },
     { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
     { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 250 },
     { "source": "Thermophotovoltaics", "target": "Electricity Grid", "value": 100 },
