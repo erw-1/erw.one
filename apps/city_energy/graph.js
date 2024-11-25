@@ -50,8 +50,8 @@ const data = {
     { source: "Urban Heat Recovery", target: "District Heating Network", value: 200 },
     { source: "Thermal Energy Storage", target: "District Heating Network", value: 150 },
     // Bidirectional arrows for storage
-    { source: "Gravitational Storage", target: "Electricity Grid", value: 100, bidirectional: true },
-    { source: "Power2Gas", target: "Electricity Grid", value: 200, bidirectional: true },
+    { source: "Gravitational Storage", target: "Backup and Energy Storage", value: 100, bidirectional: true },
+    { source: "Power2Gas", target: "Backup and Energy Storage", value: 200, bidirectional: true },
     { source: "Small Nuclear Plant (SMR)", target: "Backup and Energy Storage", value: 50 },
     { source: "Backup and Energy Storage", target: "Electricity Grid", value: 250, bidirectional: true },
     { source: "Backup and Energy Storage", target: "District Heating Network", value: 100, bidirectional: true },
