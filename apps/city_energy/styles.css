@@ -74,11 +74,16 @@ text {
 }
 
 .tab-content {
-  display: none;
+  display: none; /* Hide content by default */
   width: 100%;
   height: 100%;
 }
 
 .tab-content.active {
-  display: block;
+  display: block; /* Show active content */
+}
+
+#sankey-container, #nodes-container {
+  width: 100%;
+  height: 100%;
 }
