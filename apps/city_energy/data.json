@@ -33,6 +33,9 @@
     { "source": "Electricity Grid", "target": "Chevilly-la-Plage's Energetic Mix", "value": 1600 },
     { "source": "District Heating Network", "target": "Chevilly-la-Plage's Energetic Mix", "value": 600 },
     { "source": "Solar Panels", "target": "Electricity Grid", "value": 875 },
+      { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 200 },
+    { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
+    { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 250 },
     { "source": "Thermophotovoltaics", "target": "Electricity Grid", "value": 100 },
     { "source": "Wind Turbines", "target": "Electricity Grid", "value": 500 },
     { "source": "Marine Hydrokinetic Turbines", "target": "Electricity Grid", "value": 75 },
@@ -45,9 +48,6 @@
     { "source": "Urban Heat Recovery", "target": "District Heating Network", "value": 200 },
     { "source": "Thermal Energy Storage", "target": "District Heating Network", "value": 150 },
     { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 100 },
-    { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 200 },
-    { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
-    { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 250 },
     { "source": "District Heating Network", "target": "Heat for Buildings", "value": 600 }
   ]
 }
