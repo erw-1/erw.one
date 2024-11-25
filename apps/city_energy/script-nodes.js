@@ -81,14 +81,17 @@ d3.json("data.json").then(data => {
   legend.selectAll("rect")
     .data(data.groups)
     .join("rect")
-    .attr("class", "legend-rect") // Assign a class for rectangles
+    .attr("class", "legend-rect") // Class for additional rectangle styles
     .attr("x", 0)
-    .attr("y", (d, i) => i * 20);
+    .attr("y", (d, i) => i * 20)
+    .attr("width", 15)
+    .attr("height", 15)
+    .attr("fill", d => d.color); // Keep dynamic fill color in JS
   
   legend.selectAll("text")
     .data(data.groups)
     .join("text")
-    .attr("class", "legend-text") // Assign a class for text
+    .attr("class", "legend-text") // Class for additional text styles
     .attr("x", 20) // Position text to the right of the rectangles
     .attr("y", (d, i) => i * 20 + 12) // Align text with the rectangles
     .text(d => d.name);
