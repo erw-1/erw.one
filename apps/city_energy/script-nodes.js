@@ -165,6 +165,7 @@ d3.json("data.json").then(data => {
       .join("rect")
       .attr("x", 0)
       .attr("y", (d, i) => i * 20)
+      .attr("class", "legend-rect")
       .attr("width", config.legend.rectWidth)
       .attr("height", config.legend.rectHeight)
       .attr("fill", d => d.color);
@@ -172,6 +173,7 @@ d3.json("data.json").then(data => {
     legend.selectAll("text")
       .data(groups)
       .join("text")
+      .attr("class", "legend-text")
       .attr("x", config.legend.textXOffset)
       .attr("y", (d, i) => i * 20 + config.legend.textYOffset)
       .text(d => d.name);
