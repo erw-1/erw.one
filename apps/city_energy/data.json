@@ -1,4 +1,13 @@
 {
+  "groups": [
+    { "name": "Sun", "color": "#FFD700" },
+    { "name": "Wind and Water", "color": "#1E90FF" },
+    { "name": "Waste", "color": "#32CD32" },
+    { "name": "Heat", "color": "#FF4500" },
+    { "name": "Electricity", "color": "#87CEEB" },
+    { "name": "Backup", "color": "#A9A9A9" },
+    { "name": "Central", "color": "#FFC0CB" }
+  ],
   "nodes": [
     { "id": "Chevilly-la-Plage's Energetic Mix", "group": "Central", "value": 2200 },
     { "id": "Solar Panels", "group": "Sun", "value": 875 },
