@@ -42,10 +42,17 @@
       return;
     }
 
-    // Prepare the data for the Sankey generator
     const sankeyData = sankey({
       nodes: data.nodes.map((d) => ({ ...d })),
-      links: data.links.map((d) => ({ ...d })),
+      links: data.links.map((d) => {
+        if (!data.nodes.some((node) => node.id === d.source)) {
+          console.error(`Missing source node: ${d.source}`);
+        }
+        if (!data.nodes.some((node) => node.id === d.target)) {
+          console.error(`Missing target node: ${d.target}`);
+        }
+        return { ...d };
+      }),
     });
 
     // Draw the links (flows between nodes)
