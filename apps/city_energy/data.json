@@ -1,7 +1,7 @@
 {
   "groups": [
     { "name": "Sun", "color": "#FFD700" },
-    { "name": "Wind and Water", "color": "#1E90FF" },
+    { "name": "Wind and water", "color": "#1E90FF" },
     { "name": "Waste", "color": "#32CD32" },
     { "name": "Heat", "color": "#FF4500" },
     { "name": "Electricity", "color": "#87CEEB" },
