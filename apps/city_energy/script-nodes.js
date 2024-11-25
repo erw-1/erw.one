@@ -77,7 +77,7 @@ d3.json("data.json").then(data => {
   // Add legend in the bottom-left corner
   const legend = svg.append("g")
     .attr("transform", `translate(20, ${height - 150})`);
-
+  
   legend.selectAll("rect")
     .data(data.groups)
     .join("rect")
@@ -86,12 +86,12 @@ d3.json("data.json").then(data => {
     .attr("width", 15)
     .attr("height", 15)
     .attr("fill", d => d.color);
-
+  
   legend.selectAll("text")
     .data(data.groups)
     .join("text")
-    .attr("x", 20)
-    .attr("y", (d, i) => i * 20 + 12)
+    .attr("x", 25) // Offset text to the right of the rectangle
+    .attr("y", (d, i) => i * 20 + 12) // Align text vertically with the rectangles
     .text(d => d.name)
     .style("font-size", "12px")
     .style("font-family", "Poppins")
