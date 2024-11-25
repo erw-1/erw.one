@@ -3,11 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Energy Mix Visualization</title>
+  <title>City Energy Mix Visualization</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
+    }
+    h1 {
+      text-align: center;
     }
     .node {
       stroke: #fff;
@@ -21,9 +24,9 @@
       position: absolute;
       background-color: #fff;
       border: 1px solid #ddd;
-      padding: 5px;
+      padding: 8px;
       border-radius: 5px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
       pointer-events: none;
       visibility: hidden;
     }
