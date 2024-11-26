@@ -42,15 +42,15 @@
     },
   };
 
-  // Define SVG dimensions
-  const { width, height } = config;
+  // Define initial SVG dimensions
+  let { width, height } = config;
 
   // Tooltip for displaying information
   const tooltip = d3.select(config.tooltip.selector);
 
   // Create the SVG canvas
   const svg = d3
-    .select("#nodes-container")
+    .select(".tab-content")
     .append("svg")
     .attr("width", width)
     .attr("height", height);
@@ -191,5 +191,17 @@
         .attr("y", (d, i) => i * 20 + config.legend.textYOffset)
         .text((d) => d.name);
     }
+
+    // Handle window resize to keep the graph centered
+    window.addEventListener("resize", () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+
+      // Update SVG size
+      svg.attr("width", width).attr("height", height);
+
+      // Update simulation center
+      simulation.force("center", d3.forceCenter(width / 2, height / 2)).alpha(0.3).restart();
+    });
   });
 })();
