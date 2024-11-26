@@ -67,8 +67,8 @@
     { "source": "Electricity Grid", "target": "Heating Network", "value": 1500 },
     { "source": "Electricity Grid", "target": "Urban Heat Recovery", "value": 200 },
 
-    { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 1500 },
-    { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 1500 },
+    { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 100 },
+    { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 100 },
     { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
 
     { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 10 },
