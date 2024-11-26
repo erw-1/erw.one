@@ -102,8 +102,8 @@ d3.json("data.json").then((data) => {
     .attr("dy", ".35em")
     .text((d) => d.id);
 
-  // Add legend
-  createLegend(svg, data.groups, height);
+  // Add legend with updated placement
+  createLegend(svg, data.groups, height, 10, 200); // Legend is now 200px above bottom
 
   // Ticking function
   function ticked() {
