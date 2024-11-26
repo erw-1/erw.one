@@ -29,27 +29,39 @@
     function switchTab(evt, tabName) {
       // Hide all tab contents
       const contents = document.querySelectorAll('.tab-content');
-      contents.forEach(content => content.classList.remove('active'));
+      contents.forEach(content => {
+        content.classList.remove('active');
+        content.style.display = 'none'; // Hide inactive content
+      });
+
+      // Clear the contents of other containers
+      if (tabName === 'Nodes') {
+        document.getElementById('sankey-container').innerHTML = '';
+      } else {
+        document.getElementById('nodes-container').innerHTML = '';
+      }
 
       // Remove "active" class from all buttons
       const buttons = document.querySelectorAll('.tab button');
       buttons.forEach(button => button.classList.remove('active'));
 
       // Show the selected tab and mark the button as active
-      document.getElementById(tabName).classList.add('active');
+      const activeTab = document.getElementById(tabName);
+      activeTab.classList.add('active');
+      activeTab.style.display = 'block'; // Show the active content
       evt.currentTarget.classList.add('active');
+
+      // Reload the appropriate script
+      if (tabName === 'Nodes') {
+        const scriptNodes = document.createElement('script');
+        scriptNodes.src = 'script-nodes.js';
+        document.getElementById('nodes-container').appendChild(scriptNodes);
+      } else if (tabName === 'Sankey') {
+        const scriptSankey = document.createElement('script');
+        scriptSankey.src = 'script-sankey.js';
+        document.getElementById('sankey-container').appendChild(scriptSankey);
+      }
     }
-
-    // Load scripts for both visualizations dynamically
-    document.addEventListener('DOMContentLoaded', () => {
-      const scriptNodes = document.createElement('script');
-      scriptNodes.src = 'script-nodes.js';
-      document.getElementById('nodes-container').appendChild(scriptNodes);
-
-      const scriptSankey = document.createElement('script');
-      scriptSankey.src = 'script-sankey.js';
-      document.getElementById('sankey-container').appendChild(scriptSankey);
-    });
   </script>
 </body>
 </html>
