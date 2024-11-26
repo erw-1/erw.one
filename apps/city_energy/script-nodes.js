@@ -1,3 +1,4 @@
+import { config } from "./config.js";
 import { createGradient, createLegend, handleResize } from "./shared-utils.js";
 
 d3.json("data.json").then((data) => {
@@ -6,24 +7,21 @@ d3.json("data.json").then((data) => {
     groupColors[group.name] = group.color;
   });
 
-  const width = window.innerWidth;
-  const height = window.innerHeight - 40;
-
   const svg = d3
     .select("#nodes-container")
     .append("svg")
-    .attr("width", width)
-    .attr("height", height);
+    .attr("width", config.width)
+    .attr("height", config.height);
 
   const sizeScale = d3
     .scaleSqrt()
     .domain(d3.extent(data.nodes, (d) => d.value))
-    .range([5, 30]);
+    .range(config.simulation.nodeSizeRange);
 
   const edgeScale = d3
     .scaleLinear()
     .domain(d3.extent(data.links, (d) => d.value))
-    .range([1, 10]);
+    .range(config.simulation.linkWidthRange);
 
   const gradients = createGradient(svg, data.links, groupColors, "node-gradient");
 
@@ -41,11 +39,11 @@ d3.json("data.json").then((data) => {
     .data(data.nodes)
     .join("circle")
     .attr("r", (d) => sizeScale(d.value))
-    .attr("fill", (d) => groupColors[d.group]);
+    .attr("fill", (d) => groupColors[d.group] || config.defaultNodeColor);
 
   createLegend(svg, data.groups, {
     ...config.legend,
-    height,
+    height: config.height,
   });
 
   handleResize(svg);
