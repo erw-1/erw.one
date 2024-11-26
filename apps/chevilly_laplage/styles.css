@@ -134,13 +134,8 @@ text {
   font: 10px sans-serif;
 }
 
-.link-line {
-  stroke: #999;
-}
-
 .node-circle {
-  stroke: #fff;
-  stroke-width: 1.5px;
+  stroke-width: 0px;
 }
 
 .node-label {
