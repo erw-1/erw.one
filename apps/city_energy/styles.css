@@ -4,7 +4,7 @@
 /* Apply global styles */
 body {
   margin: 0;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins' !important;
   color: black;
   overflow: hidden; /* Prevent scrollbars */
   background-color: #f9f9f9; /* Optional background */
