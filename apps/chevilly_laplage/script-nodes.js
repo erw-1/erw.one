@@ -1,9 +1,25 @@
-// script-nodes.js
+import {
+  validateData,
+  initializeSVG,
+  createTooltip,
+  createLegend,
+  addResizeHandler,
+} from "./utilities.js";
+
+// Set up dimensions
+const width = window.innerWidth;
+const height = window.innerHeight;
+
+// Initialize SVG
+const svg = initializeSVG("#nodes-container", width, height, "node-visualization-svg");
+
+// Create tooltip
+const tooltip = createTooltip("#tooltip");
+
+// Load data and visualize
 d3.json("data.json").then((data) => {
-  if (!data.nodes || !data.links || !data.groups) {
-    console.error(
-      "JSON structure invalid: Ensure 'nodes', 'links', and 'groups' are defined."
-    );
+  // Validate data structure
+  if (!validateData(data, ["nodes", "links", "groups"])) {
     return;
   }
 
@@ -12,19 +28,7 @@ d3.json("data.json").then((data) => {
     groupColors[group.name] = group.color;
   });
 
-  const width = window.innerWidth;
-  const height = window.innerHeight;
-
-  const svg = d3
-    .select("#nodes-container")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
-    .attr("class", "node-visualization-svg"); // Add CSS class
-
-  const tooltip = d3.select("#tooltip");
-
+  // Set up scales
   const nodeSizeScale = d3
     .scaleSqrt()
     .domain(d3.extent(data.nodes, (d) => d.value))
@@ -35,6 +39,7 @@ d3.json("data.json").then((data) => {
     .domain(d3.extent(data.links, (d) => d.value))
     .range([1, 10]);
 
+  // Initialize simulation
   const simulation = d3
     .forceSimulation(data.nodes)
     .force(
@@ -48,22 +53,24 @@ d3.json("data.json").then((data) => {
     .force("center", d3.forceCenter(width / 2, height / 2))
     .on("tick", ticked);
 
+  // Draw links
   const link = svg
     .append("g")
-    .attr("class", "link-group") // Add CSS class
+    .attr("class", "link-group")
     .selectAll("line")
     .data(data.links)
     .join("line")
-    .attr("class", "link-line") // Add CSS class
+    .attr("class", "link-line")
     .attr("stroke-width", (d) => linkWidthScale(d.value));
 
+  // Draw nodes
   const node = svg
     .append("g")
-    .attr("class", "node-group") // Add CSS class
+    .attr("class", "node-group")
     .selectAll("circle")
     .data(data.nodes)
     .join("circle")
-    .attr("class", "node-circle") // Add CSS class
+    .attr("class", "node-circle")
     .attr("r", (d) => nodeSizeScale(d.value))
     .attr("fill", (d) => groupColors[d.group] || "#ccc")
     .call(drag(simulation))
@@ -83,19 +90,22 @@ d3.json("data.json").then((data) => {
       tooltip.style("visibility", "hidden");
     });
 
+  // Draw labels
   const label = svg
     .append("g")
-    .attr("class", "label-group") // Add CSS class
+    .attr("class", "label-group")
     .selectAll("text")
     .data(data.nodes)
     .join("text")
-    .attr("class", "node-label") // Add CSS class
+    .attr("class", "node-label")
     .attr("text-anchor", "middle")
     .attr("dy", ".35em")
     .text((d) => d.id);
 
+  // Add legend
   createLegend(svg, data.groups, height);
 
+  // Ticking function
   function ticked() {
     link
       .attr("x1", (d) => d.source.x)
@@ -107,6 +117,7 @@ d3.json("data.json").then((data) => {
     label.attr("x", (d) => d.x).attr("y", (d) => d.y);
   }
 
+  // Dragging function
   function drag(simulation) {
     return d3
       .drag()
@@ -126,29 +137,11 @@ d3.json("data.json").then((data) => {
       });
   }
 
-  function createLegend(svg, groups, height) {
-    const legend = svg
-      .append("g")
-      .attr("transform", `translate(20, ${height - 150})`);
-
-    legend
-      .selectAll("rect")
-      .data(groups)
-      .join("rect")
-      .attr("class", "legend-rect") // Add CSS class
-      .attr("x", 0)
-      .attr("y", (d, i) => i * 20)
-      .attr("width", 15)
-      .attr("height", 15)
-      .attr("fill", (d) => d.color);
-
-    legend
-      .selectAll("text")
-      .data(groups)
-      .join("text")
-      .attr("class", "legend-text") // Add CSS class
-      .attr("x", 20)
-      .attr("y", (d, i) => i * 20 + 12)
-      .text((d) => d.name);
-  }
+  // Handle window resizing
+  addResizeHandler(svg, (newWidth, newHeight) => {
+    simulation
+      .force("center", d3.forceCenter(newWidth / 2, newHeight / 2))
+      .alpha(0.3)
+      .restart();
+  });
 });
