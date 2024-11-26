@@ -35,7 +35,7 @@ d3.json("data.json").then((originalData) => {
     .nodeWidth(15)
     .nodePadding(10)
     .extent([
-      [30, 5], // Add 30px left padding
+      [300, 5], // Add 30px left padding
       [width - 1, height - 5],
     ]);
 
