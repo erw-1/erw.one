@@ -1,9 +1,22 @@
-// script-sankey.js
+import {
+  validateData,
+  initializeSVG,
+  createTooltip,
+  createLegend,
+  addResizeHandler,
+} from "./utilities.js";
+
+// Set up dimensions
+const width = window.innerWidth;
+const height = window.innerHeight - 40; // Adjust for tab height
+
+// Initialize SVG
+const svg = initializeSVG("#sankey-container", width, height, "sankey-diagram-svg");
+
+// Load data and visualize
 d3.json("data.json").then((data) => {
-  if (!data.nodes || !data.links || !data.groups) {
-    console.error(
-      "JSON structure invalid: Ensure 'nodes', 'links', and 'groups' are defined."
-    );
+  // Validate data structure
+  if (!validateData(data, ["nodes", "links", "groups"])) {
     return;
   }
 
@@ -12,17 +25,7 @@ d3.json("data.json").then((data) => {
     groupColors[group.name] = group.color;
   });
 
-  const width = window.innerWidth;
-  const height = window.innerHeight - 40;
-
-  const svg = d3
-    .select("#sankey-container")
-    .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
-    .attr("class", "sankey-diagram-svg"); // Add CSS class
-
+  // Set up Sankey generator
   const sankey = d3
     .sankey()
     .nodeId((d) => d.name)
@@ -48,8 +51,8 @@ d3.json("data.json").then((data) => {
     })),
   });
 
+  // Create gradients for links
   const defs = svg.append("defs");
-
   sankeyData.links.forEach((link, i) => {
     const gradientId = `gradient-${i}`;
     const gradient = defs
@@ -77,11 +80,11 @@ d3.json("data.json").then((data) => {
   // Draw nodes
   svg
     .append("g")
-    .attr("class", "sankey-node-group") // Add CSS class
+    .attr("class", "sankey-node-group")
     .selectAll("rect")
     .data(sankeyData.nodes)
     .join("rect")
-    .attr("class", "sankey-node") // Add CSS class
+    .attr("class", "sankey-node")
     .attr("x", (d) => d.x0)
     .attr("y", (d) => d.y0)
     .attr("height", (d) => d.y1 - d.y0)
@@ -92,11 +95,11 @@ d3.json("data.json").then((data) => {
   // Draw links
   svg
     .append("g")
-    .attr("class", "sankey-link-group") // Add CSS class
+    .attr("class", "sankey-link-group")
     .selectAll("path")
     .data(sankeyData.links)
     .join("path")
-    .attr("class", "sankey-link") // Add CSS class
+    .attr("class", "sankey-link")
     .attr("d", d3.sankeyLinkHorizontal())
     .attr("stroke", (d) => `url(#${d.gradientId})`)
     .attr("stroke-width", (d) => Math.max(1, d.width))
@@ -106,51 +109,22 @@ d3.json("data.json").then((data) => {
   // Add labels
   svg
     .append("g")
-    .attr("class", "sankey-label-group") // Add CSS class
+    .attr("class", "sankey-label-group")
     .selectAll("text")
     .data(sankeyData.nodes)
     .join("text")
-    .attr("class", "sankey-label") // Add CSS class
+    .attr("class", "sankey-label")
     .attr("x", (d) => (d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6))
     .attr("y", (d) => (d.y0 + d.y1) / 2)
     .attr("dy", "0.35em")
     .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
     .text((d) => d.name);
 
+  // Add legend
   createLegend(svg, data.groups, height);
 
-  function createLegend(svg, groups, height) {
-    const legend = svg
-      .append("g")
-      .attr("transform", `translate(30, ${height - 150})`);
-
-    legend
-      .selectAll("rect")
-      .data(groups)
-      .join("rect")
-      .attr("class", "legend-rect") // Add CSS class
-      .attr("x", 0)
-      .attr("y", (d, i) => i * 20)
-      .attr("width", 15)
-      .attr("height", 15)
-      .attr("fill", (d) => d.color);
-
-    legend
-      .selectAll("text")
-      .data(groups)
-      .join("text")
-      .attr("class", "legend-text") // Add CSS class
-      .attr("x", 20)
-      .attr("y", (d, i) => i * 20 + 12)
-      .text((d) => d.name);
-  }
-
-  window.addEventListener("resize", () => {
-    const newWidth = window.innerWidth;
-    const newHeight = window.innerHeight - 40;
-
-    svg.attr("width", newWidth).attr("height", newHeight);
-
+  // Handle window resizing
+  addResizeHandler(svg, (newWidth, newHeight) => {
     sankey.extent([
       [30, 5],
       [newWidth - 1, newHeight - 5],
