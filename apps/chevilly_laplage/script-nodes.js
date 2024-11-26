@@ -1,6 +1,5 @@
 // script-nodes.js
 d3.json("data.json").then((data) => {
-  // Validate data
   if (!data.nodes || !data.links || !data.groups) {
     console.error(
       "JSON structure invalid: Ensure 'nodes', 'links', and 'groups' are defined."
@@ -8,7 +7,6 @@ d3.json("data.json").then((data) => {
     return;
   }
 
-  // Extract configuration
   const groupColors = {};
   data.groups.forEach((group) => {
     groupColors[group.name] = group.color;
@@ -23,18 +21,9 @@ d3.json("data.json").then((data) => {
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height])
-    .style("font", "10px sans-serif");
+    .attr("class", "node-visualization-svg"); // Add CSS class
 
-  const tooltip = d3
-    .select("#tooltip")
-    .style("position", "absolute")
-    .style("visibility", "hidden")
-    .style("background", "#fff")
-    .style("border", "1px solid #ccc")
-    .style("border-radius", "5px")
-    .style("padding", "10px")
-    .style("font-size", "12px")
-    .style("z-index", 10);
+  const tooltip = d3.select("#tooltip");
 
   const nodeSizeScale = d3
     .scaleSqrt()
@@ -59,23 +48,22 @@ d3.json("data.json").then((data) => {
     .force("center", d3.forceCenter(width / 2, height / 2))
     .on("tick", ticked);
 
-  // Draw links
   const link = svg
     .append("g")
-    .attr("stroke", "#999")
+    .attr("class", "link-group") // Add CSS class
     .selectAll("line")
     .data(data.links)
     .join("line")
+    .attr("class", "link-line") // Add CSS class
     .attr("stroke-width", (d) => linkWidthScale(d.value));
 
-  // Draw nodes
   const node = svg
     .append("g")
-    .attr("stroke", "#fff")
-    .attr("stroke-width", 1.5)
+    .attr("class", "node-group") // Add CSS class
     .selectAll("circle")
     .data(data.nodes)
     .join("circle")
+    .attr("class", "node-circle") // Add CSS class
     .attr("r", (d) => nodeSizeScale(d.value))
     .attr("fill", (d) => groupColors[d.group] || "#ccc")
     .call(drag(simulation))
@@ -95,21 +83,19 @@ d3.json("data.json").then((data) => {
       tooltip.style("visibility", "hidden");
     });
 
-  // Draw labels
   const label = svg
     .append("g")
+    .attr("class", "label-group") // Add CSS class
     .selectAll("text")
     .data(data.nodes)
     .join("text")
+    .attr("class", "node-label") // Add CSS class
     .attr("text-anchor", "middle")
     .attr("dy", ".35em")
-    .text((d) => d.id)
-    .style("pointer-events", "none");
+    .text((d) => d.id);
 
-  // Add legend
   createLegend(svg, data.groups, height);
 
-  // Functions
   function ticked() {
     link
       .attr("x1", (d) => d.source.x)
@@ -149,6 +135,7 @@ d3.json("data.json").then((data) => {
       .selectAll("rect")
       .data(groups)
       .join("rect")
+      .attr("class", "legend-rect") // Add CSS class
       .attr("x", 0)
       .attr("y", (d, i) => i * 20)
       .attr("width", 15)
@@ -159,9 +146,9 @@ d3.json("data.json").then((data) => {
       .selectAll("text")
       .data(groups)
       .join("text")
+      .attr("class", "legend-text") // Add CSS class
       .attr("x", 20)
       .attr("y", (d, i) => i * 20 + 12)
-      .text((d) => d.name)
-      .style("font-size", "12px");
+      .text((d) => d.name);
   }
 });
