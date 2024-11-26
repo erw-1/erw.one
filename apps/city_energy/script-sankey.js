@@ -1,3 +1,4 @@
+import { config } from "./config.js";
 import { createGradient, createLegend, handleResize } from "./shared-utils.js";
 
 d3.json("data.json").then((data) => {
@@ -6,15 +7,12 @@ d3.json("data.json").then((data) => {
     groupColors[group.name] = group.color;
   });
 
-  const width = window.innerWidth;
-  const height = window.innerHeight - 40;
-
   const svg = d3
     .select("#sankey-container")
     .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
+    .attr("width", config.width)
+    .attr("height", config.height)
+    .attr("viewBox", [0, 0, config.width, config.height])
     .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
 
   const sankey = d3
@@ -25,7 +23,7 @@ d3.json("data.json").then((data) => {
     .nodePadding(10)
     .extent([
       [30, 5],
-      [width - 1, height - 5],
+      [config.width - 1, config.height - 5],
     ]);
 
   const { nodes, links } = sankey({
@@ -57,7 +55,7 @@ d3.json("data.json").then((data) => {
 
   createLegend(svg, data.groups, {
     ...config.legend,
-    height,
+    height: config.height,
   });
 
   handleResize(svg, sankey);
