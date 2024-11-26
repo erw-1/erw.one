@@ -39,6 +39,32 @@ d3.json("data.json").then((data) => {
     .domain(d3.extent(data.links, (d) => d.value))
     .range([1, 10]);
 
+  // Add gradients for links
+  const defs = svg.append("defs");
+  data.links.forEach((link, i) => {
+    const gradientId = `gradient-${i}`;
+    const gradient = defs
+      .append("linearGradient")
+      .attr("id", gradientId)
+      .attr("gradientUnits", "userSpaceOnUse")
+      .attr("x1", data.nodes.find((n) => n.id === link.source).x || 0)
+      .attr("y1", data.nodes.find((n) => n.id === link.source).y || 0)
+      .attr("x2", data.nodes.find((n) => n.id === link.target).x || 0)
+      .attr("y2", data.nodes.find((n) => n.id === link.target).y || 0);
+
+    gradient
+      .append("stop")
+      .attr("offset", "0%")
+      .attr("stop-color", groupColors[data.nodes.find((n) => n.id === link.source).group]);
+
+    gradient
+      .append("stop")
+      .attr("offset", "100%")
+      .attr("stop-color", groupColors[data.nodes.find((n) => n.id === link.target).group]);
+
+    link.gradientId = gradientId;
+  });
+
   // Initialize simulation
   const simulation = d3
     .forceSimulation(data.nodes)
@@ -61,6 +87,7 @@ d3.json("data.json").then((data) => {
     .data(data.links)
     .join("line")
     .attr("class", "link-line")
+    .attr("stroke", (d) => `url(#${d.gradientId})`) // Use gradient links
     .attr("stroke-width", (d) => linkWidthScale(d.value));
 
   // Draw nodes
@@ -72,7 +99,7 @@ d3.json("data.json").then((data) => {
     .join("circle")
     .attr("class", "node-circle")
     .attr("r", (d) => nodeSizeScale(d.value))
-    .attr("fill", (d) => groupColors[d.group] || "#ccc")
+    .attr("fill", (d) => groupColors[d.group] || "#ccc") // No white outline
     .call(drag(simulation))
     .on("mouseover", (event, d) => {
       tooltip.style("visibility", "visible").html(`
@@ -115,6 +142,16 @@ d3.json("data.json").then((data) => {
 
     node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
     label.attr("x", (d) => d.x).attr("y", (d) => d.y);
+
+    // Update gradient positions dynamically
+    data.links.forEach((link) => {
+      const gradient = defs.select(`#${link.gradientId}`);
+      gradient
+        .attr("x1", link.source.x)
+        .attr("y1", link.source.y)
+        .attr("x2", link.target.x)
+        .attr("y2", link.target.y);
+    });
   }
 
   // Dragging function
