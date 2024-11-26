@@ -5,19 +5,19 @@
 body {
   margin: 0;
   font-family: 'Poppins', sans-serif;
+  color: black;
   overflow: hidden; /* Prevent scrollbars */
   background-color: #f9f9f9; /* Optional background */
 }
 
 svg {
   display: block; /* Remove extra spacing */
-  width: 100dvw; /* Full screen width */
-  height: 100dvh; /* Full screen height */
+  width: 100vw; /* Full screen width */
+  height: 100vh; /* Full screen height */
 }
 
 text {
   font-weight: bold;
-  fill: #000; /* Black text */
   text-anchor: middle; /* Center text horizontally */
   pointer-events: none; /* Prevent interference with dragging */
 }
@@ -63,7 +63,7 @@ text {
   background-color: inherit;
   border: none;
   cursor: pointer;
-  padding: 14px 16px;
+  padding: 10px 10px;
   transition: 0.3s;
   font-size: 16px;
   flex: 1;
