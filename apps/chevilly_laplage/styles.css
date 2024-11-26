@@ -99,3 +99,28 @@ text {
   position: absolute;
   top: 40px;
 }
+
+.node-visualization-svg {
+  font: 10px sans-serif;
+}
+
+.link-line {
+  stroke: #999;
+}
+
+.node-circle {
+  stroke: #fff;
+  stroke-width: 1.5px;
+}
+
+.node-label {
+  font-size: 10px;
+  fill: #000;
+}
+
+.link-group,
+.node-group,
+.label-group {
+  pointer-events: all;
+}
+
