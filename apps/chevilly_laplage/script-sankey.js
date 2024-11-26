@@ -33,8 +33,8 @@ d3.json("data.json").then((data) => {
     .nodeWidth(15)
     .nodePadding(10)
     .extent([
-      [200, 5], // Leave 200px space on the left for the legend
-      [width - 5, height - 5],
+      [200, 50], // Leave 200px space on the left for the legend
+      [width - 5, height - 50], // Keep 50px margin at the top and bottom
     ]);
 
   const sankeyData = sankey({
@@ -116,8 +116,9 @@ d3.json("data.json").then((data) => {
     .join("text")
     .attr("class", "sankey-label")
     .attr("x", (d) => {
-      if (d.x0 < width / 2) return d.x1 + 6; // Right of the node
-      return Math.max(d.x0 - 6, 200); // Left of the node, ensuring it doesn't exceed 200px
+      const buffer = 10; // Ensure padding from edges
+      if (d.x0 < width / 2) return Math.min(d.x1 + 6, width - buffer); // Right side
+      return Math.max(d.x0 - 6, buffer); // Left side
     })
     .attr("y", (d) => (d.y0 + d.y1) / 2)
     .attr("dy", "0.35em")
@@ -125,13 +126,13 @@ d3.json("data.json").then((data) => {
     .text((d) => d.name);
 
   // Add legend
-  createLegend(svg, data.groups, height, 10, 150);
+  createLegend(svg, data.groups, height, 10, 200); // Legend is now 200px above bottom
 
   // Handle window resizing
   addResizeHandler(svg, (newWidth, newHeight) => {
     sankey.extent([
-      [200, 5],
-      [newWidth - 5, newHeight - 5],
+      [200, 50],
+      [newWidth - 5, newHeight - 50],
     ]);
   });
 });
