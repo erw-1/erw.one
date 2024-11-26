@@ -26,7 +26,6 @@
     { "id": "Electricity Grid", "group": "Electricity", "value": 1600 },
 
     { "id": "Urban Heat Recovery", "group": "Heat", "value": 200 }, 
-    { "id": "Thermal Energy Storage", "group": "Heat", "value": 150 },
 
     { "id": "Gravitational Storage", "group": "Backup", "value": 100 },
     { "id": "Power2Gas", "group": "Backup", "value": 200 },
@@ -50,8 +49,6 @@
     { "source": "Urban Organic Waste", "target": "Methanisation Plants", "value": 500 },
     { "source": "Sewage", "target": "Methanisation Plants", "value": 400 },
     { "source": "Agricultural Organic Waste", "target": "Methanisation Plants", "value": 300 },
-
-    { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
     
     { "source": "Solar Panels", "target": "Electricity Grid", "value": 875 },
     { "source": "Thermophotovoltaics", "target": "Electricity Grid", "value": 100 },
@@ -64,14 +61,15 @@
 
     { "source": "Electricity Grid", "target": "Power2Gas", "value": 1600 },
     { "source": "Electricity Grid", "target": "Gravitational Storage", "value": 1600 },
+    { "source": "Electricity Grid", "target": "Small Nuclear Plant (SMR)", "value": 1600 },
     { "source": "Electricity Grid", "target": "Heating Network", "value": 1600 },
     { "source": "Electricity Grid", "target": "Urban Heat Recovery", "value": 1600 },
 
     { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 200 },
     { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 100 },
+    { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
 
     { "source": "Urban Heat Recovery", "target": "Heating Network", "value": 200 },
-    { "source": "Thermal Energy Storage", "target": "Heating Network", "value": 150 },
 
     { "source": "Backup and Energy Storage", "target": "Chevilly-la-Plage's Energetic Mix", "value": 250 },
     { "source": "Electricity Grid", "target": "Chevilly-la-Plage's Energetic Mix", "value": 1600 },
