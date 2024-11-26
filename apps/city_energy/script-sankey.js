@@ -17,25 +17,15 @@ d3.json("data.json").then((originalData) => {
     value: link.value,
   }));
 
-  const width = window.innerWidth * 0.8;
-  const height = window.innerHeight * 0.8;
-  
-  window.addEventListener("resize", () => {
-    const width = window.innerWidth * 0.8;
-    const height = window.innerHeight * 0.8;
-
-    svg
-      .attr("width", width)
-      .attr("height", height)
-      .attr("viewBox", `0 0 ${width} ${height}`);
-  });
+  const containerWidth = window.innerWidth * 0.9; // Scale to fit window
+  const containerHeight = window.innerHeight * 0.8; // Scale to fit window
 
   const svg = d3
     .select("#sankey-container")
     .append("svg")
-    .attr("width", width)
-    .attr("height", height)
-    .attr("viewBox", [0, 0, width, height])
+    .attr("width", containerWidth)
+    .attr("height", containerHeight)
+    .attr("viewBox", [0, 0, containerWidth, containerHeight])
     .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
 
   const sankey = d3
@@ -46,7 +36,7 @@ d3.json("data.json").then((originalData) => {
     .nodePadding(10)
     .extent([
       [1, 5],
-      [width - 1, height - 5],
+      [containerWidth - 1, containerHeight - 5],
     ]);
 
   const { nodes: sankeyNodes, links: sankeyLinks } = sankey({
@@ -91,7 +81,7 @@ d3.json("data.json").then((originalData) => {
     .attr("width", (d) => d.x1 - d.x0)
     .attr("fill", (d) => d.color)
     .append("title")
-    .text((d) => `${d.name}\n${d3.format(",.0f")(d.value)}`);
+    .text((d) => `${d.name}\n${d3.format(",.0f")(d.value)} GWh/year`);
 
   svg
     .append("g")
@@ -104,16 +94,59 @@ d3.json("data.json").then((originalData) => {
     .attr("stroke", (d) => `url(#${d.gradientId})`)
     .attr("stroke-width", (d) => Math.max(1, d.width))
     .append("title")
-    .text((d) => `${d.source.name} → ${d.target.name}\n${d3.format(",.0f")(d.value)}`);
+    .text((d) => `${d.source.name} → ${d.target.name}\n${d3.format(",.0f")(d.value)} GWh/year`);
 
   svg
     .append("g")
     .selectAll("text")
     .data(sankeyNodes)
     .join("text")
-    .attr("x", (d) => (d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6))
+    .attr("x", (d) => (d.x0 < containerWidth / 2 ? d.x1 + 6 : d.x0 - 6))
     .attr("y", (d) => (d.y0 + d.y1) / 2)
     .attr("dy", "0.35em")
-    .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
-    .text((d) => d.name);
+    .attr("text-anchor", (d) => (d.x0 < containerWidth / 2 ? "start" : "end"))
+    .text((d) => d.name)
+    .each(function (d) {
+      const bbox = this.getBBox();
+      if (d.y0 + bbox.height > containerHeight) {
+        d3.select(this).attr("y", containerHeight - bbox.height - 5); // Adjust text to prevent cut-off
+      }
+    });
+
+  // Reuse the legend logic from the nodes script
+  createLegend(svg, originalData.groups, containerHeight);
+
+  function createLegend(svg, groups, height) {
+    const legend = svg
+      .append("g")
+      .attr("transform", `translate(20, ${height - 150})`);
+
+    legend
+      .selectAll("rect")
+      .data(groups)
+      .join("rect")
+      .attr("x", 0)
+      .attr("y", (d, i) => i * 20)
+      .attr("width", 15)
+      .attr("height", 15)
+      .attr("fill", (d) => d.color);
+
+    legend
+      .selectAll("text")
+      .data(groups)
+      .join("text")
+      .attr("x", 20)
+      .attr("y", (d, i) => i * 20 + 12)
+      .text((d) => d.name)
+      .style("font-size", "12px")
+      .style("fill", "#000")
+      .style("text-anchor", "start");
+  }
+
+  // Handle window resize
+  window.addEventListener("resize", () => {
+    const newWidth = window.innerWidth * 0.9;
+    const newHeight = window.innerHeight * 0.8;
+    svg.attr("width", newWidth).attr("height", newHeight);
+  });
 });
