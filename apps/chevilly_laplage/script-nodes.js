@@ -39,7 +39,7 @@ d3.json("data.json").then((data) => {
     .domain(d3.extent(data.links, (d) => d.value))
     .range([1, 10]);
 
-  // Add gradients for links
+  // Add gradients for links (unique to Node script)
   const nodeDefs = svg.append("defs");
   data.links.forEach((link, i) => {
     const gradientId = `node-gradient-${i}`; // Unique gradient ID
@@ -48,6 +48,7 @@ d3.json("data.json").then((data) => {
       .attr("id", gradientId)
       .attr("gradientUnits", "userSpaceOnUse");
 
+    // Gradient stops based on source and target node colors
     gradient
       .append("stop")
       .attr("offset", "0%")
@@ -71,31 +72,9 @@ d3.json("data.json").then((data) => {
         .id((d) => d.id)
         .distance(150)
     )
-    .force("charge", d3.forceManyBody().strength(-600)) // Increase repulsion to spread out nodes
+    .force("charge", d3.forceManyBody().strength(-300))
     .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("collision", d3.forceCollide().radius((d) => nodeSizeScale(d.value) + getTextWidth(d)))
-    .force(
-      "x",
-      d3.forceX((d) => (d.group === "Electricity" ? width / 2 : Math.random() * width))
-    ) // Radial spread by X-axis
-    .force(
-      "y",
-      d3.forceY((d) => (d.group === "Electricity" ? height / 2 : Math.random() * height))
-    ) // Radial spread by Y-axis
     .on("tick", ticked);
-
-  // Helper function to calculate text width
-  function getTextWidth(d) {
-    const tempText = svg
-      .append("text")
-      .attr("class", "temp-text")
-      .attr("font-size", "12px")
-      .text(d.id);
-
-    const width = tempText.node().getBBox().width;
-    tempText.remove();
-    return width / 2; // Divide by 2 for left/right spacing
-  }
 
   // Draw links
   const link = svg
@@ -105,7 +84,7 @@ d3.json("data.json").then((data) => {
     .data(data.links)
     .join("line")
     .attr("class", "link-line")
-    .attr("stroke", (d) => `url(#${d.gradientId})`) // Use gradient links
+    .attr("stroke", (d) => `url(#${d.gradientId})`) // Use unique gradient links
     .attr("stroke-width", (d) => linkWidthScale(d.value));
 
   // Draw nodes
