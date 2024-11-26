@@ -73,7 +73,7 @@
     { "source": "Urban Heat Recovery", "target": "Heating Network", "value": 200 },
     { "source": "Thermal Energy Storage", "target": "Heating Network", "value": 150 },
 
-    { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 250 },
+    { "source": "Backup and Energy Storage", "target": "Chevilly-la-Plage's Energetic Mix", "value": 250 },
     { "source": "Electricity Grid", "target": "Chevilly-la-Plage's Energetic Mix", "value": 1600 },
     { "source": "Heating Network", "target": "Chevilly-la-Plage's Energetic Mix", "value": 600 }
   ]
