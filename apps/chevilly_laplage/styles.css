@@ -100,6 +100,37 @@ text {
   top: 40px;
 }
 
+.sankey-diagram-svg {
+  font: 10px sans-serif;
+}
+
+.sankey-node-group {
+  pointer-events: all;
+}
+
+.sankey-node {
+  stroke: #000;
+  stroke-width: 1px;
+}
+
+.sankey-link-group {
+  pointer-events: all;
+}
+
+.sankey-link {
+  fill: none;
+  stroke-opacity: 0.5;
+}
+
+.sankey-label-group {
+  pointer-events: none;
+}
+
+.sankey-label {
+  font-size: 10px;
+  fill: #000;
+}
+
 .node-visualization-svg {
   font: 10px sans-serif;
 }
