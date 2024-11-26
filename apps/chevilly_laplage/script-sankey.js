@@ -25,7 +25,7 @@ d3.json("data.json").then((data) => {
     groupColors[group.name] = group.color;
   });
 
-  // Set up Sankey generator
+  // Set up Sankey generator with space for the legend
   const sankey = d3
     .sankey()
     .nodeId((d) => d.name)
@@ -33,8 +33,8 @@ d3.json("data.json").then((data) => {
     .nodeWidth(15)
     .nodePadding(10)
     .extent([
-      [30, 5],
-      [width - 1, height - 5],
+      [200, 5], // Leave 200px space on the left for the legend
+      [width - 5, height - 5],
     ]);
 
   const sankeyData = sankey({
@@ -89,6 +89,7 @@ d3.json("data.json").then((data) => {
     .attr("y", (d) => d.y0)
     .attr("height", (d) => d.y1 - d.y0)
     .attr("width", (d) => d.x1 - d.x0)
+    .attr("fill", (d) => d.color) // Fix black node issue
     .append("title")
     .text((d) => `${d.name}\n${d3.format(",.0f")(d.value)} GWh/year`);
 
@@ -114,20 +115,23 @@ d3.json("data.json").then((data) => {
     .data(sankeyData.nodes)
     .join("text")
     .attr("class", "sankey-label")
-    .attr("x", (d) => (d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6))
+    .attr("x", (d) => {
+      if (d.x0 < width / 2) return d.x1 + 6; // Right of the node
+      return Math.max(d.x0 - 6, 200); // Left of the node, ensuring it doesn't exceed 200px
+    })
     .attr("y", (d) => (d.y0 + d.y1) / 2)
     .attr("dy", "0.35em")
     .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
     .text((d) => d.name);
 
   // Add legend
-  createLegend(svg, data.groups, height);
+  createLegend(svg, data.groups, height, 10, 150);
 
   // Handle window resizing
   addResizeHandler(svg, (newWidth, newHeight) => {
     sankey.extent([
-      [30, 5],
-      [newWidth - 1, newHeight - 5],
+      [200, 5],
+      [newWidth - 5, newHeight - 5],
     ]);
   });
 });
