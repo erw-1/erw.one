@@ -26,7 +26,7 @@
     // Legend positioning
     legend: {
       x: 20,
-      yOffset: 150, // Distance from bottom
+      yOffset: 350, // Distance from bottom
       rectWidth: 15,
       rectHeight: 15,
       textXOffset: 20,
