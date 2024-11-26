@@ -48,7 +48,6 @@ text {
   text-anchor: start; /* Align text to the left */
 }
 
-/* Tabs styling */
 .tab {
   position: fixed; /* Float tabs above content */
   top: 0;
@@ -81,9 +80,9 @@ text {
 .tab-content {
   display: none; /* Hide content by default */
   width: 100%;
-  height: calc(100% - 50px); /* Account for tab height */
-  position: absolute; /* Avoid flow shift */
-  top: 50px; /* Offset to leave space for tabs */
+  height: calc(100% - 50px); /* Adjust for tab height */
+  position: absolute;
+  top: 50px; /* Leave space for tabs */
 }
 
 .tab-content.active {
