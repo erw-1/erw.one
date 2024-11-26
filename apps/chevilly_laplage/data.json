@@ -10,7 +10,7 @@
     { "name": "Central", "color": "#FFC0CB" }
   ],
   "nodes": [
-    { "id": "Wind", "group": "Wind", "value": 500 },
+    { "id": "Winds", "group": "Wind", "value": 500 },
     { "id": "Sun", "group": "Sun", "value": 1000 },
     { "id": "Sea", "group": "Water", "value": 1200 },
 
@@ -43,7 +43,7 @@
 
   ],
   "links": [
-    { "source": "Wind", "target": "Wind Turbines", "value": 500 },
+    { "source": "Winds", "target": "Wind Turbines", "value": 500 },
 
     { "source": "Sun", "target": "Solar Panels", "value": 800 },
     { "source": "Sun", "target": "Thermophotovoltaics", "value": 200 },
