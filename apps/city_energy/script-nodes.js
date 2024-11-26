@@ -50,7 +50,7 @@
 
   // Create the SVG canvas
   const svg = d3
-    .select("#sankey-container")
+    .select("#nodes-container")
     .append("svg")
     .attr("width", width)
     .attr("height", height);
