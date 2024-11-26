@@ -120,7 +120,10 @@ d3.json("data.json").then((data) => {
       if (d.x0 < width / 2) return Math.min(d.x1 + 6, width - buffer); // Right side
       return Math.max(d.x0 - 6, buffer); // Left side
     })
-    .attr("y", (d) => (d.y0 + d.y1) / 2)
+    .attr("y", (d) => {
+      const bufferY = 10; // Ensure vertical padding
+      return Math.min((d.y0 + d.y1) / 2, height - bufferY); // Prevent cut-off at the bottom
+    })
     .attr("dy", "0.35em")
     .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
     .text((d) => d.name);
