@@ -65,9 +65,6 @@
     { "source": "Methanisation Plants", "target": "Heating Network", "value": 800 },
     { "source": "Methanisation Plants", "target": "Electricity Grid", "value": 1600 },
 
-    { "source": "Electricity Grid", "target": "Power2Gas", "value": 50 },
-    { "source": "Electricity Grid", "target": "Gravitational Storage", "value": 50 },
-    { "source": "Electricity Grid", "target": "Small Nuclear Plant (SMR)", "value": 50 },
     { "source": "Electricity Grid", "target": "Heating Network", "value": 1500 },
     { "source": "Electricity Grid", "target": "Urban Heat Recovery", "value": 200 },
 
