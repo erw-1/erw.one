@@ -22,7 +22,6 @@
     { "id": "District Heating Network", "group": "Heat", "value": 750 },
     { "id": "Urban Heat Recovery", "group": "Heat", "value": 200 },
     { "id": "Thermal Energy Storage", "group": "Heat", "value": 150 },
-    { "id": "Heat for Buildings", "group": "Heat", "value": 600 },
     { "id": "Electricity Grid", "group": "Electricity", "value": 1600 },
     { "id": "Gravitational Storage", "group": "Backup", "value": 100 },
     { "id": "Power2Gas", "group": "Backup", "value": 200 },
@@ -47,7 +46,6 @@
     { "source": "Methanisation Plants", "target": "Electricity Grid", "value": 600 },
     { "source": "Urban Heat Recovery", "target": "District Heating Network", "value": 200 },
     { "source": "Thermal Energy Storage", "target": "District Heating Network", "value": 150 },
-    { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 100 },
-    { "source": "District Heating Network", "target": "Heat for Buildings", "value": 600 }
+    { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 100 }
   ]
 }
