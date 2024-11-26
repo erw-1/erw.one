@@ -11,8 +11,8 @@ body {
 
 svg {
   display: block; /* Remove extra spacing */
-  width: 100vw; /* Full screen width */
-  height: 100vh; /* Full screen height */
+  width: 100dvw; /* Full screen width */
+  height: 100dvh; /* Full screen height */
 }
 
 text {
@@ -48,16 +48,11 @@ text {
   text-anchor: start; /* Align text to the left */
 }
 
-/* Tabs styling */
 .tab {
-  position: fixed; /* Float tabs above content */
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100; /* Ensure tabs stay on top */
-  display: flex;
-  background-color: #f1f1f1;
+  overflow: hidden;
   border-bottom: 1px solid #ccc;
+  background-color: #f1f1f1;
+  display: flex;
 }
 
 .tab button {
@@ -79,15 +74,16 @@ text {
 }
 
 .tab-content {
-  display: none; /* Hide content by default */
   width: 100%;
-  height: calc(100% - 50px); /* Account for tab height */
-  position: absolute; /* Avoid flow shift */
-  top: 50px; /* Offset to leave space for tabs */
+  height: 100%;
+}
+
+.tab-content:not(.active) {
+  display: none !important;
 }
 
 .tab-content.active {
-  display: block; /* Show active content */
+  display: block;
 }
 
 #sankey-container, #nodes-container {
