@@ -30,11 +30,11 @@
 
     { "id": "Electricity Grid", "group": "Electricity", "value": 3000 },
 
-    { "id": "Urban Heat Recovery", "group": "Heat", "value": 200 }, 
-
-    { "id": "Gravitational Storage", "group": "Backup", "value": 50 },
     { "id": "Power2Gas", "group": "Backup", "value": 50 },
     { "id": "Small Nuclear Plant (SMR)", "group": "Backup", "value": 50 },
+    { "id": "Gravitational Storage", "group": "Backup", "value": 50 },
+
+    { "id": "Urban Heat Recovery", "group": "Heat", "value": 200 }, 
 
     { "id": "Heating Network", "group": "Heat", "value": 2500 },
     { "id": "Backup and Energy Storage", "group": "Backup", "value": 150 },
