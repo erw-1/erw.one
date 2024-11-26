@@ -79,9 +79,8 @@ text {
 
 .tab-content {
   width: 100%;
-  height: calc(100% - 20px);
+  height: 100%;
   position: absolute;
-  top: 20px;
 }
 
 .tab-content:not(.active) {
