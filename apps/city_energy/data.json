@@ -10,14 +10,14 @@
     { "name": "Central", "color": "#FFC0CB" }
   ],
   "nodes": [
-    { "id": "Sun", "group": "Sun", "value": 1000 },
     { "id": "Wind", "group": "Wind", "value": 500 },
+    { "id": "Sun", "group": "Sun", "value": 1000 },
     { "id": "Sea", "group": "Water", "value": 1200 },
+
+    { "id": "Wind Turbines", "group": "Wind", "value": 500 },
 
     { "id": "Solar Panels", "group": "Sun", "value": 800 }, 
     { "id": "Thermophotovoltaics", "group": "Sun", "value": 200 },
-
-    { "id": "Wind Turbines", "group": "Wind", "value": 500 },
 
     { "id": "Marine Hydrokinetic Turbines", "group": "Water", "value": 400 },
     { "id": "Wave Energy Converters", "group": "Water", "value": 800 },
@@ -43,10 +43,10 @@
 
   ],
   "links": [
+    { "source": "Wind", "target": "Wind Turbines", "value": 500 },
+
     { "source": "Sun", "target": "Solar Panels", "value": 800 },
     { "source": "Sun", "target": "Thermophotovoltaics", "value": 200 },
-
-    { "source": "Wind", "target": "Wind Turbines", "value": 500 },
 
     { "source": "Sea", "target": "Marine Hydrokinetic Turbines", "value": 400 },
     { "source": "Sea", "target": "Wave Energy Converters", "value": 800 },
@@ -56,7 +56,6 @@
     { "source": "Wind Turbines", "target": "Electricity Grid", "value": 500 },
     { "source": "Marine Hydrokinetic Turbines", "target": "Electricity Grid", "value": 400 },
     { "source": "Wave Energy Converters", "target": "Electricity Grid", "value": 800 },
-
     
     { "source": "Urban Organic Waste", "target": "Methanisation Plants", "value": 800 },
     { "source": "Sewage", "target": "Methanisation Plants", "value": 600 },
@@ -72,9 +71,10 @@
     { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 50 },
     { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
 
+    { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 150 },
+    { "source": "Backup and Energy Storage", "target": "Heating Network", "value": 150 },
     { "source": "Urban Heat Recovery", "target": "Heating Network", "value": 200 },
 
-    { "source": "Backup and Energy Storage", "target": "Chevilly-la-Plage's Energetic Mix", "value": 150 },
     { "source": "Electricity Grid", "target": "Chevilly-la-Plage's Energetic Mix", "value": 1500 },
     { "source": "Heating Network", "target": "Chevilly-la-Plage's Energetic Mix", "value": 2500 }
   ]
