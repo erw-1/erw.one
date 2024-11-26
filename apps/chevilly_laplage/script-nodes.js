@@ -39,29 +39,6 @@ d3.json("data.json").then((data) => {
     .domain(d3.extent(data.links, (d) => d.value))
     .range([1, 10]);
 
-  // Add gradients for links (unique to Node script)
-  const nodeDefs = svg.append("defs");
-  data.links.forEach((link, i) => {
-    const gradientId = `node-gradient-${i}`; // Unique gradient ID
-    const gradient = nodeDefs
-      .append("linearGradient")
-      .attr("id", gradientId)
-      .attr("gradientUnits", "userSpaceOnUse");
-
-    // Gradient stops based on source and target node colors
-    gradient
-      .append("stop")
-      .attr("offset", "0%")
-      .attr("stop-color", groupColors[data.nodes.find((n) => n.id === link.source).group]);
-
-    gradient
-      .append("stop")
-      .attr("offset", "100%")
-      .attr("stop-color", groupColors[data.nodes.find((n) => n.id === link.target).group]);
-
-    link.gradientId = gradientId;
-  });
-
   // Initialize simulation
   const simulation = d3
     .forceSimulation(data.nodes)
@@ -74,7 +51,21 @@ d3.json("data.json").then((data) => {
     )
     .force("charge", d3.forceManyBody().strength(-300))
     .force("center", d3.forceCenter(width / 2, height / 2))
+    .force("collision", d3.forceCollide().radius((d) => nodeSizeScale(d.value) + getTextWidth(d))) // Account for node size and text
     .on("tick", ticked);
+
+  // Helper function to calculate text width
+  function getTextWidth(d) {
+    const tempText = svg
+      .append("text")
+      .attr("class", "temp-text")
+      .attr("font-size", "12px")
+      .text(d.id);
+
+    const width = tempText.node().getBBox().width;
+    tempText.remove();
+    return width / 2; // Divide by 2 for left/right spacing
+  }
 
   // Draw links
   const link = svg
@@ -84,7 +75,7 @@ d3.json("data.json").then((data) => {
     .data(data.links)
     .join("line")
     .attr("class", "link-line")
-    .attr("stroke", (d) => `url(#${d.gradientId})`) // Use unique gradient links
+    .attr("stroke", (d) => `url(#${d.gradientId})`)
     .attr("stroke-width", (d) => linkWidthScale(d.value));
 
   // Draw nodes
@@ -96,7 +87,7 @@ d3.json("data.json").then((data) => {
     .join("circle")
     .attr("class", "node-circle")
     .attr("r", (d) => nodeSizeScale(d.value))
-    .attr("fill", (d) => groupColors[d.group] || "#ccc") // No white outline
+    .attr("fill", (d) => groupColors[d.group] || "#ccc")
     .call(drag(simulation))
     .on("mouseover", (event, d) => {
       tooltip.style("visibility", "visible").html(`
@@ -139,16 +130,6 @@ d3.json("data.json").then((data) => {
 
     node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
     label.attr("x", (d) => d.x).attr("y", (d) => d.y);
-
-    // Update gradient positions dynamically
-    data.links.forEach((link) => {
-      const gradient = nodeDefs.select(`#${link.gradientId}`);
-      gradient
-        .attr("x1", link.source.x)
-        .attr("y1", link.source.y)
-        .attr("x2", link.target.x)
-        .attr("y2", link.target.y);
-    });
   }
 
   // Dragging function
