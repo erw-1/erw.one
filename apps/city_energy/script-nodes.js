@@ -1,7 +1,7 @@
 (function () {
   const config = {
     width: window.innerWidth,
-    height: window.innerHeight - 40, // Account for tab height
+    height: window.innerHeight - 40,
 
     tooltip: {
       selector: "#tooltip",
@@ -79,21 +79,23 @@
       .force("charge", d3.forceManyBody().strength(config.simulation.chargeStrength))
       .force("center", d3.forceCenter(width / 2, height / 2))
       .on("tick", () => {
-        link
+        linkPaths
           .attr("x1", (d) => d.source.x)
           .attr("y1", (d) => d.source.y)
           .attr("x2", (d) => d.target.x)
-          .attr("y2", (d) => d.target.y);
+          .attr("y2", (d) => d.target.y)
+          .each(function (d) {
+            const gradient = d3.select(`#gradient-${d.index}`);
+            gradient
+              .attr("x1", d.source.x)
+              .attr("y1", d.source.y)
+              .attr("x2", d.target.x)
+              .attr("y2", d.target.y);
+          });
 
         node
-          .attr("cx", (d) => {
-            if (d.x < 0 || d.x > width) d.vx = -d.vx;
-            return (d.x = Math.max(0, Math.min(width, d.x)));
-          })
-          .attr("cy", (d) => {
-            if (d.y < 0 || d.y > height) d.vy = -d.vy;
-            return (d.y = Math.max(0, Math.min(height, d.y)));
-          });
+          .attr("cx", (d) => (d.x = Math.max(15, Math.min(width - 15, d.x))))
+          .attr("cy", (d) => (d.y = Math.max(15, Math.min(height - 15, d.y))));
 
         label.attr("x", (d) => d.x).attr("y", (d) => d.y);
       });
@@ -101,37 +103,32 @@
     // Create gradient definitions
     const defs = svg.append("defs");
 
-    data.links.forEach((link, i) => {
-      const gradientId = `gradient-${i}`;
-      const gradient = defs
-        .append("linearGradient")
-        .attr("id", gradientId)
-        .attr("gradientUnits", "userSpaceOnUse")
-        .attr("x1", link.source.x)
-        .attr("y1", link.source.y)
-        .attr("x2", link.target.x)
-        .attr("y2", link.target.y);
-
-      gradient
-        .append("stop")
-        .attr("offset", "0%")
-        .attr("stop-color", groupColors[link.source.group]);
-
-      gradient
-        .append("stop")
-        .attr("offset", "100%")
-        .attr("stop-color", groupColors[link.target.group]);
-
-      link.gradientId = gradientId;
-    });
-
-    const link = svg
+    const linkPaths = svg
       .append("g")
       .selectAll("line")
       .data(data.links)
       .join("line")
       .attr("stroke-width", (d) => edgeScale(d.value))
-      .attr("stroke", (d) => `url(#${d.gradientId})`);
+      .attr("stroke", (d, i) => {
+        const gradientId = `gradient-${i}`;
+        const gradient = defs
+          .append("linearGradient")
+          .attr("id", gradientId)
+          .attr("gradientUnits", "userSpaceOnUse");
+
+        gradient
+          .append("stop")
+          .attr("offset", "0%")
+          .attr("stop-color", groupColors[d.source.group]);
+
+        gradient
+          .append("stop")
+          .attr("offset", "100%")
+          .attr("stop-color", groupColors[d.target.group]);
+
+        d.index = i;
+        return `url(#${gradientId})`;
+      });
 
     const node = svg
       .append("g")
@@ -196,7 +193,6 @@
         .join("rect")
         .attr("x", 0)
         .attr("y", (d, i) => i * 20)
-        .attr("class", "legend-rect")
         .attr("width", config.legend.rectWidth)
         .attr("height", config.legend.rectHeight)
         .attr("fill", (d) => d.color);
@@ -205,14 +201,9 @@
         .selectAll("text")
         .data(groups)
         .join("text")
-        .attr("class", "legend-text")
         .attr("x", config.legend.textXOffset)
         .attr("y", (d, i) => i * 20 + config.legend.textYOffset)
         .text((d) => d.name);
     }
-
-    window.addEventListener("resize", () => {
-      svg.attr("width", window.innerWidth).attr("height", window.innerHeight - 40);
-    });
   });
 })();
