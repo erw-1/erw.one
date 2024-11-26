@@ -1,11 +1,8 @@
 (function () {
-  // Configuration object
   const config = {
-    // SVG Dimensions
     width: window.innerWidth,
-    height: window.innerHeight,
+    height: window.innerHeight - 40, // Account for tab height
 
-    // Tooltip configuration
     tooltip: {
       selector: "#tooltip",
       format: (d) => `
@@ -15,7 +12,6 @@
       `,
     },
 
-    // Simulation parameters
     simulation: {
       chargeStrength: -300,
       linkDistance: 150,
@@ -23,18 +19,15 @@
       linkWidthRange: [1, 10],
     },
 
-    // Legend positioning
     legend: {
       x: 20,
-      yOffset: 350, // Distance from bottom
+      yOffset: 350,
       rectWidth: 15,
       rectHeight: 15,
       textXOffset: 20,
       textYOffset: 12,
     },
 
-    // Link and node styling
-    defaultLinkColor: "#999",
     defaultNodeColor: "#ccc",
     label: {
       fontSize: "12px",
@@ -42,23 +35,15 @@
     },
   };
 
-  // Define initial SVG dimensions
-  let { width, height } = config;
-
-  // Tooltip for displaying information
+  const { width, height } = config;
   const tooltip = d3.select(config.tooltip.selector);
 
-  // Create the SVG canvas
   const svg = d3
     .select("#nodes-container")
     .append("svg")
     .attr("width", width)
     .attr("height", height);
 
-  // Disable scrollwheel zoom and panning
-  svg.on("wheel", (event) => event.preventDefault());
-
-  // Load data from external JSON file
   d3.json("data.json").then((data) => {
     if (!data.nodes || !data.links || !data.groups) {
       console.error(
@@ -100,17 +85,45 @@
           .attr("x2", (d) => d.target.x)
           .attr("y2", (d) => d.target.y);
 
-        node.attr("cx", (d) => {
-          // Check for collisions with edges and bounce
-          if (d.x < 0 || d.x > width) d.vx = -d.vx;
-          return (d.x = Math.max(0, Math.min(width, d.x)));
-        }).attr("cy", (d) => {
-          if (d.y < 0 || d.y > height) d.vy = -d.vy;
-          return (d.y = Math.max(0, Math.min(height, d.y)));
-        });
+        node
+          .attr("cx", (d) => {
+            if (d.x < 0 || d.x > width) d.vx = -d.vx;
+            return (d.x = Math.max(0, Math.min(width, d.x)));
+          })
+          .attr("cy", (d) => {
+            if (d.y < 0 || d.y > height) d.vy = -d.vy;
+            return (d.y = Math.max(0, Math.min(height, d.y)));
+          });
 
         label.attr("x", (d) => d.x).attr("y", (d) => d.y);
       });
+
+    // Create gradient definitions
+    const defs = svg.append("defs");
+
+    data.links.forEach((link, i) => {
+      const gradientId = `gradient-${i}`;
+      const gradient = defs
+        .append("linearGradient")
+        .attr("id", gradientId)
+        .attr("gradientUnits", "userSpaceOnUse")
+        .attr("x1", link.source.x)
+        .attr("y1", link.source.y)
+        .attr("x2", link.target.x)
+        .attr("y2", link.target.y);
+
+      gradient
+        .append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", groupColors[link.source.group]);
+
+      gradient
+        .append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", groupColors[link.target.group]);
+
+      link.gradientId = gradientId;
+    });
 
     const link = svg
       .append("g")
@@ -118,7 +131,7 @@
       .data(data.links)
       .join("line")
       .attr("stroke-width", (d) => edgeScale(d.value))
-      .attr("stroke", config.defaultLinkColor);
+      .attr("stroke", (d) => `url(#${d.gradientId})`);
 
     const node = svg
       .append("g")
@@ -198,16 +211,8 @@
         .text((d) => d.name);
     }
 
-    // Handle window resize to keep the graph centered
     window.addEventListener("resize", () => {
-      width = window.innerWidth;
-      height = window.innerHeight;
-
-      // Update SVG size
-      svg.attr("width", width).attr("height", height);
-
-      // Update simulation center
-      simulation.force("center", d3.forceCenter(width / 2, height / 2)).alpha(0.3).restart();
+      svg.attr("width", window.innerWidth).attr("height", window.innerHeight - 40);
     });
   });
 })();
