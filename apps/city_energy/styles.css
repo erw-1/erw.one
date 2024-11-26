@@ -48,11 +48,16 @@ text {
   text-anchor: start; /* Align text to the left */
 }
 
+/* Tabs styling */
 .tab {
-  overflow: hidden;
-  border-bottom: 1px solid #ccc;
-  background-color: #f1f1f1;
+  position: fixed; /* Float tabs above content */
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100; /* Ensure tabs stay on top */
   display: flex;
+  background-color: #f1f1f1;
+  border-bottom: 1px solid #ccc;
 }
 
 .tab button {
@@ -76,7 +81,9 @@ text {
 .tab-content {
   display: none; /* Hide content by default */
   width: 100%;
-  height: 100%;
+  height: calc(100% - 50px); /* Account for tab height */
+  position: absolute; /* Avoid flow shift */
+  top: 50px; /* Offset to leave space for tabs */
 }
 
 .tab-content.active {
