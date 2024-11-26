@@ -18,7 +18,12 @@ d3.json("data.json").then((originalData) => {
   });
 
   // Log the transformed data
-  const fixedData = { nodes, links };
+
+  const groupColors = {};
+  originalData.groups.forEach(group => {
+    groupColors[group.name] = group.color;
+  });
+              const fixedData = { nodes, links };
   console.log("Fixed Data:", fixedData);
 
   // Use this data to render the Sankey diagram
@@ -27,12 +32,22 @@ d3.json("data.json").then((originalData) => {
 
 // Sankey diagram logic
 function drawSankey(data) {
-  const width = 928;
-  const height = 600;
+  const width = window.innerWidth * 0.8;
+  const height = window.innerHeight * 0.8;
   const format = d3.format(",.0f");
 
   const svg = d3
-    .select("#sankey-container")
+
+  window.addEventListener("resize", () => {
+    const width = window.innerWidth * 0.8;
+    const height = window.innerHeight * 0.8;
+
+    svg
+      .attr("width", width)
+      .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`);
+  });
+                .select("#sankey-container")
     .append("svg")
     .attr("width", width)
     .attr("height", height)
@@ -66,7 +81,7 @@ function drawSankey(data) {
     .attr("y", (d) => d.y0)
     .attr("height", (d) => d.y1 - d.y0)
     .attr("width", (d) => d.x1 - d.x0)
-    .attr("fill", (d) => color(d.category))
+      .attr("fill", (d) => groupColors[d.category] || "#ccc")
     .append("title")
     .text((d) => `${d.name}\n${format(d.value)}`);
 
@@ -78,7 +93,7 @@ function drawSankey(data) {
     .data(links)
     .join("path")
     .attr("d", d3.sankeyLinkHorizontal())
-    .attr("stroke", (d) => color(d.source.category))
+      .attr("stroke", (d) => groupColors[d.source.category] || "#ccc")
     .attr("stroke-width", (d) => Math.max(1, d.width))
     .append("title")
     .text(
