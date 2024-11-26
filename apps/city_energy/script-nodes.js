@@ -50,7 +50,7 @@
 
   // Create the SVG canvas
   const svg = d3
-    .select("#nodes-container")
+    .select(".tab-content")
     .append("svg")
     .attr("width", width)
     .attr("height", height);
@@ -92,7 +92,25 @@
           .distance(config.simulation.linkDistance)
       )
       .force("charge", d3.forceManyBody().strength(config.simulation.chargeStrength))
-      .force("center", d3.forceCenter(width / 2, height / 2));
+      .force("center", d3.forceCenter(width / 2, height / 2))
+      .on("tick", () => {
+        link
+          .attr("x1", (d) => d.source.x)
+          .attr("y1", (d) => d.source.y)
+          .attr("x2", (d) => d.target.x)
+          .attr("y2", (d) => d.target.y);
+
+        node.attr("cx", (d) => {
+          // Check for collisions with edges and bounce
+          if (d.x < 0 || d.x > width) d.vx = -d.vx;
+          return (d.x = Math.max(0, Math.min(width, d.x)));
+        }).attr("cy", (d) => {
+          if (d.y < 0 || d.y > height) d.vy = -d.vy;
+          return (d.y = Math.max(0, Math.min(height, d.y)));
+        });
+
+        label.attr("x", (d) => d.x).attr("y", (d) => d.y);
+      });
 
     const link = svg
       .append("g")
@@ -135,18 +153,6 @@
       .style("fill", config.label.fill);
 
     createLegend(svg, data.groups, height);
-
-    simulation.on("tick", () => {
-      link
-        .attr("x1", (d) => d.source.x)
-        .attr("y1", (d) => d.source.y)
-        .attr("x2", (d) => d.target.x)
-        .attr("y2", (d) => d.target.y);
-
-      node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-
-      label.attr("x", (d) => d.x).attr("y", (d) => d.y);
-    });
 
     function drag(simulation) {
       function dragstarted(event, d) {
