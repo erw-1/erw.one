@@ -50,7 +50,7 @@
 
   // Create the SVG canvas
   const svg = d3
-    .select(".tab-content")
+    .select("#sankey-container")
     .append("svg")
     .attr("width", width)
     .attr("height", height);
