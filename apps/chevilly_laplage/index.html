@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>City Energy Mix Visualization</title>
   <link rel="stylesheet" href="styles.css">
-  <script src="https://d3js.org/d3.v7.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12"></script>
+  <!-- Load D3.js and Sankey dependencies -->
+  <script src="https://d3js.org/d3.v7.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12" defer></script>
 </head>
 <body>
   <!-- Tab buttons -->
@@ -19,16 +20,17 @@
   <div id="Nodes" class="tab-content active">
     <div id="nodes-container">
       <div id="tooltip" class="tooltip"></div>
-      <script src="script-nodes.js" defer></script>
+      <script type="module" src="script-nodes.js" defer></script>
     </div>
   </div>
 
   <!-- Tab content for Sankey -->
   <div id="Sankey" class="tab-content">
     <div id="sankey-container"></div>
-    <script src="script-sankey.js" defer></script>
+    <script type="module" src="script-sankey.js" defer></script>
   </div>
 
+  <!-- Tab-switching script -->
   <script>
     function switchTab(evt, tabName) {
       // Hide all tab contents
