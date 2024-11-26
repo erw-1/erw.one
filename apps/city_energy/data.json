@@ -62,13 +62,13 @@
     { "source": "Agricultural Organic Waste", "target": "Methanisation Plants", "value": 1000 },
 
     { "source": "Methanisation Plants", "target": "Heating Network", "value": 800 },
-    { "source": "Methanisation Plants", "target": "Electricity Grid", "value": 1600 },
+    { "source": "Methanisation Plants", "target": "Electricity Grid", "value": 1400 },
 
     { "source": "Electricity Grid", "target": "Heating Network", "value": 1500 },
     { "source": "Electricity Grid", "target": "Urban Heat Recovery", "value": 200 },
 
-    { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 50 },
-    { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 50 },
+    { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 1500 },
+    { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 1500 },
     { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
 
     { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 10 },
