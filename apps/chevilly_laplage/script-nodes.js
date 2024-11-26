@@ -39,19 +39,16 @@ d3.json("data.json").then((data) => {
     .domain(d3.extent(data.links, (d) => d.value))
     .range([1, 10]);
 
-  // Add gradients for links
-  const defs = svg.append("defs");
+  // Add gradients for links (unique to Node script)
+  const nodeDefs = svg.append("defs");
   data.links.forEach((link, i) => {
-    const gradientId = `gradient-${i}`;
-    const gradient = defs
+    const gradientId = `node-gradient-${i}`; // Unique gradient ID
+    const gradient = nodeDefs
       .append("linearGradient")
       .attr("id", gradientId)
-      .attr("gradientUnits", "userSpaceOnUse")
-      .attr("x1", data.nodes.find((n) => n.id === link.source).x || 0)
-      .attr("y1", data.nodes.find((n) => n.id === link.source).y || 0)
-      .attr("x2", data.nodes.find((n) => n.id === link.target).x || 0)
-      .attr("y2", data.nodes.find((n) => n.id === link.target).y || 0);
+      .attr("gradientUnits", "userSpaceOnUse");
 
+    // Gradient stops based on source and target node colors
     gradient
       .append("stop")
       .attr("offset", "0%")
@@ -87,7 +84,7 @@ d3.json("data.json").then((data) => {
     .data(data.links)
     .join("line")
     .attr("class", "link-line")
-    .attr("stroke", (d) => `url(#${d.gradientId})`) // Use gradient links
+    .attr("stroke", (d) => `url(#${d.gradientId})`) // Use unique gradient links
     .attr("stroke-width", (d) => linkWidthScale(d.value));
 
   // Draw nodes
@@ -145,7 +142,7 @@ d3.json("data.json").then((data) => {
 
     // Update gradient positions dynamically
     data.links.forEach((link) => {
-      const gradient = defs.select(`#${link.gradientId}`);
+      const gradient = nodeDefs.select(`#${link.gradientId}`);
       gradient
         .attr("x1", link.source.x)
         .attr("y1", link.source.y)
