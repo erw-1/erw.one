@@ -17,15 +17,15 @@ d3.json("data.json").then((originalData) => {
     value: link.value,
   }));
 
-  const containerWidth = window.innerWidth * 0.9; // Scale to fit window
-  const containerHeight = window.innerHeight * 0.8; // Scale to fit window
+  const width = window.innerWidth;
+  const height = window.innerHeight - 40; // Account for tab height
 
   const svg = d3
     .select("#sankey-container")
     .append("svg")
-    .attr("width", containerWidth)
-    .attr("height", containerHeight)
-    .attr("viewBox", [0, 0, containerWidth, containerHeight])
+    .attr("width", width)
+    .attr("height", height)
+    .attr("viewBox", [0, 0, width, height])
     .attr("style", "max-width: 100%; height: auto; font: 10px sans-serif;");
 
   const sankey = d3
@@ -35,8 +35,8 @@ d3.json("data.json").then((originalData) => {
     .nodeWidth(15)
     .nodePadding(10)
     .extent([
-      [1, 5],
-      [containerWidth - 1, containerHeight - 5],
+      [30, 5], // Add 30px left padding
+      [width - 1, height - 5],
     ]);
 
   const { nodes: sankeyNodes, links: sankeyLinks } = sankey({
@@ -101,25 +101,24 @@ d3.json("data.json").then((originalData) => {
     .selectAll("text")
     .data(sankeyNodes)
     .join("text")
-    .attr("x", (d) => (d.x0 < containerWidth / 2 ? d.x1 + 6 : d.x0 - 6))
+    .attr("x", (d) => (d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6))
     .attr("y", (d) => (d.y0 + d.y1) / 2)
     .attr("dy", "0.35em")
-    .attr("text-anchor", (d) => (d.x0 < containerWidth / 2 ? "start" : "end"))
+    .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
     .text((d) => d.name)
     .each(function (d) {
       const bbox = this.getBBox();
-      if (d.y0 + bbox.height > containerHeight) {
-        d3.select(this).attr("y", containerHeight - bbox.height - 5); // Adjust text to prevent cut-off
+      if (d.y0 + bbox.height > height) {
+        d3.select(this).attr("y", height - bbox.height - 5); // Prevent cut-off
       }
     });
 
-  // Reuse the legend logic from the nodes script
-  createLegend(svg, originalData.groups, containerHeight);
+  createLegend(svg, originalData.groups, height);
 
   function createLegend(svg, groups, height) {
     const legend = svg
       .append("g")
-      .attr("transform", `translate(20, ${height - 150})`);
+      .attr("transform", `translate(30, ${height - 150})`); // Ensure padding from the Sankey
 
     legend
       .selectAll("rect")
@@ -143,10 +142,15 @@ d3.json("data.json").then((originalData) => {
       .style("text-anchor", "start");
   }
 
-  // Handle window resize
   window.addEventListener("resize", () => {
-    const newWidth = window.innerWidth * 0.9;
-    const newHeight = window.innerHeight * 0.8;
+    const newWidth = window.innerWidth;
+    const newHeight = window.innerHeight - 40;
+
     svg.attr("width", newWidth).attr("height", newHeight);
+
+    sankey.extent([
+      [30, 5], // Maintain padding
+      [newWidth - 1, newHeight - 5],
+    ]);
   });
 });
