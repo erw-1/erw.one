@@ -1,6 +1,5 @@
 // script-sankey.js
 d3.json("data.json").then((data) => {
-  // Validate data
   if (!data.nodes || !data.links || !data.groups) {
     console.error(
       "JSON structure invalid: Ensure 'nodes', 'links', and 'groups' are defined."
@@ -8,14 +7,13 @@ d3.json("data.json").then((data) => {
     return;
   }
 
-  // Extract configuration
   const groupColors = {};
   data.groups.forEach((group) => {
     groupColors[group.name] = group.color;
   });
 
   const width = window.innerWidth;
-  const height = window.innerHeight - 40; // Adjust for tab height
+  const height = window.innerHeight - 40;
 
   const svg = d3
     .select("#sankey-container")
@@ -23,7 +21,7 @@ d3.json("data.json").then((data) => {
     .attr("width", width)
     .attr("height", height)
     .attr("viewBox", [0, 0, width, height])
-    .style("font", "10px sans-serif");
+    .attr("class", "sankey-diagram-svg"); // Add CSS class
 
   const sankey = d3
     .sankey()
@@ -32,7 +30,7 @@ d3.json("data.json").then((data) => {
     .nodeWidth(15)
     .nodePadding(10)
     .extent([
-      [30, 5], // Add padding
+      [30, 5],
       [width - 1, height - 5],
     ]);
 
@@ -52,7 +50,6 @@ d3.json("data.json").then((data) => {
 
   const defs = svg.append("defs");
 
-  // Create gradient for each link
   sankeyData.links.forEach((link, i) => {
     const gradientId = `gradient-${i}`;
     const gradient = defs
@@ -80,25 +77,26 @@ d3.json("data.json").then((data) => {
   // Draw nodes
   svg
     .append("g")
+    .attr("class", "sankey-node-group") // Add CSS class
     .selectAll("rect")
     .data(sankeyData.nodes)
     .join("rect")
+    .attr("class", "sankey-node") // Add CSS class
     .attr("x", (d) => d.x0)
     .attr("y", (d) => d.y0)
     .attr("height", (d) => d.y1 - d.y0)
     .attr("width", (d) => d.x1 - d.x0)
-    .attr("fill", (d) => d.color)
     .append("title")
     .text((d) => `${d.name}\n${d3.format(",.0f")(d.value)} GWh/year`);
 
   // Draw links
   svg
     .append("g")
-    .attr("fill", "none")
-    .attr("stroke-opacity", 0.5)
+    .attr("class", "sankey-link-group") // Add CSS class
     .selectAll("path")
     .data(sankeyData.links)
     .join("path")
+    .attr("class", "sankey-link") // Add CSS class
     .attr("d", d3.sankeyLinkHorizontal())
     .attr("stroke", (d) => `url(#${d.gradientId})`)
     .attr("stroke-width", (d) => Math.max(1, d.width))
@@ -108,19 +106,19 @@ d3.json("data.json").then((data) => {
   // Add labels
   svg
     .append("g")
+    .attr("class", "sankey-label-group") // Add CSS class
     .selectAll("text")
     .data(sankeyData.nodes)
     .join("text")
+    .attr("class", "sankey-label") // Add CSS class
     .attr("x", (d) => (d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6))
     .attr("y", (d) => (d.y0 + d.y1) / 2)
     .attr("dy", "0.35em")
     .attr("text-anchor", (d) => (d.x0 < width / 2 ? "start" : "end"))
     .text((d) => d.name);
 
-  // Add legend
   createLegend(svg, data.groups, height);
 
-  // Functions
   function createLegend(svg, groups, height) {
     const legend = svg
       .append("g")
@@ -130,6 +128,7 @@ d3.json("data.json").then((data) => {
       .selectAll("rect")
       .data(groups)
       .join("rect")
+      .attr("class", "legend-rect") // Add CSS class
       .attr("x", 0)
       .attr("y", (d, i) => i * 20)
       .attr("width", 15)
@@ -140,13 +139,12 @@ d3.json("data.json").then((data) => {
       .selectAll("text")
       .data(groups)
       .join("text")
+      .attr("class", "legend-text") // Add CSS class
       .attr("x", 20)
       .attr("y", (d, i) => i * 20 + 12)
-      .text((d) => d.name)
-      .style("font-size", "12px");
+      .text((d) => d.name);
   }
 
-  // Handle resize
   window.addEventListener("resize", () => {
     const newWidth = window.innerWidth;
     const newHeight = window.innerHeight - 40;
