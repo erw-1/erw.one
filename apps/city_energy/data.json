@@ -25,9 +25,9 @@
     { "id": "Marine Hydrokinetic Turbines", "group": "Water", "value": 400 },
     { "id": "Wave Energy Converters", "group": "Water", "value": 800 },
 
-    { "id": "Methanisation Plants", "group": "Waste", "value": 2400 }, // 1600 to elec, 800 to heat
+    { "id": "Methanisation Plants", "group": "Waste", "value": 2400 },
 
-    { "id": "Electricity Grid", "group": "Electricity", "value": 3000 }, // 1500 to heating
+    { "id": "Electricity Grid", "group": "Electricity", "value": 3000 },
 
     { "id": "Urban Heat Recovery", "group": "Heat", "value": 200 }, 
 
