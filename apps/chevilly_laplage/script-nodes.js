@@ -48,7 +48,6 @@ d3.json("data.json").then((data) => {
       .attr("id", gradientId)
       .attr("gradientUnits", "userSpaceOnUse");
 
-    // Gradient stops based on source and target node colors
     gradient
       .append("stop")
       .attr("offset", "0%")
@@ -72,9 +71,17 @@ d3.json("data.json").then((data) => {
         .id((d) => d.id)
         .distance(150)
     )
-    .force("charge", d3.forceManyBody().strength(-300))
+    .force("charge", d3.forceManyBody().strength(-600)) // Increase repulsion to spread out nodes
     .force("center", d3.forceCenter(width / 2, height / 2))
-    .force("collision", d3.forceCollide().radius((d) => nodeSizeScale(d.value) + getTextWidth(d))) // Account for node size and text
+    .force("collision", d3.forceCollide().radius((d) => nodeSizeScale(d.value) + getTextWidth(d)))
+    .force(
+      "x",
+      d3.forceX((d) => (d.group === "Electricity" ? width / 2 : Math.random() * width))
+    ) // Radial spread by X-axis
+    .force(
+      "y",
+      d3.forceY((d) => (d.group === "Electricity" ? height / 2 : Math.random() * height))
+    ) // Radial spread by Y-axis
     .on("tick", ticked);
 
   // Helper function to calculate text width
