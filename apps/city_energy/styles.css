@@ -1,95 +1,48 @@
-/* Import Poppins font */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City Energy Mix Visualization</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12"></script>
+</head>
+<body>
+  <!-- Tab buttons -->
+  <div class="tab">
+    <button class="tablinks active" onclick="switchTab(event, 'Nodes')">Node Visualization</button>
+    <button class="tablinks" onclick="switchTab(event, 'Sankey')">Sankey Diagram</button>
+  </div>
 
-/* Apply global styles */
-body {
-  margin: 0;
-  font-family: 'Poppins', sans-serif;
-  overflow: hidden; /* Prevent scrollbars */
-  background-color: #f9f9f9; /* Optional background */
-}
+  <!-- Tab content for Nodes -->
+  <div id="Nodes" class="tab-content active">
+    <div id="nodes-container">
+      <div id="tooltip" class="tooltip"></div>
+      <script src="script-nodes.js" defer></script>
+    </div>
+  </div>
 
-svg {
-  display: block; /* Remove extra spacing */
-  width: 100vw; /* Full screen width */
-  height: 100vh; /* Full screen height */
-}
+  <!-- Tab content for Sankey -->
+  <div id="Sankey" class="tab-content">
+    <div id="sankey-container"></div>
+    <script src="script-sankey.js" defer></script>
+  </div>
 
-text {
-  font-weight: bold;
-  fill: #000; /* Black text */
-  text-anchor: middle; /* Center text horizontally */
-  pointer-events: none; /* Prevent interference with dragging */
-}
+  <script>
+    function switchTab(evt, tabName) {
+      // Hide all tab contents
+      const contents = document.querySelectorAll('.tab-content');
+      contents.forEach(content => content.classList.remove('active'));
 
-.tooltip {
-  position: absolute;
-  background-color: #fff;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  font-size: 12px;
-  font-family: 'Poppins', sans-serif;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  visibility: hidden;
-  z-index: 10;
-}
+      // Remove "active" class from all buttons
+      const buttons = document.querySelectorAll('.tab button');
+      buttons.forEach(button => button.classList.remove('active'));
 
-/* Legend rectangles */
-.legend-rect {
-  stroke: none; /* No border */
-}
-
-/* Legend text */
-.legend-text {
-  font-size: 12px;
-  font-family: 'Poppins', sans-serif;
-  fill: #000; /* Text color */
-  text-anchor: start; /* Align text to the left */
-}
-
-.tab {
-  position: fixed; /* Float tabs above content */
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 100; /* Ensure tabs stay on top */
-  display: flex;
-  background-color: #f1f1f1;
-  border-bottom: 1px solid #ccc;
-}
-
-.tab button {
-  background-color: inherit;
-  border: none;
-  cursor: pointer;
-  padding: 14px 16px;
-  transition: 0.3s;
-  font-size: 16px;
-  flex: 1;
-}
-
-.tab button:hover {
-  background-color: #ddd;
-}
-
-.tab button.active {
-  background-color: #ccc;
-}
-
-.tab-content {
-  display: none; /* Hide content by default */
-  width: 100%;
-  height: calc(100% - 50px); /* Adjust for tab height */
-  position: absolute;
-  top: 50px; /* Leave space for tabs */
-}
-
-.tab-content.active {
-  display: block; /* Show active content */
-}
-
-#sankey-container, #nodes-container {
-  width: 100%;
-  height: 100%;
-}
+      // Show the selected tab and mark the button as active
+      document.getElementById(tabName).classList.add('active');
+      evt.currentTarget.classList.add('active');
+    }
+  </script>
+</body>
+</html>
