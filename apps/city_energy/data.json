@@ -9,43 +9,72 @@
     { "name": "Central", "color": "#FFC0CB" }
   ],
   "nodes": [
-    { "id": "Chevilly-la-Plage's Energetic Mix", "group": "Central", "value": 2200 },
-    { "id": "Solar Panels", "group": "Sun", "value": 875 },
+
+    { "id": "Sun", "group": "Sun", "value": 875 },
+    { "id": "Wind", "group": "Wind and water", "value": 875 },
+    { "id": "Sea", "group": "Wind and water", "value": 875 },
+    { "id": "Solar Panels", "group": "Sun", "value": 875 }, 
     { "id": "Thermophotovoltaics", "group": "Sun", "value": 100 },
     { "id": "Wind Turbines", "group": "Wind and water", "value": 500 },
     { "id": "Marine Hydrokinetic Turbines", "group": "Wind and water", "value": 75 },
     { "id": "Wave Energy Converters", "group": "Wind and water", "value": 50 },
-    { "id": "Methanisation Plants", "group": "Waste", "value": 1200 },
+
     { "id": "Urban Organic Waste", "group": "Waste", "value": 500 },
     { "id": "Sewage", "group": "Waste", "value": 400 },
     { "id": "Agricultural Organic Waste", "group": "Waste", "value": 300 },
-    { "id": "District Heating Network", "group": "Heat", "value": 750 },
-    { "id": "Urban Heat Recovery", "group": "Heat", "value": 200 },
-    { "id": "Thermal Energy Storage", "group": "Heat", "value": 150 },
+    { "id": "Methanisation Plants", "group": "Waste", "value": 1200 },
     { "id": "Electricity Grid", "group": "Electricity", "value": 1600 },
+
+    { "id": "Urban Heat Recovery", "group": "Heat", "value": 200 }, 
+    { "id": "Thermal Energy Storage", "group": "Heat", "value": 150 },
+
     { "id": "Gravitational Storage", "group": "Backup", "value": 100 },
     { "id": "Power2Gas", "group": "Backup", "value": 200 },
     { "id": "Small Nuclear Plant (SMR)", "group": "Backup", "value": 50 },
-    { "id": "Backup and Energy Storage", "group": "Backup", "value": 350 }
+
+    { "id": "Heating Network", "group": "Heat", "value": 750 },
+    { "id": "Backup and Energy Storage", "group": "Backup", "value": 350 },
+
+    { "id": "Chevilly-la-Plage's Energetic Mix", "group": "Central", "value": 2200 }
+
   ],
   "links": [
-    { "source": "Electricity Grid", "target": "Chevilly-la-Plage's Energetic Mix", "value": 1600 },
-    { "source": "District Heating Network", "target": "Chevilly-la-Plage's Energetic Mix", "value": 600 },
-    { "source": "Solar Panels", "target": "Electricity Grid", "value": 875 },
-    { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 200 },
+    { "source": "Sun", "target": "Solar Panels", "value": 875 },
+    { "source": "Sun", "target": "Thermophotovoltaics", "value": 875 },
+
+    { "source": "Wind", "target": "Wind Turbines", "value": 875 },
+
+    { "source": "Sea", "target": "Marine Hydrokinetic Turbines", "value": 875 },
+    { "source": "Sea", "target": "Wave Energy Converters", "value": 875 },
+
+    { "source": "Urban Organic Waste", "target": "Methanisation Plants", "value": 500 },
+    { "source": "Sewage", "target": "Methanisation Plants", "value": 400 },
+    { "source": "Agricultural Organic Waste", "target": "Methanisation Plants", "value": 300 },
+
     { "source": "Small Nuclear Plant (SMR)", "target": "Backup and Energy Storage", "value": 50 },
-    { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 250 },
+    
+    { "source": "Solar Panels", "target": "Electricity Grid", "value": 875 },
     { "source": "Thermophotovoltaics", "target": "Electricity Grid", "value": 100 },
     { "source": "Wind Turbines", "target": "Electricity Grid", "value": 500 },
     { "source": "Marine Hydrokinetic Turbines", "target": "Electricity Grid", "value": 75 },
     { "source": "Wave Energy Converters", "target": "Electricity Grid", "value": 50 },
-    { "source": "Urban Organic Waste", "target": "Methanisation Plants", "value": 500 },
-    { "source": "Sewage", "target": "Methanisation Plants", "value": 400 },
-    { "source": "Agricultural Organic Waste", "target": "Methanisation Plants", "value": 300 },
-    { "source": "Methanisation Plants", "target": "District Heating Network", "value": 400 },
+
+    { "source": "Methanisation Plants", "target": "Heating Network", "value": 400 },
     { "source": "Methanisation Plants", "target": "Electricity Grid", "value": 600 },
-    { "source": "Urban Heat Recovery", "target": "District Heating Network", "value": 200 },
-    { "source": "Thermal Energy Storage", "target": "District Heating Network", "value": 150 },
-    { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 100 }
+
+    { "source": "Electricity Grid", "target": "Power2Gas", "value": 1600 },
+    { "source": "Electricity Grid", "target": "Gravitational Storage", "value": 1600 },
+    { "source": "Electricity Grid", "target": "Heating Network", "value": 1600 },
+    { "source": "Electricity Grid", "target": "Urban Heat Recovery", "value": 1600 },
+
+    { "source": "Power2Gas", "target": "Backup and Energy Storage", "value": 200 },
+    { "source": "Gravitational Storage", "target": "Backup and Energy Storage", "value": 100 },
+
+    { "source": "Urban Heat Recovery", "target": "Heating Network", "value": 200 },
+    { "source": "Thermal Energy Storage", "target": "Heating Network", "value": 150 },
+
+    { "source": "Backup and Energy Storage", "target": "Electricity Grid", "value": 250 },
+    { "source": "Electricity Grid", "target": "Chevilly-la-Plage's Energetic Mix", "value": 1600 },
+    { "source": "Heating Network", "target": "Chevilly-la-Plage's Energetic Mix", "value": 600 }
   ]
 }
