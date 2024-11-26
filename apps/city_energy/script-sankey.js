@@ -17,8 +17,18 @@ d3.json("data.json").then((originalData) => {
     value: link.value,
   }));
 
-  const width = 800; // Adjust width for scaling
-  const height = 500; // Adjust height for scaling
+  const width = window.innerWidth * 0.8;
+  const height = window.innerHeight * 0.8;
+  
+  window.addEventListener("resize", () => {
+    const width = window.innerWidth * 0.8;
+    const height = window.innerHeight * 0.8;
+
+    svg
+      .attr("width", width)
+      .attr("height", height)
+      .attr("viewBox", `0 0 ${width} ${height}`);
+  });
 
   const svg = d3
     .select("#sankey-container")
