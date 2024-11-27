@@ -10,17 +10,17 @@
     { "name": "Central", "color": "#FFC0CB" }
   ],
   "nodes": [
-
+    { "id": "Winds", "group": "Wind", "value": 500 },
     { "id": "Sun", "group": "Sun", "value": 1000 },
     { "id": "Sea", "group": "Water", "value": 1200 },
-    { "id": "Winds", "group": "Wind", "value": 500 },
 
+    { "id": "Wind Turbines", "group": "Wind", "value": 500 },
 
     { "id": "Solar Panels", "group": "Sun", "value": 800 }, 
     { "id": "Thermophotovoltaics", "group": "Sun", "value": 200 },
+
     { "id": "Marine Hydrokinetic Turbines", "group": "Water", "value": 400 },
     { "id": "Wave Energy Converters", "group": "Water", "value": 800 },
-    { "id": "Wind Turbines", "group": "Wind", "value": 500 },
 
     { "id": "Urban Organic Waste", "group": "Waste", "value": 800 },
     { "id": "Sewage", "group": "Waste", "value": 600 },
