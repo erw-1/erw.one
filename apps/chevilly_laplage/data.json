@@ -26,7 +26,7 @@
     { "id": "Sewage", "group": "Waste", "value": 600 },
     { "id": "Agricultural Organic Waste", "group": "Waste", "value": 1000 },
 
-    { "id": "Methanisation Plants", "group": "Waste", "value": 2400 },
+    { "id": "Methanation Plants", "group": "Waste", "value": 2400 },
 
     { "id": "Electricity Grid", "group": "Electricity", "value": 3000 },
 
@@ -39,7 +39,7 @@
     { "id": "Heating Network", "group": "Heat", "value": 2500 },
     { "id": "Backup and Energy Storage", "group": "Backup", "value": 150 },
 
-    { "id": "Chevilly-la-Plage's Energetic Mix", "group": "Central", "value": 4000 }
+    { "id": "Chevilly-Laplage's Energetic Mix", "group": "Central", "value": 4000 }
 
   ],
   "links": [
@@ -75,7 +75,7 @@
     { "source": "Backup and Energy Storage", "target": "Heating Network", "value": 10 },
     { "source": "Urban Heat Recovery", "target": "Heating Network", "value": 200 },
 
-    { "source": "Electricity Grid", "target": "Chevilly-la-Plage's Energetic Mix", "value": 1500 },
-    { "source": "Heating Network", "target": "Chevilly-la-Plage's Energetic Mix", "value": 2500 }
+    { "source": "Electricity Grid", "target": "Chevilly-Laplage's Energetic Mix", "value": 1500 },
+    { "source": "Heating Network", "target": "Chevilly-Laplage's Energetic Mix", "value": 2500 }
   ]
 }
