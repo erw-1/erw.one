@@ -57,12 +57,12 @@
     { "source": "Marine Hydrokinetic Turbines", "target": "Electricity Grid", "value": 400 },
     { "source": "Wave Energy Converters", "target": "Electricity Grid", "value": 800 },
     
-    { "source": "Urban Organic Waste", "target": "Methanisation Plants", "value": 800 },
-    { "source": "Sewage", "target": "Methanisation Plants", "value": 600 },
-    { "source": "Agricultural Organic Waste", "target": "Methanisation Plants", "value": 1000 },
+    { "source": "Urban Organic Waste", "target": "Methanation Plants", "value": 800 },
+    { "source": "Sewage", "target": "Methanation Plants", "value": 600 },
+    { "source": "Agricultural Organic Waste", "target": "Methanation Plants", "value": 1000 },
 
-    { "source": "Methanisation Plants", "target": "Heating Network", "value": 800 },
-    { "source": "Methanisation Plants", "target": "Electricity Grid", "value": 1400 },
+    { "source": "Methanation Plants", "target": "Heating Network", "value": 800 },
+    { "source": "Methanation Plants", "target": "Electricity Grid", "value": 1400 },
 
     { "source": "Electricity Grid", "target": "Heating Network", "value": 1500 },
     { "source": "Electricity Grid", "target": "Urban Heat Recovery", "value": 200 },
