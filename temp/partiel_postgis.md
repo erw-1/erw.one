@@ -287,8 +287,10 @@ on ST_Intersects(equip.geom, a15.buffer)
 where equip.typequ = 'B316';
 ```
 
-&nbsp;
+#### Screenshot du schéma **bpe** :
+![screen demandé](screen.png)
 
+&nbsp;
 
 ## Question bonus :
 
