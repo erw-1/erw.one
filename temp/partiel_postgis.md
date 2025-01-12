@@ -324,6 +324,7 @@ where geom_col.type = 'MULTIPOINT' and c.table_schema = 'bdtopo95';
 | 16 | toponymie_services_et_activites   |
 | 17 | toponymie_transport               |
 | 18 | toponymie_zones_reglementees      |
+
 &nbsp;
 
 Fin.
