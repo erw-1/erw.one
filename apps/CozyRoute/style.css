@@ -118,7 +118,7 @@ html, body {
 }
 
 #questionnaire {
-  max-width: 400px;
+  max-width: 70dvh;
   margin: 20px auto;
   padding: 20px;
   background-color: rgba(255,255,255,0.9);
@@ -133,7 +133,10 @@ html, body {
 }
 
 .question-group {
-  margin-bottom: 15px;
+  padding: 10px;
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
 }
 .question-group label {
   display: block; margin-bottom: 5px;
