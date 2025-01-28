@@ -7,11 +7,17 @@
   <!-- Import Leaflet CSS (sans integrity/crossorigin) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
-  <!-- Import Chart.js (optionnel, si tu veux un radar chart) -->
+  <!-- Import Chart.js (pour le radar) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
-  <!-- Ton fichier CSS principal -->
-  <link rel="stylesheet" href="style.css">
+
+  <!-- Police Poppins (exemple Material) -->
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap"
+  />
+
+  <!-- Feuille de style personnalisée -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- Header flottant -->
@@ -68,7 +74,7 @@
           />
         </div>
 
-        <!-- Thèmes restants (claustrophobie, agoraphobie, pollution, bruit, eclairage, handicap, trafic_routier) -->
+        <!-- Thèmes restants : claustrophobie, agoraphobie, pollution, bruit, eclairage, handicap, trafic_routier -->
         <div class="question-group" id="claustrophobie-input">
           <label for="claustrophobie-range">
             Claustrophobie :
@@ -210,8 +216,9 @@
   <!-- La carte Leaflet -->
   <div id="map"></div>
 
-  <!-- Import Leaflet (sans integrity/crossorigin) -->
+  <!-- Import Leaflet JS (sans integrity/crossorigin) -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <!-- Script principal -->
   <script src="script.js"></script>
 </body>
