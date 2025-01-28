@@ -94,34 +94,45 @@ window.addEventListener("load", () => {
 /***********************************************
  * 2) initMap(): Création de la carte + chargement GeoJSON
  ***********************************************/
-function initMap() {
-  map = L.map("map", {
-    zoomControl: true,
-    attributionControl: false
-  }).setView([49.0389, 2.0760], 13);
+window.addEventListener("load", () => {
+  initMap();
+});
 
-  // Chargement du cozyroute.geojson
+// Crée la carte, charge le GeoJSON, assigne les "baseClass"
+function initMap() {
+  map = L.map("map").setView([49.0389, 2.0760], 13);
+
   fetch("cozyroute.geojson")
     .then((resp) => resp.json())
     .then((geojsonData) => {
-      console.log("GeoJSON chargé, nombre de features =", geojsonData.features?.length || 0);
-
-      // On stocke la couche dans cozyRouteLayer
+      // On crée la couche
       cozyRouteLayer = L.geoJSON(geojsonData, {
-        style: () => ({
-          color: "#FFFFFF",  // Trait blanc par défaut
-          weight: 3
-        })
+        // Première étape : sur chaque feature, on construit la "baseClass"
+        onEachFeature: (feature, layer) => {
+          // Ex: "odorat-4 pollution-2 marchabilite-1"
+          let baseClass = "";
+          themes.forEach((t) => {
+            const val = feature.properties[t] || 0;
+            if (val > 0) {
+              baseClass += `${t}-${val} `;
+            }
+          });
+          // On stocke ça dans feature.properties pour le réutiliser ensuite
+          feature.properties._baseClass = baseClass.trim();
+        },
+        style: {
+          // Style de base
+          color: "#FFFFFF",
+          weight: 3,
+          className: "intensity-0" 
+          // On pourra remplacer "intensity-0" par d'autres intensités plus tard
+        }
       }).addTo(map);
 
+      // Centrage
       map.fitBounds(cozyRouteLayer.getBounds());
     })
-    .catch((err) => console.error("Erreur chargement cozyroute.geojson :", err));
-
-  // Sur clic carte => pose de marqueurs
-  map.on("click", (e) => {
-    handleMapClick(e.latlng);
-  });
+    .catch((err) => console.error("Erreur geojson :", err));
 }
 
 /***********************************************
@@ -351,60 +362,45 @@ function updateRadarChart() {
 }
 
 /***********************************************
- * 9) updateQuestionValue(): sliders => userData => bloom
+ * 9) Mise à jour d'un slider (questionnaire)
  ***********************************************/
 function updateQuestionValue(theme, value) {
-  // Màj userData
   userData[theme] = parseInt(value, 10);
-  document.getElementById(`${theme}-value`).textContent = value;
-
-  // Màj radar chart
-  updateRadarChart();
-
-  // Màj style bloom
+  document.getElementById(theme + "-value").textContent = value;
   updateRoadStyle();
 }
 
 /***********************************************
- * 10) Bloom: assigner .odorat-3.intensity-60, etc.
+ * updateRoadStyle() : on parcourt les Features,
+ * on combine ._baseClass + intensités
  ***********************************************/
 function updateRoadStyle() {
-  if (!cozyRouteLayer) {
-    console.log("Pas encore de cosyRouteLayer");
-    return;
-  }
+  if (!cozyRouteLayer) return;
 
-  // On applique setStyle sur chaque feature
-  cozyRouteLayer.setStyle((feature) => {
-    if (!feature.properties) {
-      // Aucune propriété => trait blanc
-      return { color: "#FFFFFF", weight: 3 };
-    }
+  cozyRouteLayer.eachLayer((layer) => {
+    const feat = layer.feature;
+    if (!feat || !feat.properties) return;
 
-    let className = "";
-    // On calcule l'intensité pour chaque thème
+    // Récupère la "baseClass" (ex: "odorat-4 pollution-2")
+    let finalClass = feat.properties._baseClass || "";
+
+    // Pour chaque thème, calcule l'intensité : routeValue * userValue * 4
     themes.forEach((t) => {
-      const routeValue = feature.properties[t] || 0;
-      const userValue = userData[t] || 0;
-      // intensité = routeValue * userValue * 4
-      const intensity = routeValue * userValue * 4;
-      const intensityClamped = Math.min(intensity, 100);
+      const routeVal = feat.properties[t] || 0;
+      const userVal = userData[t] || 0;
+      const intensity = routeVal * userVal * 4;
+      const iClamp = Math.min(intensity, 100);
 
-      // Ex: si routeValue=5, userValue=5 => intensity=100
-      if (routeValue > 0) {
-        className += `${t}-${routeValue} intensity-${intensityClamped} `;
-      }
+      // Ajoute une classe ex: "odorat-intensity-40"
+      finalClass += " " + t + "-intensity-" + iClamp;
     });
 
-    const finalClass = className.trim();
-    // Log pour debug
-    // console.log("Feature ID=?, classe =", finalClass);
-
-    return {
+    // Applique le style via setStyle
+    layer.setStyle({
       color: "#FFFFFF",
       weight: 3,
-      className: finalClass // applique ex: "odorat-3 intensity-60"
-    };
+      className: finalClass.trim()
+    });
   });
 }
 
