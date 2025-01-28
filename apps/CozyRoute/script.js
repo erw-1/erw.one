@@ -106,7 +106,7 @@ function initMap() {
           return {
             color: "#FFFFFF",   // trait blanc
             weight: 3,          // épaisseur 3
-            className: geojsonClass  // ex: "handicap-2"
+            className: `${geojsonClass} -intensity-0`
           };
         }
       }).addTo(map);
