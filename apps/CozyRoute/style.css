@@ -54,20 +54,49 @@ html, body {
 #header-left h1 { margin-left: 10px; font-weight: 700; }
 #header-right { display: flex; align-items: center; }
 
+/* Le champ de recherche */
 #search-input {
-  padding: 5px 10px;
+  width: 200px; /* Ajuste selon la largeur souhaitée */
+  padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-#search-button {
-  margin-left: 10px;
-  padding: 6px 12px;
-  background-color: #1976D2;
-  color: white;
-  border: none;
-  border-radius: 4px;
+
+/* Le conteneur de la liste des suggestions */
+#autocomplete-results {
+  position: absolute;      /* Pour qu’il se superpose en dessous de l’input */
+  background: #fff;        /* Fond blanc */
+  border: 1px solid #ccc;  /* Petite bordure grise */
+  list-style: none;         /* Retire les puces par défaut */
+  margin: 0;
+  padding: 0;
+  width: 200px;            /* Même largeur que l’input */
+  z-index: 999;            /* Passe par-dessus */
+  
+  /* (Optionnel) Limiter la hauteur + scroll */
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* Chaque suggestion */
+#autocomplete-results li {
+  padding: 8px;
+  border-bottom: 1px solid #eee; /* Séparation légère */
   cursor: pointer;
 }
+
+/* Petite puce avant le texte */
+#autocomplete-results li::before {
+  content: "• ";
+  margin-right: 5px;
+  color: #000;
+}
+
+/* Effet survol */
+#autocomplete-results li:hover {
+  background: #f0f0f0;
+}
+
 #burger-menu {
   font-size: 22px;
   background: none;
