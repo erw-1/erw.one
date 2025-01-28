@@ -1,24 +1,23 @@
 /***********************************************
  * script.js
  * ---------------------------------------------
- * Données : 
- *   feature.properties.class = "odorat-3" 
- *       => 1 thème + 1 valeur 
- *           (ex: "eclairage-2", "bruit-5", etc.)
- * 
- * Au chargement, on parse "odorat-3" en 
- *   => routeTheme = "odorat"
- *   => routeValue = 3
- * 
- * On affecte color=blanc + className=`odorat-3 intensity-0`
- * 
- * Ensuite, quand l'utilisateur bouge le slider "odorat",
- * on recalcule intensité = routeValue * userValue * 4
- * => si userValue=4, routeValue=3 => intensité=48 => clamp à 100
- * => "odorat-intensity-48"
- * 
- * => Au final, la classe = "odorat-3 odorat-intensity-48"
- * 
+ * Hypothèse :
+ *   - Chaque tronçon a un champ "class" dans son GeoJSON
+ *     ex: "odorat-3", "bruit-2", ...
+ *   - Au chargement, on applique directement cette classe
+ *     + "intensity-0" (ex: "odorat-3 intensity-0").
+ *   - Lorsqu'un slider (odorat, bruit, etc.) bouge, on veut
+ *     changer la partie "intensity-X" en "intensity-NouvelleValeur"
+ *     pour tous les tronçons ayant ce thème (ex: "odorat-").
+ *
+ *   => Le routeValue (par ex. 3) n'est plus parsing ni utilisé
+ *      pour calculer l'intensité. On applique l'intensité
+ *      simplement en fonction du *slider* userData[theme].
+ *
+ *   => On conserve le code existant pour le routing / geoloc / radar
+ *      si tu en as besoin, mais la mise à jour "bloom" devient
+ *      très simple : si un tronçon contient "odorat-", on remplace
+ *      "intensity-X" par "intensity-(userData.odorat)".
  ***********************************************/
 
 /***********************************************
@@ -96,22 +95,20 @@ function initMap() {
     .then((geojsonData) => {
       // 3) Afficher le GeoJSON
       cozyRouteLayer = L.geoJSON(geojsonData, {
-        // Pour chaque tronçon, on copie directement
-        // la valeur feature.properties.class (ex: "odorat-3")
-        // dans le style Leaflet
+        // Pour chaque tronçon, on lit directement
+        // feature.properties.class (ex: "odorat-3")
+        // et on l'accole avec "intensity-0" => ex: "odorat-3 intensity-0"
         style: (feature) => {
-          // Classe venue du GeoJSON
           const geojsonClass = feature.properties.class || "";
-          // Style de base + className
           return {
             color: "#FFFFFF",   // trait blanc
             weight: 3,          // épaisseur 3
-            className: `${geojsonClass} intensity-0`
+            className: `${geojsonClass} intensity-0`.trim()
           };
         }
       }).addTo(map);
 
-      // 4) Centrer la vue sur l'emprise de cozyrouteLayer
+      // 4) Centrer la vue sur l'emprise de cozyRouteLayer
       map.fitBounds(cozyRouteLayer.getBounds());
     })
     .catch((err) => {
@@ -337,14 +334,16 @@ function initDirectionsPanel() {
  * 7) Radar Chart (optionnel)
  ***********************************************/
 function initRadarChart() {
-  const ctx = document.getElementById("radarChart").getContext("2d");
+  const ctx = document.getElementById("radarChart");
+  if (!ctx) return; // si pas de radarChart
+
   radarChart = new Chart(ctx, {
     type: "radar",
     data: {
-      labels: themes.map(t => t.charAt(0).toUpperCase()+t.slice(1)),
+      labels: themes.map((t) => t.charAt(0).toUpperCase() + t.slice(1)),
       datasets: [{
         label: "Mon niveau de gêne",
-        data: themes.map(t => userData[t]),
+        data: themes.map((t) => userData[t]),
         backgroundColor: "rgba(103,58,183,0.2)",
         borderColor: "rgba(103,58,183,1)",
         borderWidth: 2
@@ -365,7 +364,7 @@ function initRadarChart() {
 
 function updateRadarChart() {
   if (!radarChart) return;
-  radarChart.data.datasets[0].data = themes.map(t => userData[t]);
+  radarChart.data.datasets[0].data = themes.map((t) => userData[t]);
   radarChart.update();
 }
 
@@ -382,59 +381,35 @@ function updateQuestionValue(theme, value) {
 
 /***********************************************
  * 9) updateRoadStyle() 
- *    => On parse le routeTheme & routeValue,
- *       on calcule intensité => .odorat-intensity-60
+ *    => On remplace "intensity-X" par "intensity-Y"
+ *       si la classe contient "theme-"
  ***********************************************/
 function updateRoadStyle() {
   if (!cozyRouteLayer) return;
 
-  cozyRouteLayer.eachLayer((layer) => {
-    const feat = layer.feature;
-    if (!feat || !feat.properties) return;
+  // Pour chaque thème, on applique la nouvelle intensité userData[theme]
+  for (const theme of themes) {
+    const userVal = userData[theme] || 0;
 
-    // Récupère la routeTheme, routeValue
-    const routeTheme = feat.properties._routeTheme || "";
-    const routeValue = feat.properties._routeValue || 0;
+    cozyRouteLayer.eachLayer((layer) => {
+      const cName = layer.options.className || "";
 
-    // Calcul intensité : routeValue * userData[routeTheme] * 4
-    // ex: "marchabilite" => userData.marchabilite = 4, routeValue=2 => 2*4*4=32
-    let intensityClass = "";
-    if (routeTheme && routeValue > 0) {
-      const userVal = userData[routeTheme] || 0;
-      const intensity = userVal * routeValue * 4;
-      const iClamp = Math.min(intensity, 100);
+      // Vérifie si cName contient "odorat-", "bruit-", etc.
+      if (cName.includes(theme + "-")) {
+        // On veut remplacer "intensity-<X>" par "intensity-userVal"
+        // ex: "odorat-3 intensity-0" => "odorat-3 intensity-4"
+        // => petite regex pour choper "intensity-.." 
+        //   ou "intensity-\d+" (si on veut supporter 2 chiffres).
+        let newClass = cName.replace(/intensity-\d+/, `intensity-${userVal}`);
 
-      // Ex: "odorat-intensity-60"
-      intensityClass = `${routeTheme}-intensity-${iClamp}`;
-    } else {
-      // S'il n'y a pas de thème ou routeValue=0 => intensité=0
-      intensityClass = `${routeTheme}-intensity-0`;
-    }
-
-    // La classe de base : "odorat-3" (déjà fixée)
-    // Au chargement initial, on l'avait dans layer.options.className, 
-    // mais Leaflet ne stocke pas forcément ça en dur. 
-    // On peut la relire via "layer.options.className" :
-    const baseClass = layer.options.className || "";
-
-    // On veut remplacer l'ancienne intensité ... => 
-    // +++ Simplicité : on met un "split" pour virer l'ancienne intensité, 
-    //    ou on reconstruit depuis "routeTheme-routeValue" 
-    //    si tu préfères la cohérence. 
-    //    Ici, on va faire plus simple et 
-    //    juste enjamber tout => "odorat-3 odorat-intensity-60"
-
-    // On peut parser baseClass si on veut vraiment, 
-    // ou alors on reconstruit depuis routeTheme-routeValue 
-    // (car on sait la routeValue).
-    const newClassName = `${routeTheme}-${routeValue} ${intensityClass}`.trim();
-
-    layer.setStyle({
-      color: "#FFFFFF",
-      weight: 3,
-      className: newClassName
+        layer.setStyle({
+          color: "#FFFFFF",
+          weight: 3,
+          className: newClass.trim()
+        });
+      }
     });
-  });
+  }
 }
 
 /***********************************************
