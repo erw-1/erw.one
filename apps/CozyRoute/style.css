@@ -1,14 +1,13 @@
-/* 
-  Style principal pour CozyRoute
-  Compatible avec l'HTML donné
-  Font : Poppins
+/* ==============================
+   Fichier: style.css
+   ============================== */
+
+/* Import facultatif si pas déjà dans <head>
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
 */
 
-/* Import de la police Poppins (si non déjà importée dans l'HTML) */
-/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'); */
-
 :root {
-  /* Variables de couleur par thème */
+  /* --- Variables de couleur par thème --- */
   --marchabilite-color: #8B4513;
   --claustrophobie-color: #9E9E9E;
   --odorat-color: #008000;
@@ -18,8 +17,8 @@
   --eclairage-color: #FFFF00;
   --handicap-color: #0066CC;
   --trafic_routier-color: #FF0000;
-  
-  /* Autres variables */
+
+  /* Autres variables existantes */
   --header-height: 60px;
   --overlay-bg: rgba(255, 255, 255, 0.7);
   --blur-level: 8px;
@@ -30,18 +29,21 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Poppins', sans-serif;
+  font-family: 'Poppins', sans-serif; /* Optionnel */
 }
 
+/* Corps / dimension */
 html, body {
   width: 100%;
   height: 100%;
-  background: #FFFFFF; /* Pas de fond de carte */
+  background: #FFFFFF; /* fond blanc */
   overflow: hidden;
   position: relative;
 }
 
-/* Header flottant */
+/* ==============================
+   Header (inchangé)
+   ============================== */
 #app-header {
   position: fixed;
   top: 0;
@@ -58,27 +60,15 @@ html, body {
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
-#header-left {
-  display: flex;
-  align-items: center;
-}
-
-#header-left h1 {
-  margin-left: 10px;
-  font-weight: 700;
-}
-
-#header-right {
-  display: flex;
-  align-items: center;
-}
+#header-left { display: flex; align-items: center; }
+#header-left h1 { margin-left: 10px; font-weight: 700; }
+#header-right { display: flex; align-items: center; }
 
 #search-input {
   padding: 5px 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
-
 #search-button {
   margin-left: 10px;
   padding: 6px 12px;
@@ -88,7 +78,6 @@ html, body {
   border-radius: 4px;
   cursor: pointer;
 }
-
 #burger-menu {
   font-size: 22px;
   background: none;
@@ -96,7 +85,9 @@ html, body {
   cursor: pointer;
 }
 
-/* Overlay Questionnaire */
+/* ==============================
+   Overlay questionnaire
+   ============================== */
 #questionnaire-overlay {
   position: fixed;
   top: var(--header-height);
@@ -110,15 +101,14 @@ html, body {
   transition: transform 0.4s ease;
 }
 
-/* Contenu du questionnaire */
 #questionnaire {
   max-width: 400px;
   margin: 20px auto;
   padding: 20px;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255,255,255,0.9);
   border-radius: 10px;
   backdrop-filter: blur(var(--blur-level));
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
 
 #questionnaire h2 {
@@ -126,21 +116,14 @@ html, body {
   margin-bottom: 10px;
 }
 
-.question-group {
-  margin-bottom: 15px;
-}
-
+.question-group { margin-bottom: 15px; }
 .question-group label {
-  display: block;
+  display: block; 
   margin-bottom: 5px;
   font-weight: 700;
 }
+.question-group input[type="range"] { width: 100%; }
 
-.question-group input[type="range"] {
-  width: 100%;
-}
-
-/* Bouton "Accéder à la carte" */
 #goto-map {
   display: inline-block;
   margin-top: 20px;
@@ -152,13 +135,15 @@ html, body {
   cursor: pointer;
 }
 
-/* Radar Chart */
+/* Radar chart */
 #radarChart {
   display: block;
   margin: 20px auto;
 }
 
-/* Container de la carte Leaflet */
+/* ==============================
+   Carte & panneau directions
+   ============================== */
 #map {
   position: absolute;
   top: var(--header-height);
@@ -168,7 +153,7 @@ html, body {
   z-index: 1;
 }
 
-/* Panneau de directions (à droite) */
+/* Panneau de directions (droite) */
 #directions-panel {
   position: absolute;
   top: var(--header-height);
@@ -201,29 +186,86 @@ html, body {
   margin-bottom: 10px;
   font-weight: 700;
 }
+#directions-steps { list-style: none; padding: 0; }
 
-/* Liste d'étapes */
-#directions-steps {
-  list-style: none;
-  padding: 0;
-}
-
-/* Transitions (fermé) pour le panneau */
+/* Panneau masqué */
 #directions-panel.hidden {
   transform: translateX(100%);
 }
 
-/* Transition du questionnaire (fermé) */
+/* ==============================
+   Transitions caché/visible
+   ============================== */
+
+/* Déplacement du questionnaire hors écran s'il est "hidden" */
 .hidden {
   transform: translateX(-100%);
 }
 
-/*
-  Styles de base pour la couche GeoJSON
-  (ou "taches" de bloom si tu définis des classes .intensity-XYZ)
-*/
+/* ==============================
+   Styles de base pour la couche GeoJSON
+   ============================== */
 .leaflet-interactive {
-  stroke: #000000;  /* Couleur de base si besoin */
+  stroke: #000; /* ligne noir par défaut */
   stroke-width: 2;
   fill: none;
+}
+
+/* ==============================
+   BLOOM ou "Halo" par classes
+   ============================== */
+/* 1) Couleurs par thème + routeValue */
+/* Exemple : .odorat-5 => stroke en vert (très odorat) */
+.odorat-1, .odorat-2, .odorat-3, .odorat-4, .odorat-5 {
+  stroke: var(--odorat-color) !important;
+}
+.claustrophobie-1, .claustrophobie-2, .claustrophobie-3, .claustrophobie-4, .claustrophobie-5 {
+  stroke: var(--claustrophobie-color) !important;
+}
+.marchabilite-1, .marchabilite-2, .marchabilite-3, .marchabilite-4, .marchabilite-5 {
+  stroke: var(--marchabilite-color) !important;
+}
+/* ... Idem pour tous les thèmes */
+.agoraphobie-1, .agoraphobie-2, .agoraphobie-3, .agoraphobie-4, .agoraphobie-5 {
+  stroke: var(--agoraphobie-color) !important;
+}
+.pollution-1, .pollution-2, .pollution-3, .pollution-4, .pollution-5 {
+  stroke: var(--pollution-color) !important;
+}
+.bruit-1, .bruit-2, .bruit-3, .bruit-4, .bruit-5 {
+  stroke: var(--bruit-color) !important;
+}
+.eclairage-1, .eclairage-2, .eclairage-3, .eclairage-4, .eclairage-5 {
+  stroke: var(--eclairage-color) !important;
+}
+.handicap-1, .handicap-2, .handicap-3, .handicap-4, .handicap-5 {
+  stroke: var(--handicap-color) !important;
+}
+.trafic_routier-1, .trafic_routier-2, .trafic_routier-3, .trafic_routier-4, .trafic_routier-5 {
+  stroke: var(--trafic_routier-color) !important;
+}
+
+/* 2) Intensité => halo (drop-shadow)
+   On utilise un "filter" CSS. 
+   L'idée : plus l'intensité est haute, plus on augmente l'effet du halo.
+   Adaptation possible selon ton design. 
+*/
+
+.intensity-0 {
+  filter: none;
+}
+.intensity-20 {
+  filter: drop-shadow(0 0 3px currentColor);
+}
+.intensity-40 {
+  filter: drop-shadow(0 0 6px currentColor);
+}
+.intensity-60 {
+  filter: drop-shadow(0 0 10px currentColor);
+}
+.intensity-80 {
+  filter: drop-shadow(0 0 14px currentColor);
+}
+.intensity-100 {
+  filter: drop-shadow(0 0 18px currentColor);
 }
