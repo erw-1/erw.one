@@ -1,8 +1,11 @@
 /***********************************************
- * Données et variables globales
+ * Variables et configuration globales
  ***********************************************/
 
-// Stockage des réponses utilisateur (0 à 5)
+// Clé d'API OpenRouteService
+const ORS_API_KEY = "5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d";
+
+// Données de questionnaire (exemple)
 let userData = {
   odorat: 0,
   marchabilite: 0,
@@ -15,7 +18,7 @@ let userData = {
   trafic_routier: 0
 };
 
-// Ordre des thèmes pour le radar Chart et le style
+// Ordre des thèmes
 const themes = [
   "odorat",
   "marchabilite",
@@ -28,98 +31,76 @@ const themes = [
   "trafic_routier"
 ];
 
-// Récupération des couleurs depuis le fichier CSS (variables :root)
-const themeColors = {
-  odorat: getComputedStyle(document.documentElement).getPropertyValue('--odorat-color'),
-  marchabilite: getComputedStyle(document.documentElement).getPropertyValue('--marchabilite-color'),
-  claustrophobie: getComputedStyle(document.documentElement).getPropertyValue('--claustrophobie-color'),
-  agoraphobie: getComputedStyle(document.documentElement).getPropertyValue('--agoraphobie-color'),
-  pollution: getComputedStyle(document.documentElement).getPropertyValue('--pollution-color'),
-  bruit: getComputedStyle(document.documentElement).getPropertyValue('--bruit-color'),
-  eclairage: getComputedStyle(document.documentElement).getPropertyValue('--eclairage-color'),
-  handicap: getComputedStyle(document.documentElement).getPropertyValue('--handicap-color'),
-  trafic_routier: getComputedStyle(document.documentElement).getPropertyValue('--trafic_routier-color')
-};
+// Carte Leaflet et couches
+let map = null;
+let cozyRouteLayer = null;  // Couche GeoJSON pour tes routes
+let routeLayer = null;      // Couche pour l'itinéraire ORS
 
-// Références Leaflet
-let map = null;               // Carte
-let cozyRouteLayer = null;    // Couche contenant le GeoJSON des routes
-let routeLayer = null;        // Couche contenant l’itinéraire OpenRouteService
-
-// Tableau des marqueurs posés par clic
+// Marqueurs placés par clic
 let clickMarkers = [];
 
-// Coordonnées de l’utilisateur (optionnel)
-let userLocation = null;  
-
-// Référence au radarChart (Chart.js)
-let radarChart = null;
-
-// Clé API OpenRouteService
-const ORS_API_KEY = "5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d";
+// Références pour le bloom (optionnel)
+let radarChart = null; // si tu utilises un chart radar, etc.
 
 /***********************************************
- * Initialisation au chargement
+ * Initialisation
  ***********************************************/
-window.addEventListener('load', () => {
+window.addEventListener("load", () => {
   initMap();
-  initRadarChart();
+  initDirectionsPanelControls(); // Ouvre/ferme le panneau
+  // Si tu as un radar chart, tu peux l'initialiser ici
+  // initRadarChart();
 });
 
 /***********************************************
- * Initialisation de la carte Leaflet
+ * Initialisation de la carte
  ***********************************************/
 function initMap() {
-  // Crée la carte sans fond (fond blanc)
-  map = L.map('map', {
+  // Création de la carte, centrée approximativement
+  map = L.map("map", {
     zoomControl: true,
     attributionControl: false
-  }).setView([49.0389, 2.0760], 13); // Centre approximatif sur Cergy
+  }).setView([49.0389, 2.0760], 13);
 
-  // Chargement du GeoJSON (tes routes)
-  fetch('cozyroute.geojson')
-    .then(response => response.json())
-    .then(geojsonData => {
+  // Charge le GeoJSON principal
+  fetch("cozyroute.geojson")
+    .then((resp) => resp.json())
+    .then((geojsonData) => {
       cozyRouteLayer = L.geoJSON(geojsonData, {
-        style: feature => {
-          // Style de base en blanc
+        style: (feature) => {
+          // Style de base : blanc
           return {
-            color: '#FFFFFF',
+            color: "#FFFFFF",
             weight: 3
           };
         }
       }).addTo(map);
-      // Ajuste la vue à l’emprise des tronçons
       map.fitBounds(cozyRouteLayer.getBounds());
     })
-    .catch(err => {
-      console.error("Erreur chargement cozyroute.geojson :", err);
-    });
+    .catch((err) => console.error("Erreur de chargement du cozyroute.geojson :", err));
 
-  // Écouteur de clic sur la carte
-  map.on('click', e => {
+  // Gère le clic sur la carte
+  map.on("click", (e) => {
     handleMapClick(e.latlng);
   });
 }
 
 /***********************************************
- * Gestion du clic sur la carte
- * - Place un point (marqueur)
- * - Au deuxième clic, calcule un itinéraire
- * - Si un troisième clic survient, on supprime l'ancien itinéraire
- *   et on repart de zéro
+ * Gestion du clic pour placer deux marqueurs,
+ * calcul d'itinéraire, etc.
  ***********************************************/
 function handleMapClick(latlng) {
-  // Si on a déjà 2 marqueurs, on supprime tout pour repartir
+  // S'il y a déjà 2 marqueurs, on efface l'ancien itinéraire
+  // et on repart à zéro
   if (clickMarkers.length === 2) {
     clearRouteAndMarkers();
   }
 
-  // Ajout du nouveau marqueur
-  const newMarker = L.marker([latlng.lat, latlng.lng]).addTo(map);
-  clickMarkers.push(newMarker);
+  // Ajout d'un nouveau marqueur
+  const marker = L.marker([latlng.lat, latlng.lng]).addTo(map);
+  clickMarkers.push(marker);
 
-  // Si on a 2 marqueurs, on lance le routing
+  // Si on a 2 marqueurs => calcul d'itinéraire
   if (clickMarkers.length === 2) {
     const latlngA = clickMarkers[0].getLatLng();
     const latlngB = clickMarkers[1].getLatLng();
@@ -127,125 +108,208 @@ function handleMapClick(latlng) {
   }
 }
 
-/***********************************************
- * Efface l'itinéraire en cours et les marqueurs
- ***********************************************/
 function clearRouteAndMarkers() {
   if (routeLayer) {
     map.removeLayer(routeLayer);
     routeLayer = null;
   }
-  clickMarkers.forEach(m => {
+  clickMarkers.forEach((m) => {
     map.removeLayer(m);
   });
   clickMarkers = [];
 }
 
 /***********************************************
- * Bouton pour la géolocalisation (optionnelle)
- * Appelé depuis index.html (e.g. <button id="btn-locate">Me localiser</button>)
+ * Requête OpenRouteService pour l'itinéraire,
+ * réception d'une polyline encodée,
+ * décodage, affichage Leaflet + panneau
  ***********************************************/
-function askUserLocation() {
-  if (!navigator.geolocation) {
-    alert("La géolocalisation n'est pas supportée par ce navigateur.");
-    return;
+function getRoute(lat1, lng1, lat2, lng2) {
+  // Retire l'éventuel itinéraire précédent
+  if (routeLayer) {
+    map.removeLayer(routeLayer);
+    routeLayer = null;
   }
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      userLocation = {
-        lat: pos.coords.latitude,
-        lng: pos.coords.longitude
+
+  const routeUrl = "https://api.openrouteservice.org/v2/directions/foot-walking";
+  const bodyData = {
+    coordinates: [
+      [lng1, lat1], // attention : [lon, lat]
+      [lng2, lat2]
+    ]
+    // instructions: true (par défaut)
+  };
+
+  fetch(routeUrl, {
+    method: "POST",
+    headers: {
+      accept: "*/*",
+      authorization: ORS_API_KEY,
+      "content-type": "application/json"
+    },
+    body: JSON.stringify(bodyData)
+  })
+    .then((resp) => {
+      if (!resp.ok) {
+        throw new Error("Erreur réseau ou requête invalide");
+      }
+      return resp.json();
+    })
+    .then((data) => {
+      if (!data || !data.routes || data.routes.length === 0) {
+        throw new Error("Impossible de calculer l’itinéraire.");
+      }
+      // On prend la première route
+      const route = data.routes[0];
+
+      // 1) Décoder la polyline
+      const decodedCoords = decodePolyline(route.geometry); 
+      // => tableau de [ [lat, lng], [lat, lng], ... ]
+
+      // 2) Construire un objet GeoJSON
+      const routeGeoJSON = {
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          // En GeoJSON, c'est [lng, lat]
+          coordinates: decodedCoords.map(([la, ln]) => [ln, la])
+        },
+        properties: {}
       };
-      // Place un marqueur user
-      const userMarker = L.marker([userLocation.lat, userLocation.lng]).addTo(map);
-      map.setView([userLocation.lat, userLocation.lng], 14);
-    },
-    err => {
-      console.warn("Impossible de récupérer la position :", err);
-      alert("Impossible de récupérer la position.");
-    },
-    { enableHighAccuracy: true }
-  );
+
+      // 3) Ajouter à la carte
+      routeLayer = L.geoJSON(routeGeoJSON, {
+        style: {
+          color: "#1976D2",
+          weight: 4
+        }
+      }).addTo(map);
+      map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
+
+      // 4) Afficher le panneau de directions
+      showDirectionsPanel(route);
+    })
+    .catch((err) => {
+      console.error(err);
+      alert(err.message);
+    });
 }
 
 /***********************************************
- * Radar Chart (Chart.js)
+ * Décodage de la polyline
+ * (version basique sans lib externe)
  ***********************************************/
-function initRadarChart() {
-  const ctx = document.getElementById('radarChart').getContext('2d');
-  radarChart = new Chart(ctx, {
-    type: 'radar',
-    data: {
-      labels: themes.map(t => t.charAt(0).toUpperCase() + t.slice(1)),
-      datasets: [
-        {
-          label: 'Mon niveau de gêne',
-          data: themes.map(t => userData[t]),
-          backgroundColor: 'rgba(103, 58, 183, 0.2)',
-          borderColor: 'rgba(103, 58, 183, 1)',
-          borderWidth: 2
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      scales: {
-        r: {
-          min: 0,
-          max: 5,
-          ticks: {
-            stepSize: 1
-          }
-        }
-      }
-    }
+function decodePolyline(encoded) {
+  let currentPosition = 0;
+  let currentLat = 0;
+  let currentLng = 0;
+  const coordinates = [];
+
+  while (currentPosition < encoded.length) {
+    let shift = 0;
+    let result = 0;
+    let byte;
+
+    do {
+      byte = encoded.charCodeAt(currentPosition++) - 63;
+      result |= (byte & 0x1F) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+
+    const deltaLat = (result & 1) ? ~(result >> 1) : (result >> 1);
+    currentLat += deltaLat;
+
+    shift = 0;
+    result = 0;
+
+    do {
+      byte = encoded.charCodeAt(currentPosition++) - 63;
+      result |= (byte & 0x1F) << shift;
+      shift += 5;
+    } while (byte >= 0x20);
+
+    const deltaLng = (result & 1) ? ~(result >> 1) : (result >> 1);
+    currentLng += deltaLng;
+
+    const lat = currentLat / 1e5;
+    const lng = currentLng / 1e5;
+    coordinates.push([lat, lng]);
+  }
+
+  return coordinates;
+}
+
+/***********************************************
+ * Affichage des instructions dans un volet
+ * à droite, avec distance / durée / étapes
+ ***********************************************/
+function showDirectionsPanel(route) {
+  const directionsPanel = document.getElementById("directions-panel");
+  // Retire la classe hidden pour l'afficher
+  directionsPanel.classList.remove("hidden");
+
+  // Distance / durée totales
+  const dist = route.summary.distance; // en mètres
+  const dur = route.summary.duration;  // en secondes
+  const distKm = (dist / 1000).toFixed(2) + " km";
+  const durMin = (dur / 60).toFixed(0) + " min";
+
+  const summaryDiv = document.getElementById("directions-summary");
+  summaryDiv.textContent = `Distance : ${distKm} | Durée : ~${durMin}`;
+
+  // Liste des steps
+  const stepsUl = document.getElementById("directions-steps");
+  stepsUl.innerHTML = "";
+
+  // ORS stocke les étapes dans route.segments[].steps[]
+  if (route.segments && route.segments.length > 0) {
+    route.segments.forEach((seg) => {
+      seg.steps.forEach((step) => {
+        // distance en mètres, instruction, name...
+        const stepLi = document.createElement("li");
+        const stepDist = (step.distance || 0).toFixed(0) + " m";
+        const instructionText = step.instruction;
+        const nameText = step.name && step.name !== "-" ? ` (${step.name})` : "";
+        stepLi.textContent = `${stepDist} - ${instructionText}${nameText}`;
+        stepsUl.appendChild(stepLi);
+      });
+    });
+  }
+}
+
+/***********************************************
+ * Contrôles du volet (ouvrir/fermer)
+ ***********************************************/
+function initDirectionsPanelControls() {
+  const closeBtn = document.getElementById("close-directions");
+  closeBtn.addEventListener("click", () => {
+    document.getElementById("directions-panel").classList.add("hidden");
   });
 }
 
-function updateRadarChart() {
-  if (!radarChart) return;
-  radarChart.data.datasets[0].data = themes.map(t => userData[t]);
-  radarChart.update();
-}
-
 /***********************************************
- * Mise à jour du questionnaire
- ***********************************************/
-function updateQuestionValue(theme, value) {
-  // Met à jour la valeur interne
-  userData[theme] = parseInt(value, 10);
-  // Met à jour le label affiché (ex : <span id="odorat-value">)
-  document.getElementById(theme + '-value').textContent = value;
-  // Met à jour le radar chart
-  updateRadarChart();
-  // Met à jour le style des routes (bloom)
-  updateRoadStyle();
-}
-
-/***********************************************
- * Mise à jour du style des routes en fonction
- * des réponses utilisateur (bloom)
+ * Exemple de mise à jour "bloom" (optionnel)
+ * => Faire des logs pour tester
  ***********************************************/
 function updateRoadStyle() {
   if (!cozyRouteLayer) return;
 
-  cozyRouteLayer.setStyle(feature => {
+  cozyRouteLayer.setStyle((feature) => {
     if (!feature.properties) {
-      console.log("Aucun properties pour cette feature :", feature);
-      return { color: '#FFFFFF', weight: 3 };
+      console.log("Feature sans propriétés", feature);
+      return { color: "#FFFFFF", weight: 3 };
     }
 
-    // Construction d'une classe dynamique
-    let className = '';
-    themes.forEach(t => {
-      const routeValue = feature.properties[t] ? feature.properties[t] : 0;
+    let className = "";
+    themes.forEach((t) => {
+      const routeValue = feature.properties[t] || 0;
       const userValue = userData[t] || 0;
-      // intensité = routeValue * userValue * 4
       const intensity = routeValue * userValue * 4;
       const intensityClamped = Math.min(intensity, 100);
 
-      // On log l'info pour debug
-      console.log(`Feature ID=?, Thème=${t}, routeValue=${routeValue}, userValue=${userValue}, intensity=${intensityClamped}`);
+      console.log(
+        `Thème=${t}, routeValue=${routeValue}, userValue=${userValue}, intensity=${intensityClamped}`
+      );
 
       if (routeValue > 0) {
         className += `${t}-${routeValue} intensity-${intensityClamped} `;
@@ -256,7 +320,7 @@ function updateRoadStyle() {
     console.log("=> Classe assignée :", finalClass);
 
     return {
-      color: '#FFFFFF', // Couleur de base
+      color: "#FFFFFF",
       weight: 3,
       className: finalClass
     };
@@ -264,89 +328,36 @@ function updateRoadStyle() {
 }
 
 /***********************************************
- * Calcul d'itinéraire (OpenRouteService)
+ * Exemple de mise à jour de questionnaire
+ * (si on change un slider de 0 à 5)
  ***********************************************/
-function getRoute(lat1, lng1, lat2, lng2) {
-  // On retire un éventuel itinéraire précédent
-  if (routeLayer) {
-    map.removeLayer(routeLayer);
-    routeLayer = null;
-  }
-
-  const routeUrl = "https://api.openrouteservice.org/v2/directions/foot-walking";
-  const bodyData = {
-    coordinates: [
-      [lng1, lat1],
-      [lng2, lat2]
-    ]
-  };
-
-  fetch(routeUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": ORS_API_KEY
-    },
-    body: JSON.stringify(bodyData)
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (!data || !data.features || data.features.length === 0) {
-        alert("Impossible de calculer l’itinéraire.");
-        return;
-      }
-      // On récupère la géométrie
-      const routeGeoJSON = data.features[0];
-      // On l'ajoute à la carte
-      routeLayer = L.geoJSON(routeGeoJSON, {
-        style: {
-          color: '#1976D2',
-          weight: 4
-        }
-      }).addTo(map);
-
-      // Zoom sur l'itinéraire
-      map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
-    })
-    .catch(err => {
-      console.error("Erreur lors du calcul d'itinéraire :", err);
-      alert("Erreur lors du calcul d'itinéraire.");
-    });
+function updateQuestionValue(theme, value) {
+  userData[theme] = parseInt(value, 10);
+  document.getElementById(theme + "-value").textContent = value;
+  // Si tu as un radarChart, mets-le à jour
+  // updateRadarChart();
+  // Mets à jour le style des routes
+  updateRoadStyle();
 }
 
 /***********************************************
- * Boutons / Écouteurs divers
+ * (Optionnel) Géolocalisation si besoin
  ***********************************************/
-
-// Bouton "Accéder à la carte"
-document.getElementById('goto-map').addEventListener('click', () => {
-  // Cache l'overlay questionnaire (slide left)
-  document.getElementById('questionnaire-overlay').classList.add('hidden');
-});
-
-// Bouton burger (ouvre/ferme le questionnaire)
-document.getElementById('burger-menu').addEventListener('click', () => {
-  // Ouvre/ferme l'overlay questionnaire
-  document.getElementById('questionnaire-overlay').classList.toggle('hidden');
-});
-
-// Bouton "search" (optionnel, si tu souhaites garder la recherche d'adresse)
-document.getElementById('search-button').addEventListener('click', () => {
-  const address = document.getElementById('search-input').value.trim();
-  if (!address) {
-    alert("Veuillez saisir une adresse.");
+function askUserLocation() {
+  if (!navigator.geolocation) {
+    alert("La géolocalisation n'est pas supportée.");
     return;
   }
-  // On peut géocoder l'adresse, etc. (non obligatoire selon tes besoins)
-  // geocodeAddress(address);
-});
-
-/**
- * Si tu utilises un bouton "Me localiser" (id="btn-locate"),
- * tu peux le relier à la fonction askUserLocation():
- *
- * document.getElementById('btn-locate').addEventListener('click', () => {
- *   askUserLocation();
- * });
- *
- */
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      L.marker([lat, lng]).addTo(map);
+      map.setView([lat, lng], 14);
+    },
+    (err) => {
+      console.warn("Erreur géoloc :", err);
+    },
+    { enableHighAccuracy: true }
+  );
+}
