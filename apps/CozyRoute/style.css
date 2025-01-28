@@ -58,6 +58,7 @@ html, body {
 #search-input {
   width: 200px; /* Ajuste selon la largeur souhaitée */
   padding: 6px;
+  padding-right: 20px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
@@ -67,15 +68,11 @@ html, body {
   position: absolute;      /* Pour qu’il se superpose en dessous de l’input */
   background: #fff;        /* Fond blanc */
   list-style: none;         /* Retire les puces par défaut */
-  top: 30px;
+  top: 40px;
   margin: 0;
   padding: 0;
   width: 200px;            /* Même largeur que l’input */
   z-index: 999;            /* Passe par-dessus */
-  
-  /* (Optionnel) Limiter la hauteur + scroll */
-  max-height: 180px;
-  overflow-y: auto;
 }
 
 /* Chaque suggestion */
