@@ -199,9 +199,9 @@ html, body {
   fill: none;
 }
 
-/* ===========================
-   BLOOM / HALO de couleur
-   =========================== */
+/* =============
+   Couleur route
+   ============= */
 
 [class^="odorat-"] {
   stroke: var(--odorat-color) !important;
@@ -227,7 +227,7 @@ html, body {
   stroke: var(--bruit-color) !important;
 }
 
-[class*="eclairage-"] {
+[class^="eclairage-"] {
   stroke: var(--eclairage-color) !important;
 }
 
@@ -239,8 +239,11 @@ html, body {
   stroke: var(--trafic_routier-color) !important;
 }
 
+/* ===========
+   Force route
+   =========== */
 
-[class*="intensity-0"] {
+[class*="0 intensity-"] {
   stroke: none !important;
 }
 
@@ -264,29 +267,31 @@ html, body {
   stroke-width: 15 !important;
 }
 
+/* =====
+   BLOOM
+   ===== */
 
 [class$="0 leaflet-interactive"] {
-    filter: blur(12px)
-          opacity(2%)
+     stroke: none !important;
+}
+
+[class$="1 leaflet-interactive"] {
+    filter: blur(12px) opacity(2%);
 }
 
 [class$="2 leaflet-interactive"] {
-    filter: blur(12px)
-          opacity(10%)
+    filter: blur(12px) opacity(10%);
 }
 
 [class$="3 leaflet-interactive"] {
-    filter: blur(12px)
-          opacity(20%)
+    filter: blur(12px) opacity(20%);
 }
 
 [class$="4 leaflet-interactive"] {
-    filter: blur(12px)
-          opacity(40%)
+    filter: blur(12px) opacity(40%);
 }
 
 [class$="5 leaflet-interactive"] {
-    filter: blur(12px)
-          opacity(100%)
+    filter: blur(12px) opacity(100%);
 }
 
