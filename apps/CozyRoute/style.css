@@ -1,8 +1,11 @@
 /* 
-  Style Material/Light + "Brushed glass" 
-  Font: Poppins (import via @import ou lien Google Fonts)
+  Style principal pour CozyRoute
+  Compatible avec l'HTML donné
+  Font : Poppins
 */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+/* Import de la police Poppins (si non déjà importée dans l'HTML) */
+/* @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap'); */
 
 :root {
   /* Variables de couleur par thème */
@@ -30,7 +33,7 @@
   font-family: 'Poppins', sans-serif;
 }
 
-body, html {
+html, body {
   width: 100%;
   height: 100%;
   background: #FFFFFF; /* Pas de fond de carte */
@@ -52,7 +55,7 @@ body, html {
   align-items: center;
   padding: 0 10px;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 #header-left {
@@ -107,7 +110,7 @@ body, html {
   transition: transform 0.4s ease;
 }
 
-/* Formulaire (questionnaire) */
+/* Contenu du questionnaire */
 #questionnaire {
   max-width: 400px;
   margin: 20px auto;
@@ -137,6 +140,7 @@ body, html {
   width: 100%;
 }
 
+/* Bouton "Accéder à la carte" */
 #goto-map {
   display: inline-block;
   margin-top: 20px;
@@ -148,12 +152,13 @@ body, html {
   cursor: pointer;
 }
 
+/* Radar Chart */
 #radarChart {
   display: block;
   margin: 20px auto;
 }
 
-/* Map container */
+/* Container de la carte Leaflet */
 #map {
   position: absolute;
   top: var(--header-height);
@@ -163,18 +168,62 @@ body, html {
   z-index: 1;
 }
 
-/* Transitions du questionnaire (ouvert/fermé) */
+/* Panneau de directions (à droite) */
+#directions-panel {
+  position: absolute;
+  top: var(--header-height);
+  right: 0;
+  width: 300px;
+  height: calc(100% - var(--header-height));
+  background-color: #f7f7f7;
+  border-left: 1px solid #ccc;
+  padding: 10px;
+  overflow-y: auto;
+  z-index: 999;
+  transition: transform 0.3s ease;
+}
+
+#directions-panel h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+#close-directions {
+  float: right;
+  cursor: pointer;
+  background: none;
+  border: none;
+  font-size: 18px;
+  margin-top: -4px;
+}
+
+#directions-summary {
+  margin-bottom: 10px;
+  font-weight: 700;
+}
+
+/* Liste d'étapes */
+#directions-steps {
+  list-style: none;
+  padding: 0;
+}
+
+/* Transitions (fermé) pour le panneau */
+#directions-panel.hidden {
+  transform: translateX(100%);
+}
+
+/* Transition du questionnaire (fermé) */
 .hidden {
   transform: translateX(-100%);
 }
 
 /*
   Styles de base pour la couche GeoJSON
-  Tu peux personnaliser davantage, par exemple en jouant 
-  sur des classes dynamiques (ex. odorat-5, intensity-100, etc.)
+  (ou "taches" de bloom si tu définis des classes .intensity-XYZ)
 */
 .leaflet-interactive {
-  stroke: #000000; /* Couleur de base si besoin */
+  stroke: #000000;  /* Couleur de base si besoin */
   stroke-width: 2;
   fill: none;
 }
