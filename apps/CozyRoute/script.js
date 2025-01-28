@@ -109,35 +109,29 @@ function updateQuestionValue(theme, value) {
  *    => Si un tronçon a "odorat-" et userVal=4 => "intensity-4"
  ***********************************************/
 function updateRoadStyle() {
-  if (!cozyRouteLayer) {
-    console.warn("[INTENSITY] cozyRouteLayer pas encore prêt");
-    return;
-  }
-  console.log("[INTENSITY] Mise à jour des intensités…");
+  if (!cozyRouteLayer) return;
 
-  // Pour chaque thème
-  themes.forEach(theme => {
+  themes.forEach((theme) => {
     const userVal = userData[theme];
-    console.log(`- Thème=${theme} / userVal=${userVal}`);
 
-    // On balaie chaque layer
-    cozyRouteLayer.eachLayer(layer => {
+    cozyRouteLayer.eachLayer((layer) => {
       const cName = layer.options.className || "";
-      // Check si cName contient ex: "handicap-", "odorat-"
+      // Si le path a le prefix "theme-"
       if (cName.includes(theme + "-")) {
-        console.log(`  => Tronçon avant: "${cName}"`);
-        // Remplace intensity-\d par intensity-userVal
-        // ex: "handicap-4 intensity-0" => "handicap-4 intensity-3"
         const newClass = cName.replace(/intensity-\d+/, `intensity-${userVal}`);
-        console.log(`  => Tronçon après: "${newClass}"`);
-
+        // On met à jour le style Leaflet (couleur, weight, etc.)
         layer.setStyle({
           color: "#FFFFFF",
-          weight: 3,
-          className: newClass.trim()
+          weight: 3
+          // NE PAS mettre className ici : Leaflet ne met pas toujours à jour
         });
+        // On force la mise à jour de l'attribut class du <path>
+        if (layer._path) {
+          layer._path.setAttribute("class", "leaflet-interactive " + newClass);
+        }
+        // On garde en mémoire la nouvelle classe si besoin
+        layer.options.className = newClass;
       }
     });
   });
-  console.log("[INTENSITY] Fin de updateRoadStyle");
 }
