@@ -3,17 +3,14 @@
 <head>
   <meta charset="utf-8" />
   <title>CozyRoute</title>
-  <!-- Import Leaflet CSS (sans attributs integrity/crossorigin) -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
-  <!-- Import Chart.js (sans attributs integrity/crossorigin) -->
-  <script
-    src="https://cdn.jsdelivr.net/npm/chart.js"
-  ></script>
+
+  <!-- Import Leaflet CSS (sans integrity/crossorigin) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Import Chart.js (optionnel, si tu veux un radar chart) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   
-  <!-- Fichier CSS principal -->
+  <!-- Ton fichier CSS principal -->
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -30,12 +27,12 @@
     </div>
   </header>
 
-  <!-- Vue 1 : Overlay Questionnaire -->
+  <!-- Overlay de Questionnaire (vue initiale) -->
   <div id="questionnaire-overlay">
     <div id="questionnaire">
       <h2>Questionnaire</h2>
       <form id="question-form">
-        <!-- Thème "odorat" -->
+        <!-- Exemple : odorat -->
         <div class="question-group" id="odorat-input">
           <label for="odorat-range">
             Odorat :
@@ -53,7 +50,7 @@
           />
         </div>
 
-        <!-- Thème "marchabilite" -->
+        <!-- Exemple : marchabilite -->
         <div class="question-group" id="marchabilite-input">
           <label for="marchabilite-range">
             Marchabilité :
@@ -71,7 +68,7 @@
           />
         </div>
 
-        <!-- Thème "claustrophobie" -->
+        <!-- Thèmes restants (claustrophobie, agoraphobie, pollution, bruit, eclairage, handicap, trafic_routier) -->
         <div class="question-group" id="claustrophobie-input">
           <label for="claustrophobie-range">
             Claustrophobie :
@@ -89,7 +86,6 @@
           />
         </div>
 
-        <!-- Thème "agoraphobie" -->
         <div class="question-group" id="agoraphobie-input">
           <label for="agoraphobie-range">
             Agoraphobie :
@@ -107,7 +103,6 @@
           />
         </div>
 
-        <!-- Thème "pollution" -->
         <div class="question-group" id="pollution-input">
           <label for="pollution-range">
             Pollution :
@@ -125,7 +120,6 @@
           />
         </div>
 
-        <!-- Thème "bruit" -->
         <div class="question-group" id="bruit-input">
           <label for="bruit-range">
             Bruit :
@@ -143,7 +137,6 @@
           />
         </div>
 
-        <!-- Thème "eclairage" -->
         <div class="question-group" id="eclairage-input">
           <label for="eclairage-range">
             Éclairage :
@@ -161,7 +154,6 @@
           />
         </div>
 
-        <!-- Thème "handicap" -->
         <div class="question-group" id="handicap-input">
           <label for="handicap-range">
             Handicap :
@@ -179,7 +171,6 @@
           />
         </div>
 
-        <!-- Thème "trafic_routier" -->
         <div class="question-group" id="trafic_routier-input">
           <label for="trafic_routier-range">
             Trafic routier :
@@ -198,7 +189,7 @@
         </div>
       </form>
 
-      <!-- Radar Chart -->
+      <!-- Radar Chart (optionnel) -->
       <canvas id="radarChart" width="300" height="300"></canvas>
       
       <!-- Bouton pour basculer sur la carte -->
@@ -206,10 +197,20 @@
     </div>
   </div>
 
-  <!-- Vue 2 : Carte Leaflet -->
+  <!-- Panneau de directions à droite (fermé par défaut) -->
+  <div id="directions-panel" class="hidden">
+    <button id="close-directions" title="Fermer">X</button>
+    <h2>Itinéraire</h2>
+    <!-- Distance / durée -->
+    <div id="directions-summary"></div>
+    <!-- Liste d'étapes -->
+    <ul id="directions-steps"></ul>
+  </div>
+
+  <!-- La carte Leaflet -->
   <div id="map"></div>
 
-  <!-- Scripts Leaflet (sans attributs integrity/crossorigin) -->
+  <!-- Import Leaflet (sans integrity/crossorigin) -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Script principal -->
   <script src="script.js"></script>
