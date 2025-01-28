@@ -203,27 +203,27 @@ html, body {
    BLOOM / HALO de couleur
    =========================== */
 
-[class*="odorat-"] {
+[class^="odorat-"] {
   stroke: var(--odorat-color) !important;
 }
 
-[class*="marchabilite-"] {
+[class^="marchabilite-"] {
   stroke: var(--marchabilite-color) !important;
 }
 
-[class*="claustrophobie-"] {
+[class^="claustrophobie-"] {
   stroke: var(--claustrophobie-color) !important;
 }
 
-[class*="agoraphobie-"] {
+[class^="agoraphobie-"] {
   stroke: var(--agoraphobie-color) !important;
 }
 
-[class*="pollution-"] {
+[class^="pollution-"] {
   stroke: var(--pollution-color) !important;
 }
 
-[class*="bruit-"] {
+[class^="bruit-"] {
   stroke: var(--bruit-color) !important;
 }
 
@@ -231,19 +231,62 @@ html, body {
   stroke: var(--eclairage-color) !important;
 }
 
-[class*="handicap-"] {
+[class^="handicap-"] {
   stroke: var(--handicap-color) !important;
 }
 
-[class*="trafic_routier-"] {
+[class^="trafic_routier-"] {
   stroke: var(--trafic_routier-color) !important;
 }
 
-[class$="0"] {
+
+[class*="intensity-0"] {
   stroke: none !important;
 }
 
-:is([class$="1"], [class$="2"], [class$="3"], [class$="4"], [class$="5"]) {
-  stroke-width: calc(3 * attr(class suffix)) !important;
+[class*="1 intensity-"],{
+  stroke-width: 3 !important;
+}
+
+[class*="2 intensity-"]{
+  stroke-width: 6 !important;
+}
+
+[class*="3 intensity-"] {
+  stroke-width: 9 !important;
+}
+
+[class*="4 intensity-"] {
+  stroke-width: 12 !important;
+}
+
+[class*="5 intensity-"] {
+  stroke-width: 15 !important;
+}
+
+
+[class$="0 leaflet-interactive"] {
+    filter: blur(12px)
+          opacity(2%)
+}
+
+[class$="2 leaflet-interactive"] {
+    filter: blur(12px)
+          opacity(10%)
+}
+
+[class$="3 leaflet-interactive"] {
+    filter: blur(12px)
+          opacity(20%)
+}
+
+[class$="4 leaflet-interactive"] {
+    filter: blur(12px)
+          opacity(40%)
+}
+
+[class$="5 leaflet-interactive"] {
+    filter: blur(12px)
+          opacity(100%)
 }
 
