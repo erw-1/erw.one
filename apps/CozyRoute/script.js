@@ -267,6 +267,7 @@ function getRoute(lat1, lng1, lat2, lng2) {
     method:"POST",
     headers:{
       "accept":"*/*",
+      "language": "fr",
       "authorization":ORS_API_KEY,
       "content-type":"application/json"
     },
