@@ -1,13 +1,13 @@
-/* ==============================
-   Fichier: style.css
-   ============================== */
+/* =========================================
+   Fichier : style.css
+   -----------------------------------------
+   Permet de voir les "bloom" de couleur
+   en fonction des classes dynamiques
+   (ex: .odorat-5.intensity-100)
+   ========================================= */
 
-/* Import facultatif si pas déjà dans <head>
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
-*/
-
+/* Variables et reset */
 :root {
-  /* --- Variables de couleur par thème --- */
   --marchabilite-color: #8B4513;
   --claustrophobie-color: #9E9E9E;
   --odorat-color: #008000;
@@ -17,44 +17,34 @@
   --eclairage-color: #FFFF00;
   --handicap-color: #0066CC;
   --trafic_routier-color: #FF0000;
-
-  /* Autres variables existantes */
+  
   --header-height: 60px;
   --overlay-bg: rgba(255, 255, 255, 0.7);
   --blur-level: 8px;
 }
 
-/* Reset simple */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: 'Poppins', sans-serif; /* Optionnel */
+  margin: 0; padding: 0; box-sizing: border-box;
+  font-family: 'Poppins', sans-serif; /* si souhaité */
 }
 
-/* Corps / dimension */
 html, body {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   background: #FFFFFF; /* fond blanc */
   overflow: hidden;
   position: relative;
 }
 
-/* ==============================
-   Header (inchangé)
-   ============================== */
+/* ===========================
+   Header
+   =========================== */
 #app-header {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: var(--header-height);
-  background-color: rgba(255, 255, 255, 0.9);
+  top: 0; left: 0;
+  width: 100%; height: var(--header-height);
+  background-color: rgba(255,255,255,0.9);
   backdrop-filter: blur(var(--blur-level));
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  display: flex; justify-content: space-between; align-items: center;
   padding: 0 10px;
   z-index: 1000;
   box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -85,9 +75,9 @@ html, body {
   cursor: pointer;
 }
 
-/* ==============================
+/* ===========================
    Overlay questionnaire
-   ============================== */
+   =========================== */
 #questionnaire-overlay {
   position: fixed;
   top: var(--header-height);
@@ -116,13 +106,16 @@ html, body {
   margin-bottom: 10px;
 }
 
-.question-group { margin-bottom: 15px; }
+.question-group {
+  margin-bottom: 15px;
+}
 .question-group label {
-  display: block; 
-  margin-bottom: 5px;
+  display: block; margin-bottom: 5px;
   font-weight: 700;
 }
-.question-group input[type="range"] { width: 100%; }
+.question-group input[type="range"] {
+  width: 100%;
+}
 
 #goto-map {
   display: inline-block;
@@ -141,9 +134,9 @@ html, body {
   margin: 20px auto;
 }
 
-/* ==============================
-   Carte & panneau directions
-   ============================== */
+/* ===========================
+   Carte Leaflet
+   =========================== */
 #map {
   position: absolute;
   top: var(--header-height);
@@ -153,7 +146,9 @@ html, body {
   z-index: 1;
 }
 
-/* Panneau de directions (droite) */
+/* ===========================
+   Panneau de directions
+   =========================== */
 #directions-panel {
   position: absolute;
   top: var(--header-height);
@@ -168,64 +163,55 @@ html, body {
   transition: transform 0.3s ease;
 }
 
-#directions-panel h2 {
-  margin-top: 0;
-  margin-bottom: 10px;
-}
-
-#close-directions {
-  float: right;
-  cursor: pointer;
-  background: none;
-  border: none;
-  font-size: 18px;
-  margin-top: -4px;
-}
-
-#directions-summary {
-  margin-bottom: 10px;
-  font-weight: 700;
-}
-#directions-steps { list-style: none; padding: 0; }
-
-/* Panneau masqué */
 #directions-panel.hidden {
   transform: translateX(100%);
 }
 
-/* ==============================
-   Transitions caché/visible
-   ============================== */
+#directions-panel h2 {
+  margin-top: 0; margin-bottom: 10px;
+}
+#close-directions {
+  float: right;
+  cursor: pointer;
+  background: none; border: none;
+  font-size: 18px; margin-top: -4px;
+}
+#directions-summary {
+  margin-bottom: 10px; font-weight: 700;
+}
+#directions-steps {
+  list-style: none; padding: 0;
+}
 
-/* Déplacement du questionnaire hors écran s'il est "hidden" */
+/* ===========================
+   Transitions "hidden"
+   =========================== */
 .hidden {
   transform: translateX(-100%);
 }
 
-/* ==============================
-   Styles de base pour la couche GeoJSON
-   ============================== */
+/* ===========================
+   Style de base pour la couche
+   =========================== */
 .leaflet-interactive {
-  stroke: #000; /* ligne noir par défaut */
+  stroke: #000;
   stroke-width: 2;
   fill: none;
 }
 
-/* ==============================
-   BLOOM ou "Halo" par classes
-   ============================== */
+/* ===========================
+   BLOOM / HALO de couleur
+   =========================== */
 /* 1) Couleurs par thème + routeValue */
-/* Exemple : .odorat-5 => stroke en vert (très odorat) */
 .odorat-1, .odorat-2, .odorat-3, .odorat-4, .odorat-5 {
   stroke: var(--odorat-color) !important;
-}
-.claustrophobie-1, .claustrophobie-2, .claustrophobie-3, .claustrophobie-4, .claustrophobie-5 {
-  stroke: var(--claustrophobie-color) !important;
 }
 .marchabilite-1, .marchabilite-2, .marchabilite-3, .marchabilite-4, .marchabilite-5 {
   stroke: var(--marchabilite-color) !important;
 }
-/* ... Idem pour tous les thèmes */
+.claustrophobie-1, .claustrophobie-2, .claustrophobie-3, .claustrophobie-4, .claustrophobie-5 {
+  stroke: var(--claustrophobie-color) !important;
+}
 .agoraphobie-1, .agoraphobie-2, .agoraphobie-3, .agoraphobie-4, .agoraphobie-5 {
   stroke: var(--agoraphobie-color) !important;
 }
@@ -245,27 +231,22 @@ html, body {
   stroke: var(--trafic_routier-color) !important;
 }
 
-/* 2) Intensité => halo (drop-shadow)
-   On utilise un "filter" CSS. 
-   L'idée : plus l'intensité est haute, plus on augmente l'effet du halo.
-   Adaptation possible selon ton design. 
-*/
-
+/* 2) Intensités => on crée un halo plus ou moins grand */
 .intensity-0 {
   filter: none;
 }
 .intensity-20 {
-  filter: drop-shadow(0 0 3px currentColor);
+  filter: drop-shadow(0 0 4px currentColor);
 }
 .intensity-40 {
-  filter: drop-shadow(0 0 6px currentColor);
+  filter: drop-shadow(0 0 8px currentColor);
 }
 .intensity-60 {
-  filter: drop-shadow(0 0 10px currentColor);
+  filter: drop-shadow(0 0 12px currentColor);
 }
 .intensity-80 {
-  filter: drop-shadow(0 0 14px currentColor);
+  filter: drop-shadow(0 0 16px currentColor);
 }
 .intensity-100 {
-  filter: drop-shadow(0 0 18px currentColor);
+  filter: drop-shadow(0 0 20px currentColor);
 }
