@@ -132,6 +132,13 @@ html, body {
   margin-bottom: 10px;
 }
 
+form#question-form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  flex-direction: row;
+}
+
 .question-group {
   padding: 10px;
   gap: 2px;
