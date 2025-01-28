@@ -202,51 +202,48 @@ html, body {
 /* ===========================
    BLOOM / HALO de couleur
    =========================== */
-/* 1) Couleurs par thème + routeValue */
-.odorat-1, .odorat-2, .odorat-3, .odorat-4, .odorat-5 {
+
+[class*="odorat-"] {
   stroke: var(--odorat-color) !important;
 }
-.marchabilite-1, .marchabilite-2, .marchabilite-3, .marchabilite-4, .marchabilite-5 {
+
+[class*="marchabilite-"] {
   stroke: var(--marchabilite-color) !important;
 }
-.claustrophobie-1, .claustrophobie-2, .claustrophobie-3, .claustrophobie-4, .claustrophobie-5 {
+
+[class*="claustrophobie-"] {
   stroke: var(--claustrophobie-color) !important;
 }
-.agoraphobie-1, .agoraphobie-2, .agoraphobie-3, .agoraphobie-4, .agoraphobie-5 {
+
+[class*="agoraphobie-"] {
   stroke: var(--agoraphobie-color) !important;
 }
-.pollution-1, .pollution-2, .pollution-3, .pollution-4, .pollution-5 {
+
+[class*="pollution-"] {
   stroke: var(--pollution-color) !important;
 }
-.bruit-1, .bruit-2, .bruit-3, .bruit-4, .bruit-5 {
+
+[class*="bruit-"] {
   stroke: var(--bruit-color) !important;
 }
-.eclairage-1, .eclairage-2, .eclairage-3, .eclairage-4, .eclairage-5 {
+
+[class*="eclairage-"] {
   stroke: var(--eclairage-color) !important;
 }
-.handicap-1, .handicap-2, .handicap-3, .handicap-4, .handicap-5 {
+
+[class*="handicap-"] {
   stroke: var(--handicap-color) !important;
 }
-.trafic_routier-1, .trafic_routier-2, .trafic_routier-3, .trafic_routier-4, .trafic_routier-5 {
+
+[class*="trafic_routier-"] {
   stroke: var(--trafic_routier-color) !important;
 }
 
-/* 2) Intensités => on crée un halo plus ou moins grand */
-[class*="-intensity-0"] {
-  filter: none;
+[class$="0"] {
+  stroke: none !important;
 }
-[class*="-intensity-20"] {
-  filter: drop-shadow(0 0 4px currentColor);
+
+:is([class$="1"], [class$="2"], [class$="3"], [class$="4"], [class$="5"]) {
+  stroke-width: calc(3 * attr(class suffix)) !important;
 }
-[class*="-intensity-40"] {
-  filter: drop-shadow(0 0 8px currentColor);
-}
-[class*="-intensity-60"] {
-  filter: drop-shadow(0 0 12px currentColor);
-}
-[class*="-intensity-80"] {
-  filter: drop-shadow(0 0 16px currentColor);
-}
-[class*="-intensity-100"] {
-  filter: drop-shadow(0 0 20px currentColor);
-}
+
