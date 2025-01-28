@@ -261,13 +261,14 @@ function getRoute(lat1, lng1, lat2, lng2) {
     routeLayer=null;
   }
   const bodyData={
-    coordinates:[[lng1,lat1],[lng2,lat2]]
+    coordinates:[[lng1,lat1],[lng2,lat2]],
+    language: "fr",
+    instructions: true
   };
   fetch("https://api.openrouteservice.org/v2/directions/foot-walking",{
     method:"POST",
     headers:{
       "accept":"*/*",
-      "language": "fr",
       "authorization":ORS_API_KEY,
       "content-type":"application/json"
     },
