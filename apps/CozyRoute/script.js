@@ -127,7 +127,7 @@ function updateRoadStyle() {
         });
         // On force la mise à jour de l'attribut class du <path>
         if (layer._path) {
-          layer._path.setAttribute("class", "leaflet-interactive " + newClass);
+          layer._path.setAttribute("class", newClass + " leaflet-interactive");
         }
         // On garde en mémoire la nouvelle classe si besoin
         layer.options.className = newClass;
