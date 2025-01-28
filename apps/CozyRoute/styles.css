@@ -52,7 +52,7 @@ body, html {
   align-items: center;
   padding: 0 10px;
   z-index: 1000;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 #header-left {
@@ -86,7 +86,6 @@ body, html {
   cursor: pointer;
 }
 
-/* Bouton burger */
 #burger-menu {
   font-size: 22px;
   background: none;
@@ -113,10 +112,10 @@ body, html {
   max-width: 400px;
   margin: 20px auto;
   padding: 20px;
-  background-color: rgba(255,255,255,0.9);
+  background-color: rgba(255, 255, 255, 0.9);
   border-radius: 10px;
   backdrop-filter: blur(var(--blur-level));
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
 #questionnaire h2 {
@@ -149,7 +148,6 @@ body, html {
   cursor: pointer;
 }
 
-/* Radar chart */
 #radarChart {
   display: block;
   margin: 20px auto;
@@ -170,10 +168,13 @@ body, html {
   transform: translateX(-100%);
 }
 
-/* Exemple de style pour la route + “taches” dynamiques
-   (Tu ajusteras selon ta logique dans le script.js) */
+/*
+  Styles de base pour la couche GeoJSON
+  Tu peux personnaliser davantage, par exemple en jouant 
+  sur des classes dynamiques (ex. odorat-5, intensity-100, etc.)
+*/
 .leaflet-interactive {
-  stroke: #000;       /* Couleur de base des lignes */
+  stroke: #000000; /* Couleur de base si besoin */
   stroke-width: 2;
   fill: none;
 }
