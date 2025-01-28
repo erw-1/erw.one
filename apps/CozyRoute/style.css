@@ -8,9 +8,9 @@
 
 /* Variables et reset */
 :root {
+  --odorat-color: #008000;
   --marchabilite-color: #8B4513;
   --claustrophobie-color: #9E9E9E;
-  --odorat-color: #008000;
   --agoraphobie-color: #8B0000;
   --pollution-color: #212121;
   --bruit-color: #FF8C00;
@@ -232,21 +232,21 @@ html, body {
 }
 
 /* 2) Intensités => on crée un halo plus ou moins grand */
-.intensity-0 {
+[class*="-intensity-0"] {
   filter: none;
 }
-.intensity-20 {
+[class*="-intensity-20"] {
   filter: drop-shadow(0 0 4px currentColor);
 }
-.intensity-40 {
+[class*="-intensity-40"] {
   filter: drop-shadow(0 0 8px currentColor);
 }
-.intensity-60 {
+[class*="-intensity-60"] {
   filter: drop-shadow(0 0 12px currentColor);
 }
-.intensity-80 {
+[class*="-intensity-80"] {
   filter: drop-shadow(0 0 16px currentColor);
 }
-.intensity-100 {
+[class*="-intensity-100"] {
   filter: drop-shadow(0 0 20px currentColor);
 }
