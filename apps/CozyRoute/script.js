@@ -1,22 +1,26 @@
 /*************************************************
  * script.js
  * ---------------------------------------------
- *  - Charge cozyroute.geojson (feature.properties.class = "handicap-3")
- *  - Au chargement, ajoute "intensity-0" => "handicap-3 intensity-0"
- *  - Sur changement de slider, on remplace "intensity-X"
- *    par "intensity-newValue" dans la classe HTML du <path>
- *    via layer._path.setAttribute(...)
- *  - Inclut le routage, la géolocalisation et le radar chart
- *    si tu en as besoin.
+ * Fonctions :
+ *  - initMap() : carte Leaflet, chargement geojson
+ *  - Système "class theme-x" + "intensity-0" 
+ *  - updateQuestionValue(theme, value) : 
+ *       => userData[theme] = value => updateRoadStyle()
+ *  - openrouteservice GEOCODE : propose des adresses 
+ *       => on input >= 4 caractères
+ *       => affichage suggestions
+ *       => clic sur une suggestion => place un marker 
+ *          (1er ou 2e) => route si 2 points
+ *  - askUserLocation() : agit comme 1er ou 2e point si l'user 
+ *       l'autorise
  *************************************************/
 
 /***********************************************
- * 0) Variables globales / Config
+ * 0) Variables globales
  ***********************************************/
+const ORS_API_KEY = "5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d";
 
-const ORS_API_KEY = "5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d"; // routing
-
-// userData : note utilisateur sur chaque thème (0 à 5)
+// userData : notes sliders (0 à 5)
 let userData = {
   odorat: 0,
   marchabilite: 0,
@@ -29,16 +33,16 @@ let userData = {
   trafic_routier: 0
 };
 
-// La carte Leaflet
+// Carte Leaflet et couches
 let map = null;
-let cozyRouteLayer = null;   // Couche GEOJSON
-let routeLayer = null;       // Couche itinéraire (facultatif)
-let clickMarkers = [];       // Marqueurs posés par clic (pour le routing)
+let cozyRouteLayer = null;
+let routeLayer = null;     // itinéraire
+let clickMarkers = [];     // 2 points max (marqueurs) => route
 
-// Radar Chart (si besoin)
+// Radar chart (facultatif)
 let radarChart = null;
 
-// Liste des thèmes
+// Liste de thèmes (sliders)
 const themes = [
   "odorat",
   "marchabilite",
@@ -52,10 +56,10 @@ const themes = [
 ];
 
 /***********************************************
- * 1) Initialisation de la page
+ * 1) init
  ***********************************************/
 window.addEventListener("load", () => {
-  console.log("[INIT] Démarrage CozyRoute");
+  console.log("[INIT] CozyRoute start");
   initMap();
   initDirectionsPanel();
   initRadarChart();
@@ -63,33 +67,23 @@ window.addEventListener("load", () => {
 });
 
 /***********************************************
- * 2) initMap : crée la carte, charge le GeoJSON
+ * 2) initMap : carte + chargement geojson
  ***********************************************/
 function initMap() {
-  // Crée la carte Leaflet
-  map = L.map("map", {
-    zoomControl: true,
-    attributionControl: false
-  }).setView([49.0389, 2.0760], 13);
+  map = L.map("map").setView([49.0389, 2.0760], 13);
+  console.log("[MAP] carte créée");
 
-  console.log("[MAP] Carte initialisée");
-
-  // Charge le GeoJSON
   fetch("cozyroute.geojson")
-    .then((resp) => {
-      if (!resp.ok) throw new Error("Erreur réseau sur cozyroute.geojson");
+    .then(resp => {
+      if (!resp.ok) throw new Error("Erreur geojson");
       return resp.json();
     })
-    .then((data) => {
+    .then(data => {
       console.log(`[GEOJSON] Features: ${data.features.length}`);
       cozyRouteLayer = L.geoJSON(data, {
-        style: (feature) => {
-          // ex: feature.properties.class = "handicap-3"
-          const geojsonClass = feature.properties.class || "";
-          // Ajoute intensity-0 => "handicap-3 intensity-0"
-          const finalClass = (geojsonClass + " intensity-0").trim();
-          console.log("Tronçon créé:", finalClass);
-
+        style: feature => {
+          const c = feature.properties.class || "";
+          const finalClass = (c + " intensity-0").trim();
           return {
             color: "#FFFFFF",
             weight: 3,
@@ -98,71 +92,43 @@ function initMap() {
         }
       }).addTo(map);
 
-      // Ajuste la vue
       map.fitBounds(cozyRouteLayer.getBounds());
-      console.log("[MAP] Vue ajustée sur cozyRouteLayer");
+      console.log("[MAP] Vue ajustée sur layer");
     })
-    .catch((err) => {
-      console.error("[GEOJSON] Erreur:", err);
+    .catch(err => {
+      console.error("[GEOJSON] erreur:", err);
     });
 
-  // Optionnel : écoute le clic sur la carte pour routing
-  map.on("click", (e) => {
+  // Clic sur la carte => 1er / 2e point
+  map.on("click", e => {
     handleMapClick(e.latlng);
   });
 }
 
 /***********************************************
- * 3) UI Buttons : burger, goto-map, etc.
- ***********************************************/
-function initUIButtons() {
-  const gotoMapBtn = document.getElementById("goto-map");
-  if (gotoMapBtn) {
-    gotoMapBtn.addEventListener("click", () => {
-      document.getElementById("questionnaire-overlay").classList.add("hidden");
-    });
-  }
-
-  const burgerBtn = document.getElementById("burger-menu");
-  if (burgerBtn) {
-    burgerBtn.addEventListener("click", () => {
-      document.getElementById("questionnaire-overlay").classList.toggle("hidden");
-    });
-  }
-
-  const searchBtn = document.getElementById("search-button");
-  if (searchBtn) {
-    searchBtn.addEventListener("click", () => {
-      const address = document.getElementById("search-input").value.trim();
-      if (!address) {
-        alert("Veuillez saisir une adresse.");
-        return;
-      }
-      console.log("[SEARCH] address:", address);
-      // ex: geocodeAddress(address);
-    });
-  }
-}
-
-/***********************************************
- * 4) handleMapClick: pose 2 marqueurs => getRoute
+ * 3) handleMapClick : 
+ *    On pose un marqueur (1er ou 2e).
+ *    S'il y en a déjà 2, on clear + recommence.
+ *    Si on obtient 2 points => getRoute
  ***********************************************/
 function handleMapClick(latlng) {
-  // Si on a déjà 2 marqueurs, on reset
+  // si 2 => clear
   if (clickMarkers.length === 2) {
     clearRouteAndMarkers();
   }
+  // Ajout marker
+  const mk = L.marker([latlng.lat, latlng.lng]).addTo(map);
+  clickMarkers.push(mk);
 
-  const marker = L.marker([latlng.lat, latlng.lng]).addTo(map);
-  clickMarkers.push(marker);
-
+  // si 2 => route
   if (clickMarkers.length === 2) {
-    const latlngA = clickMarkers[0].getLatLng();
-    const latlngB = clickMarkers[1].getLatLng();
-    getRoute(latlngA.lat, latlngA.lng, latlngB.lat, latlngB.lng);
+    const A = clickMarkers[0].getLatLng();
+    const B = clickMarkers[1].getLatLng();
+    getRoute(A.lat, A.lng, B.lat, B.lng);
   }
 }
 
+// efface marqueurs et itinéraire
 function clearRouteAndMarkers() {
   if (routeLayer) {
     map.removeLayer(routeLayer);
@@ -173,9 +139,14 @@ function clearRouteAndMarkers() {
 }
 
 /***********************************************
- * 5) getRoute (OpenRouteService) : facultatif
+ * 4) getRoute : ORS directions
  ***********************************************/
 function getRoute(lat1, lng1, lat2, lng2) {
+  console.log(`[ROUTE] from ${lat1},${lng1} to ${lat2},${lng2}`);
+  if (routeLayer) {
+    map.removeLayer(routeLayer);
+    routeLayer = null;
+  }
   const routeUrl = "https://api.openrouteservice.org/v2/directions/foot-walking";
   const bodyData = {
     coordinates: [
@@ -185,85 +156,71 @@ function getRoute(lat1, lng1, lat2, lng2) {
   };
 
   fetch(routeUrl, {
-    method: "POST",
-    headers: {
+    method:"POST",
+    headers:{
       "accept": "*/*",
       "authorization": ORS_API_KEY,
       "content-type": "application/json"
     },
     body: JSON.stringify(bodyData)
   })
-  .then(resp => {
-    if (!resp.ok) throw new Error("Erreur ORS");
-    return resp.json();
+  .then(r => {
+    if (!r.ok) throw new Error("ORS route error");
+    return r.json();
   })
   .then(data => {
     if (!data || !data.routes || data.routes.length===0) {
-      throw new Error("Aucun itinéraire trouvé");
+      throw new Error("Itinéraire introuvable");
     }
     const route = data.routes[0];
-    console.log("[ROUTE] Distance=", route.summary.distance);
+    console.log(`[ROUTE] distance = ${route.summary.distance} m`);
 
-    const decoded = decodePolyline(route.geometry);
+    const coordsDecoded = decodePolyline(route.geometry);
     const routeGeo = {
-      type: "Feature",
+      type:"Feature",
       geometry: {
-        type: "LineString",
-        coordinates: decoded.map(([la, ln]) => [ln, la])
+        type:"LineString",
+        coordinates: coordsDecoded.map(([la, ln]) => [ln, la])
       },
-      properties: {}
+      properties:{}
     };
 
-    if (routeLayer) {
-      map.removeLayer(routeLayer);
-    }
-
     routeLayer = L.geoJSON(routeGeo, {
-      style: {
-        color: "#1976D2",
-        weight: 4
-      }
+      style:{color:"#1976D2", weight:4}
     }).addTo(map);
 
-    map.fitBounds(routeLayer.getBounds(), { padding:[20,20] });
+    map.fitBounds(routeLayer.getBounds(), {padding:[20,20]});
     showDirectionsPanel(route);
   })
   .catch(err => {
-    console.error("[ROUTE] Erreur:", err);
-    alert(err.message);
+    console.error("[ROUTE] error:", err);
   });
 }
 
-/***********************************************
- * decodePolyline : si tu as besoin de ORS
- ***********************************************/
+// decode polyline ORS
 function decodePolyline(encoded) {
-  let currentPosition = 0;
-  let currentLat = 0;
-  let currentLng = 0;
-  const coords = [];
+  let currentPosition=0, currentLat=0, currentLng=0;
+  const coords=[];
 
-  while (currentPosition < encoded.length) {
+  while(currentPosition<encoded.length) {
     let shift=0, result=0, byte=null;
     // lat
     do {
-      byte = encoded.charCodeAt(currentPosition++) - 63;
+      byte=encoded.charCodeAt(currentPosition++)-63;
       result |= (byte & 0x1F) << shift;
-      shift += 5;
-    } while (byte>=0x20);
-
-    const deltaLat = (result & 1) ? ~(result>>1) : (result>>1);
+      shift +=5;
+    }while(byte>=0x20);
+    const deltaLat = (result & 1)? ~(result>>1) : (result>>1);
     currentLat += deltaLat;
 
     // lng
     shift=0; result=0;
     do {
-      byte = encoded.charCodeAt(currentPosition++) - 63;
-      result |= (byte & 0x1F) << shift;
-      shift += 5;
-    } while (byte>=0x20);
-
-    const deltaLng = (result & 1) ? ~(result >>1) : (result>>1);
+      byte=encoded.charCodeAt(currentPosition++)-63;
+      result |= (byte & 0x1F)<< shift;
+      shift +=5;
+    }while(byte>=0x20);
+    const deltaLng = (result &1)? ~(result>>1) : (result>>1);
     currentLng += deltaLng;
 
     coords.push([currentLat/1e5, currentLng/1e5]);
@@ -272,29 +229,27 @@ function decodePolyline(encoded) {
 }
 
 /***********************************************
- * showDirectionsPanel : affiche distance + étapes
+ * showDirectionsPanel
  ***********************************************/
 function showDirectionsPanel(route) {
   const panel = document.getElementById("directions-panel");
   panel.classList.remove("hidden");
-
-  const distKm = (route.summary.distance/1000).toFixed(2);
-  const durMin = (route.summary.duration/60).toFixed(0);
+  const dist = (route.summary.distance/1000).toFixed(2);
+  const dur  = (route.summary.duration/60).toFixed(0);
   document.getElementById("directions-summary").textContent =
-    `Distance : ${distKm} km | Durée : ~${durMin} min`;
+    `Distance : ${dist} km | Durée : ~${dur} min`;
 
-  const ul = document.getElementById("directions-steps");
-  ul.innerHTML = "";
-
+  const stepsUl = document.getElementById("directions-steps");
+  stepsUl.innerHTML="";
   if (route.segments && route.segments.length>0) {
     route.segments.forEach(seg => {
       seg.steps.forEach(step => {
-        const li = document.createElement("li");
-        const stepDist = (step.distance||0).toFixed(0);
-        const instr = step.instruction||"";
-        const name = (step.name && step.name!=="-") ? `(${step.name})` :"";
-        li.textContent = `${stepDist} m - ${instr} ${name}`;
-        ul.appendChild(li);
+        const li=document.createElement("li");
+        const stDist=(step.distance||0).toFixed(0);
+        const instr= step.instruction||"";
+        const name = step.name && step.name!=="-" ? `(${step.name})`:"";
+        li.textContent=`${stDist} m - ${instr} ${name}`;
+        stepsUl.appendChild(li);
       });
     });
   }
@@ -303,133 +258,177 @@ function showDirectionsPanel(route) {
 function initDirectionsPanel() {
   const closeBtn = document.getElementById("close-directions");
   if (closeBtn) {
-    closeBtn.addEventListener("click", () => {
+    closeBtn.addEventListener("click", ()=> {
       document.getElementById("directions-panel").classList.add("hidden");
     });
   }
 }
 
 /***********************************************
- * 6) Radar Chart (optionnel)
+ * 5) Radar Chart (optionnel)
  ***********************************************/
 function initRadarChart() {
-  const ctx = document.getElementById("radarChart");
-  if (!ctx) return;  // si pas de canvas radarChart
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels: themes.map(t => t.charAt(0).toUpperCase()+t.slice(1)),
-      datasets: [{
-        label: "Mon niveau de gêne",
-        data: themes.map(t => userData[t]),
+  const ctx=document.getElementById("radarChart");
+  if (!ctx) return;
+  radarChart=new Chart(ctx, {
+    type:"radar",
+    data:{
+      labels: themes.map(t=> t.charAt(0).toUpperCase()+t.slice(1)),
+      datasets:[{
+        label:"Niveau de gêne",
+        data: themes.map(t=> userData[t]),
         backgroundColor: "rgba(103,58,183,0.2)",
         borderColor: "rgba(103,58,183,1)",
-        borderWidth: 2
+        borderWidth:2
       }]
     },
-    options: {
-      responsive: true,
-      scales: {
-        r: {
-          min: 0,
-          max: 5
+    options:{
+      responsive:true,
+      scales:{
+        r:{
+          min:0,
+          max:5
         }
       }
     }
   });
-  console.log("[RADAR] Radar Chart initialisé");
+  console.log("[RADAR] init OK");
 }
 
 function updateRadarChart() {
   if (!radarChart) return;
-  radarChart.data.datasets[0].data = themes.map(t => userData[t]);
+  radarChart.data.datasets[0].data = themes.map(t=> userData[t]);
   radarChart.update();
 }
 
 /***********************************************
- * 7) Questionnaire => updateQuestionValue
+ * 6) updateQuestionValue => sliders
  ***********************************************/
 function updateQuestionValue(theme, value) {
   console.log(`[SLIDER] ${theme} => ${value}`);
-  userData[theme] = parseInt(value, 10);
-  // Màj le <span id="xxx-value">
-  document.getElementById(theme + "-value").textContent = value;
-
-  // Radar Chart ?
+  userData[theme]= parseInt(value,10);
+  // Màj affichage
+  document.getElementById(theme+"-value").textContent=value;
+  // Radar
   updateRadarChart();
-
-  // Màj du style
+  // Màj intensité
   updateRoadStyle();
 }
 
 /***********************************************
- * 8) updateRoadStyle : 
- *    On force l'attribut class du <path> 
- *    en remplacant "intensity-X" par "intensity-userVal"
+ * 7) updateRoadStyle => intensité
  ***********************************************/
 function updateRoadStyle() {
-  if (!cozyRouteLayer) {
-    console.warn("[STYLE] cozyRouteLayer non dispo");
-    return;
-  }
-  console.log("[STYLE] Mise à jour intensité");
+  if (!cozyRouteLayer) return;
+  console.log("[STYLE] Mise à jour intensités…");
 
-  // Pour chaque thème
-  for (const theme of themes) {
-    const userVal = userData[theme];
-    console.log(`  [STYLE] theme=${theme} / userVal=${userVal}`);
+  // Parcourt tous les thèmes
+  for(const theme of themes) {
+    const userVal=userData[theme];
+    console.log(`  => Thème=${theme}, userVal=${userVal}`);
 
-    // On parcourt chaque tronçon
     cozyRouteLayer.eachLayer(layer => {
-      // classe initiale : ex: "handicap-3 intensity-0"
-      const oldClass = layer.options.className || "";
-      
-      // On vérifie si ce path concerne le "theme-"
-      if (oldClass.includes(theme + "-")) {
-        console.log(`    Tronçon avant: "${oldClass}"`);
-        // On remplace "intensity-\d+" => "intensity-userVal"
-        let newClass = oldClass.replace(/intensity-\d+/, `intensity-${userVal}`);
+      const oldClass=layer.options.className||"";
+      // Vérifie si oldClass contient "marchabilite-", "handicap-", etc.
+      if (oldClass.includes(theme+"-")) {
+        console.log(`     Tronçon avant: "${oldClass}"`);
+        // Replace intensity-\d+ => intensity-userVal
+        const newClass = oldClass.replace(/intensity-\d+/, `intensity-${userVal}`);
 
-        // 1) On met setStyle pour garder la couleur #FFF, etc.
+        // setStyle pour la couleur + épaisseur
         layer.setStyle({
-          color: "#FFFFFF",
-          weight: 3
-          // NE PAS mettre className ici => Leaflet ne le re-applique pas
+          color:"#FFFFFF",
+          weight:3
         });
 
-        // 2) On force la classe HTML du <path>
+        // Force la classe HTML du <path>
         if (layer._path) {
           layer._path.setAttribute("class", newClass + " leaflet-interactive");
         }
 
-        // 3) On met à jour layer.options.className si besoin
-        layer.options.className = newClass;
-
-        console.log(`    Tronçon après: "${newClass}"`);
+        // Màj dans layer.options
+        layer.options.className=newClass;
+        console.log(`     Tronçon après: "${newClass}"`);
       }
     });
   }
 }
 
 /***********************************************
- * 9) Optionnel : Géolocalisation
+ * 8) UI / Rechercher une adresse => Autocomplete
+ *    => sur input >=4 chars => fetch suggestions
+ *    => on clique => on handleMapClick coords
+ ***********************************************/
+
+// 8.1) Sur input : "keyup" ou "input"
+function onAddressInput(value) {
+  if (value.length<4) {
+    // vider suggestions
+    displaySuggestions([]);
+    return;
+  }
+  geocodeORS(value)
+    .then(suggestions => {
+      displaySuggestions(suggestions);
+    })
+    .catch(err => {
+      console.error("[AUTOCOMPLETE] erreur:", err);
+      displaySuggestions([]);
+    });
+}
+
+// 8.2) geocodeORS : autocomplétion
+function geocodeORS(query) {
+  const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
+
+  return fetch(url)
+    .then(r => {
+      if (!r.ok) throw new Error("Erreur ORS geocode");
+      return r.json();
+    })
+    .then(data => {
+      if (!data || !data.features) return [];
+      // On récupère titre + coords
+      return data.features.map(f => ({
+        label: f.properties.label,
+        coord: [f.geometry.coordinates[1], f.geometry.coordinates[0]]
+        // lat, lng
+      }));
+    });
+}
+
+// 8.3) displaySuggestions : 
+function displaySuggestions(list) {
+  const container = document.getElementById("autocomplete-results");
+  if (!container) return;  // si pas de <div id="autocomplete-results">
+  container.innerHTML = "";
+  list.forEach(item => {
+    const li=document.createElement("li");
+    li.textContent=item.label;
+    li.style.cursor="pointer";
+    li.addEventListener("click", ()=>{
+      // user a cliqué => place un marker => handleMapClick
+      container.innerHTML=""; // clear suggestions
+      handleMapClick({lat:item.coord[0], lng:item.coord[1]});
+    });
+    container.appendChild(li);
+  });
+}
+
+/***********************************************
+ * 9) askUserLocation : si on veut un bouton "Me localiser"
+ *    => 1er ou 2e point
  ***********************************************/
 function askUserLocation() {
   if (!navigator.geolocation) {
-    alert("Géoloc non supportée");
+    alert("Pas support géoloc");
     return;
   }
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      L.marker([lat, lng]).addTo(map);
-      map.setView([lat,lng], 14);
-      console.log("[GEOLOC] Position OK");
-    },
-    err => {
-      console.warn("[GEOLOC] Erreur:", err);
-    },
-    { enableHighAccuracy:true }
-  );
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const lat=pos.coords.latitude, lng=pos.coords.longitude;
+    // Place comme 1er ou 2e marker
+    handleMapClick({lat, lng});
+  }, err=>{
+    console.warn("[GEOLOC] erreur:", err);
+  }, {enableHighAccuracy:true});
 }
