@@ -66,6 +66,32 @@ window.addEventListener("load", () => {
   initUIButtons();
 });
 
+function initUIButtons() {
+  const gotoMapBtn = document.getElementById("goto-map");
+  if (gotoMapBtn) {
+    gotoMapBtn.addEventListener("click", () => {
+      document.getElementById("questionnaire-overlay").classList.add("hidden");
+    });
+  }
+  const burgerBtn = document.getElementById("burger-menu");
+  if (burgerBtn) {
+    burgerBtn.addEventListener("click", () => {
+      document.getElementById("questionnaire-overlay").classList.toggle("hidden");
+    });
+  }
+  const searchBtn = document.getElementById("search-button");
+  if (searchBtn) {
+    searchBtn.addEventListener("click", () => {
+      const address = document.getElementById("search-input").value.trim();
+      if (!address) {
+        alert("Veuillez saisir une adresse.");
+        return;
+      }
+      console.log("[SEARCH] address:", address);
+      // ex: geocodeAddress(address);
+    });
+  }
+}
 /***********************************************
  * 2) initMap : carte + chargement geojson
  ***********************************************/
