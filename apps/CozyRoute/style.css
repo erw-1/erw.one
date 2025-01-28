@@ -155,6 +155,42 @@ form#question-form {
   width: 150px;
 }
 
+input#odorat-range {
+    accent-color: var(--odorat-color)
+}
+
+input#marchabilite-range {
+    accent-color: var(--marchabilite-color)
+}
+
+input#claustrophobie-range {
+    accent-color: var(--claustrophobie-color)
+}
+
+input#agoraphobie-range {
+    accent-color: var(--agoraphobie-color)
+}
+
+input#pollution-range {
+    accent-color: var(--pollution-color)
+}
+
+input#bruit-range {
+    accent-color: var(--bruit-color)
+}
+
+input#eclairage-range {
+    accent-color: var(--eclairage-color)
+}
+
+input#handicap-range {
+    accent-color: var(--handicap-color)
+}
+
+input#trafic_routier-range {
+    accent-color: var(--trafic_routier-color)
+}
+
 #goto-map {
   display: inline-block;
   margin-top: 20px;
