@@ -77,60 +77,46 @@ window.addEventListener("load", () => {
 /***********************************************
  * 1) initMap() : création carte, chargement GeoJSON
  ***********************************************/
+// Crée la carte et charge le GeoJSON
 function initMap() {
+  // 1) Créer la carte Leaflet
   map = L.map("map", {
     zoomControl: true,
     attributionControl: false
   }).setView([49.0389, 2.0760], 13);
 
+  // 2) Charger le GeoJSON
   fetch("cozyroute.geojson")
-    .then((resp) => resp.json())
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error("Erreur réseau ou fichier introuvable");
+      }
+      return response.json();
+    })
     .then((geojsonData) => {
+      // 3) Afficher le GeoJSON
       cozyRouteLayer = L.geoJSON(geojsonData, {
-        onEachFeature: (feature, layer) => {
-          // feature.properties.class ex: "odorat-3"
-          // On parse => routeTheme="odorat", routeVal=3
-          const classField = feature.properties.class || ""; 
-          let routeTheme = "";
-          let routeVal = 0;
-          
-          // ex: "odorat-3" => [ "odorat", "3" ]
-          const parts = classField.split("-");
-          if (parts.length === 2) {
-            routeTheme = parts[0];
-            routeVal = parseInt(parts[1], 10);
-          }
-
-          // On stocke ces infos (plus facile pour updateRoadStyle)
-          feature.properties._routeTheme = routeTheme;
-          feature.properties._routeValue = routeVal;
-        },
+        // Pour chaque tronçon, on copie directement
+        // la valeur feature.properties.class (ex: "odorat-3")
+        // dans le style Leaflet
         style: (feature) => {
-          // Ex: "odorat-3"
-          const routeTheme = feature.properties._routeTheme || "";
-          const routeValue = feature.properties._routeValue || 0;
-
-          // On crée la "classe" de base
-          // ex: "odorat-3 intensity-0"
-          // Au départ, intensité=0 => "odorat-intensity-0"
+          // Classe venue du GeoJSON
+          const geojsonClass = feature.properties.class || "";
+          // Style de base + className
           return {
-            color: "#FFFFFF",
-            weight: 3,
-            className: `${routeTheme}-${routeValue} ${routeTheme}-intensity-0`
+            color: "#FFFFFF",   // trait blanc
+            weight: 3,          // épaisseur 3
+            className: geojsonClass  // ex: "handicap-2"
           };
         }
       }).addTo(map);
 
+      // 4) Centrer la vue sur l'emprise de cozyrouteLayer
       map.fitBounds(cozyRouteLayer.getBounds());
     })
     .catch((err) => {
-      console.error("Erreur chargement geojson :", err);
+      console.error("Erreur chargement cozyroute.geojson :", err);
     });
-
-  // Clic sur la carte => pose marqueurs (facultatif)
-  map.on("click", (e) => {
-    handleMapClick(e.latlng);
-  });
 }
 
 
