@@ -66,8 +66,8 @@ html, body {
 #autocomplete-results {
   position: absolute;      /* Pour qu’il se superpose en dessous de l’input */
   background: #fff;        /* Fond blanc */
-  border: 1px solid #ccc;  /* Petite bordure grise */
   list-style: none;         /* Retire les puces par défaut */
+  top: 30px;
   margin: 0;
   padding: 0;
   width: 200px;            /* Même largeur que l’input */
