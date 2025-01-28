@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>CozyRoute</title>
+  <!-- Import Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-sA+UmyvNTyS90IOm41TD0NkT+XV1SgZ2CbuTJyLAgi8="
+    crossorigin=""
+  />
+  <!-- Import Chart.js (pour le radar chart) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/chart.js"
+    integrity="sha384-+bNwdy1Ln2h8KIgHrgwksSk8F5KNq8jl8DesAtWx0/PUOE4PS7zL8Gt5ngy5f0F1"
+    crossorigin="anonymous"
+  ></script>
+  
+  <!-- Fichier CSS principal -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header flottant -->
+  <header id="app-header">
+    <div id="header-left">
+      <button id="burger-menu" title="Ouvrir/Fermer le questionnaire">&#9776;</button>
+      <h1>CozyRoute</h1>
+    </div>
+    <div id="header-right">
+      <!-- Recherche d'adresse -->
+      <input type="text" id="search-input" placeholder="Rechercher une adresse" />
+      <button id="search-button">OK</button>
+    </div>
+  </header>
+
+  <!-- Vue 1 : Overlay Questionnaire -->
+  <div id="questionnaire-overlay">
+    <div id="questionnaire">
+      <h2>Questionnaire</h2>
+      
+      <form id="question-form">
+        <!-- Exemple de thèmes, répéter pour tous -->
+        <div class="question-group" id="odorat-input">
+          <label for="odorat-range">Odorat : <span id="odorat-value">0</span>/5</label>
+          <input
+            type="range"
+            id="odorat-range"
+            name="odorat"
+            min="0"
+            max="5"
+            value="0"
+            step="1"
+            oninput="updateQuestionValue('odorat', this.value)"
+          />
+        </div>
+        
+        <div class="question-group" id="marchabilite-input">
+          <label for="marchabilite-range">Marchabilité : <span id="marchabilite-value">0</span>/5</label>
+          <input
+            type="range"
+            id="marchabilite-range"
+            name="marchabilite"
+            min="0"
+            max="5"
+            value="0"
+            step="1"
+            oninput="updateQuestionValue('marchabilite', this.value)"
+          />
+        </div>
+        
+        <!-- ... Ajouter claustrophobie, agoraphobie, pollution, bruit, eclairage, handicap, trafic_routier ... -->
+        
+      </form>
+
+      <!-- Radar Chart -->
+      <canvas id="radarChart" width="300" height="300"></canvas>
+      
+      <!-- Bouton pour basculer sur la carte -->
+      <button id="goto-map">Accéder à la carte</button>
+    </div>
+  </div>
+
+  <!-- Vue 2 : Carte Leaflet -->
+  <div id="map"></div>
+
+  <!-- Fichiers JS -->
+  <!-- Leaflet -->
+  <script
+    src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-+YTHonw2d6S6Za7zw2R1DeqAz2FAx4GLk1Bq4P5pKu8="
+    crossorigin=""
+  ></script>
+  <!-- Script principal -->
+  <script src="script.js"></script>
+</body>
+</html>

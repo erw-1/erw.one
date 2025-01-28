@@ -1,0 +1,6500 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "cozyroute",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.009086199, 49.049826204, 113.4 ],
+					[ 2.006346069, 49.051535486, 123 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CRS DES MERVEILLES_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 0,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 3,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.040394171, 49.046282948, 94.9 ],
+					[ 2.039343304, 49.047258304, 96.1 ],
+					[ 2.039484044, 49.048154161, 96.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU MARTELET_1",
+				"marchabilite" : 1,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 5,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.039484044, 49.048154161, 96.4 ],
+					[ 2.040094259, 49.050812654, 95.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU MARTELET_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 5,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 4,
+				"handicap" : 4,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.017984644, 49.043073212, 102.9 ],
+					[ 2.014529897, 49.045350552, 107.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE L'ORANGERIE_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 2,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.014529897, 49.045350552, 107.6 ],
+					[ 2.014205983, 49.045335305, 107.7 ],
+					[ 2.012917136, 49.044484836, 111.4 ],
+					[ 2.011398879, 49.045411149, 110.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE L'ORANGERIE_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 3,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.04162064, 49.043055513, 66.2 ],
+					[ 2.043386019, 49.043382518, 59 ],
+					[ 2.046010229, 49.042903418, 45.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE COURDIMANCHE_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 5,
+				"eclairage" : 5,
+				"handicap" : 0,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.025490082, 49.05226152, 108.7 ],
+					[ 2.028033588, 49.05203394, 106.2 ],
+					[ 2.028668434, 49.051520222, 104.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU HAUT PAVE_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 4,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.028668434, 49.051520222, 104.9 ],
+					[ 2.030436915, 49.051253051, 101.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU HAUT PAVE_2",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.040094259, 49.050812654, 95.8 ],
+					[ 2.045339458, 49.050294235, 97.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU CENTAURE_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 2,
+				"pollution" : 3,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 0,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.058245387, 49.026795744, 25.8 ],
+					[ 2.057377442, 49.025795269, 28.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE NEUVILLE_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 3,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 3,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.057377442, 49.025795269, 28.3 ],
+					[ 2.056404171, 49.023444192, 29.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE NEUVILLE_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 4,
+				"odorat" : 2,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 1,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.059949257, 49.031854734, 25.7 ],
+					[ 2.058114758, 49.031433903, 30.6 ],
+					[ 2.057779607, 49.030610268, 24.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE NEUVILLE_3",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 2,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.057779607, 49.030610268, 24.6 ],
+					[ 2.058324981, 49.029796238, 24.2 ],
+					[ 2.058852291, 49.029449668, 23.6 ],
+					[ 2.059157087, 49.028703888, 23.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE NEUVILLE_4",
+				"marchabilite" : 2,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.059157087, 49.028703888, 23.8 ],
+					[ 2.058974019, 49.028467752, 24.2 ],
+					[ 2.057572735, 49.028069189, 24.9 ],
+					[ 2.058245387, 49.026795744, 25.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE NEUVILLE_5",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 0,
+				"handicap" : 4,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.062744786, 49.041465116, 52.8 ],
+					[ 2.064830659, 49.036989715, 39.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "ALL DE BELLEVUE_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.045339458, 49.050294235, 97.9 ],
+					[ 2.044634521, 49.048456909, 98 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD D'OSNY_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 2,
+				"odorat" : 4,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.046516751, 49.053827639, 91.5 ],
+					[ 2.046357201, 49.054022403, 91.1 ],
+					[ 2.043329721, 49.054155697, 90 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD D'OSNY_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 1,
+				"odorat" : 3,
+				"agoraphobie" : 0,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 0,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.046820425, 49.054203226, 91.5 ],
+					[ 2.046864793, 49.056108126, 88.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD D'OSNY_3",
+				"marchabilite" : 0,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.06156201, 49.031304425, 25.9 ],
+					[ 2.062498018, 49.030438576, 25.9 ],
+					[ 2.06328392, 49.028643532, 24.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV JEAN BART_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 1,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.029714166, 49.048200634, 102.3 ],
+					[ 2.027038443, 49.046880504, 106.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE L'ARABESQUE_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 4,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.027038443, 49.046880504, 106.6 ],
+					[ 2.027078646, 49.046341291, 107.6 ],
+					[ 2.026873644, 49.046112125, 107.6 ],
+					[ 2.026402408, 49.046074136, 108.3 ],
+					[ 2.025886533, 49.046446731, 107.4 ],
+					[ 2.02495784, 49.045855595, 105.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE L'ARABESQUE_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.070948462, 49.02743605, 25.6 ],
+					[ 2.073258305, 49.025203099, 26 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES PLANTES_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 2,
+				"bruit" : 0,
+				"eclairage" : 3,
+				"handicap" : 1,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.073258305, 49.025203099, 26 ],
+					[ 2.074635936, 49.024859423, 26.7 ],
+					[ 2.075565667, 49.024096833, 26 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES PLANTES_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 3,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.075565667, 49.024096833, 26 ],
+					[ 2.076680364, 49.023850026, 26.1 ],
+					[ 2.07809788, 49.024029077, 27 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES PLANTES_3",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 5,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.07809788, 49.024029077, 27 ],
+					[ 2.07967337, 49.023704847, 26.2 ],
+					[ 2.082060018, 49.023748297, 28.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES PLANTES_4",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 4,
+				"agoraphobie" : 3,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.022544794, 49.044473647, 102.4 ],
+					[ 2.022798126, 49.044822812, 102.9 ],
+					[ 2.02495784, 49.045855595, 105.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES GARIOTTES_1",
+				"marchabilite" : 1,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 0,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.020255119, 49.042577392, 96.2 ],
+					[ 2.02048871, 49.042304131, 92.5 ],
+					[ 2.021052676, 49.042282651, 89.7 ],
+					[ 2.023083674, 49.041570808, 88.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES GARIOTTES_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 3,
+				"bruit" : 0,
+				"eclairage" : 0,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.023083674, 49.041570808, 88.4 ],
+					[ 2.023321336, 49.041661765, 87.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES GARIOTTES_3",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 0,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.020255119, 49.042577392, 94.7 ],
+					[ 2.020662858, 49.042498887, 95.4 ],
+					[ 2.021499856, 49.042651384, 96.5 ],
+					[ 2.022505197, 49.043525533, 100.5 ],
+					[ 2.02248528, 49.043711512, 100.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES GARIOTTES_4",
+				"marchabilite" : 0,
+				"claustrophobie" : 0,
+				"odorat" : 0,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.029457429, 49.046420784, 106.2 ],
+					[ 2.031199132, 49.044793749, 105.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU JOUR_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 2,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.043210341, 49.041707649, 44.7 ],
+					[ 2.042188919, 49.041614081, 44.1 ],
+					[ 2.039683495, 49.039814492, 35.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE VAUREAL_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 2,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.039683495, 49.039814492, 35.4 ],
+					[ 2.037721442, 49.037856439, 28.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE VAUREAL_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 0,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 3,
+				"eclairage" : 3,
+				"handicap" : 0,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.037721442, 49.037856439, 28.7 ],
+					[ 2.037025737, 49.03737406, 27.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE VAUREAL_3",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 3,
+				"bruit" : 3,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.046010229, 49.042903418, 45.8 ],
+					[ 2.043210341, 49.041707649, 44.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE VAUREAL_4",
+				"marchabilite" : 3,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 0,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.046010229, 49.042903418, 45.8 ],
+					[ 2.048252621, 49.043476033, 44.5 ],
+					[ 2.049981554, 49.043704636, 42.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE VAUREAL_5",
+				"marchabilite" : 1,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 2,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.049981554, 49.043704636, 42.1 ],
+					[ 2.052339561, 49.043643232, 43.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE VAUREAL_6",
+				"marchabilite" : 4,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.052339561, 49.043643232, 43.5 ],
+					[ 2.057162426, 49.042155195, 45 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE VAUREAL_7",
+				"marchabilite" : 1,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 4,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.057162426, 49.042155195, 45 ],
+					[ 2.058304439, 49.041635407, 43.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE VAUREAL_8",
+				"marchabilite" : 3,
+				"claustrophobie" : 5,
+				"odorat" : 3,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 5,
+				"eclairage" : 3,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.036796607, 49.048410502, 97.4 ],
+					[ 2.031375978, 49.048951413, 98.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DU CHEMIN DE FER_1",
+				"marchabilite" : 1,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 0,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.017634357, 49.042211578, 103.2 ],
+					[ 2.02212487, 49.039389552, 95.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "PAS DE LA SONATE_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.082626735, 49.023016149, 24 ],
+					[ 2.083451973, 49.0234397, 24.4 ],
+					[ 2.085137143, 49.025036117, 25.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES PATIS_1",
+				"marchabilite" : 1,
+				"claustrophobie" : 3,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 4,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.082626735, 49.023016149, 24 ],
+					[ 2.081462443, 49.022590897, 24 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES PATIS_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 0,
+				"handicap" : 4,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.081462443, 49.022590897, 24 ],
+					[ 2.077210164, 49.02189105, 24.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES PATIS_3",
+				"marchabilite" : 5,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 2,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.077210164, 49.02189105, 24.3 ],
+					[ 2.07488863, 49.022035048, 24.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES PATIS_4",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.07488863, 49.022035048, 24.5 ],
+					[ 2.072799859, 49.022466759, 24.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES PATIS_5",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 0,
+				"eclairage" : 1,
+				"handicap" : 3,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.072799859, 49.022466759, 24.4 ],
+					[ 2.069671174, 49.024311185, 24.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES PATIS_6",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 2,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.069671174, 49.024311185, 24.6 ],
+					[ 2.068152329, 49.025588921, 24.3 ],
+					[ 2.068066412, 49.026261787, 24.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES PATIS_7",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 5,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 0,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.068066412, 49.026261787, 24.3 ],
+					[ 2.066490764, 49.027955408, 23.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES PATIS_8",
+				"marchabilite" : 5,
+				"claustrophobie" : 4,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.02248528, 49.043711512, 100.9 ],
+					[ 2.020146042, 49.045022417, 105 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES CLOS BILLES_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 4,
+				"pollution" : 4,
+				"bruit" : 3,
+				"eclairage" : 3,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.025731906, 49.044627231, 102.8 ],
+					[ 2.02334684, 49.043286889, 99.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES CLOS BILLES_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.02334684, 49.043286889, 99.2 ],
+					[ 2.02248528, 49.043711512, 100.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES CLOS BILLES_3",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 1,
+				"handicap" : 1,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.010131445, 49.049178384, 113.7 ],
+					[ 2.009331346, 49.048235689, 113.7 ],
+					[ 2.009301683, 49.047496276, 114.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'EVASION_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.009301683, 49.047496276, 114.9 ],
+					[ 2.010932249, 49.046496279, 112 ],
+					[ 2.012357157, 49.046092558, 107.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'EVASION_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 4,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.010131445, 49.049178384, 113.7 ],
+					[ 2.011569535, 49.049810695, 114.7 ],
+					[ 2.012651847, 49.049873549, 114.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'EVASION_3",
+				"marchabilite" : 0,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.012651847, 49.049873549, 114.8 ],
+					[ 2.014310823, 49.048890827, 113 ],
+					[ 2.015023749, 49.04794439, 108.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'EVASION_4",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.085137143, 49.025036117, 25.2 ],
+					[ 2.088155728, 49.027407893, 25.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DES MARAICHERS_1",
+				"marchabilite" : 1,
+				"claustrophobie" : 1,
+				"odorat" : 2,
+				"agoraphobie" : 5,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.088155728, 49.027407893, 25.2 ],
+					[ 2.089296699, 49.028656363, 25.691823568 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DES MARAICHERS_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 1,
+				"agoraphobie" : 2,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.017732908, 49.051749629, 114.1 ],
+					[ 2.022741491, 49.051245547, 110.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R CHEVEE_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.022741491, 49.051245547, 110.2 ],
+					[ 2.023029561, 49.05200414, 110.9 ],
+					[ 2.022508867, 49.052192338, 110.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R CHEVEE_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.015023749, 49.04794439, 108.5 ],
+					[ 2.017388321, 49.049572478, 110.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU HAZAY_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 5,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 2,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.012357157, 49.046092558, 107.3 ],
+					[ 2.015023749, 49.04794439, 108.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU HAZAY_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 4,
+				"pollution" : 1,
+				"bruit" : 5,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.036379829, 49.046690533, 101.4 ],
+					[ 2.03801606, 49.045133594, 99.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES GENOTTES_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 3,
+				"bruit" : 0,
+				"eclairage" : 0,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.037717548, 49.051052615, 96 ],
+					[ 2.037232313, 49.05029158, 96.9 ],
+					[ 2.036796607, 49.048410502, 97.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES GENOTTES_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 0,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.040872504, 49.054746675, 89 ],
+					[ 2.039027323, 49.052946075, 93 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES GENOTTES_3",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 5,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 5,
+				"eclairage" : 4,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.058304439, 49.041635407, 43.3 ],
+					[ 2.059496773, 49.040903784, 40.9 ],
+					[ 2.060626419, 49.039779594, 37.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R NATIONALE_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 4,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.060626419, 49.039779594, 37.6 ],
+					[ 2.061866376, 49.037543903, 30.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R NATIONALE_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 2,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 0,
+				"handicap" : 3,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.061866376, 49.037543903, 30.9 ],
+					[ 2.061946322, 49.036071583, 34 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R NATIONALE_3",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 2,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 3,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.061946322, 49.036071583, 34 ],
+					[ 2.064830659, 49.036989715, 39.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R NATIONALE_4",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 4,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.062532123, 49.046272525, 70.5 ],
+					[ 2.062772026, 49.046395793, 71.7 ],
+					[ 2.063083408, 49.047257881, 78.6 ],
+					[ 2.063300668, 49.048939326, 85 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES MERITES_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 4,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 4,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.062532123, 49.046272525, 70.5 ],
+					[ 2.061559322, 49.044920586, 67.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES MERITES_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 5,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 5,
+				"bruit" : 1,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.061559322, 49.044920586, 67.8 ],
+					[ 2.062636062, 49.043471346, 59.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES MERITES_3",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 0,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 0,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.01279934, 49.052763981, 120 ],
+					[ 2.009086199, 49.049826204, 113.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD D'ERKRATH_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 3,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.017024104, 49.040126652, 101.8 ],
+					[ 2.018376712, 49.03999024, 101 ],
+					[ 2.020571552, 49.039218628, 97.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES ESSARTS_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 0,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 4,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.020571552, 49.039218628, 97.2 ],
+					[ 2.02144108, 49.039166367, 95.7 ],
+					[ 2.02212487, 49.039389552, 95.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES ESSARTS_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 3,
+				"agoraphobie" : 5,
+				"pollution" : 0,
+				"bruit" : 4,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.018199277, 49.043007524, 102.3 ],
+					[ 2.019188351, 49.042640624, 99.1 ],
+					[ 2.020721718, 49.041336656, 96.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES ESSARTS_3",
+				"marchabilite" : 5,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.020721718, 49.041336656, 96.4 ],
+					[ 2.022349576, 49.040603552, 92.3 ],
+					[ 2.022597254, 49.040162244, 93.1 ],
+					[ 2.022493306, 49.039726168, 94 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES ESSARTS_4",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 0,
+				"pollution" : 3,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 1,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.066705939, 49.042155096, 48.4 ],
+					[ 2.065802651, 49.042031174, 48.9 ],
+					[ 2.064200618, 49.042198549, 53.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE PONTOISE_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.064200618, 49.042198549, 53.9 ],
+					[ 2.062371012, 49.042166295, 54.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE PONTOISE_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.045306878, 49.040909628, 25 ],
+					[ 2.045850874, 49.040708027, 23.8 ],
+					[ 2.047228462, 49.041293572, 25.2 ],
+					[ 2.048095212, 49.041393066, 23 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.076202487, 49.018891509, 24.2 ],
+					[ 2.07106674, 49.020442648, 23.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 5,
+				"odorat" : 3,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.07106674, 49.020442648, 23.5 ],
+					[ 2.068122298, 49.02162392, 23.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_3",
+				"marchabilite" : 3,
+				"claustrophobie" : 5,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 0,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.068122298, 49.02162392, 23.4 ],
+					[ 2.065697113, 49.023880162, 23.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_4",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.065697113, 49.023880162, 23.1 ],
+					[ 2.063505179, 49.0264601, 23.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_5",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 4,
+				"eclairage" : 3,
+				"handicap" : 5,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.063505179, 49.0264601, 23.3 ],
+					[ 2.062307267, 49.027370676, 23.4 ],
+					[ 2.060326211, 49.028179793, 25 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_6",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 5,
+				"bruit" : 0,
+				"eclairage" : 1,
+				"handicap" : 4,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.060326211, 49.028179793, 25 ],
+					[ 2.05952826, 49.028822798, 23.6 ],
+					[ 2.059200261, 49.02933999, 23.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_7",
+				"marchabilite" : 0,
+				"claustrophobie" : 5,
+				"odorat" : 4,
+				"agoraphobie" : 2,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.059200261, 49.02933999, 23.7 ],
+					[ 2.058646313, 49.031306782, 23.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_8",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 5,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 0,
+				"handicap" : 3,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.058646313, 49.031306782, 23.6 ],
+					[ 2.057416914, 49.033262873, 23.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_9",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 0,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.057416914, 49.033262873, 23.7 ],
+					[ 2.056706633, 49.035321943, 23.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_10",
+				"marchabilite" : 1,
+				"claustrophobie" : 2,
+				"odorat" : 0,
+				"agoraphobie" : 0,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.056706633, 49.035321943, 23.4 ],
+					[ 2.055367713, 49.037800501, 24.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_11",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 1,
+				"handicap" : 1,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.055367713, 49.037800501, 24.3 ],
+					[ 2.054046295, 49.039461775, 24.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_12",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 4,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.054046295, 49.039461775, 24.3 ],
+					[ 2.053259696, 49.040143489, 23.9 ],
+					[ 2.052513985, 49.040532371, 23.9 ],
+					[ 2.050762249, 49.040882728, 23.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_13",
+				"marchabilite" : 3,
+				"claustrophobie" : 2,
+				"odorat" : 5,
+				"agoraphobie" : 0,
+				"pollution" : 3,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.050762249, 49.040882728, 23.7 ],
+					[ 2.049770409, 49.040891971, 23.3 ],
+					[ 2.046943801, 49.040184359, 23.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_14",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 4,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.046943801, 49.040184359, 23.2 ],
+					[ 2.044519027, 49.038456548, 23.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_15",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.044519027, 49.038456548, 23.6 ],
+					[ 2.041658052, 49.036806136, 24 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_16",
+				"marchabilite" : 4,
+				"claustrophobie" : 4,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.041658052, 49.036806136, 24 ],
+					[ 2.038776771, 49.033768722, 24.995429807 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_17",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 5,
+				"pollution" : 3,
+				"bruit" : 3,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.048095212, 49.041393066, 25 ],
+					[ 2.048619182, 49.041612134, 23.1 ],
+					[ 2.050900549, 49.041772262, 23.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_18",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 3,
+				"bruit" : 3,
+				"eclairage" : 3,
+				"handicap" : 3,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.050900549, 49.041772262, 23.5 ],
+					[ 2.052736785, 49.04151519, 23.6 ],
+					[ 2.054235214, 49.040804017, 22.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_19",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.054235214, 49.040804017, 22.7 ],
+					[ 2.055574643, 49.039432438, 22.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_20",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 3,
+				"handicap" : 1,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.055574643, 49.039432438, 22.7 ],
+					[ 2.056994734, 49.037230584, 24.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_21",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.056994734, 49.037230584, 24.4 ],
+					[ 2.058100374, 49.03524206, 24.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_22",
+				"marchabilite" : 0,
+				"claustrophobie" : 2,
+				"odorat" : 0,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.058100374, 49.03524206, 24.1 ],
+					[ 2.058753667, 49.033381267, 23.3 ],
+					[ 2.059236312, 49.032859894, 23.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_23",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 0,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.059236312, 49.032859894, 23.5 ],
+					[ 2.059950787, 49.032450042, 22.6 ],
+					[ 2.060087576, 49.032523951, 25 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE HALAGE_24",
+				"marchabilite" : 1,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.029021039, 49.052782887, 105.1 ],
+					[ 2.025183212, 49.053157356, 106.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE L'ECLIPSE_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 4,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.013456651, 49.053236079, 121.8 ],
+					[ 2.01102468, 49.053060517, 118.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DES EXPLORATEURS_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 5,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.01102468, 49.053060517, 118.8 ],
+					[ 2.008875715, 49.052681318, 117.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DES EXPLORATEURS_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 0,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 4,
+				"eclairage" : 3,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.008875715, 49.052681318, 117.9 ],
+					[ 2.006351695, 49.051670417, 123.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DES EXPLORATEURS_3",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 3,
+				"handicap" : 1,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.052161972, 49.042132024, 25 ],
+					[ 2.049332142, 49.042117752, 23.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE LA VOIRIE_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.049332142, 49.042117752, 23.7 ],
+					[ 2.047933003, 49.041660651, 25.5 ],
+					[ 2.048095212, 49.041393066, 23 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE LA VOIRIE_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 4,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.052161972, 49.042132024, 25 ],
+					[ 2.053103187, 49.041974889, 24.2 ],
+					[ 2.055727401, 49.039681827, 24 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE LA VOIRIE_3",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.055727401, 49.039681827, 24 ],
+					[ 2.056025434, 49.039539394, 23.9 ],
+					[ 2.056294108, 49.039657506, 24.2 ],
+					[ 2.056814699, 49.039235359, 23.8 ],
+					[ 2.058145602, 49.036970744, 23.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE LA VOIRIE_4",
+				"marchabilite" : 1,
+				"claustrophobie" : 5,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 4,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.058145602, 49.036970744, 23.9 ],
+					[ 2.058351745, 49.03525752, 24.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE LA VOIRIE_5",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.058351745, 49.03525752, 24.3 ],
+					[ 2.059394936, 49.033842204, 24.2 ],
+					[ 2.059257797, 49.033032716, 24.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE LA VOIRIE_6",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 4,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.059257797, 49.033032716, 24.6 ],
+					[ 2.060087576, 49.032523951, 25 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE LA VOIRIE_7",
+				"marchabilite" : 4,
+				"claustrophobie" : 5,
+				"odorat" : 0,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.082268611, 49.034459812, 42 ],
+					[ 2.080910228, 49.033627524, 41.6 ],
+					[ 2.078897154, 49.033006915, 39.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 2,
+				"odorat" : 2,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 1,
+				"handicap" : 1,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.078941107, 49.032919127, 39.5 ],
+					[ 2.08113487, 49.033607662, 41.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 5,
+				"eclairage" : 3,
+				"handicap" : 5,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.08113487, 49.033607662, 41.8 ],
+					[ 2.08284047, 49.034759129, 43.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_3",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 2,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 2,
+				"eclairage" : 1,
+				"handicap" : 0,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.069172267, 49.029869125, 31.5 ],
+					[ 2.061209295, 49.02571795, 36.01080258 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_4",
+				"marchabilite" : 5,
+				"claustrophobie" : 5,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 5,
+				"eclairage" : 0,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.078897154, 49.033006915, 39.5 ],
+					[ 2.074331571, 49.031884632, 36.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_5",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 0,
+				"agoraphobie" : 3,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 1,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.070748386, 49.030516195, 33.5 ],
+					[ 2.07247298, 49.031274996, 35.4 ],
+					[ 2.074379809, 49.031786987, 36.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_6",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 5,
+				"bruit" : 3,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.074379809, 49.031786987, 36.5 ],
+					[ 2.078941107, 49.032919127, 39.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_7",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 5,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.0612443, 49.025688095, 36 ],
+					[ 2.069357986, 49.029807618, 31.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_8",
+				"marchabilite" : 5,
+				"claustrophobie" : 5,
+				"odorat" : 0,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.074331571, 49.031884632, 36.5 ],
+					[ 2.072407235, 49.031357218, 35.4 ],
+					[ 2.070668934, 49.030600108, 33.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'HAUTIL_9",
+				"marchabilite" : 3,
+				"claustrophobie" : 0,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 0,
+				"eclairage" : 1,
+				"handicap" : 3,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.040723206, 49.042765091, 72.2 ],
+					[ 2.037364829, 49.040860623, 65.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "PROM DU VAL MAUROIS_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 0,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.037364829, 49.040860623, 65.3 ],
+					[ 2.035956572, 49.039723486, 61.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "PROM DU VAL MAUROIS_2",
+				"marchabilite" : 3,
+				"claustrophobie" : 4,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.035956572, 49.039723486, 61.7 ],
+					[ 2.034045053, 49.037629993, 55.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "PROM DU VAL MAUROIS_3",
+				"marchabilite" : 0,
+				"claustrophobie" : 2,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.034045053, 49.037629993, 55.7 ],
+					[ 2.0326191, 49.037010631, 51.3 ],
+					[ 2.030712195, 49.036733577, 48.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "PROM DU VAL MAUROIS_4",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 5,
+				"agoraphobie" : 2,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.030712195, 49.036733577, 48.2 ],
+					[ 2.030574804, 49.036913215, 53.7 ],
+					[ 2.02989834, 49.037102887, 62.8 ],
+					[ 2.028352929, 49.037169526, 70.7 ],
+					[ 2.027126998, 49.037412287, 74 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "PROM DU VAL MAUROIS_5",
+				"marchabilite" : 0,
+				"claustrophobie" : 0,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.027126998, 49.037412287, 74 ],
+					[ 2.026126432, 49.038837562, 77.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "PROM DU VAL MAUROIS_6",
+				"marchabilite" : 2,
+				"claustrophobie" : 2,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 4,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 1,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.026126432, 49.038837562, 77.5 ],
+					[ 2.025925927, 49.04033856, 79.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "PROM DU VAL MAUROIS_7",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 0,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.015023749, 49.04794439, 107.6 ],
+					[ 2.015483648, 49.047787198, 107.5 ],
+					[ 2.018413972, 49.04749555, 108.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU TERROIR_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 3,
+				"bruit" : 1,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.018413972, 49.04749555, 108.9 ],
+					[ 2.022071844, 49.047141414, 108.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU TERROIR_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 2,
+				"pollution" : 3,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 4,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.074475691, 49.029630456, 34.3 ],
+					[ 2.073072501, 49.030019794, 35.2 ],
+					[ 2.072994451, 49.030484996, 36.9 ],
+					[ 2.07248291, 49.030872214, 37.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue de la Croix des Chateaux Saint-Sylvère_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 5,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 4,
+				"eclairage" : 5,
+				"handicap" : 2,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.07248291, 49.030872214, 37.9 ],
+					[ 2.073158337, 49.031186767, 37.1 ],
+					[ 2.074354689, 49.030894751, 37.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue de la Croix des Chateaux Saint-Sylvère_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 5,
+				"agoraphobie" : 5,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 3,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.047632936, 49.051827631, 95.1 ],
+					[ 2.049306291, 49.049279897, 94.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DE L'ECRIN BOISE_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 4,
+				"pollution" : 5,
+				"bruit" : 2,
+				"eclairage" : 0,
+				"handicap" : 4,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.07571145, 49.037339223, 45.5 ],
+					[ 2.080697141, 49.040177691, 51.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES 3 FONTAINES_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 0,
+				"pollution" : 3,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.080697141, 49.040177691, 51.8 ],
+					[ 2.081788893, 49.040008895, 49.4 ],
+					[ 2.084249641, 49.039150935, 48.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES 3 FONTAINES_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.035023994, 49.046773169, 101.7 ],
+					[ 2.03231077, 49.04702111, 102.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE MONDETOUR_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 5,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 0,
+				"eclairage" : 3,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.03231077, 49.04702111, -1000 ],
+					[ 2.032511914, 49.04687166, 103.4 ],
+					[ 2.033352103, 49.046784904, 103.4 ],
+					[ 2.034777199, 49.046656085, 102.4 ],
+					[ 2.035023994, 49.046773169, -1000 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE MONDETOUR_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 5,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 1,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.060202249, 49.043187954, 60.6 ],
+					[ 2.061502185, 49.043163049, 61 ],
+					[ 2.063420291, 49.043523324, 62.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU NORD_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 2,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.063420291, 49.043523324, 62.1 ],
+					[ 2.064613318, 49.043586575, 59.9 ],
+					[ 2.066210819, 49.043293268, 56.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU NORD_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 2,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.066210819, 49.043293268, 56.2 ],
+					[ 2.067413461, 49.04274509, 50.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU NORD_3",
+				"marchabilite" : 1,
+				"claustrophobie" : 4,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 3,
+				"bruit" : 4,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.068118624, 49.037295833, 44.7 ],
+					[ 2.068224147, 49.038808261, 45.3 ],
+					[ 2.069086527, 49.039532535, 46.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU NORD_4",
+				"marchabilite" : 1,
+				"claustrophobie" : 0,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.053809223, 49.044964095, 70.8 ],
+					[ 2.051733717, 49.046106832, 82 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU NORD_5",
+				"marchabilite" : 1,
+				"claustrophobie" : 4,
+				"odorat" : 2,
+				"agoraphobie" : 1,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 4,
+				"handicap" : 3,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.051733717, 49.046106832, 82 ],
+					[ 2.051933696, 49.0475157, 88 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU NORD_6",
+				"marchabilite" : 1,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 5,
+				"bruit" : 2,
+				"eclairage" : 0,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.054328585, 49.044688525, 70.1 ],
+					[ 2.060202249, 49.043187954, 60.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU NORD_7",
+				"marchabilite" : 1,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.051120687, 49.053674356, 90.5 ],
+					[ 2.047007779, 49.053984403, 91.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA PLAINE DES SPORTS_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 0,
+				"pollution" : 3,
+				"bruit" : 4,
+				"eclairage" : 5,
+				"handicap" : 2,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.052904828, 49.053745985, 87.5 ],
+					[ 2.055485434, 49.052754678, 87.4 ],
+					[ 2.056157015, 49.052688918, 86.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA PLAINE DES SPORTS_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 4,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.056157015, 49.052688918, 86.6 ],
+					[ 2.056414804, 49.052958012, 86.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA PLAINE DES SPORTS_3",
+				"marchabilite" : 2,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 3,
+				"handicap" : 3,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.056414804, 49.052958012, 86.6 ],
+					[ 2.056231674, 49.053473625, 86.4 ],
+					[ 2.05280725, 49.054069834, 87.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA PLAINE DES SPORTS_4",
+				"marchabilite" : 1,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.05280725, 49.054069834, 87.1 ],
+					[ 2.052578087, 49.054032058, 87.4 ],
+					[ 2.052576708, 49.053882777, 87.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA PLAINE DES SPORTS_5",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 5,
+				"agoraphobie" : 5,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.059397494, 49.043287764, 60.9 ],
+					[ 2.053658784, 49.044737204, 70 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "ALL DES ACACIAS_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.053658784, 49.044737204, 70 ],
+					[ 2.051842675, 49.045009735, 72.9 ],
+					[ 2.049045135, 49.045091031, 77.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "ALL DES ACACIAS_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 5,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 2,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.06404551, 49.0387389, 35.1 ],
+					[ 2.066023519, 49.039562708, 38.8 ],
+					[ 2.066893806, 49.039770001, 40.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU PONCEAU_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 2,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.066893806, 49.039770001, 40.5 ],
+					[ 2.067243135, 49.040044282, 42.4 ],
+					[ 2.066705939, 49.042155096, 48.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU PONCEAU_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 3,
+				"bruit" : 4,
+				"eclairage" : 0,
+				"handicap" : 2,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.060731481, 49.036316571, 30 ],
+					[ 2.060070944, 49.037219629, 29.2 ],
+					[ 2.059568229, 49.03733709, 29.9 ],
+					[ 2.058999903, 49.038282229, 29.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES ROCHES_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 4,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.052161972, 49.042132024, 25 ],
+					[ 2.052366195, 49.042558971, 26.6 ],
+					[ 2.053676045, 49.042589981, 26.4 ],
+					[ 2.054655672, 49.04227667, 27.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES ROCHES_2",
+				"marchabilite" : 3,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 2,
+				"pollution" : 0,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.054655672, 49.04227667, 27.7 ],
+					[ 2.055191382, 49.042003024, 31.5 ],
+					[ 2.05725478, 49.040233365, 27.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES ROCHES_3",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.066972236, 49.03373226, 36.2 ],
+					[ 2.068252368, 49.032282739, 32 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES GROUETTES_1",
+				"marchabilite" : 1,
+				"claustrophobie" : 0,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 4,
+				"bruit" : 2,
+				"eclairage" : 0,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.068252368, 49.032282739, 32 ],
+					[ 2.070591639, 49.03056354, 33.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES GROUETTES_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 0,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 4,
+				"eclairage" : 3,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.066972236, 49.03373226, 36.2 ],
+					[ 2.06809758, 49.032525231, 32.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES GROUETTES_3",
+				"marchabilite" : 5,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.06809758, 49.032525231, 32.1 ],
+					[ 2.070581664, 49.030662379, 33.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES GROUETTES_4",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 3,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.040872504, 49.054746675, 89 ],
+					[ 2.038213585, 49.055365664, 86.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DU PETIT ALBI_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.038213585, 49.055365664, 86.2 ],
+					[ 2.033108811, 49.055599363, 97.660641201 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DU PETIT ALBI_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 0,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 2,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.083806799, 49.038745602, 48.5 ],
+					[ 2.082535952, 49.039608153, 45.7 ],
+					[ 2.082064401, 49.039666597, 43.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE LA CROIX DES MAHEUX_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 5,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.082064401, 49.039666597, 43.8 ],
+					[ 2.079412068, 49.038058256, 41.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE LA CROIX DES MAHEUX_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 1,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.031375978, 49.048951413, 98.5 ],
+					[ 2.030950808, 49.047177403, 103.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA CONSTELLATION_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 5,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.030950808, 49.047177403, 103.2 ],
+					[ 2.03231077, 49.04702111, 102.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA CONSTELLATION_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 4,
+				"odorat" : 2,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 0,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.031375978, 49.048951413, 98.5 ],
+					[ 2.031841268, 49.050996408, 97.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA CONSTELLATION_3",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 4,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.068859618, 49.02938291, 30 ],
+					[ 2.067882362, 49.028668526, 25.2 ],
+					[ 2.066490764, 49.027955408, 23.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE NEUF_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 0,
+				"agoraphobie" : 4,
+				"pollution" : 3,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 0,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.064830659, 49.036989715, 39.5 ],
+					[ 2.065912304, 49.036697789, 40.8 ],
+					[ 2.068118624, 49.037295833, 44.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DU TERTRE_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.08454846, 49.038261178, 47.7 ],
+					[ 2.082071657, 49.036626356, 43.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA POSTE_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 4,
+				"pollution" : 3,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 1,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.084743633, 49.03812958, 47.7 ],
+					[ 2.082183411, 49.036571457, 43.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA POSTE_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 0,
+				"odorat" : 4,
+				"agoraphobie" : 3,
+				"pollution" : 3,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.064857158, 49.027166651, 24.6 ],
+					[ 2.065949616, 49.025426128, 24.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 2,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.065949616, 49.025426128, 24.7 ],
+					[ 2.067961922, 49.023322249, 24.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_2",
+				"marchabilite" : 3,
+				"claustrophobie" : 2,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.067961922, 49.023322249, 24.6 ],
+					[ 2.06928473, 49.022298379, 24.7 ],
+					[ 2.070918689, 49.021534086, 24.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_3",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 0,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.070918689, 49.021534086, 24.7 ],
+					[ 2.073787142, 49.020546397, 24.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_4",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.073787142, 49.020546397, 24.8 ],
+					[ 2.078631814, 49.01944523, 25 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_5",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 2,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.078631814, 49.01944523, 25 ],
+					[ 2.080478545, 49.019469281, 24.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_6",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.080478545, 49.019469281, 24.8 ],
+					[ 2.084772456, 49.020358174, 24.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_7",
+				"marchabilite" : 3,
+				"claustrophobie" : 5,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 2,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.084772456, 49.020358174, 24.6 ],
+					[ 2.088331593, 49.022376179, 25 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_8",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 4,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 5,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.088331593, 49.022376179, 25 ],
+					[ 2.089368188, 49.023692443, 25 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_9",
+				"marchabilite" : 2,
+				"claustrophobie" : 2,
+				"odorat" : 0,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 0,
+				"handicap" : 3,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.089368188, 49.023692443, 25 ],
+					[ 2.085137143, 49.025036117, 25.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_10",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 2,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.06328392, 49.028643532, 24.6 ],
+					[ 2.064063857, 49.027859181, 24.7 ],
+					[ 2.064232514, 49.027378502, 24.4 ],
+					[ 2.064857158, 49.027166651, 24.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DU BORD DE L'EAU_11",
+				"marchabilite" : 1,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 0,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.023252703, 49.047417194, 108.2 ],
+					[ 2.023604211, 49.049529643, 105.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU MOULIN A VENT_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.02339184, 49.0495468, 105.5 ],
+					[ 2.022940804, 49.047634969, 107.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU MOULIN A VENT_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.024872326, 49.054411949, 105 ],
+					[ 2.024935336, 49.054699313, 104.4 ],
+					[ 2.025671334, 49.055359918, 102.3 ],
+					[ 2.027932777, 49.056393459, 98.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU MOULIN A VENT_3",
+				"marchabilite" : 5,
+				"claustrophobie" : 4,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 4,
+				"handicap" : 5,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.023604211, 49.049529643, 105.5 ],
+					[ 2.024255237, 49.052376489, 109.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU MOULIN A VENT_4",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 2,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.024043986, 49.052406246, 109.4 ],
+					[ 2.02339184, 49.0495468, 105.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU MOULIN A VENT_5",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 5,
+				"agoraphobie" : 0,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 0,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.078941107, 49.032919127, 39.5 ],
+					[ 2.079411436, 49.031923684, 38.9 ],
+					[ 2.079048373, 49.031112486, 37.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV BERNARD HIRSCH_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.079302007, 49.034932582, 43 ],
+					[ 2.078343046, 49.034175265, 42.3 ],
+					[ 2.078897154, 49.033006915, 39.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV BERNARD HIRSCH_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 5,
+				"pollution" : 2,
+				"bruit" : 5,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.076883136, 49.038903005, 44.2 ],
+					[ 2.072929586, 49.03756417, 43.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 2,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 0,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 3,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.069897045, 49.035900522, 42.1 ],
+					[ 2.071405899, 49.03680154, 42.5 ],
+					[ 2.073039067, 49.037484084, 43.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 0,
+				"eclairage" : 5,
+				"handicap" : 3,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.066972236, 49.03373226, 36.2 ],
+					[ 2.069312011, 49.035500327, 41.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_3",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.067505759, 49.034257061, 38.1 ],
+					[ 2.069501392, 49.035769766, 41.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_4",
+				"marchabilite" : 1,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 4,
+				"bruit" : 3,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.072929586, 49.03756417, 43.5 ],
+					[ 2.070882767, 49.036685989, 42.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_5",
+				"marchabilite" : 1,
+				"claustrophobie" : 4,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.070882767, 49.036685989, 42.5 ],
+					[ 2.069501392, 49.035769766, 41.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_6",
+				"marchabilite" : 3,
+				"claustrophobie" : 0,
+				"odorat" : 5,
+				"agoraphobie" : 2,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 0,
+				"handicap" : 3,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.073039067, 49.037484084, 43.6 ],
+					[ 2.077036696, 49.038805269, 44.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_7",
+				"marchabilite" : 1,
+				"claustrophobie" : 2,
+				"odorat" : 4,
+				"agoraphobie" : 1,
+				"pollution" : 5,
+				"bruit" : 5,
+				"eclairage" : 4,
+				"handicap" : 4,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.081032284, 49.041257531, 44.5 ],
+					[ 2.079444735, 49.039995447, 43.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_8",
+				"marchabilite" : 0,
+				"claustrophobie" : 0,
+				"odorat" : 4,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.079444735, 49.039995447, 43.8 ],
+					[ 2.077137083, 49.03900567, 44.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_9",
+				"marchabilite" : 5,
+				"claustrophobie" : 4,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 5,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 1,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.077215809, 49.038885778, 44.2 ],
+					[ 2.078791828, 49.039482376, 45.4 ],
+					[ 2.080821028, 49.040596781, 44 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_10",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 2,
+				"eclairage" : 1,
+				"handicap" : 0,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.080821028, 49.040596781, 44 ],
+					[ 2.081396698, 49.041070582, 43.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DU PORT_11",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 5,
+				"pollution" : 3,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.018397861, 49.047117741, 108.7 ],
+					[ 2.018357682, 49.046782899, 108.7 ],
+					[ 2.018688676, 49.046713665, 106.8 ],
+					[ 2.018531675, 49.045611722, 106.8 ],
+					[ 2.018766277, 49.044996766, 105.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "ALL DE LA FUTAIE_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.018766277, 49.044996766, 105.3 ],
+					[ 2.018955924, 49.044950655, 105.3 ],
+					[ 2.019585285, 49.045379333, 106.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "ALL DE LA FUTAIE_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 4,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.075295022, 49.040830425, 52.5 ],
+					[ 2.076582266, 49.041745851, 53.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DES MARJOBERTS_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 5,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.076582266, 49.041745851, 53.5 ],
+					[ 2.074349761, 49.043290624, -1000 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DES MARJOBERTS_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 1,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 5,
+				"bruit" : 5,
+				"eclairage" : 3,
+				"handicap" : 3,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.074349761, 49.043290624, -1000 ],
+					[ 2.073602761, 49.042991717, -1000 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DES MARJOBERTS_3",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.071744961, 49.036579353, 47.7 ],
+					[ 2.072295113, 49.036254485, 45.2 ],
+					[ 2.073409271, 49.03613, 44.7 ],
+					[ 2.073861401, 49.035855624, 45.7 ],
+					[ 2.074716738, 49.035979118, 46.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue du Chemin Dupuis Vert_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.074716738, 49.035979118, 46.1 ],
+					[ 2.075019241, 49.036349234, 45.6 ],
+					[ 2.075524387, 49.036399884, 46 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue du Chemin Dupuis Vert_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 2,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.04162064, 49.043055513, 66.2 ],
+					[ 2.042248851, 49.042517388, 55.4 ],
+					[ 2.039647108, 49.041263766, 50.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES VOIES DIEUX_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 0,
+				"agoraphobie" : 3,
+				"pollution" : 3,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.039647108, 49.041263766, 50.3 ],
+					[ 2.038212059, 49.040314382, 48.6 ],
+					[ 2.037749942, 49.040377223, 51.6 ],
+					[ 2.036769253, 49.039859496, 53.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES VOIES DIEUX_2",
+				"marchabilite" : 1,
+				"claustrophobie" : 5,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.036769253, 49.039859496, 53.6 ],
+					[ 2.036035392, 49.038867148, 49.2 ],
+					[ 2.035581769, 49.038546975, 48.5 ],
+					[ 2.035629222, 49.038348625, 45.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DES VOIES DIEUX_3",
+				"marchabilite" : 0,
+				"claustrophobie" : 2,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 0,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.075885778, 49.044587646, 57.202330425 ],
+					[ 2.073813838, 49.043657873, 57.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA VIOSNE_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 4,
+				"handicap" : 5,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.073813838, 49.043657873, 57.6 ],
+					[ 2.071857259, 49.042997125, 55 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA VIOSNE_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 3,
+				"handicap" : 0,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.073245038, 49.043337857, 56.6 ],
+					[ 2.076002109, 49.044504527, 57.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA VIOSNE_3",
+				"marchabilite" : 1,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 0,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.020146042, 49.045022417, 105 ],
+					[ 2.022716869, 49.046668273, 108.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_1",
+				"marchabilite" : 1,
+				"claustrophobie" : 0,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 4,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.033003896, 49.042859657, 98.2 ],
+					[ 2.029442189, 49.043212203, 100.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 1,
+				"handicap" : 0,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.081352459, 49.036073224, 40.9 ],
+					[ 2.07855088, 49.037953635, 42.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_3",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 4,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.045182966, 49.048017951, 97 ],
+					[ 2.045973672, 49.048092575, 97.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_4",
+				"marchabilite" : 3,
+				"claustrophobie" : 2,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 0,
+				"bruit" : 0,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.045973672, 49.048092575, 97.4 ],
+					[ 2.051933696, 49.0475157, 88 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_5",
+				"marchabilite" : 0,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 4,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.040394171, 49.046282948, 94.9 ],
+					[ 2.043847069, 49.04790841, 96.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_6",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 3,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.077136337, 49.038816826, 44.2 ],
+					[ 2.082793359, 49.034948508, 43.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_7",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 1,
+				"pollution" : 4,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 3,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.051933696, 49.0475157, 88 ],
+					[ 2.061220114, 49.046582403, 75.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_8",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 0,
+				"agoraphobie" : 0,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 5,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.061220114, 49.046582403, 75.8 ],
+					[ 2.065256928, 49.046586009, 76.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_9",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.065256928, 49.046586009, 76.4 ],
+					[ 2.067080813, 49.046260281, 73.6 ],
+					[ 2.068566689, 49.045711595, 68.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_10",
+				"marchabilite" : 0,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 3,
+				"pollution" : 2,
+				"bruit" : 1,
+				"eclairage" : 3,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.016372159, 49.040461226, 101.7 ],
+					[ 2.017634357, 49.042211578, 103.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_11",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 1,
+				"pollution" : 4,
+				"bruit" : 0,
+				"eclairage" : 0,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.077028884, 49.039013831, 44.2 ],
+					[ 2.074799855, 49.040524471, 50.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_12",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 4,
+				"agoraphobie" : 1,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.068690667, 49.045815967, 69.1 ],
+					[ 2.067107209, 49.046389974, 73.7 ],
+					[ 2.065552181, 49.046674631, 76.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_13",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 2,
+				"agoraphobie" : 2,
+				"pollution" : 3,
+				"bruit" : 4,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.065552181, 49.046674631, 76.4 ],
+					[ 2.061327244, 49.046710031, 75.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_14",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 2,
+				"agoraphobie" : 5,
+				"pollution" : 5,
+				"bruit" : 0,
+				"eclairage" : 0,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.061327244, 49.046710031, 75.8 ],
+					[ 2.051977885, 49.04764284, 88 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_15",
+				"marchabilite" : 1,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.017984644, 49.043073212, 103.1 ],
+					[ 2.016162502, 49.040409151, 101.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_16",
+				"marchabilite" : 0,
+				"claustrophobie" : 2,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 1,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.068876727, 49.045509875, 67.4 ],
+					[ 2.069969157, 49.044777376, 63.4 ],
+					[ 2.071707746, 49.042943814, 55 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_17",
+				"marchabilite" : 2,
+				"claustrophobie" : 4,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 4,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.071785864, 49.042858992, 55 ],
+					[ 2.073194888, 49.041473372, 53.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_18",
+				"marchabilite" : 0,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 4,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.073194888, 49.041473372, 53.6 ],
+					[ 2.076883136, 49.038903005, 44.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_19",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.077036696, 49.038805269, 45.9 ],
+					[ 2.082758218, 49.034924859, 43.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_20",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.082891177, 49.034753222, 43.2 ],
+					[ 2.085376693, 49.033165024, 43.497175959 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_21",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.018199277, 49.043007524, 103 ],
+					[ 2.020146042, 49.045022417, 105 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_22",
+				"marchabilite" : 4,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 0,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 5,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.034369242, 49.043363421, 97.6 ],
+					[ 2.036470565, 49.044234566, 97.7 ],
+					[ 2.03688548, 49.044579601, 98.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_23",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 4,
+				"bruit" : 5,
+				"eclairage" : 5,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.022350329, 49.046882005, 108.3 ],
+					[ 2.019365841, 49.044613194, 103.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_24",
+				"marchabilite" : 1,
+				"claustrophobie" : 5,
+				"odorat" : 5,
+				"agoraphobie" : 0,
+				"pollution" : 3,
+				"bruit" : 1,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.019365841, 49.044613194, 103.9 ],
+					[ 2.017984644, 49.043073212, 103.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_25",
+				"marchabilite" : 4,
+				"claustrophobie" : 4,
+				"odorat" : 1,
+				"agoraphobie" : 4,
+				"pollution" : 4,
+				"bruit" : 5,
+				"eclairage" : 3,
+				"handicap" : 0,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.03801606, 49.045133594, 99.9 ],
+					[ 2.040394171, 49.046282948, 94.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_26",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 4,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.051977885, 49.04764284, 88 ],
+					[ 2.045164198, 49.048220128, 97.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_27",
+				"marchabilite" : 0,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 5,
+				"pollution" : 2,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 3,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.028916791, 49.043365322, 100.2 ],
+					[ 2.026423253, 49.044962855, 104.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_28",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 0,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.03688548, 49.044579601, 98.9 ],
+					[ 2.034369242, 49.043363421, 97.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE L'OISE_29",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 5,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.059713764, 49.041912621, 48 ],
+					[ 2.059459463, 49.041755063, 49 ],
+					[ 2.060453577, 49.041243089, 49.4 ],
+					[ 2.060340453, 49.040994016, 48.2 ],
+					[ 2.061164617, 49.04049959, 44.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "SEN DE MENANDON_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 2,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.017040906, 49.053108096, 115 ],
+					[ 2.014116804, 49.053271173, 120.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU BONTEMPS_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.080214188, 49.035552849, 42.6 ],
+					[ 2.077907955, 49.037111517, 43.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE LA GARE_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 1,
+				"handicap" : 1,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.077907955, 49.037111517, 43.8 ],
+					[ 2.076749113, 49.037133187, 43.9 ],
+					[ 2.076455286, 49.036966369, 43.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE LA GARE_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 0,
+				"handicap" : 2,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.077584445, 49.031071575, 37.7 ],
+					[ 2.076421428, 49.030797361, 37 ],
+					[ 2.075627861, 49.030819131, 36.8 ],
+					[ 2.074745105, 49.031241268, 36.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU SUD_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 0,
+				"odorat" : 0,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 2,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.074745105, 49.031241268, 36.7 ],
+					[ 2.074379809, 49.031786987, 36.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU SUD_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 5,
+				"odorat" : 4,
+				"agoraphobie" : 1,
+				"pollution" : 4,
+				"bruit" : 1,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.069715672, 49.027093785, 24.8 ],
+					[ 2.071689095, 49.025171193, 25.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES VOIES_1",
+				"marchabilite" : 0,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 5,
+				"pollution" : 3,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.071689095, 49.025171193, 25.8 ],
+					[ 2.073751166, 49.024019902, 26.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES VOIES_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 4,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 5,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.073751166, 49.024019902, 26.3 ],
+					[ 2.075529834, 49.023574996, 26.6 ],
+					[ 2.078039999, 49.023361394, 26.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES VOIES_3",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.078039999, 49.023361394, 26.6 ],
+					[ 2.079809039, 49.023302127, 26.2 ],
+					[ 2.082033342, 49.023555655, 27.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES VOIES_4",
+				"marchabilite" : 3,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 4,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.082033342, 49.023555655, 27.8 ],
+					[ 2.082626735, 49.023016149, 24 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DES VOIES_5",
+				"marchabilite" : 4,
+				"claustrophobie" : 5,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 0,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.046342152, 49.044939212, 75.7 ],
+					[ 2.045616098, 49.044996392, 79.2 ],
+					[ 2.041127741, 49.044117167, 89.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "ALL DU VENT FRAIS_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 1,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 5,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.037472623, 49.043382935, 92.7 ],
+					[ 2.041127741, 49.044117167, 89.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "ALL DU VENT FRAIS_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 2,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.085137143, 49.025036117, 25.2 ],
+					[ 2.081945878, 49.025718561, 30 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE CHASSE MAREE_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.081945878, 49.025718561, 30 ],
+					[ 2.069633499, 49.029695549, 31.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE CHASSE MAREE_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 2,
+				"odorat" : 4,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 5,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.013887375, 49.052816979, 120 ],
+					[ 2.016779137, 49.051037732, 113.6 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "MAIL DU POINT DU JOUR_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 4,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 0,
+				"handicap" : 1,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.016779137, 49.051037732, 113.6 ],
+					[ 2.016755413, 49.05091794, 107.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "MAIL DU POINT DU JOUR_2",
+				"marchabilite" : 0,
+				"claustrophobie" : 4,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 3,
+				"eclairage" : 1,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.016755413, 49.05091794, 107.9 ],
+					[ 2.013660024, 49.052757562, 121.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "MAIL DU POINT DU JOUR_3",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.002481411, 49.053087898, 110.8 ],
+					[ 2.000101142, 49.051740545, 111 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DES NAVIGATEURS_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 3,
+				"pollution" : 0,
+				"bruit" : 5,
+				"eclairage" : 5,
+				"handicap" : 4,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.025626745, 49.050957852, 108.1 ],
+					[ 2.024617532, 49.05108005, 108.7 ],
+					[ 2.024764667, 49.051695416, 109.7 ],
+					[ 2.025406165, 49.051994669, 109.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DES GENEVRIERS_1",
+				"marchabilite" : 3,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.024822998, 49.049319232, 105.4 ],
+					[ 2.026710729, 49.049036898, 103.1 ],
+					[ 2.029479316, 49.049127639, 100.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA BELLE HEAUMIERE_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.029479316, 49.049127639, 100.1 ],
+					[ 2.031375978, 49.048951413, 98.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DE LA BELLE HEAUMIERE_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 1,
+				"agoraphobie" : 2,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 4,
+				"handicap" : 3,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.024093721, 49.047651535, 108.3 ],
+					[ 2.025352198, 49.04845757, 106.1 ],
+					[ 2.025294733, 49.048749353, 105.7 ],
+					[ 2.024721004, 49.048995581, 105.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "R DE LA PARABOLE_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 0,
+				"odorat" : 4,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.071397501, 49.034212581, 40.1 ],
+					[ 2.073541626, 49.033005283, 38.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU PARC_1",
+				"marchabilite" : 5,
+				"claustrophobie" : 4,
+				"odorat" : 2,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 4,
+				"eclairage" : 3,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.073541626, 49.033005283, 38.4 ],
+					[ 2.074331571, 49.031884632, 36.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "AV DU PARC_2",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 3,
+				"agoraphobie" : 4,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 3,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.069172267, 49.029869125, 31.5 ],
+					[ 2.065707745, 49.031192875, 28 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue du Brûloir_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 5,
+				"odorat" : 1,
+				"agoraphobie" : 0,
+				"pollution" : 5,
+				"bruit" : 3,
+				"eclairage" : 0,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.065707745, 49.031192875, 28 ],
+					[ 2.064720664, 49.031707648, 27.9 ],
+					[ 2.063986327, 49.032311609, 27.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue du Brûloir_2",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 5,
+				"eclairage" : 5,
+				"handicap" : 0,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.063986327, 49.032311609, 27.3 ],
+					[ 2.063045885, 49.033498462, 29.4 ],
+					[ 2.062208588, 49.034121391, 30 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue du Brûloir_3",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 1,
+				"eclairage" : 2,
+				"handicap" : 1,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.062208588, 49.034121391, 30 ],
+					[ 2.066223382, 49.035751516, 40 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue du Brûloir_4",
+				"marchabilite" : 3,
+				"claustrophobie" : 2,
+				"odorat" : 5,
+				"agoraphobie" : 1,
+				"pollution" : 2,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 4,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.066223382, 49.035751516, 40 ],
+					[ 2.068873432, 49.03631433, 44 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "Rue du Brûloir_5",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 0,
+				"pollution" : 2,
+				"bruit" : 0,
+				"eclairage" : 5,
+				"handicap" : 2,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.038551028, 49.052882016, 92.9 ],
+					[ 2.03274976, 49.053414547, 99.3 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_1",
+				"marchabilite" : 4,
+				"claustrophobie" : 3,
+				"odorat" : 4,
+				"agoraphobie" : 2,
+				"pollution" : 3,
+				"bruit" : 3,
+				"eclairage" : 5,
+				"handicap" : 4,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.057763979, 49.050912981, 90 ],
+					[ 2.046904326, 49.052018783, 95.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_2",
+				"marchabilite" : 3,
+				"claustrophobie" : 5,
+				"odorat" : 1,
+				"agoraphobie" : 1,
+				"pollution" : 1,
+				"bruit" : 4,
+				"eclairage" : 0,
+				"handicap" : 5,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.047632936, 49.051827631, 95.1 ],
+					[ 2.057730973, 49.050847079, 90.1 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_3",
+				"marchabilite" : 1,
+				"claustrophobie" : 2,
+				"odorat" : 4,
+				"agoraphobie" : 1,
+				"pollution" : 3,
+				"bruit" : 5,
+				"eclairage" : 1,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.015137602, 49.055065408, 114.8 ],
+					[ 2.011094441, 49.055933218, 114.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_4",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 1,
+				"bruit" : 2,
+				"eclairage" : 3,
+				"handicap" : 2,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.039126336, 49.052623146, 94 ],
+					[ 2.044068914, 49.052203974, 92.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_5",
+				"marchabilite" : 2,
+				"claustrophobie" : 5,
+				"odorat" : 0,
+				"agoraphobie" : 4,
+				"pollution" : 3,
+				"bruit" : 0,
+				"eclairage" : 5,
+				"handicap" : 0,
+				"trafic_routier" : 5
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.044068914, 49.052203974, 92.8 ],
+					[ 2.045993727, 49.051913539, 95.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_6",
+				"marchabilite" : 2,
+				"claustrophobie" : 3,
+				"odorat" : 2,
+				"agoraphobie" : 3,
+				"pollution" : 3,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.024974217, 49.05401352, 105.3 ],
+					[ 2.032066892, 49.053349698, 100.4 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_7",
+				"marchabilite" : 5,
+				"claustrophobie" : 2,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 2,
+				"bruit" : 5,
+				"eclairage" : 4,
+				"handicap" : 4,
+				"trafic_routier" : 3
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.032076671, 49.05348556, 100.7 ],
+					[ 2.025028833, 49.054237871, 105.2 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_8",
+				"marchabilite" : 1,
+				"claustrophobie" : 2,
+				"odorat" : 4,
+				"agoraphobie" : 0,
+				"pollution" : 1,
+				"bruit" : 1,
+				"eclairage" : 5,
+				"handicap" : 0,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.019662751, 49.054604248, 104.2 ],
+					[ 2.02409762, 49.054064852, 105.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_9",
+				"marchabilite" : 3,
+				"claustrophobie" : 0,
+				"odorat" : 2,
+				"agoraphobie" : 4,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 5,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.064915397, 49.050280957, 86.5 ],
+					[ 2.057763979, 49.050912981, 90 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_10",
+				"marchabilite" : 4,
+				"claustrophobie" : 4,
+				"odorat" : 4,
+				"agoraphobie" : 4,
+				"pollution" : 1,
+				"bruit" : 0,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.057730973, 49.050847079, 90.1 ],
+					[ 2.063953241, 49.050227603, 88 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_11",
+				"marchabilite" : 5,
+				"claustrophobie" : 0,
+				"odorat" : 3,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 4,
+				"eclairage" : 2,
+				"handicap" : 3,
+				"trafic_routier" : 4
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.063953241, 49.050227603, 88 ],
+					[ 2.064915397, 49.050280957, 86.5 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_12",
+				"marchabilite" : 5,
+				"claustrophobie" : 1,
+				"odorat" : 2,
+				"agoraphobie" : 0,
+				"pollution" : 2,
+				"bruit" : 2,
+				"eclairage" : 2,
+				"handicap" : 1,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.032728231, 49.053321754, 99.3 ],
+					[ 2.038506365, 49.052708108, 93.7 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_13",
+				"marchabilite" : 2,
+				"claustrophobie" : 2,
+				"odorat" : 5,
+				"agoraphobie" : 3,
+				"pollution" : 5,
+				"bruit" : 2,
+				"eclairage" : 1,
+				"handicap" : 3,
+				"trafic_routier" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.046019343, 49.052157432, 95.5 ],
+					[ 2.039171953, 49.052819542, 93.8 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "BD DE LA PAIX_14",
+				"marchabilite" : 4,
+				"claustrophobie" : 2,
+				"odorat" : 4,
+				"agoraphobie" : 5,
+				"pollution" : 0,
+				"bruit" : 3,
+				"eclairage" : 4,
+				"handicap" : 5,
+				"trafic_routier" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.04187644, 49.047872026, 95.1 ],
+					[ 2.041242907, 49.045510094, 92.9 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE L'IVRAIE_1",
+				"marchabilite" : 2,
+				"claustrophobie" : 0,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 5,
+				"bruit" : 5,
+				"eclairage" : 3,
+				"handicap" : 0,
+				"trafic_routier" : 2
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "LineString",
+				"coordinates" : [
+					[ 2.039812136, 49.047205401, 95 ],
+					[ 2.040091304, 49.048457558, 96.2 ],
+					[ 2.041480361, 49.048281611, 95 ]
+				]
+			},
+			"properties" : {
+				"id_route" : "CHE DE L'IVRAIE_2",
+				"marchabilite" : 4,
+				"claustrophobie" : 1,
+				"odorat" : 0,
+				"agoraphobie" : 2,
+				"pollution" : 4,
+				"bruit" : 3,
+				"eclairage" : 1,
+				"handicap" : 2,
+				"trafic_routier" : 2
+			}
+		}
+	]
+}
