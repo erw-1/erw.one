@@ -370,15 +370,16 @@ function initDirectionsPanel(){
 /***********************************************
  * 11) Radar Chart ...
  ***********************************************/
-function initRadarChart() {
-  // Configuration du graphique
-  const width = 400; // largeur du radar
-  const height = 400; // hauteur du radar
-  const margin = 50; // marges autour
-  const radius = Math.min(width, height) / 2 - margin; // rayon maximum
-  const maxValue = 5; // valeur maximale pour les axes
+// Variables globales pour angleScale et radialScale
+let angleScale, radialScale;
 
-  // Couleurs par thème (issues du CSS ou spécifiées ici)
+function initRadarChart() {
+  const width = 400;
+  const height = 400;
+  const margin = 50;
+  const radius = Math.min(width, height) / 2 - margin;
+  const maxValue = 5;
+
   const colors = [
     "var(--odorat-color)",
     "var(--marchabilite-color)",
@@ -391,8 +392,7 @@ function initRadarChart() {
     "var(--trafic_routier-color)"
   ];
 
-  // Accès au conteneur
-  const container = d3.select("#radarChart").html(""); // Vide le conteneur
+  const container = d3.select("#radarChart").html("");
   const svg = container.append("svg")
     .attr("width", width + margin * 2)
     .attr("height", height + margin * 2);
@@ -400,16 +400,16 @@ function initRadarChart() {
   const chart = svg.append("g")
     .attr("transform", `translate(${width / 2 + margin}, ${height / 2 + margin})`);
 
-  // Échelles pour les axes
-  const angleScale = d3.scaleLinear()
+  // Initialisation des échelles
+  angleScale = d3.scaleLinear()
     .domain([0, themes.length])
     .range([0, 2 * Math.PI]);
 
-  const radialScale = d3.scaleLinear()
+  radialScale = d3.scaleLinear()
     .domain([0, maxValue])
     .range([0, radius]);
 
-  // Ajout des axes
+  // Axes
   chart.selectAll(".axis")
     .data(themes)
     .enter()
@@ -421,7 +421,6 @@ function initRadarChart() {
     .attr("stroke", (d, i) => colors[i])
     .attr("stroke-width", 2);
 
-  // Cercles concentriques
   chart.selectAll(".circle")
     .data(d3.range(1, maxValue + 1))
     .enter()
@@ -432,7 +431,6 @@ function initRadarChart() {
     .attr("fill", "none")
     .attr("stroke", "#ddd");
 
-  // Ajout des étiquettes pour les axes
   chart.selectAll(".label")
     .data(themes)
     .enter()
@@ -444,12 +442,10 @@ function initRadarChart() {
     .text(d => d.charAt(0).toUpperCase() + d.slice(1))
     .style("font-size", "12px");
 
-  // Polygone des données
   const lineGenerator = d3.lineRadial()
     .radius(d => radialScale(d.value))
     .angle((d, i) => angleScale(i));
 
-  // Ajout du dégradé pour le polygone
   const gradientId = "polygonGradient";
   const gradient = svg.append("defs")
     .append("linearGradient")
@@ -478,7 +474,6 @@ function initRadarChart() {
 }
 
 function updateRadarChart() {
-  // Recalcul des données pour le polygone
   const chart = d3.select("#radarChart svg g");
   const lineGenerator = d3.lineRadial()
     .radius(d => radialScale(d.value))
