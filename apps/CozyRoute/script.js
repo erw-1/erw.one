@@ -374,37 +374,52 @@ function initRadarChart() {
   const ctx = document.getElementById("radarChart");
   if (!ctx) return;
 
-  // Helper: get a CSS custom property
+  // 1) Helper: read a CSS variable (e.g. "--odorat-color") from :root
   function getCssVar(varName) {
     return getComputedStyle(document.documentElement)
       .getPropertyValue(varName)
       .trim();
   }
 
+  // 2) Helper: if we have a #rrggbb format, append "90" for partial alpha
+  //    (Hex "90" ~ 56% opacity.)
+  function addHexAlpha(hex, alpha = "90") {
+    // Only append if it’s exactly #RRGGBB
+    if (/^#[0-9A-F]{6}$/i.test(hex)) {
+      return hex + alpha; // e.g. "#00800090"
+    }
+    return hex; // fallback if not a simple hex
+  }
+
+  // 3) Build an array of colors for the points
+  //    e.g. userData themes => ['odorat','marchabilite',...]
+  const pointColors = themes.map(theme => {
+    const baseColor = getCssVar(`--${theme}-color`); // e.g. #008000
+    return addHexAlpha(baseColor, "FF"); 
+    // If you want partial alpha dots, you can use "90" or "AA" instead of "FF".
+  });
+
+  // 4) The conic gradient function
   function createConicGradient(context) {
-    // Grab the chart instance and the radial scale
     const chart = context.chart;
     const scale = chart.scales.r || chart.scales.radialLinear;
 
-    // Fallback if there's no scale yet or if the center is not finite
-    // or if createConicGradient() isn't supported in the browser
+    // Fallback if scale not ready or conic gradients not supported
     if (
       !scale ||
       !Number.isFinite(scale.xCenter) ||
       !Number.isFinite(scale.yCenter) ||
       typeof chart.ctx.createConicGradient !== "function"
     ) {
-      return "rgba(103,58,183,0.2)"; // fallback color
+      // Return a simple semi‐transparent fallback
+      return "#673AB790"; 
     }
 
-    // The actual center of the radar
-    const centerX = scale.xCenter;
-    const centerY = scale.yCenter;
+    // The actual radar center
+    const { xCenter, yCenter } = scale;
+    const gradient = chart.ctx.createConicGradient(-Math.PI / 2, xCenter, yCenter);
 
-    // Create the conic gradient from the true center
-    const gradient = chart.ctx.createConicGradient(-Math.PI / 2, centerX, centerY);
-
-    // Add color stops from your CSS variables (9 total)
+    // These 9 CSS variables map to your 9 themes
     const colorVars = [
       "--odorat-color",
       "--marchabilite-color",
@@ -417,17 +432,20 @@ function initRadarChart() {
       "--trafic_routier-color"
     ];
 
-    // Spread these 9 colors evenly from 0..1
+    // Spread them evenly. Append "90" to give the fill partial transparency.
     colorVars.forEach((varName, i) => {
-      gradient.addColorStop(i / colorVars.length, getCssVar(varName));
+      const base = getCssVar(varName);   // e.g. "#008000"
+      const withAlpha = addHexAlpha(base, "90"); 
+      gradient.addColorStop(i / colorVars.length, withAlpha);
     });
-    // Close out the circle at stop=1 with the first color (or the last, if you prefer)
-    gradient.addColorStop(1, getCssVar(colorVars[0]));
+    // Close out the circle at stop=1 using the first color
+    const firstColor = getCssVar(colorVars[0]);
+    gradient.addColorStop(1, addHexAlpha(firstColor, "90"));
 
     return gradient;
   }
 
-  // Build the radar chart
+  // 5) Finally, create the chart
   radarChart = new Chart(ctx, {
     type: "radar",
     data: {
@@ -437,12 +455,17 @@ function initRadarChart() {
           label: "Niveau de gêne",
           data: themes.map(t => userData[t]),
           fill: true,
-          // Use our conic gradient function
+          // Use our conic gradient for the radar fill
           backgroundColor: createConicGradient,
-          // Make the outline invisible (optional)
-          borderColor: "rgba(0, 0, 0, 0)",
-          borderWidth: 2,
-          pointBackgroundColor: "rgba(0, 0, 0, 0)"
+
+          // (Optional) if you want a polygon outline, choose a color here:
+          borderColor: "#666",
+          borderWidth: 1,
+
+          // Bring back the dots, each with its own color:
+          pointBackgroundColor: pointColors,
+          pointBorderColor: pointColors,
+          pointRadius: 4
         }
       ]
     },
