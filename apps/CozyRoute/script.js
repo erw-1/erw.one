@@ -371,26 +371,70 @@ function initDirectionsPanel(){
  * 11) Radar Chart ...
  ***********************************************/
 function initRadarChart() {
-  const ctx=document.getElementById("radarChart");
-  if(!ctx) return;
-  radarChart=new Chart(ctx,{
-    type:"radar",
-    data:{
-      labels:themes.map(t=>t.charAt(0).toUpperCase()+t.slice(1)),
-      datasets:[{
-        label:"Niveau de gêne",
-        data:themes.map(t=>userData[t]),
-        backgroundColor:"rgba(103,58,183,0.2)",
-        borderColor:"rgba(103,58,183,1)",
-        borderWidth:2
-      }]
+  const canvas = document.getElementById("radarChart");
+  if (!canvas) return; // Au cas où il n’y a pas de canvas
+
+  const ctx = canvas.getContext("2d");
+
+  // 1) Récupère les couleurs depuis les variables CSS
+  const rootStyle = getComputedStyle(document.documentElement);
+  const themeColors = {};
+  for (const theme of themes) {
+    const varName = `--${theme}-color`; // ex: "--odorat-color"
+    themeColors[theme] = rootStyle.getPropertyValue(varName).trim();
+  }
+
+  // 2) Construit un dataset par thème
+  //    => chacun aura une seule valeur non nulle (celle du thème),
+  //       afin que chaque “zone” ait sa couleur propre.
+  const datasets = themes.map((theme, idx) => {
+    const dataArr = new Array(themes.length).fill(0);
+    dataArr[idx] = userData[theme]; // place la valeur sur le bon axe
+
+    return {
+      label: theme,
+      data: dataArr,
+      backgroundColor: hexToRgba(themeColors[theme], 0.3), // 30% d'opacité
+      borderColor: themeColors[theme],
+      borderWidth: 2,
+      fill: true
+    };
+  });
+
+  // 3) Crée le radar chart
+  radarChart = new Chart(ctx, {
+    type: "radar",
+    data: {
+      // Les étiquettes sur les axes
+      labels: themes.map(t => t.charAt(0).toUpperCase() + t.slice(1)),
+      datasets: datasets
     },
-    options:{
-      responsive:true,
-      scales:{r:{min:0,max:5}}
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0,
+          max: 5,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
     }
   });
 }
+
+/**
+ * Convertit une couleur hex (“#RRGGBB”) en une couleur RGBA avec alpha.
+ * Ex: hexToRgba("#008000", 0.3) => "rgba(0,128,0,0.3)"
+ */
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 
 function updateRadarChart(){
   if(!radarChart)return;
