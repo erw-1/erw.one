@@ -371,119 +371,127 @@ function initDirectionsPanel(){
  * 11) Radar Chart ...
  ***********************************************/
 function initRadarChart() {
-  const canvas = document.getElementById("radarChart");
-  if (!canvas) return;
+  // Configuration du graphique
+  const width = 400; // largeur du radar
+  const height = 400; // hauteur du radar
+  const margin = 50; // marges autour
+  const radius = Math.min(width, height) / 2 - margin; // rayon maximum
+  const maxValue = 5; // valeur maximale pour les axes
 
-  const ctx = canvas.getContext("2d");
+  // Couleurs par thème (issues du CSS ou spécifiées ici)
+  const colors = [
+    "var(--odorat-color)",
+    "var(--marchabilite-color)",
+    "var(--claustrophobie-color)",
+    "var(--agoraphobie-color)",
+    "var(--pollution-color)",
+    "var(--bruit-color)",
+    "var(--eclairage-color)",
+    "var(--handicap-color)",
+    "var(--trafic_routier-color)"
+  ];
 
-  // Récupérer les couleurs dynamiques depuis le CSS
-  const rootStyle = getComputedStyle(document.documentElement);
-  const themeColors = themes.map(
-    (theme) => rootStyle.getPropertyValue(`--${theme}-color`).trim()
-  );
+  // Accès au conteneur
+  const container = d3.select("#radarChart").html(""); // Vide le conteneur
+  const svg = container.append("svg")
+    .attr("width", width + margin * 2)
+    .attr("height", height + margin * 2);
 
-  /***********************************************
-   * Plugin : Dégradé pour le polygone uniquement
-   ***********************************************/
-  const gradientPolygonPlugin = {
-    id: "gradientPolygon",
-    beforeDatasetsDraw(chart) {
-      const { ctx, chartArea, data, scales } = chart;
-      if (!chartArea || !data || !scales || !data.datasets[0]) return; // Protection contre les erreurs
+  const chart = svg.append("g")
+    .attr("transform", `translate(${width / 2 + margin}, ${height / 2 + margin})`);
 
-      const { r } = scales;
-      const dataset = data.datasets[0];
-      const points = dataset._meta[Object.keys(dataset._meta)[0]]?.data;
+  // Échelles pour les axes
+  const angleScale = d3.scaleLinear()
+    .domain([0, themes.length])
+    .range([0, 2 * Math.PI]);
 
-      if (!points || points.length === 0) return; // Vérification des points
+  const radialScale = d3.scaleLinear()
+    .domain([0, maxValue])
+    .range([0, radius]);
 
-      const centerX = r.xCenter;
-      const centerY = r.yCenter;
+  // Ajout des axes
+  chart.selectAll(".axis")
+    .data(themes)
+    .enter()
+    .append("line")
+    .attr("x1", 0)
+    .attr("y1", 0)
+    .attr("x2", (d, i) => radialScale(maxValue) * Math.cos(angleScale(i) - Math.PI / 2))
+    .attr("y2", (d, i) => radialScale(maxValue) * Math.sin(angleScale(i) - Math.PI / 2))
+    .attr("stroke", (d, i) => colors[i])
+    .attr("stroke-width", 2);
 
-      // Créer un dégradé radial pour le polygone
-      const gradient = ctx.createRadialGradient(
-        centerX,
-        centerY,
-        0,
-        centerX,
-        centerY,
-        r.drawingArea
-      );
-      themeColors.forEach((color, i) => {
-        gradient.addColorStop(i / themeColors.length, color);
-      });
+  // Cercles concentriques
+  chart.selectAll(".circle")
+    .data(d3.range(1, maxValue + 1))
+    .enter()
+    .append("circle")
+    .attr("cx", 0)
+    .attr("cy", 0)
+    .attr("r", d => radialScale(d))
+    .attr("fill", "none")
+    .attr("stroke", "#ddd");
 
-      // Dessiner le polygone avec le dégradé
-      ctx.save();
-      ctx.beginPath();
-      points.forEach((point, index) => {
-        if (index === 0) {
-          ctx.moveTo(point.x, point.y);
-        } else {
-          ctx.lineTo(point.x, point.y);
-        }
-      });
-      ctx.closePath();
-      ctx.fillStyle = gradient;
-      ctx.fill();
-      ctx.restore();
-    },
-  };
+  // Ajout des étiquettes pour les axes
+  chart.selectAll(".label")
+    .data(themes)
+    .enter()
+    .append("text")
+    .attr("x", (d, i) => (radialScale(maxValue + 0.5) * Math.cos(angleScale(i) - Math.PI / 2)))
+    .attr("y", (d, i) => (radialScale(maxValue + 0.5) * Math.sin(angleScale(i) - Math.PI / 2)))
+    .attr("text-anchor", "middle")
+    .attr("alignment-baseline", "middle")
+    .text(d => d.charAt(0).toUpperCase() + d.slice(1))
+    .style("font-size", "12px");
 
-  /***********************************************
-   * Radar Chart Configuration
-   ***********************************************/
-  radarChart = new Chart(ctx, {
-    type: "radar",
-    data: {
-      labels: themes.map((t) => t.charAt(0).toUpperCase() + t.slice(1)),
-      datasets: [
-        {
-          label: "Niveau de gêne",
-          data: themes.map((theme) => userData[theme]),
-          borderWidth: 2,
-          borderColor: "#000000", // Arrêtes noires pour contraste
-          pointBackgroundColor: "#FFFFFF", // Points blancs pour un design propre
-          pointBorderColor: "#000000", // Bordures noires des points
-          pointRadius: 4, // Petits points
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      elements: {
-        line: {
-          borderWidth: 2,
-        },
-      },
-      scales: {
-        r: {
-          min: 0,
-          max: 5,
-          ticks: { stepSize: 1 },
-          grid: {
-            color: "rgba(0, 0, 0, 0.1)", // Grille discrète
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          position: "top",
-          labels: {
-            color: "#333", // Texte de la légende en gris
-            font: { size: 12 },
-          },
-        },
-      },
-    },
-    plugins: [gradientPolygonPlugin],
+  // Polygone des données
+  const lineGenerator = d3.lineRadial()
+    .radius(d => radialScale(d.value))
+    .angle((d, i) => angleScale(i));
+
+  // Ajout du dégradé pour le polygone
+  const gradientId = "polygonGradient";
+  const gradient = svg.append("defs")
+    .append("linearGradient")
+    .attr("id", gradientId)
+    .attr("x1", "0%")
+    .attr("y1", "0%")
+    .attr("x2", "100%")
+    .attr("y2", "100%");
+
+  colors.forEach((color, index) => {
+    gradient.append("stop")
+      .attr("offset", `${(index / colors.length) * 100}%`)
+      .attr("stop-color", color);
   });
+
+  chart.append("path")
+    .datum(themes.map((theme, i) => ({
+      value: userData[theme],
+      theme
+    })))
+    .attr("d", lineGenerator)
+    .attr("fill", `url(#${gradientId})`)
+    .attr("stroke", "#333")
+    .attr("stroke-width", 2)
+    .attr("opacity", 0.8);
 }
 
-function updateRadarChart(){
-  if(!radarChart)return;
-  radarChart.data.datasets[0].data=themes.map(t=>userData[t]);
-  radarChart.update();
+function updateRadarChart() {
+  // Recalcul des données pour le polygone
+  const chart = d3.select("#radarChart svg g");
+  const lineGenerator = d3.lineRadial()
+    .radius(d => radialScale(d.value))
+    .angle((d, i) => angleScale(i));
+
+  chart.select("path")
+    .datum(themes.map((theme, i) => ({
+      value: userData[theme],
+      theme
+    })))
+    .transition()
+    .duration(500)
+    .attr("d", lineGenerator);
 }
 
 /***********************************************
