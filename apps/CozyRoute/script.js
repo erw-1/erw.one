@@ -370,9 +370,6 @@ function initDirectionsPanel(){
 /***********************************************
  * 11) Radar Chart ...
  ***********************************************/
-/***********************************************
- * initRadarChart : Radar avec dégradé lisse
- ***********************************************/
 function initRadarChart() {
   const canvas = document.getElementById("radarChart");
   if (!canvas) return;
@@ -392,20 +389,28 @@ function initRadarChart() {
     id: "gradientPolygon",
     beforeDatasetsDraw(chart) {
       const { ctx, chartArea, data, scales } = chart;
-      if (!chartArea) return;
+      if (!chartArea || !data || !scales || !data.datasets[0]) return; // Protection contre les erreurs
 
       const { r } = scales;
-      const dataset = data.datasets[0]; // Le polygone principal
-      const points = dataset._meta[Object.keys(dataset._meta)[0]].data;
+      const dataset = data.datasets[0];
+      const points = dataset._meta[Object.keys(dataset._meta)[0]]?.data;
+
+      if (!points || points.length === 0) return; // Vérification des points
 
       const centerX = r.xCenter;
       const centerY = r.yCenter;
 
       // Créer un dégradé radial pour le polygone
-      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r.drawingArea);
+      const gradient = ctx.createRadialGradient(
+        centerX,
+        centerY,
+        0,
+        centerX,
+        centerY,
+        r.drawingArea
+      );
       themeColors.forEach((color, i) => {
         gradient.addColorStop(i / themeColors.length, color);
-        gradient.addColorStop((i + 1) / themeColors.length, color);
       });
 
       // Dessiner le polygone avec le dégradé
