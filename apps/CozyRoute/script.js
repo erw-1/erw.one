@@ -404,7 +404,7 @@ function updateRadarChart(){
 function updateQuestionValue(theme, value){
   console.log(`[SLIDER] ${theme} => ${value}`);
   userData[theme]=parseInt(value,10);
-  document.getElementById(theme+"-value").textContent=value;
+  // document.getElementById(theme+"-value").textContent=value;
   updateRadarChart();
   updateRoadStyle();
 }
@@ -421,14 +421,14 @@ function updateRoadStyle(){
     cozyRouteLayer.eachLayer(layer=>{
       const oldClass=layer.options.className||"";
       if(oldClass.includes(theme+"-")){
-        console.log(`     Tronçon avant: "${oldClass}"`);
+        // console.log(`     Tronçon avant: "${oldClass}"`);
         const newClass=oldClass.replace(/intensity-\d+/,`intensity-${userVal}`);
         layer.setStyle({color:"#FFFFFF",weight:3});
         if(layer._path){
           layer._path.setAttribute("class",newClass+" leaflet-interactive");
         }
         layer.options.className=newClass;
-        console.log(`     Tronçon après: "${newClass}"`);
+        // console.log(`     Tronçon après: "${newClass}"`);
       }
     });
   }
