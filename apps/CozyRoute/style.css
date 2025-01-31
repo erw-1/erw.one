@@ -155,41 +155,111 @@ form#question-form {
   width: 150px;
 }
 
-input#odorat-range {
-    accent-color: var(--odorat-color)
+/* ============
+   Début inputs
+   ============ */
+
+#odorat-range {
+  --c: var(--odorat-color);
 }
 
-input#marchabilite-range {
-    accent-color: var(--marchabilite-color)
+#marchabilite-range {
+  --c: var(--marchabilite-color);
 }
 
-input#claustrophobie-range {
-    accent-color: var(--claustrophobie-color)
+#claustrophobie-range {
+  --c: var(--claustrophobie-color);
 }
 
-input#agoraphobie-range {
-    accent-color: var(--agoraphobie-color)
+#agoraphobie-range {
+  --c: var(--agoraphobie-color);
 }
 
-input#pollution-range {
-    accent-color: var(--pollution-color)
+#pollution-range {
+  --c: var(--pollution-color);
 }
 
-input#bruit-range {
-    accent-color: var(--bruit-color)
+#bruit-range {
+  --c: var(--bruit-color);
 }
 
-input#eclairage-range {
-    accent-color: var(--eclairage-color)
+#eclairage-range {
+  --c: var(--eclairage-color);
 }
 
-input#handicap-range {
-    accent-color: var(--handicap-color)
+#handicap-range {
+  --c: var(--handicap-color);
 }
 
-input#trafic_routier-range {
-    accent-color: var(--trafic_routier-color)
+#trafic_routier-range {
+  --c: var(--trafic_routier-color);
 }
+
+
+input[type="range"]{
+  --g: round(.3em,1px);  /* the gap */
+  --l: round(.2em,1px);  /* line thickness*/
+  --s: round(1.3em,1px); /* thumb size*/
+  timeline-scope: --thumb-view;
+}
+
+input[type="range"] {
+  width: 150px;
+  height: var(--s); /* needed for Firefox*/
+  --_c: color-mix(in srgb, var(--c), #000 var(--p,0%));
+  appearance :none;
+  background: none;
+  cursor: pointer;
+  overflow: hidden;
+  font-size: inherit;
+}
+
+input:focus-visible,
+input:hover{
+  --p: 25%;
+}
+
+input:active,
+input:focus-visible{
+  --_b: var(--s)
+}
+/* chromium */
+input[type="range" i]::-webkit-slider-thumb{
+  height: var(--s);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  box-shadow: 0 0 0 var(--_b,var(--l)) inset var(--_c);
+  border-image: linear-gradient(90deg,var(--_c) 50%,#ababab 0) 0 1/calc(50% - var(--l)/2) 100vw/0 calc(100vw + var(--g));
+  -webkit-appearance: none;
+  appearance: none;
+  transition: .3s;
+  anchor-name: --thumb;
+  view-timeline: --thumb-view inline;
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-thumb {
+  height: var(--s);
+  width: var(--s);
+  background: none;
+  border-radius: 50%;
+  box-shadow: 0 0 0 var(--_b,var(--l)) inset var(--_c);
+  border-image: linear-gradient(90deg,var(--_c) 50%,#ababab 0) 0 1/calc(50% - var(--l)/2) 100vw/0 calc(100vw + var(--g));
+  -moz-appearance: none;
+  appearance: none;
+  transition: .3s;
+  anchor-name: --thumb;
+  view-timeline: --thumb-view inline;
+}
+
+@keyframes range {
+  0%   {background: #8A9B0F;--val:var(--max)}
+  100% {background: #CC333F;--val:var(--min)}
+}
+
+/* ==========
+   Fin inputs
+   ========== */
 
 #goto-map {
   display: inline-block;
