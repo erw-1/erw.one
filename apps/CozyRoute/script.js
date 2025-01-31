@@ -370,123 +370,89 @@ function initDirectionsPanel(){
 /***********************************************
  * 11) Radar Chart ...
  ***********************************************/
-// Variables globales pour angleScale et radialScale
-let angleScale, radialScale;
-
 function initRadarChart() {
-  const width = 400;
-  const height = 400;
-  const margin = 50;
-  const radius = Math.min(width, height) / 2 - margin;
-  const maxValue = 5;
+  const ctx = document.getElementById("radarChart");
+  if (!ctx) return;
 
-  const colors = [
-    "var(--odorat-color)",
-    "var(--marchabilite-color)",
-    "var(--claustrophobie-color)",
-    "var(--agoraphobie-color)",
-    "var(--pollution-color)",
-    "var(--bruit-color)",
-    "var(--eclairage-color)",
-    "var(--handicap-color)",
-    "var(--trafic_routier-color)"
-  ];
+  // Helper to read a CSS variable (e.g. "--odorat-color") from :root
+  function getCssVar(varName) {
+    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+  }
 
-  const container = d3.select("#radarChart").html("");
-  const svg = container.append("svg")
-    .attr("width", width + margin * 2)
-    .attr("height", height + margin * 2);
+  // Create a conic gradient that spans the radar’s bounding box.
+  // (Requires Canvas’s createConicGradient support.)
+  function createConicGradient(context) {
+    const chartArea = context.chart.chartArea;
+    if (!chartArea) {
+      // Chart.js may call this before layout has finished
+      return;
+    }
+    const { top, bottom, left, right } = chartArea;
+    const centerX = (left + right) / 2;
+    const centerY = (top + bottom) / 2;
 
-  const chart = svg.append("g")
-    .attr("transform", `translate(${width / 2 + margin}, ${height / 2 + margin})`);
+    const ctx2d = context.chart.ctx;
+    // Start the gradient at -π/2 (i.e. top), or adjust as needed
+    const gradient = ctx2d.createConicGradient(-Math.PI / 2, centerX, centerY);
 
-  // Initialisation des échelles
-  angleScale = d3.scaleLinear()
-    .domain([0, themes.length])
-    .range([0, 2 * Math.PI]);
+    // We have 9 themes; each gets a fraction of the 0..1 range in the conic gradient
+    // e.g. first colorStop at 0, next at 1/9, etc.
+    const colorVars = [
+      "--odorat-color",
+      "--marchabilite-color",
+      "--claustrophobie-color",
+      "--agoraphobie-color",
+      "--pollution-color",
+      "--bruit-color",
+      "--eclairage-color",
+      "--handicap-color",
+      "--trafic_routier-color"
+    ];
 
-  radialScale = d3.scaleLinear()
-    .domain([0, maxValue])
-    .range([0, radius]);
+    // Add each color stop
+    colorVars.forEach((varName, i) => {
+      gradient.addColorStop(i / colorVars.length, getCssVar(varName));
+    });
+    // And close the circle at 1.0 with the first color (or the last—your choice)
+    gradient.addColorStop(1, getCssVar(colorVars[0]));
 
-  // Axes
-  chart.selectAll(".axis")
-    .data(themes)
-    .enter()
-    .append("line")
-    .attr("x1", 0)
-    .attr("y1", 0)
-    .attr("x2", (d, i) => radialScale(maxValue) * Math.cos(angleScale(i) - Math.PI / 2))
-    .attr("y2", (d, i) => radialScale(maxValue) * Math.sin(angleScale(i) - Math.PI / 2))
-    .attr("stroke", (d, i) => colors[i])
-    .attr("stroke-width", 2);
+    return gradient;
+  }
 
-  chart.selectAll(".circle")
-    .data(d3.range(1, maxValue + 1))
-    .enter()
-    .append("circle")
-    .attr("cx", 0)
-    .attr("cy", 0)
-    .attr("r", d => radialScale(d))
-    .attr("fill", "none")
-    .attr("stroke", "#ddd");
-
-  chart.selectAll(".label")
-    .data(themes)
-    .enter()
-    .append("text")
-    .attr("x", (d, i) => (radialScale(maxValue + 0.5) * Math.cos(angleScale(i) - Math.PI / 2)))
-    .attr("y", (d, i) => (radialScale(maxValue + 0.5) * Math.sin(angleScale(i) - Math.PI / 2)))
-    .attr("text-anchor", "middle")
-    .attr("alignment-baseline", "middle")
-    .text(d => d.charAt(0).toUpperCase() + d.slice(1))
-    .style("font-size", "12px");
-
-  const lineGenerator = d3.lineRadial()
-    .radius(d => radialScale(d.value))
-    .angle((d, i) => angleScale(i));
-
-  const gradientId = "polygonGradient";
-  const gradient = svg.append("defs")
-    .append("linearGradient")
-    .attr("id", gradientId)
-    .attr("x1", "0%")
-    .attr("y1", "0%")
-    .attr("x2", "100%")
-    .attr("y2", "100%");
-
-  colors.forEach((color, index) => {
-    gradient.append("stop")
-      .attr("offset", `${(index / colors.length) * 100}%`)
-      .attr("stop-color", color);
+  radarChart = new Chart(ctx, {
+    type: "radar",
+    data: {
+      labels: themes.map(t => t.charAt(0).toUpperCase() + t.slice(1)),
+      datasets: [
+        {
+          label: "Niveau de gêne",
+          data: themes.map(t => userData[t]),
+          fill: true,
+          // Use the conic gradient function for background
+          backgroundColor: (context) => createConicGradient(context),
+          // If you want no visible outline, you can make border transparent:
+          borderColor: "rgba(0, 0, 0, 0)",
+          borderWidth: 2,
+          pointBackgroundColor: "rgba(0, 0, 0, 0)"
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        r: {
+          min: 0,
+          max: 5
+        }
+      }
+    }
   });
-
-  chart.append("path")
-    .datum(themes.map((theme, i) => ({
-      value: userData[theme],
-      theme
-    })))
-    .attr("d", lineGenerator)
-    .attr("fill", `url(#${gradientId})`)
-    .attr("stroke", "#333")
-    .attr("stroke-width", 2)
-    .attr("opacity", 0.8);
 }
 
-function updateRadarChart() {
-  const chart = d3.select("#radarChart svg g");
-  const lineGenerator = d3.lineRadial()
-    .radius(d => radialScale(d.value))
-    .angle((d, i) => angleScale(i));
-
-  chart.select("path")
-    .datum(themes.map((theme, i) => ({
-      value: userData[theme],
-      theme
-    })))
-    .transition()
-    .duration(500)
-    .attr("d", lineGenerator);
+function updateRadarChart(){
+  if(!radarChart)return;
+  radarChart.data.datasets[0].data=themes.map(t=>userData[t]);
+  radarChart.update();
 }
 
 /***********************************************
