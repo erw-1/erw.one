@@ -371,7 +371,7 @@ function initDirectionsPanel(){
  * 11) Radar Chart ...
  ***********************************************/
 /***********************************************
- * initRadarChart : Radar avec polygone dégradé
+ * initRadarChart : Radar avec dégradé lisse
  ***********************************************/
 function initRadarChart() {
   const canvas = document.getElementById("radarChart");
@@ -437,10 +437,10 @@ function initRadarChart() {
           label: "Niveau de gêne",
           data: themes.map((theme) => userData[theme]),
           borderWidth: 2,
-          borderColor: themeColors, // Arrêtes colorées par thème
-          pointBackgroundColor: themeColors, // Points colorés
-          pointBorderColor: "#FFFFFF", // Bordures blanches pour contraste
-          pointRadius: 5, // Cercles sur chaque point
+          borderColor: "#000000", // Arrêtes noires pour contraste
+          pointBackgroundColor: "#FFFFFF", // Points blancs pour un design propre
+          pointBorderColor: "#000000", // Bordures noires des points
+          pointRadius: 4, // Petits points
         },
       ],
     },
