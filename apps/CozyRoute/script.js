@@ -374,24 +374,37 @@ function initRadarChart() {
   const ctx = document.getElementById("radarChart");
   if (!ctx) return;
 
+  // Helper: get a CSS custom property
   function getCssVar(varName) {
-    return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
+    return getComputedStyle(document.documentElement)
+      .getPropertyValue(varName)
+      .trim();
   }
 
   function createConicGradient(context) {
+    // Grab the chart instance and the radial scale
     const chart = context.chart;
-    // ▼▼ KEY CHANGE: we use the actual scale’s center, not the bounding box
-    const scale = chart.scales.r;  // the “radial” scale
-    if (!scale) return; // just in case
+    const scale = chart.scales.r || chart.scales.radialLinear;
 
-    // The exact center of the radar
-    const centerX = scale.xCenter; 
+    // Fallback if there's no scale yet or if the center is not finite
+    // or if createConicGradient() isn't supported in the browser
+    if (
+      !scale ||
+      !Number.isFinite(scale.xCenter) ||
+      !Number.isFinite(scale.yCenter) ||
+      typeof chart.ctx.createConicGradient !== "function"
+    ) {
+      return "rgba(103,58,183,0.2)"; // fallback color
+    }
+
+    // The actual center of the radar
+    const centerX = scale.xCenter;
     const centerY = scale.yCenter;
 
-    // Create the conic gradient from that true center
+    // Create the conic gradient from the true center
     const gradient = chart.ctx.createConicGradient(-Math.PI / 2, centerX, centerY);
 
-    // Build color stops from your custom properties
+    // Add color stops from your CSS variables (9 total)
     const colorVars = [
       "--odorat-color",
       "--marchabilite-color",
@@ -404,29 +417,34 @@ function initRadarChart() {
       "--trafic_routier-color"
     ];
 
+    // Spread these 9 colors evenly from 0..1
     colorVars.forEach((varName, i) => {
       gradient.addColorStop(i / colorVars.length, getCssVar(varName));
     });
-    // close the circle at 1.0 with the first color
+    // Close out the circle at stop=1 with the first color (or the last, if you prefer)
     gradient.addColorStop(1, getCssVar(colorVars[0]));
 
     return gradient;
   }
 
+  // Build the radar chart
   radarChart = new Chart(ctx, {
     type: "radar",
     data: {
       labels: themes.map(t => t.charAt(0).toUpperCase() + t.slice(1)),
-      datasets: [{
-        label: "Niveau de gêne",
-        data: themes.map(t => userData[t]),
-        fill: true,
-        // ▼▼ KEY CHANGE: use conic gradient
-        backgroundColor: (context) => createConicGradient(context),
-        borderColor: "rgba(0, 0, 0, 0)",
-        borderWidth: 2,
-        pointBackgroundColor: "rgba(0, 0, 0, 0)"
-      }]
+      datasets: [
+        {
+          label: "Niveau de gêne",
+          data: themes.map(t => userData[t]),
+          fill: true,
+          // Use our conic gradient function
+          backgroundColor: createConicGradient,
+          // Make the outline invisible (optional)
+          borderColor: "rgba(0, 0, 0, 0)",
+          borderWidth: 2,
+          pointBackgroundColor: "rgba(0, 0, 0, 0)"
+        }
+      ]
     },
     options: {
       responsive: true,
