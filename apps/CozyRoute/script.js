@@ -371,7 +371,7 @@ function initDirectionsPanel(){
  * 11) Radar Chart ...
  ***********************************************/
 /***********************************************
- * initRadarChart : Radar avec dégradé dynamique
+ * initRadarChart : Radar avec polygone dégradé
  ***********************************************/
 function initRadarChart() {
   const canvas = document.getElementById("radarChart");
@@ -379,40 +379,45 @@ function initRadarChart() {
 
   const ctx = canvas.getContext("2d");
 
-  // Récupération des couleurs CSS
+  // Récupérer les couleurs dynamiques depuis le CSS
   const rootStyle = getComputedStyle(document.documentElement);
   const themeColors = themes.map(
     (theme) => rootStyle.getPropertyValue(`--${theme}-color`).trim()
   );
 
   /***********************************************
-   * Plugin : Fond conique (dégradé dynamique)
+   * Plugin : Dégradé pour le polygone uniquement
    ***********************************************/
-  const conicGradientBgPlugin = {
-    id: "conicGradientBg",
-    beforeDraw(chart) {
-      const { ctx, chartArea } = chart;
-      if (!chartArea) return; // Pas encore prêt
+  const gradientPolygonPlugin = {
+    id: "gradientPolygon",
+    beforeDatasetsDraw(chart) {
+      const { ctx, chartArea, data, scales } = chart;
+      if (!chartArea) return;
 
-      const centerX = (chartArea.left + chartArea.right) / 2;
-      const centerY = (chartArea.top + chartArea.bottom) / 2;
-      const radius = Math.min(
-        chartArea.right - chartArea.left,
-        chartArea.bottom - chartArea.top
-      ) / 2;
+      const { r } = scales;
+      const dataset = data.datasets[0]; // Le polygone principal
+      const points = dataset._meta[Object.keys(dataset._meta)[0]].data;
 
-      const gradient = ctx.createConicGradient(0, centerX, centerY);
+      const centerX = r.xCenter;
+      const centerY = r.yCenter;
 
-      // Ajoute un colorStop dynamique pour chaque axe
-      const numThemes = themeColors.length;
+      // Créer un dégradé radial pour le polygone
+      const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, r.drawingArea);
       themeColors.forEach((color, i) => {
-        gradient.addColorStop(i / numThemes, color);
-        gradient.addColorStop((i + 1) / numThemes, color); // Transition
+        gradient.addColorStop(i / themeColors.length, color);
+        gradient.addColorStop((i + 1) / themeColors.length, color);
       });
 
+      // Dessiner le polygone avec le dégradé
       ctx.save();
       ctx.beginPath();
-      ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+      points.forEach((point, index) => {
+        if (index === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          ctx.lineTo(point.x, point.y);
+        }
+      });
       ctx.closePath();
       ctx.fillStyle = gradient;
       ctx.fill();
@@ -421,7 +426,7 @@ function initRadarChart() {
   };
 
   /***********************************************
-   * Configuration du radar chart
+   * Radar Chart Configuration
    ***********************************************/
   radarChart = new Chart(ctx, {
     type: "radar",
@@ -431,9 +436,11 @@ function initRadarChart() {
         {
           label: "Niveau de gêne",
           data: themes.map((theme) => userData[theme]),
-          borderWidth: 3,
-          borderColor: themeColors,
-          backgroundColor: "rgba(0,0,0,0)", // Pas de fond sur le polygone
+          borderWidth: 2,
+          borderColor: themeColors, // Arrêtes colorées par thème
+          pointBackgroundColor: themeColors, // Points colorés
+          pointBorderColor: "#FFFFFF", // Bordures blanches pour contraste
+          pointRadius: 5, // Cercles sur chaque point
         },
       ],
     },
@@ -441,7 +448,7 @@ function initRadarChart() {
       responsive: true,
       elements: {
         line: {
-          tension: 0, // Polygone sans courbe
+          borderWidth: 2,
         },
       },
       scales: {
@@ -449,10 +456,22 @@ function initRadarChart() {
           min: 0,
           max: 5,
           ticks: { stepSize: 1 },
+          grid: {
+            color: "rgba(0, 0, 0, 0.1)", // Grille discrète
+          },
+        },
+      },
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            color: "#333", // Texte de la légende en gris
+            font: { size: 12 },
+          },
         },
       },
     },
-    plugins: [conicGradientBgPlugin], // Ajout du plugin
+    plugins: [gradientPolygonPlugin],
   });
 }
 
