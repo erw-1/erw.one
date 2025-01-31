@@ -370,13 +370,59 @@ function initDirectionsPanel(){
 /***********************************************
  * 11) Radar Chart ...
  ***********************************************/
+/***********************************************
+ * Plugin : fond conic gradient
+ ***********************************************/
+const conicGradientBgPlugin = {
+  id: "conicBg",
+  beforeDraw(chart) {
+    const {ctx, chartArea} = chart;
+    // chartArea n’est pas dispo au tout premier calcul
+    if (!chartArea) return;
+
+    const centerX = (chartArea.left + chartArea.right) / 2;
+    const centerY = (chartArea.top + chartArea.bottom) / 2;
+    const radius = Math.min(
+      (chartArea.right - chartArea.left),
+      (chartArea.bottom - chartArea.top)
+    ) / 2;
+
+    // Crée un gradient conique, partant de l’angle 0 (en radians),
+    // tournant autour du centre du radar
+    const gradient = ctx.createConicGradient(0, centerX, centerY);
+
+    // Ajoute quelques colorStop, par ex. 5 arrêts
+    // Ajuste les pour avoir un effet “arc-en-ciel”
+    gradient.addColorStop(0,   "rgba(78,190,235,0.4)");   // bleu
+    gradient.addColorStop(0.25,"rgba(255,152,49,0.4)");   // orange
+    gradient.addColorStop(0.50,"rgba(96,230,225,0.4)");   // turquoise
+    gradient.addColorStop(0.75,"rgba(45,183,87,0.4)");    // vert
+    gradient.addColorStop(1,   "rgba(255,0,0,0.4)");      // rouge
+
+    ctx.save();
+    // Dessine un disque au centre
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+    ctx.closePath();
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    ctx.restore();
+  }
+};
+
+/***********************************************
+ * initRadarChart
+ *  - Récupère les variables CSS
+ *  - Crée un dataset par thème
+ *  - Applique le plugin conicBg
+ ***********************************************/
 function initRadarChart() {
   const canvas = document.getElementById("radarChart");
-  if (!canvas) return; // Au cas où il n’y a pas de canvas
+  if (!canvas) return; // si pas de canvas, on quitte
 
   const ctx = canvas.getContext("2d");
 
-  // 1) Récupère les couleurs depuis les variables CSS
+  // Récupération des couleurs CSS
   const rootStyle = getComputedStyle(document.documentElement);
   const themeColors = {};
   for (const theme of themes) {
@@ -384,28 +430,28 @@ function initRadarChart() {
     themeColors[theme] = rootStyle.getPropertyValue(varName).trim();
   }
 
-  // 2) Construit un dataset par thème
-  //    => chacun aura une seule valeur non nulle (celle du thème),
-  //       afin que chaque “zone” ait sa couleur propre.
+  // Construit un dataset par thème
+  // -> chacun aura data= [0,0, ... userData[theme], 0...]
+  //   => l'index idx correspond à la place du thème dans "themes"
   const datasets = themes.map((theme, idx) => {
     const dataArr = new Array(themes.length).fill(0);
-    dataArr[idx] = userData[theme]; // place la valeur sur le bon axe
+    dataArr[idx] = userData[theme]; // place la valeur sur l'axe correspondant
 
     return {
       label: theme,
       data: dataArr,
-      backgroundColor: hexToRgba(themeColors[theme], 0.3), // 30% d'opacité
+      backgroundColor: hexToRgba(themeColors[theme], 0.3),
       borderColor: themeColors[theme],
       borderWidth: 2,
       fill: true
     };
   });
 
-  // 3) Crée le radar chart
+  // Création du radar chart avec plugin
   radarChart = new Chart(ctx, {
     type: "radar",
     data: {
-      // Les étiquettes sur les axes
+      // Axes
       labels: themes.map(t => t.charAt(0).toUpperCase() + t.slice(1)),
       datasets: datasets
     },
@@ -415,19 +461,18 @@ function initRadarChart() {
         r: {
           min: 0,
           max: 5,
-          ticks: {
-            stepSize: 1
-          }
+          ticks: { stepSize: 1 }
         }
       }
-    }
+    },
+    // On ajoute le plugin dans la config
+    plugins: [conicGradientBgPlugin]
   });
 }
 
-/**
- * Convertit une couleur hex (“#RRGGBB”) en une couleur RGBA avec alpha.
- * Ex: hexToRgba("#008000", 0.3) => "rgba(0,128,0,0.3)"
- */
+/***********************************************
+ * hexToRgba
+ ***********************************************/
 function hexToRgba(hex, alpha) {
   const r = parseInt(hex.slice(1, 3), 16);
   const g = parseInt(hex.slice(3, 5), 16);
