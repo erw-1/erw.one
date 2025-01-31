@@ -404,7 +404,7 @@ function updateRadarChart(){
 function updateQuestionValue(theme, value){
   console.log(`[SLIDER] ${theme} => ${value}`);
   userData[theme]=parseInt(value,10);
-  // document.getElementById(theme+"-value").textContent=value;
+  document.getElementById(theme+"-value").textContent=value;
   updateRadarChart();
   updateRoadStyle();
 }
