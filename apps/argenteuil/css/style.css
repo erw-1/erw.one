@@ -1,0 +1,163 @@
+/* Style général */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    overflow: hidden;
+}
+
+#map {
+    width: 100%;
+    height: 100%;
+}
+
+/* Overlay voile */
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    background-color: rgba(0, 0, 0, 0.5); /* Voile plus transparent */
+    transition: background-color 0.3s ease-in-out;
+    z-index: 1000;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+}
+
+/* Animation pour l'apparition du voile */
+@keyframes fadeIn {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Ajustements généraux pour le carousel */
+.carousel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+    position: relative;
+    max-width: 60%;
+    margin-right: 20px; /* Décale les images à gauche */
+}
+
+/* Suppression du hover des images */
+.carousel img {
+    max-height: 60vh;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Boutons de navigation */
+.carousel-button {
+    background: rgba(0, 0, 0, 0.5);
+    border: none;
+    color: white;
+    padding: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    z-index: 1;
+    position: absolute;
+    bottom: 10px; /* Positionne les boutons en bas */
+    transform: translateY(0);
+}
+
+.carousel-button.left {
+    left: 10px;
+}
+
+.carousel-button.right {
+    right: 10px;
+}
+
+.carousel-button:hover {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* Positionnement du texte à côté des images */
+.text-box {
+    position: absolute;
+    top: 10%;
+    right: 10px;
+    max-width: 25%;
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    color: #333;
+    overflow-y: auto;
+    max-height: 80vh;
+}
+
+/* Animations pour l'ouverture et la fermeture de l'overlay */
+.overlay.hide {
+    animation: fadeOut 0.5s forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Style du cercle avec l'ID */
+.id-label {
+    background: none;
+    color: white;
+    font-weight: bold;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+    font-size: 14px;
+}
+
+/* Effet de sortie smooth */
+.overlay.hide {
+    animation: fadeOut 0.5s forwards;
+}
+
+/* Animation smooth des éléments de la fenêtre */
+@keyframes slideIn {
+    0% {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.carousel, .text-box {
+    animation: slideIn 0.6s ease-out;
+}
+
+/* Suppression des bordures et arrière-plans blancs des tooltips */
+.leaflet-tooltip {
+    border: none !important;
+    box-shadow: none !important;
+    padding: 7px !important;
+}
+
+/* Style de l'affichage de l'ambiance */
+.ambiance-box {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    font-size: 18px;
+    font-weight: bold;
+    background: none;
+    padding: 5px;
+    border-radius: 5px;
+}

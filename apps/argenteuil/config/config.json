@@ -1,0 +1,31 @@
+{
+  "imgfolder": "https://raw.githubusercontent.com/erw-1/erw.one/main/files/img/houilles/",
+  "geojsonfolder": "data",
+  "sheets": [
+    {
+      "name": "Argenteuil",
+      "googleSheetUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRYqdRQp1q3pKR5kpDbsF0T7ebV7_yCIrZlyl4U2PGtD-dhRiGLozGZd9T0hGh1e0-EK056gxC_V0Zl/pub?gid=0&single=true&output=csv"
+    },
+    {
+      "name": "Environnement",
+      "googleSheetUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRYqdRQp1q3pKR5kpDbsF0T7ebV7_yCIrZlyl4U2PGtD-dhRiGLozGZd9T0hGh1e0-EK056gxC_V0Zl/pub?gid=1775859512&single=true&output=csv"
+    }
+  ],
+  "geoJsonStyle": {
+    "color": "#666666",
+    "weight": 1,
+    "fillColor": "#FFFFFF",
+    "fillOpacity": 0.5
+  },
+  "joinField": "id",
+  "popupFields": ["id", "couleur", "images", "texte"],
+  "tileLayerUrl": "https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png",
+  "tileLayerOptions": {
+    "maxZoom": 18,
+    "minZoom": 6,
+    "attribution": "Fond de carte © CartoDB"
+  },
+  "mapSettings": {
+    "zoomControl": false
+  }
+}
