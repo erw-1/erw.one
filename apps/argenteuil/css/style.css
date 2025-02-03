@@ -47,20 +47,21 @@ html, body {
     gap: 10px;
     overflow: hidden;
     position: relative;
-    max-width: 60%;
+    max-width: 70vw;
     margin-right: 20px; /* Décale les images à gauche */
 }
 
 /* Suppression du hover des images */
 .carousel img {
-    max-height: 60vh;
+    max-height: 90vh;
+    max-width: 70vw;
     border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Boutons de navigation */
 .carousel-button {
     background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
     border: none;
     color: white;
     padding: 10px;
