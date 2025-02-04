@@ -49,6 +49,7 @@ html, body {
     position: relative;
     max-width: 70vw;
     margin-right: 20px; /* Décale les images à gauche */
+    transform: translate(-10vw, 0px);
 }
 
 /* Suppression du hover des images */
@@ -90,7 +91,7 @@ html, body {
     position: absolute;
     top: 10%;
     right: 10px;
-    max-width: 25%;
+    max-width: 30vw;
     padding: 20px;
     background: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
