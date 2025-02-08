@@ -1,53 +1,38 @@
- <!--            -->
- <!-- index.html -->
- <!--            -->
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
   <title>CozyRoute</title>
-
-  <!-- Import Leaflet CSS (sans integrity/crossorigin) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
-  <!-- Import Chart.js (pour le radar) -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-
-  <!-- Police Poppins (exemple Material) -->
   <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap"
   />
-
-  <!-- Feuille de style personnalisée -->
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Header flottant -->
   <header id="app-header">
     <div id="header-left">
       <button id="burger-menu" title="Ouvrir/Fermer le questionnaire">&#9776;</button>
       <h1>CozyRoute</h1>
     </div>
     <div id="header-right">
-      <!-- Recherche d'adresse -->
       <input
         type="text"
         id="search-input"
         placeholder="Rechercher une adresse"
       />
       <ul id="autocomplete-results"></ul>
+      <button id="mode-gps" title="Activer/Désactiver le mode GPS">Mode GPS</button>
     </div>
   </header>
 
-  <!-- Overlay de Questionnaire (vue initiale) -->
   <div id="questionnaire-overlay">
     <div id="questionnaire">
       <h2>Quelles sont vos gênes ?</h2>
       <form id="question-form">
-        <!-- Exemple : odorat -->
         <div class="question-group" id="odorat-input">
           <label for="odorat-range">
             Odeurs :
@@ -64,8 +49,6 @@
             oninput="updateQuestionValue('odorat', this.value)"
           />
         </div>
-
-        <!-- Exemple : marchabilite -->
         <div class="question-group" id="marchabilite-input">
           <label for="marchabilite-range">
             Marchabilité :
@@ -82,8 +65,6 @@
             oninput="updateQuestionValue('marchabilite', this.value)"
           />
         </div>
-
-        <!-- Thèmes restants : claustrophobie, agoraphobie, pollution, bruit, eclairage, handicap, trafic_routier -->
         <div class="question-group" id="claustrophobie-input">
           <label for="claustrophobie-range">
             Claustrophobie :
@@ -100,7 +81,6 @@
             oninput="updateQuestionValue('claustrophobie', this.value)"
           />
         </div>
-
         <div class="question-group" id="agoraphobie-input">
           <label for="agoraphobie-range">
             Agoraphobie :
@@ -117,7 +97,6 @@
             oninput="updateQuestionValue('agoraphobie', this.value)"
           />
         </div>
-
         <div class="question-group" id="pollution-input">
           <label for="pollution-range">
             Pollution :
@@ -134,7 +113,6 @@
             oninput="updateQuestionValue('pollution', this.value)"
           />
         </div>
-
         <div class="question-group" id="bruit-input">
           <label for="bruit-range">
             Bruit :
@@ -151,7 +129,6 @@
             oninput="updateQuestionValue('bruit', this.value)"
           />
         </div>
-
         <div class="question-group" id="eclairage-input">
           <label for="eclairage-range">
             Faible éclairage :
@@ -168,7 +145,6 @@
             oninput="updateQuestionValue('eclairage', this.value)"
           />
         </div>
-
         <div class="question-group" id="handicap-input">
           <label for="handicap-range">
             Handicap moteur :
@@ -185,7 +161,6 @@
             oninput="updateQuestionValue('handicap', this.value)"
           />
         </div>
-
         <div class="question-group" id="trafic_routier-input">
           <label for="trafic_routier-range">
             Trafic routier :
@@ -203,32 +178,26 @@
           />
         </div>
       </form>
-
-      <!-- Radar Chart (optionnel) -->
       <canvas id="radarChart" width="300" height="300"></canvas>
-      
-      <!-- Bouton pour basculer sur la carte -->
       <button id="goto-map">Faire votre CozyRoute</button>
     </div>
   </div>
 
-  <!-- Panneau de directions à droite (fermé par défaut) -->
   <div id="directions-panel" class="hidden">
     <button id="close-directions" title="Fermer">X</button>
     <h2>Itinéraire</h2>
-    <!-- Distance / durée -->
     <div id="directions-summary"></div>
-    <!-- Liste d'étapes -->
     <ul id="directions-steps"></ul>
   </div>
 
-  <!-- La carte Leaflet -->
   <div id="map"></div>
 
-  <!-- Import Leaflet JS (sans integrity/crossorigin) -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <div id="loading-splash" class="hidden">
+    <div class="spinner"></div>
+    <p>Chargement...</p>
+  </div>
 
-  <!-- Script principal -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
