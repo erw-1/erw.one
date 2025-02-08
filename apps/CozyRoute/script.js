@@ -260,10 +260,12 @@ function clearRouteAndMarkers() {
   }
 }
 
-/* Nouvelle version de getAvoidPolygons avec hiérarchisation par conflit
+/* Nouvelle version de getAvoidPolygons avec hiérarchisation par conflit.
    Pour chaque polygone, le conflit est calculé par :
-       conflit = note du polygone × (5 / note utilisateur)
+       conflit = note du polygone × (note utilisateur / 5)
    Seuls les polygones dont le conflit est supérieur ou égal au cutoff sont inclus.
+   Ainsi, une note utilisateur de 5 (intolérance haute) donnera un conflit = note du polygone,
+   tandis qu'une note utilisateur de 1 donnera un conflit réduit (note du polygone × 0.2).
 */
 function getAvoidPolygons(cutoff = 0) {
   let polygons = [];
@@ -275,7 +277,7 @@ function getAvoidPolygons(cutoff = 0) {
       let theme = match[1];
       let polyIntensity = parseInt(match[2], 10);
       if (userData[theme] > 0) {
-        let conflict = polyIntensity * (5 / userData[theme]);
+        let conflict = polyIntensity * (userData[theme] / 5);
         if (conflict >= cutoff) {
           if (feature.geometry.type === "MultiPolygon") {
             polygons.push(...feature.geometry.coordinates);
