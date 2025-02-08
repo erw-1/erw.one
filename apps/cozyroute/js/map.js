@@ -1,9 +1,9 @@
 // js/map.js
-// Map initialization, marker management, and GPS handling for CozyRoute
+// Initialisation de la carte Leaflet, gestion des marqueurs et du mode GPS
 
 import { ORS_API_KEY, themes, userData } from "./config.js";
 
-// Global state variables related to the map.
+// Variables globales liées à la carte.
 export let map = null;
 export let cozyRouteLayer = null;
 export let routeLayer = null;
@@ -15,18 +15,18 @@ export let gpsWatchId = null;
 export let gpsMarker = null;
 
 /**
- * Initialize the Leaflet map and load the GeoJSON data.
+ * Initialise la carte Leaflet et charge les données GeoJSON.
  */
 export function initMap() {
   map = L.map("map").setView([49.0389, 2.0760], 13);
-  fetch("data/cozyroute.geojson")
+  fetch("cozyroute.geojson")
     .then(resp => {
-      if (!resp.ok) throw new Error("GeoJSON load error");
+      if (!resp.ok) throw new Error("Erreur lors du chargement du GeoJSON");
       return resp.json();
     })
     .then(data => {
       cozyRouteData = data;
-      // Create a GeoJSON layer with a style based on the feature's properties.
+      // Création d'une couche GeoJSON avec un style basé sur les propriétés.
       cozyRouteLayer = L.geoJSON(data, {
         style: feature => {
           const cls = feature.properties.class || "";
@@ -42,22 +42,21 @@ export function initMap() {
     })
     .catch(err => console.error(err));
 
-  // Listen for map clicks to add markers.
+  // Écoute des clics sur la carte.
   map.on("click", e => {
     handleMapClick(e.latlng);
   });
 }
 
 /**
- * Handle a map click event to add markers.
- * In GPS mode, if a starting (GPS) marker exists, add a destination marker.
- * Otherwise, add markers in the normal (non‑GPS) way.
- *
- * @param {Object} latlng - The {lat, lng} coordinates of the click.
+ * Gère le clic sur la carte pour ajouter des marqueurs.
+ * En mode GPS, si le marqueur GPS existe, le clic ajoute un marqueur de destination.
+ * Sinon, les marqueurs sont ajoutés normalement.
+ * @param {Object} latlng - Un objet {lat, lng}.
  */
 export function handleMapClick(latlng) {
   if (gpsModeActive && clickMarkers.length === 1) {
-    // In GPS mode, add destination marker (black circle)
+    // En mode GPS : ajouter un marqueur de destination (rond noir)
     const destMarker = L.circleMarker([latlng.lat, latlng.lng], {
       radius: 6,
       color: "black",
@@ -66,7 +65,6 @@ export function handleMapClick(latlng) {
     }).addTo(map);
     clickMarkers.push(destMarker);
   } else if (!gpsModeActive) {
-    // In non‑GPS mode, clear markers if two already exist and then add a new marker.
     if (clickMarkers.length === 2) {
       clearRouteAndMarkers();
     }
@@ -78,7 +76,7 @@ export function handleMapClick(latlng) {
     }).addTo(map);
     clickMarkers.push(marker);
   }
-  // If two markers are set, trigger route calculation.
+  // Si deux marqueurs sont présents, lancer le calcul de l'itinéraire.
   if (clickMarkers.length === 2 && window.getRoute) {
     const A = clickMarkers[0].getLatLng();
     const B = clickMarkers[1].getLatLng();
@@ -87,7 +85,7 @@ export function handleMapClick(latlng) {
 }
 
 /**
- * Clear all route layers and markers from the map.
+ * Supprime toutes les couches de l'itinéraire et les marqueurs de la carte.
  */
 export function clearRouteAndMarkers() {
   if (routeLayer) {
@@ -103,7 +101,7 @@ export function clearRouteAndMarkers() {
 }
 
 /**
- * Toggle GPS mode. When activated, clears existing markers and starts geolocation tracking.
+ * Bascule le mode GPS : efface les marqueurs existants et démarre/arrête la géolocalisation.
  */
 export function toggleGpsMode() {
   gpsModeActive = !gpsModeActive;
@@ -128,22 +126,21 @@ export function toggleGpsMode() {
 }
 
 /**
- * Update the GPS marker position as the device moves.
- *
- * @param {Object} position - The geolocation position object.
+ * Met à jour la position du marqueur GPS au fur et à mesure du déplacement.
+ * @param {Object} position - L'objet position retourné par la géolocalisation.
  */
 export function updateGpsPosition(position) {
   const lat = position.coords.latitude;
   const lng = position.coords.longitude;
   if (!gpsMarker) {
-    // Create a dynamic GPS marker (blue circle)
+    // Création d'un marqueur dynamique pour le mode GPS (rond bleu)
     gpsMarker = L.circleMarker([lat, lng], {
       radius: 8,
       color: "#1976D2",
       fillColor: "#1976D2",
       fillOpacity: 1
     }).addTo(map);
-    // Use the GPS marker as the starting point.
+    // Ce marqueur devient le point de départ.
     clickMarkers = [gpsMarker];
   } else {
     gpsMarker.setLatLng([lat, lng]);
@@ -151,9 +148,8 @@ export function updateGpsPosition(position) {
 }
 
 /**
- * Log GPS errors.
- *
- * @param {Object} err - The geolocation error.
+ * Affiche les erreurs de géolocalisation dans la console.
+ * @param {Object} err - L'erreur de géolocalisation.
  */
 export function errorGps(err) {
   console.error(err);
