@@ -1,11 +1,11 @@
 // js/ui.js
-// UI initialization and helper functions for search autocomplete and button events.
+// Initialisation de l'interface et fonctions d'assistance pour l'autocomplétion et la gestion des événements.
 
 import { ORS_API_KEY, lastSuggestions } from "./config.js";
 import { handleMapClick } from "./map.js";
 
 /**
- * Initialize UI buttons such as the burger menu and search button.
+ * Initialise les boutons de l'interface (menu burger, bouton de recherche, etc.).
  */
 export function initUIButtons() {
   const gotoMapBtn = document.getElementById("goto-map");
@@ -25,7 +25,7 @@ export function initUIButtons() {
     searchBtn.addEventListener("click", () => {
       const address = document.getElementById("search-input").value.trim();
       if (!address) {
-        alert("Please enter an address.");
+        alert("Veuillez saisir une adresse.");
         return;
       }
       handleEnterPress();
@@ -34,7 +34,7 @@ export function initUIButtons() {
 }
 
 /**
- * Initialize search input events for live autocomplete and Enter key handling.
+ * Initialise les événements liés au champ de recherche (entrée et autocomplétion).
  */
 export function initSearchInputEvents() {
   const input = document.getElementById("search-input");
@@ -51,7 +51,7 @@ export function initSearchInputEvents() {
 }
 
 /**
- * Handle the Enter key press to select the first suggestion.
+ * Gère la touche "Entrée" pour sélectionner la première suggestion.
  */
 export function handleEnterPress() {
   if (lastSuggestions.length > 0) {
@@ -63,9 +63,8 @@ export function handleEnterPress() {
 }
 
 /**
- * Process the user input for address autocomplete.
- *
- * @param {string} val - The current value of the search input.
+ * Traite la saisie utilisateur pour l'autocomplétion.
+ * @param {string} val - La valeur saisie dans le champ.
  */
 export function onAddressInput(val) {
   if (val.length < 4) {
@@ -84,16 +83,15 @@ export function onAddressInput(val) {
 }
 
 /**
- * Query the OpenRouteService geocoding API for address suggestions.
- *
- * @param {string} query - The address query string.
- * @returns {Promise<Array>} A promise that resolves to an array of suggestions.
+ * Interroge l'API de géocodage d'OpenRouteService pour obtenir des suggestions.
+ * @param {string} query - La requête d'adresse.
+ * @returns {Promise<Array>} Une promesse résolvant un tableau de suggestions.
  */
 export function geocodeORS(query) {
   const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
   return fetch(url)
     .then(r => {
-      if (!r.ok) throw new Error("Geocoding error");
+      if (!r.ok) throw new Error("Erreur de géocodage");
       return r.json();
     })
     .then(data => {
@@ -106,9 +104,8 @@ export function geocodeORS(query) {
 }
 
 /**
- * Display autocomplete suggestions in the UI.
- *
- * @param {Array} list - Array of suggestion objects.
+ * Affiche les suggestions d'autocomplétion dans l'interface.
+ * @param {Array} list - Tableau d'objets suggestion.
  */
 export function displaySuggestions(list) {
   const container = document.getElementById("autocomplete-results");
