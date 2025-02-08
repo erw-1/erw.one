@@ -58,6 +58,7 @@ function initMap() {
           };
         }
       }).addTo(map);
+
       map.fitBounds(cozyRouteLayer.getBounds());
       console.log("[MAP] Vue ajustée sur cozyRouteLayer");
     })
@@ -189,6 +190,7 @@ function handleMapClick(latlng) {
   if (clickMarkers.length === 2) {
     const A = clickMarkers[0].getLatLng();
     const B = clickMarkers[1].getLatLng();
+    // Lancer le routing avec le seuil initial (0)
     getRoute(A.lat, A.lng, B.lat, B.lng);
   }
 }
@@ -202,19 +204,23 @@ function clearRouteAndMarkers() {
   clickMarkers = [];
 }
 
-function getAvoidPolygons() {
+// Nouvelle version de getAvoidPolygons qui prend en compte un seuil
+function getAvoidPolygons(threshold = 0) {
   let polygons = [];
   if (!cozyRouteData || !cozyRouteData.features) return null;
   cozyRouteData.features.forEach(feature => {
     let cls = feature.properties.class;
-    for (let theme of themes) {
-      if (userData[theme] > 0 && cls.startsWith(theme + "-")) {
+    // On attend un format "theme-intensité" (ex: "odorat-3")
+    let match = cls.match(/^([a-z_]+)-(\d+)$/);
+    if (match) {
+      let theme = match[1];
+      let intensity = parseInt(match[2], 10);
+      if (userData[theme] > 0 && intensity >= threshold) {
         if (feature.geometry.type === "MultiPolygon") {
           polygons.push(...feature.geometry.coordinates);
         } else if (feature.geometry.type === "Polygon") {
           polygons.push(feature.geometry.coordinates);
         }
-        break;
       }
     }
   });
@@ -225,8 +231,9 @@ function getAvoidPolygons() {
   };
 }
 
-function getRoute(lat1, lng1, lat2, lng2) {
-  console.log(`[ROUTE] from ${lat1},${lng1} to ${lat2},${lng2}`);
+// Modification de getRoute pour intégrer la logique de réessai avec seuils progressifs
+function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
+  console.log(`[ROUTE] from ${lat1},${lng1} to ${lat2},${lng2} avec seuil ${threshold}`);
   if (routeLayer) {
     map.removeLayer(routeLayer);
     routeLayer = null;
@@ -236,7 +243,7 @@ function getRoute(lat1, lng1, lat2, lng2) {
     language: "fr",
     instructions: true
   };
-  const avoid = getAvoidPolygons();
+  const avoid = getAvoidPolygons(threshold);
   if (avoid) {
     bodyData.options = { avoid_polygons: avoid };
   }
@@ -274,6 +281,22 @@ function getRoute(lat1, lng1, lat2, lng2) {
   })
   .catch(err => {
     console.error("[ROUTE] error:", err);
+    if (threshold < 5) {
+      // Détermination du nouveau seuil :
+      // Si seuil initial = 0, on passe à 2 (pour éliminer les classes "-0" et "-1"),
+      // puis on incrémente de 1 à chaque réessai.
+      let newThreshold = threshold === 0 ? 2 : threshold + 1;
+      // Construction du message d'alerte indiquant les niveaux éliminés
+      let eliminated = [];
+      for (let i = 1; i < newThreshold; i++) {
+        eliminated.push(i);
+      }
+      alert(`Pas de chemin trouvé, élimination des gênes de niveau ${eliminated.join(" et ")}...`);
+      // On retente le routing avec le nouveau seuil
+      getRoute(lat1, lng1, lat2, lng2, newThreshold);
+    } else {
+      alert("Pas de chemin trouvé même en éliminant toutes les gênes de niveau inférieurs à 5.");
+    }
   });
 }
 
