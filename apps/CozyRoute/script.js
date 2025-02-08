@@ -203,7 +203,7 @@ function updateGpsPosition(position) {
       fillColor: "#1976D2",
       fillOpacity: 1
     }).addTo(map);
-    // Ce marqueur devient le premier point
+    // Ce marqueur devient le premier point (point de départ)
     clickMarkers = [gpsMarker];
   } else {
     gpsMarker.setLatLng([lat, lng]);
@@ -215,7 +215,8 @@ function errorGps(err) {
 }
 
 function handleMapClick(latlng) {
-  // En mode GPS, si gpsMarker existe déjà, on ajoute le marqueur de destination (rond noir)
+  // En mode GPS, si le gpsMarker existe déjà (point de départ dynamique),
+  // le clic ajoute le marqueur de destination (rond noir)
   if (gpsModeActive && clickMarkers.length === 1) {
     const destMarker = L.circleMarker([latlng.lat, latlng.lng], {
       radius: 6,
@@ -259,7 +260,14 @@ function clearRouteAndMarkers() {
   }
 }
 
-function getAvoidPolygons(threshold = 0) {
+/* Nouvelle version de getAvoidPolygons avec hiérarchisation par "conflit"
+   Pour chaque polygone, on calcule : conflit = note_utilisateur - note_polygone.
+   Seuls les polygones dont le conflit est supérieur ou égal au cutoff sont inclus.
+   Ainsi, par exemple, si l'utilisateur donne 5 pour trafic et 1 pour odorat :
+   - Pour un polygone trafic avec note 1 → conflit = 5-1 = 4 (important)
+   - Pour un polygone odorat avec note 5 → conflit = 1-5 = -4 (peu gênant)
+*/
+function getAvoidPolygons(cutoff = 0) {
   let polygons = [];
   if (!cozyRouteData || !cozyRouteData.features) return null;
   cozyRouteData.features.forEach(feature => {
@@ -267,12 +275,15 @@ function getAvoidPolygons(threshold = 0) {
     let match = cls.match(/^([a-z_]+)-(\d+)$/);
     if (match) {
       let theme = match[1];
-      let intensity = parseInt(match[2], 10);
-      if (userData[theme] > 0 && intensity >= threshold) {
-        if (feature.geometry.type === "MultiPolygon") {
-          polygons.push(...feature.geometry.coordinates);
-        } else if (feature.geometry.type === "Polygon") {
-          polygons.push(feature.geometry.coordinates);
+      let polyIntensity = parseInt(match[2], 10);
+      if (userData[theme] > 0) {
+        let conflict = userData[theme] - polyIntensity;
+        if (conflict >= cutoff) {
+          if (feature.geometry.type === "MultiPolygon") {
+            polygons.push(...feature.geometry.coordinates);
+          } else if (feature.geometry.type === "Polygon") {
+            polygons.push(feature.geometry.coordinates);
+          }
         }
       }
     }
@@ -284,7 +295,7 @@ function getAvoidPolygons(threshold = 0) {
   };
 }
 
-// Fonction pour mettre à jour le message d'erreur sous "Chargement..."
+/* Gestion du splash de chargement et du message associé */
 function setLoadingMessage(msg) {
   const el = document.getElementById("loading-message");
   if (el) {
@@ -304,7 +315,10 @@ function hideLoading() {
   setLoadingMessage("");
 }
 
-function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
+/* getRoute utilise maintenant un paramètre cutoff (initialement 0)
+   En cas d'échec, le cutoff est augmenté pour éliminer progressivement
+   les polygones dont le conflit est inférieur */
+function getRoute(lat1, lng1, lat2, lng2, cutoff = 0) {
   showLoading();
   if (routeLayer) {
     map.removeLayer(routeLayer);
@@ -315,7 +329,7 @@ function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
     language: "fr",
     instructions: true
   };
-  const avoid = getAvoidPolygons(threshold);
+  const avoid = getAvoidPolygons(cutoff);
   if (avoid) {
     bodyData.options = { avoid_polygons: avoid };
   }
@@ -352,18 +366,14 @@ function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
     showDirectionsPanel(route);
   })
   .catch(err => {
-    if (threshold < 5) {
-      let newThreshold = threshold === 0 ? 2 : threshold + 1;
-      let eliminated = [];
-      for (let i = 1; i < newThreshold; i++) {
-        eliminated.push(i);
-      }
-      setLoadingMessage(`Pas de chemin trouvé, élimination des gênes de niveau ${eliminated.join(" et ")}...`);
+    if (cutoff < 5) {
+      let newCutoff = cutoff + 1;
+      setLoadingMessage(`Pas de chemin trouvé, élimination des gênes avec un conflit inférieur à ${newCutoff}...`);
       setTimeout(() => {
-        getRoute(lat1, lng1, lat2, lng2, newThreshold);
+        getRoute(lat1, lng1, lat2, lng2, newCutoff);
       }, 1500);
     } else {
-      setLoadingMessage("Pas de chemin trouvé même en éliminant toutes les gênes de niveau inférieurs à 5.");
+      setLoadingMessage("Pas de chemin trouvé même en éliminant toutes les gênes de conflit inférieures à 5.");
       setTimeout(hideLoading, 3000);
     }
   });
