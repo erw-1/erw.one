@@ -345,8 +345,6 @@ input[type="range"]::-moz-range-thumb {
 
 [class^="odorat-"] {
   stroke: var(--odorat-color) !important;
-  fill: var(--odorat-color) !important;
-  fill-opacity: 1;
 }
 
 [class^="marchabilite-"] {
