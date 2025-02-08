@@ -19,7 +19,7 @@ export let gpsMarker = null;
  */
 export function initMap() {
   map = L.map("map").setView([49.0389, 2.0760], 13);
-  fetch("cozyroute.geojson")
+  fetch("data/cozyroute.geojson")
     .then(resp => {
       if (!resp.ok) throw new Error("Erreur lors du chargement du GeoJSON");
       return resp.json();
