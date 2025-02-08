@@ -29,8 +29,6 @@ let lastSuggestions = [];
 let gpsModeActive = false;
 let gpsWatchId = null;
 let gpsMarker = null;
-let dashedLineStart = null;
-let dashedLineEnd = null;
 
 window.addEventListener("load", () => {
   initMap();
@@ -175,6 +173,9 @@ function toggleGpsMode() {
   const btn = document.getElementById("mode-gps");
   if (gpsModeActive) {
     btn.classList.add("active");
+    // Effacer les marqueurs existants et l'itinéraire
+    clearRouteAndMarkers();
+    // Lancer le suivi GPS et placer un marqueur de navigation
     if (!gpsWatchId) {
       gpsWatchId = navigator.geolocation.watchPosition(updateGpsPosition, errorGps, { enableHighAccuracy: true });
     }
@@ -184,6 +185,10 @@ function toggleGpsMode() {
       navigator.geolocation.clearWatch(gpsWatchId);
       gpsWatchId = null;
     }
+    if (gpsMarker) {
+      map.removeLayer(gpsMarker);
+      gpsMarker = null;
+    }
   }
 }
 
@@ -191,33 +196,46 @@ function updateGpsPosition(position) {
   const lat = position.coords.latitude;
   const lng = position.coords.longitude;
   if (!gpsMarker) {
-    gpsMarker = L.marker([lat, lng]).addTo(map);
-    if (clickMarkers.length === 0) {
-      clickMarkers.push(gpsMarker);
-    }
+    // Créer un marqueur GPS dynamique (rond bleu)
+    gpsMarker = L.circleMarker([lat, lng], {
+      radius: 8,
+      color: "#1976D2",
+      fillColor: "#1976D2",
+      fillOpacity: 1
+    }).addTo(map);
+    // Placer ce marqueur en tant que premier point
+    clickMarkers = [gpsMarker];
   } else {
     gpsMarker.setLatLng([lat, lng]);
   }
-  if (routeLayer && dashedLineStart) {
-    const routeCoords = getRouteCoordinates();
-    if (routeCoords && routeCoords.length > 0) {
-      dashedLineStart.setLatLngs([gpsMarker.getLatLng(), routeCoords[0]]);
-    }
-  }
-}
-
-function errorGps(err) {
-  console.error(err);
 }
 
 function handleMapClick(latlng) {
-  if (clickMarkers.length === 2) {
-    clearRouteAndMarkers();
+  // En mode GPS, si le gpsMarker existe déjà (point de départ dynamique),
+  // le clic ajoute le marqueur de destination en style statique (rond noir).
+  if (gpsModeActive && clickMarkers.length === 1) {
+    const destMarker = L.circleMarker([latlng.lat, latlng.lng], {
+      radius: 6,
+      color: "black",
+      fillColor: "black",
+      fillOpacity: 1
+    }).addTo(map);
+    clickMarkers.push(destMarker);
   }
-  if (!(gpsModeActive && gpsMarker && clickMarkers.length === 0)) {
-    const mk = L.marker([latlng.lat, latlng.lng]).addTo(map);
-    clickMarkers.push(mk);
+  // En mode non-GPS, le comportement habituel :
+  else if (!gpsModeActive) {
+    if (clickMarkers.length === 2) {
+      clearRouteAndMarkers();
+    }
+    const marker = L.circleMarker([latlng.lat, latlng.lng], {
+      radius: 6,
+      color: "black",
+      fillColor: "black",
+      fillOpacity: 1
+    }).addTo(map);
+    clickMarkers.push(marker);
   }
+  // Si l'on dispose de deux marqueurs, lancer le routing
   if (clickMarkers.length === 2) {
     const A = clickMarkers[0].getLatLng();
     const B = clickMarkers[1].getLatLng();
@@ -235,14 +253,6 @@ function clearRouteAndMarkers() {
   if (gpsMarker) {
     map.removeLayer(gpsMarker);
     gpsMarker = null;
-  }
-  if (dashedLineStart) {
-    map.removeLayer(dashedLineStart);
-    dashedLineStart = null;
-  }
-  if (dashedLineEnd) {
-    map.removeLayer(dashedLineEnd);
-    dashedLineEnd = null;
   }
 }
 
@@ -325,8 +335,6 @@ function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
     };
     routeLayer = L.geoJSON(routeGeo, { style: { color: "#1976D2", weight: 4 } }).addTo(map);
     map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
-    const routeCoords = getRouteCoordinates();
-    updateDashedLines(routeCoords);
     hideLoading();
     showDirectionsPanel(route);
   })
@@ -344,30 +352,6 @@ function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
       alert("Pas de chemin trouvé même en éliminant toutes les gênes de niveau inférieurs à 5.");
     }
   });
-}
-
-function getRouteCoordinates() {
-  if (!routeLayer) return null;
-  const geojson = routeLayer.toGeoJSON();
-  if (!geojson || !geojson.geometry || !geojson.geometry.coordinates) return null;
-  return geojson.geometry.coordinates.map(coord => L.latLng(coord[1], coord[0]));
-}
-
-function updateDashedLines(routeCoords) {
-  if (dashedLineStart) {
-    map.removeLayer(dashedLineStart);
-    dashedLineStart = null;
-  }
-  if (dashedLineEnd) {
-    map.removeLayer(dashedLineEnd);
-    dashedLineEnd = null;
-  }
-  if (clickMarkers.length >= 1 && routeCoords && routeCoords.length > 0) {
-    dashedLineStart = L.polyline([clickMarkers[0].getLatLng(), routeCoords[0]], { color: "#1976D2", dashArray: "5, 5" }).addTo(map);
-  }
-  if (clickMarkers.length >= 2 && routeCoords && routeCoords.length > 0) {
-    dashedLineEnd = L.polyline([routeCoords[routeCoords.length - 1], clickMarkers[1].getLatLng()], { color: "#1976D2", dashArray: "5, 5" }).addTo(map);
-  }
 }
 
 function decodePolyline(encoded) {
