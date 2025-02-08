@@ -175,7 +175,7 @@ function toggleGpsMode() {
     btn.classList.add("active");
     // Effacer les marqueurs existants et l'itinéraire
     clearRouteAndMarkers();
-    // Lancer le suivi GPS et placer un marqueur de navigation
+    // Démarrer le suivi GPS et placer le marqueur de navigation
     if (!gpsWatchId) {
       gpsWatchId = navigator.geolocation.watchPosition(updateGpsPosition, errorGps, { enableHighAccuracy: true });
     }
@@ -196,23 +196,26 @@ function updateGpsPosition(position) {
   const lat = position.coords.latitude;
   const lng = position.coords.longitude;
   if (!gpsMarker) {
-    // Créer un marqueur GPS dynamique (rond bleu)
+    // Création d'un marqueur dynamique pour le mode GPS (rond bleu)
     gpsMarker = L.circleMarker([lat, lng], {
       radius: 8,
       color: "#1976D2",
       fillColor: "#1976D2",
       fillOpacity: 1
     }).addTo(map);
-    // Placer ce marqueur en tant que premier point
+    // Ce marqueur devient le premier point
     clickMarkers = [gpsMarker];
   } else {
     gpsMarker.setLatLng([lat, lng]);
   }
 }
 
+function errorGps(err) {
+  console.error(err);
+}
+
 function handleMapClick(latlng) {
-  // En mode GPS, si le gpsMarker existe déjà (point de départ dynamique),
-  // le clic ajoute le marqueur de destination en style statique (rond noir).
+  // En mode GPS, si gpsMarker existe déjà, on ajoute le marqueur de destination (rond noir)
   if (gpsModeActive && clickMarkers.length === 1) {
     const destMarker = L.circleMarker([latlng.lat, latlng.lng], {
       radius: 6,
@@ -222,7 +225,7 @@ function handleMapClick(latlng) {
     }).addTo(map);
     clickMarkers.push(destMarker);
   }
-  // En mode non-GPS, le comportement habituel :
+  // En mode non-GPS, comportement habituel
   else if (!gpsModeActive) {
     if (clickMarkers.length === 2) {
       clearRouteAndMarkers();
@@ -235,7 +238,7 @@ function handleMapClick(latlng) {
     }).addTo(map);
     clickMarkers.push(marker);
   }
-  // Si l'on dispose de deux marqueurs, lancer le routing
+  // Si deux marqueurs sont présents, lancer le calcul de l'itinéraire
   if (clickMarkers.length === 2) {
     const A = clickMarkers[0].getLatLng();
     const B = clickMarkers[1].getLatLng();
@@ -281,14 +284,24 @@ function getAvoidPolygons(threshold = 0) {
   };
 }
 
+// Fonction pour mettre à jour le message d'erreur sous "Chargement..."
+function setLoadingMessage(msg) {
+  const el = document.getElementById("loading-message");
+  if (el) {
+    el.textContent = msg;
+  }
+}
+
 function showLoading() {
   const splash = document.getElementById("loading-splash");
   if (splash) splash.classList.remove("hidden");
+  setLoadingMessage("");
 }
 
 function hideLoading() {
   const splash = document.getElementById("loading-splash");
   if (splash) splash.classList.add("hidden");
+  setLoadingMessage("");
 }
 
 function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
@@ -339,17 +352,19 @@ function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
     showDirectionsPanel(route);
   })
   .catch(err => {
-    hideLoading();
     if (threshold < 5) {
       let newThreshold = threshold === 0 ? 2 : threshold + 1;
       let eliminated = [];
       for (let i = 1; i < newThreshold; i++) {
         eliminated.push(i);
       }
-      alert(`Pas de chemin trouvé, élimination des gênes de niveau ${eliminated.join(" et ")}...`);
-      getRoute(lat1, lng1, lat2, lng2, newThreshold);
+      setLoadingMessage(`Pas de chemin trouvé, élimination des gênes de niveau ${eliminated.join(" et ")}...`);
+      setTimeout(() => {
+        getRoute(lat1, lng1, lat2, lng2, newThreshold);
+      }, 1500);
     } else {
-      alert("Pas de chemin trouvé même en éliminant toutes les gênes de niveau inférieurs à 5.");
+      setLoadingMessage("Pas de chemin trouvé même en éliminant toutes les gênes de niveau inférieurs à 5.");
+      setTimeout(hideLoading, 3000);
     }
   });
 }
