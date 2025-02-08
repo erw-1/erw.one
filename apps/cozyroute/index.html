@@ -20,11 +20,7 @@
         <h1>CozyRoute</h1>
       </div>
       <div id="header-right">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="Rechercher une adresse"
-        />
+        <input type="text" id="search-input" placeholder="Rechercher une adresse" />
         <ul id="autocomplete-results"></ul>
         <button id="mode-gps" title="Activer/Désactiver le mode GPS">Mode GPS</button>
       </div>
@@ -181,14 +177,14 @@
             />
           </div>
         </form>
-        <!-- Zone d'affichage du graphique radar -->
+        <!-- Graphique radar pour le profil utilisateur -->
         <canvas id="radarChart" width="300" height="300"></canvas>
-        <!-- Bouton pour masquer l'overlay et afficher la carte -->
+        <!-- Bouton pour fermer le questionnaire et afficher la carte -->
         <button id="goto-map">Faire votre CozyRoute</button>
       </div>
     </div>
 
-    <!-- Panneau d'itinéraire (instructions pas-à-pas) -->
+    <!-- Panneau d'itinéraire affichant le résumé et les étapes -->
     <div id="directions-panel" class="hidden">
       <button id="close-directions" title="Fermer">X</button>
       <h2>Itinéraire</h2>
@@ -199,15 +195,14 @@
     <!-- Conteneur de la carte Leaflet -->
     <div id="map"></div>
 
-    <!-- Splash de chargement avec spinner et message -->
+    <!-- Écran de chargement avec spinner et message -->
     <div id="loading-splash" class="hidden">
       <div class="spinner"></div>
       <p>Chargement...</p>
       <div id="loading-message"></div>
     </div>
 
-    <!-- Inclusion des scripts de Leaflet et du script personnalisé -->
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="script.js"></script>
+    <!-- Inclusion du module principal -->
+    <script type="module" src="main.js"></script>
   </body>
 </html>
