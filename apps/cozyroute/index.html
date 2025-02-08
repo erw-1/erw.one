@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>CozyRoute</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <!-- Chart.js and D3.js (for radar charts and data visualization) -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <!-- Google Fonts: Poppins -->
+  <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" />
+  
+  <!-- Main stylesheet -->
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+<body>
+  <!-- Application Header -->
+  <header id="app-header">
+    <div id="header-left">
+      <!-- Button to toggle the questionnaire overlay -->
+      <button id="burger-menu" title="Toggle Questionnaire">&#9776;</button>
+      <h1>CozyRoute</h1>
+    </div>
+    <div id="header-right">
+      <!-- Address search input with autocomplete suggestions -->
+      <input type="text" id="search-input" placeholder="Search for an address" />
+      <ul id="autocomplete-results"></ul>
+      <!-- Button to enable/disable GPS mode -->
+      <button id="mode-gps" title="Toggle GPS Mode">Mode GPS</button>
+    </div>
+  </header>
+
+  <!-- Questionnaire Overlay (initial view) -->
+  <div id="questionnaire-overlay">
+    <div id="questionnaire">
+      <h2>What factors bother you?</h2>
+      <form id="question-form">
+        <!-- Each group below represents one factor. For example: -->
+        <div class="question-group" id="odorat-input">
+          <label for="odorat-range">
+            Odors:
+            <span id="odorat-value">0</span>/5
+          </label>
+          <input type="range"
+                 id="odorat-range"
+                 name="odorat"
+                 min="0"
+                 max="5"
+                 value="0"
+                 step="1"
+                 oninput="updateQuestionValue('odorat', this.value)" />
+        </div>
+        <!-- Repeat similar blocks for marchabilite, claustrophobie, agoraphobie, pollution, bruit, eclairage, handicap, and trafic_routier -->
+        <div class="question-group" id="marchabilite-input">
+          <label for="marchabilite-range">
+            Walkability:
+            <span id="marchabilite-value">0</span>/5
+          </label>
+          <input type="range"
+                 id="marchabilite-range"
+                 name="marchabilite"
+                 min="0"
+                 max="5"
+                 value="0"
+                 step="1"
+                 oninput="updateQuestionValue('marchabilite', this.value)" />
+        </div>
+        <!-- ... other question groups ... -->
+      </form>
+      <!-- Radar chart to display user's profile -->
+      <canvas id="radarChart" width="300" height="300"></canvas>
+      <!-- Button to hide the questionnaire and display the map -->
+      <button id="goto-map">Generate your CozyRoute</button>
+    </div>
+  </div>
+
+  <!-- Directions Panel (hidden by default) -->
+  <div id="directions-panel" class="hidden">
+    <button id="close-directions" title="Close">X</button>
+    <h2>Route</h2>
+    <div id="directions-summary"></div>
+    <ul id="directions-steps"></ul>
+  </div>
+
+  <!-- Map Container -->
+  <div id="map"></div>
+
+  <!-- Loading Splash Screen -->
+  <div id="loading-splash" class="hidden">
+    <div class="spinner"></div>
+    <p>Loading...</p>
+    <div id="loading-message"></div>
+  </div>
+
+  <!-- Load Leaflet JS and main module -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
