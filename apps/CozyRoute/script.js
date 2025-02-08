@@ -1,12 +1,6 @@
 /*************************************************
  * script.js
- * ---------------------------------------------
- * Logique de suggestions d’adresse (ORS geocode),
- * affichage de 3 résultats dans un dropdown,
- * clic sur suggestion => place un point,
- * appui sur Enter => prend la première suggestion.
- *************************************************/
-
+ 
 /***********************************************
  * 0) Variables globales
  ***********************************************/
