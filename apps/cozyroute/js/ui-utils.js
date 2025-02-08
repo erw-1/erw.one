@@ -1,5 +1,5 @@
 // js/ui-utils.js
-// Utility functions for managing the loading splash screen.
+// Fonctions utilitaires pour gérer l'overlay de chargement.
 
 export function setLoadingMessage(msg) {
   const el = document.getElementById("loading-message");
