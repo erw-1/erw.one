@@ -26,19 +26,26 @@ const themes = [
 
 let lastSuggestions = [];
 
+let gpsModeActive = false;
+let gpsWatchId = null;
+let gpsMarker = null;
+let dashedLineStart = null;
+let dashedLineEnd = null;
+
 window.addEventListener("load", () => {
-  console.log("[INIT] CozyRoute start");
   initMap();
   initDirectionsPanel();
   initRadarChart();
   initUIButtons();
   initSearchInputEvents();
+  const modeGpsBtn = document.getElementById("mode-gps");
+  if (modeGpsBtn) {
+    modeGpsBtn.addEventListener("click", toggleGpsMode);
+  }
 });
 
 function initMap() {
   map = L.map("map").setView([49.0389, 2.0760], 13);
-  console.log("[MAP] carte créée");
-
   fetch("cozyroute.geojson")
     .then(resp => {
       if (!resp.ok) throw new Error("Erreur geojson");
@@ -46,7 +53,6 @@ function initMap() {
     })
     .then(data => {
       cozyRouteData = data;
-      console.log(`[GEOJSON] Nombre de features = ${data.features.length}`);
       cozyRouteLayer = L.geoJSON(data, {
         style: feature => {
           const c = feature.properties.class || "";
@@ -58,12 +64,9 @@ function initMap() {
           };
         }
       }).addTo(map);
-
       map.fitBounds(cozyRouteLayer.getBounds());
-      console.log("[MAP] Vue ajustée sur cozyRouteLayer");
     })
-    .catch(err => console.error("[GEOJSON] erreur:", err));
-
+    .catch(err => console.error(err));
   map.on("click", e => {
     handleMapClick(e.latlng);
   });
@@ -76,14 +79,12 @@ function initUIButtons() {
       document.getElementById("questionnaire-overlay").classList.add("hidden");
     });
   }
-
   const burgerBtn = document.getElementById("burger-menu");
   if (burgerBtn) {
     burgerBtn.addEventListener("click", () => {
       document.getElementById("questionnaire-overlay").classList.toggle("hidden");
     });
   }
-
   const searchBtn = document.getElementById("search-button");
   if (searchBtn) {
     searchBtn.addEventListener("click", () => {
@@ -92,7 +93,6 @@ function initUIButtons() {
         alert("Veuillez saisir une adresse.");
         return;
       }
-      console.log("[SEARCH] address:", address);
       handleEnterPress();
     });
   }
@@ -101,12 +101,9 @@ function initUIButtons() {
 function initSearchInputEvents() {
   const input = document.getElementById("search-input");
   if (!input) return;
-
   input.addEventListener("input", (e) => {
-    const val = e.target.value;
-    onAddressInput(val);
+    onAddressInput(e.target.value);
   });
-
   input.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
@@ -118,7 +115,6 @@ function initSearchInputEvents() {
 function handleEnterPress() {
   if (lastSuggestions.length > 0) {
     const first = lastSuggestions[0];
-    console.log("[ENTER] On choisit la 1ere:", first.label);
     handleMapClick({ lat: first.coord[0], lng: first.coord[1] });
     displaySuggestions([]);
     document.getElementById("search-input").blur();
@@ -136,25 +132,19 @@ function onAddressInput(val) {
       displaySuggestions(lastSuggestions);
     })
     .catch(err => {
-      console.error("[AUTOCOMPLETE]", err);
       lastSuggestions = [];
       displaySuggestions([]);
     });
 }
 
 function geocodeORS(query) {
-  const url = `https://api.openrouteservice.org/geocode/autocomplete`
-             + `?api_key=${ORS_API_KEY}`
-             + `&text=${encodeURIComponent(query)}`;
-  console.log("[GEOCODE] Requête =>", url);
-  
+  const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
   return fetch(url)
     .then(r => {
-      if (!r.ok) throw new Error("[GEOCODE] Réponse non OK");
+      if (!r.ok) throw new Error("Erreur");
       return r.json();
     })
     .then(data => {
-      console.log("[GEOCODE] data=", data);
       if (!data || !data.features) return [];
       return data.features.map(f => ({
         label: f.properties.label,
@@ -167,7 +157,6 @@ function displaySuggestions(list) {
   const container = document.getElementById("autocomplete-results");
   if (!container) return;
   container.innerHTML = "";
-
   list.forEach(item => {
     const li = document.createElement("li");
     li.textContent = item.label;
@@ -181,16 +170,57 @@ function displaySuggestions(list) {
   });
 }
 
+function toggleGpsMode() {
+  gpsModeActive = !gpsModeActive;
+  const btn = document.getElementById("mode-gps");
+  if (gpsModeActive) {
+    btn.classList.add("active");
+    if (!gpsWatchId) {
+      gpsWatchId = navigator.geolocation.watchPosition(updateGpsPosition, errorGps, { enableHighAccuracy: true });
+    }
+  } else {
+    btn.classList.remove("active");
+    if (gpsWatchId) {
+      navigator.geolocation.clearWatch(gpsWatchId);
+      gpsWatchId = null;
+    }
+  }
+}
+
+function updateGpsPosition(position) {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+  if (!gpsMarker) {
+    gpsMarker = L.marker([lat, lng]).addTo(map);
+    if (clickMarkers.length === 0) {
+      clickMarkers.push(gpsMarker);
+    }
+  } else {
+    gpsMarker.setLatLng([lat, lng]);
+  }
+  if (routeLayer && dashedLineStart) {
+    const routeCoords = getRouteCoordinates();
+    if (routeCoords && routeCoords.length > 0) {
+      dashedLineStart.setLatLngs([gpsMarker.getLatLng(), routeCoords[0]]);
+    }
+  }
+}
+
+function errorGps(err) {
+  console.error(err);
+}
+
 function handleMapClick(latlng) {
   if (clickMarkers.length === 2) {
     clearRouteAndMarkers();
   }
-  const mk = L.marker([latlng.lat, latlng.lng]).addTo(map);
-  clickMarkers.push(mk);
+  if (!(gpsModeActive && gpsMarker && clickMarkers.length === 0)) {
+    const mk = L.marker([latlng.lat, latlng.lng]).addTo(map);
+    clickMarkers.push(mk);
+  }
   if (clickMarkers.length === 2) {
     const A = clickMarkers[0].getLatLng();
     const B = clickMarkers[1].getLatLng();
-    // Lancer le routing avec le seuil initial (0)
     getRoute(A.lat, A.lng, B.lat, B.lng);
   }
 }
@@ -202,15 +232,25 @@ function clearRouteAndMarkers() {
   }
   clickMarkers.forEach(m => map.removeLayer(m));
   clickMarkers = [];
+  if (gpsMarker) {
+    map.removeLayer(gpsMarker);
+    gpsMarker = null;
+  }
+  if (dashedLineStart) {
+    map.removeLayer(dashedLineStart);
+    dashedLineStart = null;
+  }
+  if (dashedLineEnd) {
+    map.removeLayer(dashedLineEnd);
+    dashedLineEnd = null;
+  }
 }
 
-// Nouvelle version de getAvoidPolygons qui prend en compte un seuil
 function getAvoidPolygons(threshold = 0) {
   let polygons = [];
   if (!cozyRouteData || !cozyRouteData.features) return null;
   cozyRouteData.features.forEach(feature => {
     let cls = feature.properties.class;
-    // On attend un format "theme-intensité" (ex: "odorat-3")
     let match = cls.match(/^([a-z_]+)-(\d+)$/);
     if (match) {
       let theme = match[1];
@@ -231,9 +271,18 @@ function getAvoidPolygons(threshold = 0) {
   };
 }
 
-// Modification de getRoute pour intégrer la logique de réessai avec seuils progressifs
+function showLoading() {
+  const splash = document.getElementById("loading-splash");
+  if (splash) splash.classList.remove("hidden");
+}
+
+function hideLoading() {
+  const splash = document.getElementById("loading-splash");
+  if (splash) splash.classList.add("hidden");
+}
+
 function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
-  console.log(`[ROUTE] from ${lat1},${lng1} to ${lat2},${lng2} avec seuil ${threshold}`);
+  showLoading();
   if (routeLayer) {
     map.removeLayer(routeLayer);
     routeLayer = null;
@@ -257,15 +306,14 @@ function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
     body: JSON.stringify(bodyData)
   })
   .then(r => {
-    if (!r.ok) throw new Error("[ROUTE] orS error");
+    if (!r.ok) throw new Error("Erreur routing");
     return r.json();
   })
   .then(data => {
     if (!data || !data.routes || data.routes.length === 0) {
-      throw new Error("[ROUTE] introuvable");
+      throw new Error("Aucun itinéraire");
     }
     const route = data.routes[0];
-    console.log(`[ROUTE] distance=${route.summary.distance}m`);
     const dec = decodePolyline(route.geometry);
     const routeGeo = {
       type: "Feature",
@@ -277,27 +325,49 @@ function getRoute(lat1, lng1, lat2, lng2, threshold = 0) {
     };
     routeLayer = L.geoJSON(routeGeo, { style: { color: "#1976D2", weight: 4 } }).addTo(map);
     map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
+    const routeCoords = getRouteCoordinates();
+    updateDashedLines(routeCoords);
+    hideLoading();
     showDirectionsPanel(route);
   })
   .catch(err => {
-    console.error("[ROUTE] error:", err);
+    hideLoading();
     if (threshold < 5) {
-      // Détermination du nouveau seuil :
-      // Si seuil initial = 0, on passe à 2 (pour éliminer les classes "-0" et "-1"),
-      // puis on incrémente de 1 à chaque réessai.
       let newThreshold = threshold === 0 ? 2 : threshold + 1;
-      // Construction du message d'alerte indiquant les niveaux éliminés
       let eliminated = [];
       for (let i = 1; i < newThreshold; i++) {
         eliminated.push(i);
       }
       alert(`Pas de chemin trouvé, élimination des gênes de niveau ${eliminated.join(" et ")}...`);
-      // On retente le routing avec le nouveau seuil
       getRoute(lat1, lng1, lat2, lng2, newThreshold);
     } else {
       alert("Pas de chemin trouvé même en éliminant toutes les gênes de niveau inférieurs à 5.");
     }
   });
+}
+
+function getRouteCoordinates() {
+  if (!routeLayer) return null;
+  const geojson = routeLayer.toGeoJSON();
+  if (!geojson || !geojson.geometry || !geojson.geometry.coordinates) return null;
+  return geojson.geometry.coordinates.map(coord => L.latLng(coord[1], coord[0]));
+}
+
+function updateDashedLines(routeCoords) {
+  if (dashedLineStart) {
+    map.removeLayer(dashedLineStart);
+    dashedLineStart = null;
+  }
+  if (dashedLineEnd) {
+    map.removeLayer(dashedLineEnd);
+    dashedLineEnd = null;
+  }
+  if (clickMarkers.length >= 1 && routeCoords && routeCoords.length > 0) {
+    dashedLineStart = L.polyline([clickMarkers[0].getLatLng(), routeCoords[0]], { color: "#1976D2", dashArray: "5, 5" }).addTo(map);
+  }
+  if (clickMarkers.length >= 2 && routeCoords && routeCoords.length > 0) {
+    dashedLineEnd = L.polyline([routeCoords[routeCoords.length - 1], clickMarkers[1].getLatLng()], { color: "#1976D2", dashArray: "5, 5" }).addTo(map);
+  }
 }
 
 function decodePolyline(encoded) {
@@ -312,7 +382,6 @@ function decodePolyline(encoded) {
     } while (byte >= 0x20);
     const deltaLat = (result & 1) ? ~(result >> 1) : (result >> 1);
     currentLat += deltaLat;
-
     shift = 0;
     result = 0;
     do {
@@ -322,7 +391,6 @@ function decodePolyline(encoded) {
     } while (byte >= 0x20);
     const deltaLng = (result & 1) ? ~(result >> 1) : (result >> 1);
     currentLng += deltaLng;
-
     coords.push([currentLat / 1e5, currentLng / 1e5]);
   }
   return coords;
@@ -335,7 +403,6 @@ function showDirectionsPanel(route) {
   const dur = (route.summary.duration / 60).toFixed(0);
   document.getElementById("directions-summary").textContent =
     `Distance : ${dist} km | Durée : ~${dur} min`;
-
   const stepsUl = document.getElementById("directions-steps");
   stepsUl.innerHTML = "";
   if (route.segments && route.segments.length > 0) {
@@ -364,25 +431,21 @@ function initDirectionsPanel() {
 function initRadarChart() {
   const ctx = document.getElementById("radarChart");
   if (!ctx) return;
-
   function getCssVar(varName) {
     return getComputedStyle(document.documentElement)
       .getPropertyValue(varName)
       .trim();
   }
-
   function addHexAlpha(hex, alpha = "90") {
     if (/^#[0-9A-F]{6}$/i.test(hex)) {
       return hex + alpha;
     }
     return hex;
   }
-
   const pointColors = themes.map(theme => {
     const baseColor = getCssVar(`--${theme}-color`);
     return addHexAlpha(baseColor, "FF");
   });
-
   function createConicGradient(context) {
     const chart = context.chart;
     const scale = chart.scales.r || chart.scales.radialLinear;
@@ -416,7 +479,6 @@ function initRadarChart() {
     gradient.addColorStop(1, addHexAlpha(firstColor, "90"));
     return gradient;
   }
-
   radarChart = new Chart(ctx, {
     type: "radar",
     data: {
@@ -454,7 +516,6 @@ function updateRadarChart() {
 }
 
 function updateQuestionValue(theme, value) {
-  console.log(`[SLIDER] ${theme} => ${value}`);
   userData[theme] = parseInt(value, 10);
   document.getElementById(theme + "-value").textContent = value;
   updateRadarChart();
@@ -463,10 +524,8 @@ function updateQuestionValue(theme, value) {
 
 function updateRoadStyle() {
   if (!cozyRouteLayer) return;
-  console.log("[STYLE] intensités ...");
   for (const theme of themes) {
     const userVal = userData[theme];
-    console.log(`  => ${theme} = ${userVal}`);
     cozyRouteLayer.eachLayer(layer => {
       const oldClass = layer.options.className || "";
       if (oldClass.includes(theme + "-")) {
@@ -490,6 +549,6 @@ function askUserLocation() {
     const lat = pos.coords.latitude, lng = pos.coords.longitude;
     handleMapClick({ lat, lng });
   }, err => {
-    console.warn("[GEOLOC] error:", err);
+    console.warn(err);
   }, { enableHighAccuracy: true });
 }
