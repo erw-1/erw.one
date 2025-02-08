@@ -351,50 +351,34 @@ input[type="range"]::-moz-range-thumb {
 
 [class^="marchabilite-"] {
   stroke: var(--marchabilite-color) !important;
-  fill: var(--marchabilite-color) !important;
-  fill-opacity: 1;
 }
 
 [class^="claustrophobie-"] {
   stroke: var(--claustrophobie-color) !important;
-  fill: var(--claustrophobie-color) !important;
-  fill-opacity: 1;
 }
 
 [class^="agoraphobie-"] {
   stroke: var(--agoraphobie-color) !important;
-  fill: var(--agoraphobie-color) !important;
-  fill-opacity: 1;
 }
 
 [class^="pollution-"] {
   stroke: var(--pollution-color) !important;
-  fill: var(--pollution-color) !important;
-  fill-opacity: 1;
 }
 
 [class^="bruit-"] {
   stroke: var(--bruit-color) !important;
-  fill: var(--bruit-color) !important;
-  fill-opacity: 1;
 }
 
 [class^="eclairage-"] {
   stroke: var(--eclairage-color) !important;
-  fill: var(--eclairage-color) !important;
-  fill-opacity: 1;
 }
 
 [class^="handicap-"] {
   stroke: var(--handicap-color) !important;
-  fill: var(--handicap-color) !important;
-  fill-opacity: 1;
 }
 
 [class^="trafic_routier-"] {
   stroke: var(--trafic_routier-color) !important;
-  fill: var(--trafic_routier-color) !important;
-  fill-opacity: 1;
 }
 
 /* ===========
