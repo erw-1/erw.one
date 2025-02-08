@@ -260,12 +260,10 @@ function clearRouteAndMarkers() {
   }
 }
 
-/* Nouvelle version de getAvoidPolygons avec hiérarchisation par "conflit"
-   Pour chaque polygone, on calcule : conflit = note_utilisateur - note_polygone.
+/* Nouvelle version de getAvoidPolygons avec hiérarchisation par conflit
+   Pour chaque polygone, le conflit est calculé par :
+       conflit = note du polygone × (5 / note utilisateur)
    Seuls les polygones dont le conflit est supérieur ou égal au cutoff sont inclus.
-   Ainsi, par exemple, si l'utilisateur donne 5 pour trafic et 1 pour odorat :
-   - Pour un polygone trafic avec note 1 → conflit = 5-1 = 4 (important)
-   - Pour un polygone odorat avec note 5 → conflit = 1-5 = -4 (peu gênant)
 */
 function getAvoidPolygons(cutoff = 0) {
   let polygons = [];
@@ -277,7 +275,7 @@ function getAvoidPolygons(cutoff = 0) {
       let theme = match[1];
       let polyIntensity = parseInt(match[2], 10);
       if (userData[theme] > 0) {
-        let conflict = userData[theme] - polyIntensity;
+        let conflict = polyIntensity * (5 / userData[theme]);
         if (conflict >= cutoff) {
           if (feature.geometry.type === "MultiPolygon") {
             polygons.push(...feature.geometry.coordinates);
@@ -368,12 +366,12 @@ function getRoute(lat1, lng1, lat2, lng2, cutoff = 0) {
   .catch(err => {
     if (cutoff < 5) {
       let newCutoff = cutoff + 1;
-      setLoadingMessage(`Pas de chemin trouvé, élimination des gênes avec un conflit inférieur à ${newCutoff}...`);
+      setLoadingMessage(`Pas de chemin trouvé, élimination des polygones avec un conflit inférieur à ${newCutoff}...`);
       setTimeout(() => {
         getRoute(lat1, lng1, lat2, lng2, newCutoff);
       }, 1500);
     } else {
-      setLoadingMessage("Pas de chemin trouvé même en éliminant toutes les gênes de conflit inférieures à 5.");
+      setLoadingMessage("Pas de chemin trouvé même en éliminant toutes les gênes avec un conflit inférieur à 5.");
       setTimeout(hideLoading, 3000);
     }
   });
