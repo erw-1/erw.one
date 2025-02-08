@@ -1,28 +1,25 @@
 // js/routing.js
-// Routing logic: calculates avoid_polygons based on user sensitivity,
-// fetches route data from OpenRouteService, and decodes polylines.
+// Logique de routage : calcule les zones d'évitement en fonction des gênes,
+// effectue l'appel à l'API d'OpenRouteService et décode la polyline.
 
 import { ORS_API_KEY, userData, themes } from "./config.js";
-import { cozyRouteData } from "./map.js";
 import { setLoadingMessage, showLoading, hideLoading } from "./ui-utils.js";
 
-let routeLayer; // Local variable to hold the current route layer
-
 /**
- * Calculate the avoid_polygons object based on the user's ratings and polygon intensity.
- * The conflict for a polygon is computed as:
- *    conflict = polygonIntensity × (userRating / 5)
- * A user rating of 5 (high intolerance) uses a multiplier of 1,
- * whereas a lower rating (e.g., 1) results in a multiplier of 0.2.
- * Only polygons with conflict >= cutoff are included.
+ * Calcule l'objet avoid_polygons en fonction des notes utilisateur et de l'intensité du polygone.
+ * Le conflit est calculé ainsi :
+ *    conflit = intensité du polygone × (note utilisateur / 5)
+ * Une note utilisateur de 5 (intolérance élevée) donne un multiplicateur de 1,
+ * tandis qu'une note faible (par exemple 1) donne un multiplicateur de 0,2.
+ * Seuls les polygones dont le conflit est supérieur ou égal au cutoff sont retenus.
  *
- * @param {number} cutoff - The threshold for conflict.
- * @returns {Object|null} A GeoJSON MultiPolygon object or null if no polygons qualify.
+ * @param {number} cutoff - Seuil de conflit.
+ * @returns {Object|null} Un objet GeoJSON MultiPolygon ou null.
  */
 export function getAvoidPolygons(cutoff = 0) {
   let polygons = [];
-  if (!cozyRouteData || !cozyRouteData.features) return null;
-  cozyRouteData.features.forEach(feature => {
+  if (!window.cozyRouteData || !window.cozyRouteData.features) return null;
+  window.cozyRouteData.features.forEach(feature => {
     const cls = feature.properties.class;
     const match = cls.match(/^([a-z_]+)-(\d+)$/);
     if (match) {
@@ -48,18 +45,17 @@ export function getAvoidPolygons(cutoff = 0) {
 }
 
 /**
- * Fetch a walking route from OpenRouteService using avoid_polygons options.
- * In case of failure, the cutoff is increased progressively to remove less conflicting polygons.
+ * Récupère un itinéraire pédestre depuis OpenRouteService en utilisant les options avoid_polygons.
+ * En cas d'échec, le cutoff est progressivement augmenté pour éliminer les polygones à conflit faible.
  *
- * @param {number} lat1 - Starting latitude.
- * @param {number} lng1 - Starting longitude.
- * @param {number} lat2 - Destination latitude.
- * @param {number} lng2 - Destination longitude.
- * @param {number} cutoff - The current conflict cutoff threshold.
+ * @param {number} lat1 - Latitude de départ.
+ * @param {number} lng1 - Longitude de départ.
+ * @param {number} lat2 - Latitude de destination.
+ * @param {number} lng2 - Longitude de destination.
+ * @param {number} cutoff - Seuil de conflit courant.
  */
 export function getRoute(lat1, lng1, lat2, lng2, cutoff = 0) {
   showLoading();
-  // Prepare the request body.
   const bodyData = {
     coordinates: [[lng1, lat1], [lng2, lat2]],
     language: "fr",
@@ -79,12 +75,12 @@ export function getRoute(lat1, lng1, lat2, lng2, cutoff = 0) {
     body: JSON.stringify(bodyData)
   })
     .then(r => {
-      if (!r.ok) throw new Error("Routing error");
+      if (!r.ok) throw new Error("Erreur de routage");
       return r.json();
     })
     .then(data => {
       if (!data || !data.routes || data.routes.length === 0) {
-        throw new Error("No route found");
+        throw new Error("Aucun itinéraire trouvé");
       }
       const route = data.routes[0];
       const dec = decodePolyline(route.geometry);
@@ -96,11 +92,10 @@ export function getRoute(lat1, lng1, lat2, lng2, cutoff = 0) {
         },
         properties: {}
       };
-      // Add the route to the map.
-      routeLayer = L.geoJSON(routeGeo, { style: { color: "#1976D2", weight: 4 } }).addTo(window.map);
+      // Ajoute la couche d'itinéraire sur la carte.
+      const routeLayer = L.geoJSON(routeGeo, { style: { color: "#1976D2", weight: 4 } }).addTo(window.map);
       window.map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
       hideLoading();
-      // Assume showDirectionsPanel is defined globally (or import it from another module).
       if (window.showDirectionsPanel) {
         window.showDirectionsPanel(route);
       }
@@ -108,23 +103,23 @@ export function getRoute(lat1, lng1, lat2, lng2, cutoff = 0) {
     .catch(err => {
       if (cutoff < 5) {
         const newCutoff = cutoff + 1;
-        setLoadingMessage(`No route found; eliminating polygons with conflict below ${newCutoff}...`);
+        setLoadingMessage(`Aucun itinéraire trouvé ; élimination des polygones avec conflit inférieur à ${newCutoff}...`);
         setTimeout(() => {
           getRoute(lat1, lng1, lat2, lng2, newCutoff);
         }, 1500);
       } else {
-        setLoadingMessage("No route found even after eliminating polygons with conflict below 5.");
+        setLoadingMessage("Aucun itinéraire trouvé même après élimination des polygones avec conflit inférieur à 5.");
         setTimeout(hideLoading, 3000);
       }
     });
 }
 
 /**
- * Decode an encoded polyline string into an array of [lat, lng] coordinates.
- * Implements the Google polyline decoding algorithm.
+ * Décode une polyline encodée en un tableau de coordonnées [lat, lng].
+ * Implémente l'algorithme de décodage de polyline de Google.
  *
- * @param {string} encoded - The encoded polyline.
- * @returns {Array} An array of coordinates [lat, lng].
+ * @param {string} encoded - La polyline encodée.
+ * @returns {Array} Tableau de coordonnées [lat, lng].
  */
 export function decodePolyline(encoded) {
   let currentPosition = 0, currentLat = 0, currentLng = 0;
