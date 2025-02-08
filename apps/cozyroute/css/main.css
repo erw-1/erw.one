@@ -1,16 +1,17 @@
 /* =============================================================================
-   CozyRoute Main Stylesheet
+   Feuille de style principale de CozyRoute
    =============================================================================
-   This stylesheet defines the design and layout of the CozyRoute application.
-   It includes variables, resets, and specific sections for header, overlays,
-   inputs, map container, loading splash, directions panel, and more.
+   Ce fichier définit le design et la mise en page de l'application CozyRoute.
+   Il inclut des variables, un reset, et des sections pour l'en-tête, l'overlay,
+   les formulaires, le conteneur de la carte, le splash de chargement, le panneau
+   de directions, etc.
 ============================================================================= */
 
 /* ---------------------------------------------
-   Variables and Reset
+   Variables et Reset
 --------------------------------------------- */
 :root {
-  /* Color variables for each theme */
+  /* Couleurs associées à chaque thème */
   --odorat-color: #008000;
   --marchabilite-color: #8B4513;
   --claustrophobie-color: #9E9E9E;
@@ -21,7 +22,7 @@
   --handicap-color: #0066CC;
   --trafic_routier-color: #FF0000;
   
-  /* Layout and visual effects */
+  /* Dimensions et effets visuels */
   --header-height: 60px;
   --overlay-bg: rgba(255, 255, 255, 0.7);
   --blur-level: 8px;
@@ -31,7 +32,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  /* Use Poppins font */
+  /* Utilisation de la police Poppins */
   font-family: 'Poppins', sans-serif;
 }
 
@@ -44,7 +45,7 @@ html, body {
 }
 
 /* ---------------------------------------------
-   Loading Splash Screen
+   Écran de chargement (splash)
 --------------------------------------------- */
 #loading-splash {
   position: fixed;
@@ -64,7 +65,7 @@ html, body {
   display: none;
 }
 
-/* Spinner animation for loading */
+/* Animation du spinner */
 .spinner {
   border: 8px solid #f3f3f3;
   border-top: 8px solid #1976D2;
@@ -81,7 +82,7 @@ html, body {
 }
 
 /* ---------------------------------------------
-   Header Section
+   En-tête
 --------------------------------------------- */
 #app-header {
   position: fixed;
@@ -114,16 +115,16 @@ html, body {
   align-items: center;
 }
 
-/* Search input styling */
+/* Style du champ de recherche */
 #search-input {
   width: 200px;
-  padding: 6px 6px 6px 6px;
+  padding: 6px;
   padding-right: 20px;
   border: 1px solid #ccc;
   border-radius: 4px;
 }
 
-/* Autocomplete suggestions container */
+/* Conteneur des suggestions d'autocomplétion */
 #autocomplete-results {
   position: absolute;
   background: #fff;
@@ -135,26 +136,26 @@ html, body {
   z-index: 999;
 }
 
-/* Styling for each suggestion item */
+/* Style de chaque suggestion */
 #autocomplete-results li {
   padding: 8px;
   border-bottom: 1px solid #eee;
   cursor: pointer;
 }
 
-/* Bullet before each suggestion */
+/* Petite puce avant chaque suggestion */
 #autocomplete-results li::before {
   content: "• ";
   margin-right: 5px;
   color: #000;
 }
 
-/* Hover effect for suggestions */
+/* Effet survol */
 #autocomplete-results li:hover {
   background: #f0f0f0;
 }
 
-/* GPS Mode Button */
+/* Bouton Mode GPS */
 #mode-gps {
   margin-left: 10px;
   padding: 5px 10px;
@@ -167,7 +168,7 @@ html, body {
 }
 
 /* ---------------------------------------------
-   Questionnaire Overlay
+   Overlay du questionnaire
 --------------------------------------------- */
 #questionnaire-overlay {
   position: fixed;
@@ -197,7 +198,7 @@ html, body {
   margin-bottom: 10px;
 }
 
-/* Form layout for questionnaire */
+/* Mise en page du formulaire */
 form#question-form {
   display: flex;
   flex-wrap: wrap;
@@ -222,7 +223,7 @@ form#question-form {
   width: 150px;
 }
 
-/* Custom styles for each input range using CSS variables */
+/* Styles personnalisés pour les inputs range (variables CSS) */
 #odorat-range { --c: var(--odorat-color); }
 #marchabilite-range { --c: var(--marchabilite-color); }
 #claustrophobie-range { --c: var(--claustrophobie-color); }
@@ -233,7 +234,7 @@ form#question-form {
 #handicap-range { --c: var(--handicap-color); }
 #trafic_routier-range { --c: var(--trafic_routier-color); }
 
-/* Custom styling for input ranges (using CSS custom properties) */
+/* Style personnalisé des inputs range */
 input[type="range"] {
   --g: round(.3em,1px);
   --l: round(.2em,1px);
@@ -254,7 +255,7 @@ input:hover { --p: 25%; }
 input:active,
 input:focus-visible { --_b: var(--s); }
 
-/* Webkit slider thumb styling */
+/* Styles pour le pouce du slider (Webkit) */
 input[type="range" i]::-webkit-slider-thumb {
   height: var(--s);
   aspect-ratio: 1;
@@ -269,7 +270,7 @@ input[type="range" i]::-webkit-slider-thumb {
   view-timeline: --thumb-view inline;
 }
 
-/* Firefox slider thumb styling */
+/* Styles pour le pouce du slider (Firefox) */
 input[type="range"]::-moz-range-thumb {
   height: var(--s);
   width: var(--s);
@@ -286,7 +287,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ---------------------------------------------
-   Map Container
+   Conteneur de la carte
 --------------------------------------------- */
 #map {
   position: absolute;
@@ -298,7 +299,7 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ---------------------------------------------
-   Directions Panel
+   Panneau des directions
 --------------------------------------------- */
 #directions-panel {
   position: absolute;
@@ -343,20 +344,20 @@ input[type="range"]::-moz-range-thumb {
 }
 
 /* ---------------------------------------------
-   Additional Utility Classes
+   Classes utilitaires
 --------------------------------------------- */
 .hidden {
   transform: translateX(-100%);
 }
 
-/* Default style for interactive Leaflet layers */
+/* Style par défaut pour les couches interactives de Leaflet */
 .leaflet-interactive {
   stroke: #000;
   stroke-width: 2;
   fill: none;
 }
 
-/* Route styling based on theme */
+/* Styles de route par thème */
 [class^="odorat-"] { stroke: var(--odorat-color) !important; }
 [class^="marchabilite-"] { stroke: var(--marchabilite-color) !important; }
 [class^="claustrophobie-"] { stroke: var(--claustrophobie-color) !important; }
@@ -367,7 +368,7 @@ input[type="range"]::-moz-range-thumb {
 [class^="handicap-"] { stroke: var(--handicap-color) !important; }
 [class^="trafic_routier-"] { stroke: var(--trafic_routier-color) !important; }
 
-/* Route line thickness adjustments based on intensity */
+/* Épaisseur de la ligne de route en fonction de l'intensité */
 [class*="0 intensity-"] { stroke: none !important; }
 [class*="1 intensity-"] { stroke-width: 3 !important; }
 [class*="2 intensity-"] { stroke-width: 6 !important; }
@@ -375,7 +376,7 @@ input[type="range"]::-moz-range-thumb {
 [class*="4 intensity-"] { stroke-width: 12 !important; }
 [class*="5 intensity-"] { stroke-width: 15 !important; }
 
-/* Bloom effect for route features */
+/* Effet "bloom" pour les routes */
 [class$="0 leaflet-interactive"] { stroke: none !important; }
 [class$="1 leaflet-interactive"] { filter: blur(12px) opacity(2%); }
 [class$="2 leaflet-interactive"] { filter: blur(12px) opacity(10%); }
