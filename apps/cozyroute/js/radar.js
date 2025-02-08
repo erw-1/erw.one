@@ -1,24 +1,22 @@
 // js/radar.js
-// Initialization and update of the radar chart using Chart.js.
+// Initialisation et mise à jour du radar avec Chart.js
 
 import { themes, userData } from "./config.js";
 
 /**
- * Initialize the radar chart.
- * Displays the user's sensitivity ratings for each theme.
- *
- * @returns {Chart|null} The Chart.js radar chart instance.
+ * Initialise le radar chart.
+ * @returns {Chart|null} L'instance du radar chart Chart.js.
  */
 export function initRadarChart() {
   const ctx = document.getElementById("radarChart");
   if (!ctx) return null;
 
-  // Helper: retrieve a CSS variable value.
+  // Fonction utilitaire pour récupérer une variable CSS.
   function getCssVar(varName) {
     return getComputedStyle(document.documentElement).getPropertyValue(varName).trim();
   }
 
-  // Helper: add an alpha value to a hex color.
+  // Fonction pour ajouter une opacité à une couleur hexadécimale.
   function addHexAlpha(hex, alpha = "90") {
     return /^#[0-9A-F]{6}$/i.test(hex) ? hex + alpha : hex;
   }
@@ -28,7 +26,7 @@ export function initRadarChart() {
     return addHexAlpha(baseColor, "FF");
   });
 
-  // Create a conic gradient for the radar fill if supported.
+  // Création d'un dégradé conique pour le remplissage du radar.
   function createConicGradient(context) {
     const chart = context.chart;
     const scale = chart.scales.r || chart.scales.radialLinear;
@@ -59,7 +57,7 @@ export function initRadarChart() {
       labels: themes.map(t => t.charAt(0).toUpperCase() + t.slice(1)),
       datasets: [
         {
-          label: "My Profile",
+          label: "Mon profil",
           data: themes.map(t => userData[t]),
           fill: true,
           backgroundColor: createConicGradient,
@@ -85,9 +83,8 @@ export function initRadarChart() {
 }
 
 /**
- * Update the radar chart with the latest userData.
- *
- * @param {Chart} radarChart - The Chart.js radar chart instance.
+ * Met à jour le radar chart avec les dernières données utilisateur.
+ * @param {Chart} radarChart - L'instance du radar chart Chart.js.
  */
 export function updateRadarChart(radarChart) {
   if (!radarChart) return;
