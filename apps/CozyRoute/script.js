@@ -452,7 +452,7 @@ function initRadarChart() {
       labels: themes.map(t => t.charAt(0).toUpperCase() + t.slice(1)),
       datasets: [
         {
-          label: "Niveau de gêne",
+          label: "Mon profil",
           data: themes.map(t => userData[t]),
           fill: true,
           // Use our conic gradient for the radar fill
