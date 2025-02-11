@@ -401,3 +401,8 @@ input[type="range"]::-moz-range-thumb {
 [class$="3 leaflet-interactive"] { filter: blur(12px) opacity(20%); }
 [class$="4 leaflet-interactive"] { filter: blur(12px) opacity(40%); }
 [class$="5 leaflet-interactive"] { filter: blur(12px) opacity(100%); }
+
+
+.leaflet-control-attribution.leaflet-control {
+    display: none;
+}
