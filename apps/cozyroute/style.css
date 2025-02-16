@@ -52,9 +52,11 @@ html, body {
   justify-content: center;
   z-index: 2000;
 }
+
 #loading-splash.hidden {
   display: none;
 }
+
 .spinner {
   border: 8px solid #f3f3f3;
   border-top: 8px solid #1976D2;
@@ -77,6 +79,7 @@ html, body {
   padding: 5px 10px;
   cursor: pointer;
 }
+
 #mode-gps.active {
   background-color: #1976D2;
   color: #fff;
@@ -105,10 +108,12 @@ html, body {
   display: flex;
   align-items: center;
 }
+
 #header-left h1 {
   margin-left: 10px;
   font-weight: 700;
 }
+
 #header-right {
   display: flex;
   align-items: center;
@@ -123,6 +128,7 @@ html, body {
   border: 1px solid #ccc;
   border-radius: 4px;
 }
+
 #autocomplete-results {
   position: absolute;
   background: #fff;
@@ -133,16 +139,19 @@ html, body {
   width: 200px;
   z-index: 999;
 }
+
 #autocomplete-results li {
   padding: 8px;
   border-bottom: 1px solid #eee;
   cursor: pointer;
 }
+
 #autocomplete-results li::before {
   content: "• ";
   margin-right: 5px;
   color: #000;
 }
+
 #autocomplete-results li:hover {
   background: #f0f0f0;
 }
@@ -172,6 +181,7 @@ html, body {
   overflow-y: auto;
   transition: transform 0.4s ease;
 }
+
 #questionnaire {
   max-width: 60dvw;
   margin: 20px auto;
@@ -181,29 +191,82 @@ html, body {
   backdrop-filter: blur(var(--blur-level));
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
 }
+
 #questionnaire h2 {
   text-align: center;
   margin-bottom: 10px;
 }
+
 form#question-form {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   flex-direction: row;
 }
+
 .question-group {
   padding: 10px;
   gap: 2px;
   display: inline-flex;
   flex-direction: column;
 }
+
 .question-group label {
   display: block;
   margin-bottom: 5px;
   font-weight: 700;
 }
+
 .question-group input[type="range"] {
   width: 150px;
+}
+
+/* Style pour le bouton info */
+.info-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  margin-left: 5px;
+  color: #1976D2;
+}
+
+/* Style général de la modale */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Masquer la modale par défaut */
+.modal.hidden {
+  display: none;
+}
+
+/* Style du contenu de la modale */
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+}
+
+/* Bouton de fermeture de la modale */
+.close-modal {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 24px;
+  cursor: pointer;
 }
 
 /* ========================================
