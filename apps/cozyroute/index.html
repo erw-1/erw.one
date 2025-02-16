@@ -5,26 +5,20 @@
     <title>CozyRoute</title>
     <!-- Feuille de style de Leaflet pour la carte -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <!-- Bibliothèque Chart.js pour le graphique radar -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- Intégration de la police Poppins depuis Google Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" />
     <!-- Feuille de style personnalisée -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- En-tête de l'application avec menu, titre, recherche et mode GPS -->
+    <!-- En-tête de l'application -->
     <header id="app-header">
       <div id="header-left">
         <button id="burger-menu" title="Ouvrir/Fermer le questionnaire">&#9776;</button>
         <h1>CozyRoute</h1>
       </div>
       <div id="header-right">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="Rechercher une adresse"
-        />
+        <input type="text" id="search-input" placeholder="Rechercher une adresse" />
         <ul id="autocomplete-results"></ul>
         <button id="mode-gps" title="Activer/Désactiver le mode GPS">Mode GPS</button>
       </div>
@@ -35,155 +29,90 @@
       <div id="questionnaire">
         <h2>Quelles sont vos gênes ?</h2>
         <form id="question-form">
-          <!-- Chaque groupe de question contient un label et un slider -->
+          <!-- Groupe pour "Odeurs" -->
           <div class="question-group" id="odorat-input">
             <label for="odorat-range">
               Odeurs :
               <span id="odorat-value">0</span>/5
             </label>
-            <input
-              type="range"
-              id="odorat-range"
-              name="odorat"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('odorat', this.value)"
-            />
+            <button type="button" class="info-btn" data-theme="odorat" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="odorat-range" name="odorat" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('odorat', this.value)" />
           </div>
-          <div class="question-group" id="marchabilite-input">
-            <label for="marchabilite-range">
-              Marchabilité :
-              <span id="marchabilite-value">0</span>/5
-            </label>
-            <input
-              type="range"
-              id="marchabilite-range"
-              name="marchabilite"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('marchabilite', this.value)"
-            />
-          </div>
-          <div class="question-group" id="claustrophobie-input">
-            <label for="claustrophobie-range">
-              Claustrophobie :
-              <span id="claustrophobie-value">0</span>/5
-            </label>
-            <input
-              type="range"
-              id="claustrophobie-range"
-              name="claustrophobie"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('claustrophobie', this.value)"
-            />
-          </div>
-          <div class="question-group" id="agoraphobie-input">
-            <label for="agoraphobie-range">
-              Agoraphobie :
-              <span id="agoraphobie-value">0</span>/5
-            </label>
-            <input
-              type="range"
-              id="agoraphobie-range"
-              name="agoraphobie"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('agoraphobie', this.value)"
-            />
-          </div>
-          <div class="question-group" id="pollution-input">
-            <label for="pollution-range">
-              Pollution :
-              <span id="pollution-value">0</span>/5
-            </label>
-            <input
-              type="range"
-              id="pollution-range"
-              name="pollution"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('pollution', this.value)"
-            />
-          </div>
+          <!-- Groupe pour "Bruit" -->
           <div class="question-group" id="bruit-input">
             <label for="bruit-range">
               Bruit :
               <span id="bruit-value">0</span>/5
             </label>
-            <input
-              type="range"
-              id="bruit-range"
-              name="bruit"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('bruit', this.value)"
-            />
+            <button type="button" class="info-btn" data-theme="bruit" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="bruit-range" name="bruit" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('bruit', this.value)" />
           </div>
-          <div class="question-group" id="eclairage-input">
-            <label for="eclairage-range">
-              Faible éclairage :
-              <span id="eclairage-value">0</span>/5
+          <!-- Groupe pour "Pollution" -->
+          <div class="question-group" id="pollution-input">
+            <label for="pollution-range">
+              Pollution :
+              <span id="pollution-value">0</span>/5
             </label>
-            <input
-              type="range"
-              id="eclairage-range"
-              name="eclairage"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('eclairage', this.value)"
-            />
+            <button type="button" class="info-btn" data-theme="pollution" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="pollution-range" name="pollution" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('pollution', this.value)" />
           </div>
-          <div class="question-group" id="handicap-input">
-            <label for="handicap-range">
-              Handicap moteur :
-              <span id="handicap-value">0</span>/5
-            </label>
-            <input
-              type="range"
-              id="handicap-range"
-              name="handicap"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('handicap', this.value)"
-            />
-          </div>
+          <!-- Groupe pour "Trafic routier" -->
           <div class="question-group" id="trafic_routier-input">
             <label for="trafic_routier-range">
               Trafic routier :
               <span id="trafic_routier-value">0</span>/5
             </label>
-            <input
-              type="range"
-              id="trafic_routier-range"
-              name="trafic_routier"
-              min="0"
-              max="5"
-              value="0"
-              step="1"
-              oninput="updateQuestionValue('trafic_routier', this.value)"
-            />
+            <button type="button" class="info-btn" data-theme="trafic_routier" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="trafic_routier-range" name="trafic_routier" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('trafic_routier', this.value)" />
+          </div>
+          <!-- Groupe pour "Handicap" -->
+          <div class="question-group" id="handicap-input">
+            <label for="handicap-range">
+              Handicap :
+              <span id="handicap-value">0</span>/5
+            </label>
+            <button type="button" class="info-btn" data-theme="handicap" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="handicap-range" name="handicap" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('handicap', this.value)" />
+          </div>
+          <!-- Groupe pour "Faible éclairage" -->
+          <div class="question-group" id="eclairage-input">
+            <label for="eclairage-range">
+              Faible éclairage :
+              <span id="eclairage-value">0</span>/5
+            </label>
+            <button type="button" class="info-btn" data-theme="eclairage" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="eclairage-range" name="eclairage" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('eclairage', this.value)" />
+          </div>
+          <!-- Groupe pour "Agoraphobie" -->
+          <div class="question-group" id="agoraphobie-input">
+            <label for="agoraphobie-range">
+              Agoraphobie :
+              <span id="agoraphobie-value">0</span>/5
+            </label>
+            <button type="button" class="info-btn" data-theme="agoraphobie" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="agoraphobie-range" name="agoraphobie" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('agoraphobie', this.value)" />
+          </div>
+          <!-- Groupe pour "Claustrophobie" -->
+          <div class="question-group" id="claustrophobie-input">
+            <label for="claustrophobie-range">
+              Claustrophobie :
+              <span id="claustrophobie-value">0</span>/5
+            </label>
+            <button type="button" class="info-btn" data-theme="claustrophobie" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="claustrophobie-range" name="claustrophobie" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('claustrophobie', this.value)" />
+          </div>
+          <!-- Groupe pour "Marchabilité" -->
+          <div class="question-group" id="marchabilite-input">
+            <label for="marchabilite-range">
+              Marchabilité :
+              <span id="marchabilite-value">0</span>/5
+            </label>
+            <button type="button" class="info-btn" data-theme="marchabilite" title="Plus d'informations">ⓘ</button>
+            <input type="range" id="marchabilite-range" name="marchabilite" min="0" max="5" value="0" step="1" oninput="updateQuestionValue('marchabilite', this.value)" />
           </div>
         </form>
-        <!-- Zone d'affichage du graphique radar -->
+        <!-- Graphique radar et bouton de validation -->
         <canvas id="radarChart" width="300" height="300"></canvas>
-        <!-- Bouton pour masquer l'overlay et afficher la carte -->
         <button id="goto-map">Faire votre CozyRoute</button>
       </div>
     </div>
@@ -206,8 +135,19 @@
       <div id="loading-message"></div>
     </div>
 
-    <!-- Inclusion des scripts de Leaflet et du script personnalisé -->
+    <!-- Modal d'information -->
+    <div id="info-modal" class="modal hidden">
+      <div class="modal-content">
+        <span class="close-modal" title="Fermer">&times;</span>
+        <h2 id="modal-title"></h2>
+        <p id="modal-description"></p>
+      </div>
+    </div>
+
+    <!-- Inclusion des scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="script.js"></script>
   </body>
 </html>
+
