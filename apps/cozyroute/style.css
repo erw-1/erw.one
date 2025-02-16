@@ -205,15 +205,16 @@ form#question-form {
 }
 
 .question-group {
+  position: relative;
   padding: 10px;
   gap: 2px;
-  display: inline-flex;
+  display: flex;
   flex-direction: column;
 }
 
 .question-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-right: 40px;
   font-weight: 700;
 }
 
@@ -221,14 +222,17 @@ form#question-form {
   width: 150px;
 }
 
-/* Style pour le bouton info */
 .info-btn {
   background: none;
   border: none;
   cursor: pointer;
   font-size: 16px;
-  margin-left: 5px;
-  color: #1976D2;
+  color: #000; /* couleur noire */
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0;
 }
 
 /* Style général de la modale */
@@ -392,13 +396,16 @@ input[type="range"]::-moz-range-thumb {
   z-index: 999;
   transition: transform 0.3s ease;
 }
+
 #directions-panel.hidden {
   transform: translateX(100%);
 }
+
 #directions-panel h2 {
   margin-top: 0;
   margin-bottom: 10px;
 }
+
 #close-directions {
   float: right;
   cursor: pointer;
@@ -407,10 +414,12 @@ input[type="range"]::-moz-range-thumb {
   font-size: 18px;
   margin-top: -4px;
 }
+
 #directions-summary {
   margin-bottom: 10px;
   font-weight: 700;
 }
+
 #directions-steps {
   list-style: none;
   padding: 0;
