@@ -60,24 +60,25 @@ window.addEventListener("load", () => {
 });
 
 /**
- * Initialise la carte Leaflet et charge les polygones depuis le fichier GeoJSON.
+ * Initialise la carte Leaflet en masquant les contrôles par défaut, en ajoutant le fond de carte CartoDB "light_nolabels"
+ * et en activant la rotation à deux doigts via Leaflet-Rotate.
  */
 function initMap() {
-  // Création de la carte avec options pour masquer les contrôles de zoom et d'attribution
+  // Création de la carte avec rotation activée et masquage des contrôles de zoom et d'attribution
   map = L.map("map", {
     zoomControl: false,
-    attributionControl: false
+    attributionControl: false,
+    rotate: true,
+    touchRotate: true,
+    rotateControl: {
+      closeOnZeroBearing: false
+    }
   }).setView([49.0389, 2.0760], 13);
 
   // Ajout du fond de carte CartoDB "light_nolabels"
   L.tileLayer("https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png", {
     maxZoom: 19
   }).addTo(map);
-
-  // Activation de la rotation par geste à deux doigts (via le plugin Leaflet.Rotate)
-  if (map.touchRotate) {
-    map.touchRotate.enable();
-  }
 
   // Chargement du fichier GeoJSON contenant les zones de gêne
   fetch("cozyroute.geojson")
