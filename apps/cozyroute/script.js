@@ -131,6 +131,96 @@ function initUIButtons() {
   }
 }
 
+// Dictionnaire contenant les informations pour chaque facteur
+const infoContent = {
+  odorat: {
+    title: "Odeurs",
+    description:
+      "Le malaise lié aux odeurs peut être causé par des émissions désagréables (pollution, déchets, industries) ou des senteurs trop intenses. Des odeurs persistantes peuvent provoquer des nausées, des maux de tête, ou simplement affecter votre bien-être général. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous êtes sensible et dérangé(e) par les odeurs fortes."
+  },
+  bruit: {
+    title: "Bruit",
+    description:
+      "Le malaise lié au bruit peut provenir de sons ambiants constants, du trafic, de travaux de construction ou d'environnements bruyants. Une exposition prolongée à des niveaux de bruit élevés peut causer du stress, de la fatigue, des difficultés de concentration ou des maux de tête. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous êtes sensible et dérangé(e) par les environnements bruyants."
+  },
+  pollution: {
+    title: "Pollution",
+    description:
+      "Le malaise lié à la pollution peut être causé par une mauvaise qualité de l'air, des émissions industrielles, des gaz d'échappement des véhicules ou une accumulation de déchets. L'exposition à la pollution peut entraîner des problèmes respiratoires, des irritations oculaires ou simplement une sensation de malaise dans certaines zones. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous êtes sensible et affecté(e) par la pollution environnementale."
+  },
+  trafic_routier: {
+    title: "Trafic routier",
+    description:
+      "Le malaise lié au trafic routier peut provenir d'une forte congestion, du bruit constant des véhicules, de la pollution due aux gaz d'échappement ou de conditions piétonnes dangereuses. Des niveaux élevés de trafic peuvent créer du stress, des retards et une sensation générale d'inconfort. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous êtes sensible et dérangé(e) par le trafic routier et ses impacts."
+  },
+  handicap: {
+    title: "Handicap",
+    description:
+      "Le malaise lié au handicap fait référence aux difficultés rencontrées par les personnes à mobilité réduite pour se déplacer. Des trottoirs en mauvais état, l'absence de rampes, des passages piétons inaccessibles ou un terrain irrégulier peuvent rendre le déplacement difficile et stressant. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous trouvez l'environnement difficile à parcourir pour les personnes à mobilité réduite."
+  },
+  eclairage: {
+    title: "Faible éclairage",
+    description:
+      "L'inconfort lié au faible éclairage provient de la difficulté à voir clairement dans des zones peu éclairées, ce qui peut créer un sentiment d'insécurité. Un mauvais éclairage peut rendre la détection des obstacles, la navigation sécurisée ou la prise de conscience de son environnement plus difficile, augmentant ainsi le risque d'accidents ou de situations dangereuses. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous vous sentez mal à l'aise et en insécurité dans des environnements faiblement éclairés."
+  },
+  agoraphobie: {
+    title: "Agoraphobie",
+    description:
+      "L'agoraphobie est la peur des espaces ouverts ou bondés, où il peut sembler difficile de s'échapper ou de trouver de l'aide. Elle peut être déclenchée par de grandes zones publiques, des rues animées ou des lieux sans sortie évidente. Cette peur peut entraîner de l'anxiété, un inconfort ou même une évitement de ces environnements. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous ressentez de l'anxiété et de l'inconfort dans les espaces ouverts ou bondés."
+  },
+  claustrophobie: {
+    title: "Claustrophobie",
+    description:
+      "La claustrophobie est la peur des espaces confinés ou clos, où le mouvement est restreint et l'évasion semble difficile. Elle peut être déclenchée par des ascenseurs, des couloirs étroits, des pièces surpeuplées ou des espaces souterrains. Cette peur peut provoquer de l'anxiété, des paniques ou un fort désir de quitter les lieux. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous ressentez de l'anxiété et de l'inconfort dans les espaces confinés."
+  },
+  marchabilite: {
+    title: "Marchabilité",
+    description:
+      "L'inconfort lié à la marchabilité provient de la difficulté ou du danger de se déplacer dans certaines rues ou chemins. Des trottoirs étroits, l'absence de passages piétons, un trafic à grande vitesse ou des chemins mal entretenus peuvent créer un sentiment d'insécurité. Se sentir en danger en marchant peut entraîner du stress, l'évitement de certains itinéraires ou le recours à d'autres moyens de transport. Sur l'échelle de 0 à 5, plus la note est proche de 5, plus vous vous sentez mal à l'aise et en insécurité lors de vos déplacements."
+  }
+};
+
+// Fonction pour ouvrir la modale avec le contenu adapté
+function openInfoModal(theme) {
+  const modal = document.getElementById("info-modal");
+  const titleEl = document.getElementById("modal-title");
+  const descEl = document.getElementById("modal-description");
+
+  if (infoContent[theme]) {
+    titleEl.textContent = infoContent[theme].title;
+    descEl.textContent = infoContent[theme].description;
+  } else {
+    titleEl.textContent = "";
+    descEl.textContent = "Aucune information disponible.";
+  }
+
+  modal.classList.remove("hidden");
+}
+
+// Fonction pour fermer la modale
+function closeInfoModal() {
+  const modal = document.getElementById("info-modal");
+  modal.classList.add("hidden");
+}
+
+// Ajout des écouteurs sur les boutons info
+document.querySelectorAll(".info-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    const theme = btn.getAttribute("data-theme");
+    openInfoModal(theme);
+  });
+});
+
+// Gestion de la fermeture via le bouton "×"
+document.querySelector(".close-modal").addEventListener("click", closeInfoModal);
+
+// Ferme la modale si on clique en dehors du contenu
+document.getElementById("info-modal").addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) {
+    closeInfoModal();
+  }
+});
+
 /**
  * Initialise les événements du champ de recherche.
  */
