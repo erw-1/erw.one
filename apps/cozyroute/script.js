@@ -63,8 +63,16 @@ window.addEventListener("load", () => {
  * Initialise la carte Leaflet et charge les polygones depuis le fichier GeoJSON.
  */
 function initMap() {
-  // Création de la carte centrée sur une position par défaut
-  map = L.map("map").setView([49.0389, 2.0760], 13);
+  // Création de la carte avec options pour masquer les contrôles de zoom et d'attribution
+  map = L.map("map", {
+    zoomControl: false,
+    attributionControl: false
+  }).setView([49.0389, 2.0760], 13);
+
+  // Ajout du fond de carte CartoDB "light_nolabels"
+  L.tileLayer("https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png", {
+    maxZoom: 19
+  }).addTo(map);
 
   // Chargement du fichier GeoJSON contenant les zones de gêne
   fetch("cozyroute.geojson")
