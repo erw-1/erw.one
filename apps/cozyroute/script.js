@@ -74,6 +74,11 @@ function initMap() {
     maxZoom: 19
   }).addTo(map);
 
+  // Activation de la rotation par geste à deux doigts (via le plugin Leaflet.Rotate)
+  if (map.touchRotate) {
+    map.touchRotate.enable();
+  }
+
   // Chargement du fichier GeoJSON contenant les zones de gêne
   fetch("cozyroute.geojson")
     .then(resp => {
