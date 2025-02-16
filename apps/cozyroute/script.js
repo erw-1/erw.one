@@ -42,6 +42,9 @@ let gpsModeActive = false;
 let gpsWatchId = null;
 let gpsMarker = null;
 
+// Variable pour stocker le contenu de routingArea.geojson.
+let routingAreaData = null;
+
 /**
  * Initialisation dès le chargement de la fenêtre.
  */
@@ -79,6 +82,17 @@ function initMap() {
   L.tileLayer("https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png", {
     maxZoom: 19
   }).addTo(map);
+
+  // Chargement du fichier routingArea.geojson pour l'ajout systématique en avoidPolygons.
+  fetch("routingArea.geojson")
+  .then(resp => {
+    if (!resp.ok) throw new Error("Erreur lors du chargement de routingArea.geojson");
+    return resp.json();
+  })
+  .then(data => {
+    routingAreaData = data;
+  })
+  .catch(err => console.error(err));
 
   // Chargement du fichier GeoJSON contenant les zones de gêne
   fetch("cozyroute.geojson")
@@ -444,37 +458,46 @@ function clearRouteAndMarkers() {
 }
 
 /**
- * Calcule et retourne les polygones à éviter selon les préférences utilisateur.
- * Pour chaque polygone, le "conflit" est calculé :
- *   conflit = intensité du polygone × (note utilisateur / 5)
- * Seuls les polygones dont le conflit dépasse le seuil cutoff sont retournés.
- * @param {number} cutoff - Seuil minimal de conflit.
- * @returns {Object|null} Objet MultiPolygon ou null si aucun polygone ne correspond.
+ * Calcule et retourne les polygones à éviter selon les préférences utilisateur,
+ * en incluant systématiquement les polygones définis dans routingArea.geojson.
  */
 function getAvoidPolygons(cutoff = 0) {
   let polygons = [];
-  if (!cozyRouteData || !cozyRouteData.features) return null;
 
-  cozyRouteData.features.forEach(feature => {
-    let cls = feature.properties.class;
-    let match = cls.match(/^([a-z_]+)-(\d+)$/);
-    if (match) {
-      let theme = match[1];
-      let polyIntensity = parseInt(match[2], 10);
-      // Si l'utilisateur a noté une gêne (> 0) pour ce thème
-      if (userData[theme] > 0) {
-        let conflict = polyIntensity * (userData[theme] / 5);
-        if (conflict >= cutoff) {
-          // Gestion des différents types de géométries
-          if (feature.geometry.type === "MultiPolygon") {
-            polygons.push(...feature.geometry.coordinates);
-          } else if (feature.geometry.type === "Polygon") {
-            polygons.push(feature.geometry.coordinates);
+  // Ajout systématique des polygones de routingArea.geojson
+  if (routingAreaData && routingAreaData.features) {
+    routingAreaData.features.forEach(feature => {
+      if (feature.geometry.type === "MultiPolygon") {
+        polygons.push(...feature.geometry.coordinates);
+      } else if (feature.geometry.type === "Polygon") {
+        polygons.push(feature.geometry.coordinates);
+      }
+    });
+  }
+
+  // Ajout des autres polygones en fonction des préférences utilisateur et du cutoff
+  if (cozyRouteData && cozyRouteData.features) {
+    cozyRouteData.features.forEach(feature => {
+      let cls = feature.properties.class;
+      let match = cls.match(/^([a-z_]+)-(\d+)$/);
+      if (match) {
+        let theme = match[1];
+        let polyIntensity = parseInt(match[2], 10);
+        // Si l'utilisateur a noté une gêne (> 0) pour ce thème
+        if (userData[theme] > 0) {
+          let conflict = polyIntensity * (userData[theme] / 5);
+          if (conflict >= cutoff) {
+            if (feature.geometry.type === "MultiPolygon") {
+              polygons.push(...feature.geometry.coordinates);
+            } else if (feature.geometry.type === "Polygon") {
+              polygons.push(feature.geometry.coordinates);
+            }
           }
         }
       }
-    }
-  });
+    });
+  }
+
   if (polygons.length === 0) return null;
   return {
     type: "MultiPolygon",
