@@ -4,6 +4,10 @@
  * et le calcul d'itinéraire en fonction des préférences de l'utilisateur.
  *********************************************************************/
 
+document.addEventListener('gesturestart', function (e) {
+    e.preventDefault(); // Bloque le zoom gestuel sur iOS
+});
+
 // Clé API OpenRouteService
 const ORS_API_KEY = "5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d";
 
