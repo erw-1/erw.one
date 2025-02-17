@@ -96,6 +96,7 @@ html, body {
   height: var(--header-height);
   background-color: rgba(255,255,255,0.9);
   backdrop-filter: blur(var(--blur-level));
+  -webkit-backdrop-filter: blur(var(--blur-level)); /* Correction pour iOS */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -468,11 +469,12 @@ input[type="range"]::-moz-range-thumb {
    Effet de "bloom" sur les routes en fonction de l'intensité
    ======================================== */
 [class$="0 leaflet-interactive"] { stroke: none !important; }
-[class$="1 leaflet-interactive"] { filter: blur(12px) opacity(2%); }
-[class$="2 leaflet-interactive"] { filter: blur(12px) opacity(10%); }
-[class$="3 leaflet-interactive"] { filter: blur(12px) opacity(20%); }
-[class$="4 leaflet-interactive"] { filter: blur(12px) opacity(40%); }
-[class$="5 leaflet-interactive"] { filter: blur(12px) opacity(100%); }
+[class$="1 leaflet-interactive"] { filter: blur(12px) opacity(10%); -webkit-filter: blur(12px) opacity(10%); }
+[class$="2 leaflet-interactive"] { filter: blur(12px) opacity(20%); -webkit-filter: blur(12px) opacity(20%); }
+[class$="3 leaflet-interactive"] { filter: blur(12px) opacity(30%); -webkit-filter: blur(12px) opacity(30%); }
+[class$="4 leaflet-interactive"] { filter: blur(12px) opacity(50%); -webkit-filter: blur(12px) opacity(50%); }
+[class$="5 leaflet-interactive"] { filter: blur(12px) opacity(80%); -webkit-filter: blur(12px) opacity(80%); }
+
 
 
 .leaflet-control-attribution.leaflet-control {
