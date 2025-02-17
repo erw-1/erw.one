@@ -351,13 +351,31 @@ function displaySuggestions(list) {
 function toggleGpsMode() {
   gpsModeActive = !gpsModeActive;
   const btn = document.getElementById("mode-gps");
+  
   if (gpsModeActive) {
     btn.classList.add("active");
-    // Effacer les marqueurs et l'itinéraire existants
     clearRouteAndMarkers();
-    // Démarrer le suivi GPS si non déjà actif
+
     if (!gpsWatchId) {
-      gpsWatchId = navigator.geolocation.watchPosition(updateGpsPosition, errorGps, { enableHighAccuracy: true });
+      if (!navigator.geolocation) {
+        alert("La géolocalisation n'est pas supportée par votre navigateur.");
+        gpsModeActive = false;
+        return;
+      }
+
+      navigator.permissions.query({ name: "geolocation" }).then(result => {
+        if (result.state === "denied") {
+          alert("La géolocalisation est désactivée pour ce site. Activez-la dans les paramètres.");
+          gpsModeActive = false;
+          return;
+        }
+
+        gpsWatchId = navigator.geolocation.watchPosition(
+          updateGpsPosition,
+          errorGps,
+          { enableHighAccuracy: true, maximumAge: 10000, timeout: 5000 }
+        );
+      });
     }
   } else {
     btn.classList.remove("active");
@@ -369,6 +387,18 @@ function toggleGpsMode() {
       map.removeLayer(gpsMarker);
       gpsMarker = null;
     }
+  }
+}
+
+// Gestion améliorée des erreurs GPS
+function errorGps(err) {
+  console.error("Erreur de géolocalisation :", err);
+  if (err.code === 1) {
+    alert("Permission de localisation refusée. Activez-la dans les paramètres de Safari.");
+  } else if (err.code === 2) {
+    alert("Position non disponible.");
+  } else if (err.code === 3) {
+    alert("Délai d'attente dépassé. Réessayez.");
   }
 }
 
@@ -821,25 +851,4 @@ function updateRoadStyle() {
       }
     });
   }
-}
-
-/**
- * Demande la géolocalisation de l'utilisateur et ajoute la position sur la carte.
- * (Fonction utilitaire, éventuellement à déclencher via un bouton.)
- */
-function askUserLocation() {
-  if (!navigator.geolocation) {
-    alert("La géolocalisation n'est pas supportée par votre navigateur.");
-    return;
-  }
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const lat = pos.coords.latitude, lng = pos.coords.longitude;
-      handleMapClick({ lat, lng });
-    },
-    err => {
-      console.warn(err);
-    },
-    { enableHighAccuracy: true }
-  );
 }
