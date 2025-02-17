@@ -36,6 +36,26 @@ html, body {
   position: relative;
 }
 
+/* Augmentation de la densité des pixels pour éviter le besoin de zoom */
+html {
+  font-size: 18px; /* Augmente la taille de base du texte pour les écrans mobiles */
+  -webkit-text-size-adjust: 100%; /* Empêche iOS de redimensionner automatiquement le texte */
+  text-size-adjust: 100%;
+}
+
+/* Forcer un bon affichage sur mobile */
+body {
+  touch-action: manipulation; /* Évite les gestes non voulus comme le zoom */
+  font-smooth: always; /* Améliore le rendu des polices */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Empêcher les tapotements multiples rapides de déclencher un zoom sur iOS */
+input, button, select, textarea {
+  touch-action: manipulation;
+}
+
 /* ========================================
    Splash de chargement
    ======================================== */
