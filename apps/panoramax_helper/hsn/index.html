@@ -39,8 +39,8 @@
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <!-- Leaflet.VectorGrid for MVT support -->
-    <script src="https://unpkg.com/leaflet.vectorgrid@1.3.0/dist/Leaflet.VectorGrid.bundled.js"></script>
+    <!-- Leaflet.VectorTileLayer plugin -->
+    <script src="https://unpkg.com/leaflet-vector-tile-layer@0.16.1/dist/VectorTileLayer.umd.min.js"></script>
 
     <script>
         // Initialisation de la carte
@@ -52,24 +52,25 @@
             maxZoom: 19,
         }).addTo(map);
 
-        /* Couche MVT Panoramax : on ne garde QUE les lignes */
+        /* Couche MVT Panoramax : afficher uniquement les LineString (type === 2) */
         const panoramaxURL = 'https://api.panoramax.xyz/api/users/e4933c0c-653b-429a-833a-f45f64e41726/map/{z}/{x}/{y}.mvt';
 
-        const redLayer = L.vectorGrid.protobuf(panoramaxURL, {
-            // Filtrer les entités : ne conserver que celles dont le champ geometry_type === 'Line'
-            filter: (properties/*, zoom */) => properties && properties.geometry_type === 'Line',
+        const redLayer = vectorTileLayer(panoramaxURL, {
+            // Garder uniquement les géométries de type "LineString"
+            filter: (feature /*, layerName, zoom */) => feature && feature.type === 2,
 
-            // Style pour les lignes conservées
-            vectorTileLayerStyles: {
-                '*': {
-                    color: 'red',
-                    weight: 3,
-                    opacity: 1,
-                },
+            // Style global ou fonction — ici couleur rouge, même épaisseur que les traces GPS
+            style: {
+                color: 'red',
+                weight: 3,
+                opacity: 1,
             },
+            // Les points et polygones ne sont plus rendus
         }).addTo(map);
 
-        // Suivi GPS -----------------------------------------------------------
+        // --------------------------------------------------------------------
+        // Suivi GPS
+        // --------------------------------------------------------------------
         let isTracking = false;
         let watchId = null;
         let currentCoords = [];
