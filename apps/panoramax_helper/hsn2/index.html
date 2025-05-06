@@ -102,16 +102,16 @@
             watchId!==null&&navigator.geolocation.clearWatch(watchId);
             isTracking=false;trackBtn.textContent='Commencer';
             currentLine?.setStyle({color:'green'});
-            currentCoords.length>1&&exportGeoJSON(currentCoords);
+            // currentCoords.length>1&&exportGeoJSON(currentCoords);
             currentCoords=[];currentLine=null;compassReset();compassReset();navigator.vibrate?.([15]);
         }
         const onPos=({coords:{latitude,longitude}})=>{const ll=[latitude,longitude];currentCoords.push(ll);currentLine?.setLatLngs(currentCoords);map.panTo(ll,{animate:false})};
         const onGeoError=e=>alert('Erreur géoloc : '+e.message);
 
-        function exportGeoJSON(coords){
-            const blob=new Blob([JSON.stringify({type:'FeatureCollection',features:[{type:'Feature',properties:{finishedAt:new Date().toISOString()},geometry:{type:'LineString',coordinates:coords.map(([lat,lon])=>[lon,lat])}}]})],{type:'application/geo+json'});
-            const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='trace_'+Date.now()+'.geojson';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
-        }
+        // function exportGeoJSON(coords){
+        //     const blob=new Blob([JSON.stringify({type:'FeatureCollection',features:[{type:'Feature',properties:{finishedAt:new Date().toISOString()},geometry:{type:'LineString',coordinates:coords.map(([lat,lon])=>[lon,lat])}}]})],{type:'application/geo+json'});
+        //     const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='trace_'+Date.now()+'.geojson';document.body.append(a);a.click();a.remove();URL.revokeObjectURL(url);
+        // }
 
         /* -------------------------------------------------------------- */
         /* 4. Géocodage + suggestions                                     */
