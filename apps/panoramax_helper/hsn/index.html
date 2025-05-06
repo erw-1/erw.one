@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Suivi GPS – Leaflet</title>
 
     <!-- Leaflet CSS -->
@@ -11,27 +11,17 @@
     <style>
         html, body {height: 100%; margin: 0;}
         #map {height: 100%; width: 100%;}
-
-        /* Bouton principal – mobile friendly */
+        /* Bouton en bas‑à‑droite */
         #trackButton {
-            position: absolute;
-            bottom: 1.2rem;
-            right: 1.2rem;
-            z-index: 1000;
-            background:#fff;
-            border:2px solid #666;
-            border-radius:8px;
-            padding:1rem 1.6rem;          /* plus grand */
-            font-size:1.1rem;
-            cursor:pointer;
-            box-shadow:0 4px 10px rgba(0,0,0,.3);
-            touch-action:manipulation;     /* évite le délai 300 ms sur iOS */
+            position: absolute; bottom: 1rem; right: 1rem; z-index: 1000;
+            background:#fff; border:2px solid #666; border-radius:4px;
+            padding:0.5rem 1rem; font-size:1rem; cursor:pointer;
+            box-shadow:0 2px 6px rgba(0,0,0,.3);
         }
-
     </style>
 </head>
 <body>
-    <button id="trackButton">commencer</button>
+    <button id="trackButton">Commencer</button>
     <div id="map"></div>
 
     <!-- Leaflet JS -->
@@ -43,13 +33,12 @@
 
     <script>
         // ------------------------------------------------------------------
-        // Carte de base (sans contrôles +/‑)
+        // Carte de base
         // ------------------------------------------------------------------
         const map = L.map('map', {
-            zoomControl:false,     // supprime les boutons zoom
-            rotate:true,
-            touchRotate:true,
-            rotateControl:{ closeOnZeroBearing:false },
+            rotate: true,
+            touchRotate: true,
+            rotateControl: { closeOnZeroBearing: false },
             preferCanvas:true
         }).setView([46.5, 2.5], 6); // France entière
 
@@ -59,36 +48,46 @@
         }).addTo(map);
 
         // ------------------------------------------------------------------
-        // Couche Panoramax – uniquement LineString, over‑zoom après Z15
+        // Couche Panoramax – uniquement LineString, on « over‑zoome » après Z15
         // ------------------------------------------------------------------
         const panoramaxURL = 'https://api.panoramax.xyz/api/users/e4933c0c-653b-429a-833a-f45f64e41726/map/{z}/{x}/{y}.mvt';
 
         const vtOptions = {
-            filter: (f) => f && f.type === 2,
+            filter: (f) => f && f.type === 2,   // 2 = LineString
             style:  { color:'red', weight:3, opacity:1 },
-            maxDetailZoom: 15
+            maxDetailZoom: 15                // utilise les tuiles du Z15 au‑delà
         };
 
-        const redLayer = (window.VectorTileLayer ? new VectorTileLayer(panoramaxURL, vtOptions)
-                         : (window.vectorTileLayer ? window.vectorTileLayer(panoramaxURL, vtOptions)
-                         : (L.vectorTileLayer ? L.vectorTileLayer(panoramaxURL, vtOptions)
-                         : null)));
-        if (redLayer) redLayer.addTo(map);
+        let redLayer;
+        if (typeof window.VectorTileLayer === 'function') {
+            redLayer = new VectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+        } else if (typeof window.vectorTileLayer === 'function') {
+            redLayer = window.vectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+        } else if (L && L.vectorTileLayer) {
+            redLayer = L.vectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+        }
 
         // Zoom initial sur l'emprise de la couche une fois chargée
         if (redLayer) {
             redLayer.once('load', () => {
                 const bounds = (typeof redLayer.getBounds === 'function') ? redLayer.getBounds() : null;
-                if (bounds && bounds.isValid && bounds.isValid()) map.fitBounds(bounds);
+                if (bounds && bounds.isValid && bounds.isValid()) {
+                    map.fitBounds(bounds);
+                } else {
+                    console.warn('getBounds() indisponible ; recentrage ignoré');
+                }
             });
         }
 
         // ------------------------------------------------------------------
-        // Fonction pour cliquer sur la flèche de rotation (unique)
+        // Rotation : contrôleur unique (créé automatiquement par leaflet‑rotate)
         // ------------------------------------------------------------------
+        // La flèche de contrôle est ajoutée par défaut dans rotateControl
+
         function clickRotateArrow() {
+            // Clique virtuellement sur le bouton flèche pour recentrer le cap
             const arrow = document.querySelector('span.leaflet-control-rotate-arrow');
-            if (arrow) arrow.dispatchEvent(new PointerEvent('pointerdown'));
+            if (arrow) { arrow.click(); }
         }
 
         // ------------------------------------------------------------------
@@ -98,37 +97,36 @@
         let watchId = null;
         let currentCoords = [];
         let currentLine = null;
-        const lineWeight = 3;
+        const lineWeight = 3; // identique à la couche rouge
 
         const trackButton = document.getElementById('trackButton');
         trackButton.addEventListener('click', () => isTracking ? stopTracking() : startTracking());
 
         function startTracking() {
             if (!navigator.geolocation) { alert('La géolocalisation n\'est pas supportée.'); return; }
-            isTracking = true; trackButton.textContent = 'terminer';
-            currentCoords = [];
-            currentLine = L.polyline([], {color:'blue', weight:lineWeight}).addTo(map);
+            isTracking = true; trackButton.textContent = 'Terminer';
+            currentCoords = []; currentLine = L.polyline([], {color:'blue', weight:lineWeight}).addTo(map);
             watchId = navigator.geolocation.watchPosition(onPos, onGeoError, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
-            clickRotateArrow();
+            clickRotateArrow(); // active la rotation / remise à zéro
         }
 
         function onPos(pos) {
             const latlng = [pos.coords.latitude, pos.coords.longitude];
             currentCoords.push(latlng);
             currentLine.setLatLngs(currentCoords);
-            map.panTo(latlng, { animate:false });
+            map.panTo(latlng, { animate:false }); // centre sans changer de niveau de zoom
         }
 
         function onGeoError(err) { console.error(err); alert('Erreur géoloc : '+err.message); }
 
         function stopTracking() {
             if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-            isTracking = false; trackButton.textContent = 'commencer';
-            if (currentLine) currentLine.setStyle({color:'green'});
-            if (currentCoords.length > 1) exportGeoJSON(currentCoords);
+            isTracking = false; trackButton.textContent = 'Commencer';
+            if (currentLine) { currentLine.setStyle({color:'green'}); }
+            if (currentCoords.length > 1) { exportGeoJSON(currentCoords); }
             currentCoords = []; currentLine = null;
             clickRotateArrow();
-            clickRotateArrow();
+            clickRotateArrow(); // désactive / remet le cap à zéro
         }
 
         function exportGeoJSON(coords) {
