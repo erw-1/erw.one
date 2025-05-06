@@ -1,267 +1,273 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Suivi GPS – Leaflet</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Suivi GPS – Leaflet</title>
 
-  <!-- Leaflet CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- Google Fonts – Poppins -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" />
 
-  <style>
-    :root {
-      --blur-bg: hsla(0 0% 100% / .6);
-      --border: hsla(220 9% 46% / .4);
-      --radius: .5rem;
-      --shadow: 0 2px 6px rgb(0 0 0 / .3);
-      --accent: #0a84ff;
-    }
-
-    *, ::before, ::after {box-sizing: border-box; font-family: 'Poppins', sans-serif;}
-    html, body {height: 100%; margin: 0;}
-    #map {height: 100%; width: 100%;}
-
-    /* --- Recherche adresse --- */
-    #search-container {
-      position: fixed; inset: 1rem auto auto 50%; translate: -50% 0;
-      width: min(90vw, 320px); z-index: 1000;
-      backdrop-filter: blur(8px);
-      background: var(--blur-bg); border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: .25rem;
-    }
-
-    #addressInput {
-      width: 100%; border: 1px solid var(--border); border-radius: var(--radius);
-      font-size: 1rem; padding: .4rem .5rem;
-    }
-
-    #addressSuggestions {
-      list-style: none; margin: .25rem 0 0; padding: 0;
-      max-height: 10rem; overflow-y: auto;
-    }
-
-    #addressSuggestions li {
-      padding: .4rem .5rem; border-radius: var(--radius); cursor: pointer;
-    }
-    #addressSuggestions li:hover {background: var(--accent); color:#fff;}
-
-    /* --- Bouton tracking --- */
-    #trackButton {
-      position: fixed; inset: auto auto 1rem 50%; translate: -50% 0;
-      z-index: 1000; font-size: 1.25rem; font-weight: 700;
-      border: 2px solid var(--border); border-radius: var(--radius);
-      background: var(--blur-bg); padding: 0.6rem 1.25rem;
-      box-shadow: var(--shadow); cursor: pointer;
-    }
-
-    .leaflet-control-attribution.leaflet-control {display:none;}
-  </style>
+    <style>
+        html, body {height: 100%; margin: 0;}
+        #map {height: 100%; width: 100%;}
+        *{font-family: 'Poppins', sans-serif;}
+        
+        #search-container {
+            width: 320px;
+            position: fixed;
+            top: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(255,255,255,0.5);
+            backdrop-filter: blur(5px);
+            border-radius: 4px;
+        }
+        
+        #addressInput {
+            width: 313px;
+            font-size: 1.2rem;
+            border-radius: 4px;
+        }
+        
+        #addressSuggestions {
+            list-style: none;
+            margin: 2px 0 0 0;
+            padding: 0;
+        }
+        
+        #addressSuggestions li {
+            width: auto;
+            border-radius: 4px;
+            margin-bottom: 1px;
+            background: rgba(255,255,255,0.5);
+            border: solid 1px rgba(0,0,0,0.5);
+            cursor: pointer;
+        }
+        #trackButton {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: #fff;
+            border: 2px solid #666;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-size: 4rem;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+        }
+        .leaflet-control-attribution.leaflet-control {display: none;}
+    </style>
 </head>
 <body>
-  <!-- Recherche d'adresse -->
-  <div id="search-container">
-    <input id="addressInput" type="text" placeholder="Rechercher une adresse…" autocomplete="off" />
-    <ul id="addressSuggestions"></ul>
-  </div>
+    <!-- Recherche d'adresse -->
+    <div id="search-container">
+        <input id="addressInput" type="text" placeholder="Rechercher une adresse…" />
+        <ul id="addressSuggestions"></ul>
+    </div>
+    <!-- Bouton de suivi -->
+    <button id="trackButton">Commencer</button>
+    <!-- Carte -->
+    <div id="map"></div>
 
-  <!-- Bouton de suivi -->
-  <button id="trackButton">Commencer</button>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Plugin VectorTileLayer (UMD) -->
+    <script src="https://unpkg.com/leaflet-vector-tile-layer@0.16.1/dist/VectorTileLayer.umd.min.js"></script>
+    <!-- Leaflet‑rotate pour la boussole / rotation -->
+    <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js"></script>
 
-  <!-- Carte -->
-  <div id="map"></div>
+    <script>
+        // ------------------------------------------------------------------
+        // Clé API OpenRouteService
+        // ------------------------------------------------------------------
+        const ORS_API_KEY = "5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d";
 
-  <!-- Leaflet JS et plugins -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
-  <script src="https://unpkg.com/leaflet-vector-tile-layer@0.16.1/dist/VectorTileLayer.umd.min.js" defer></script>
-  <script src="https://unpkg.com/leaflet-rotate@0.2.8/dist/leaflet-rotate-src.js" defer></script>
+        // ------------------------------------------------------------------
+        // Carte de base
+        // ------------------------------------------------------------------
+        const map = L.map('map', {
+            zoomControl:false,
+            rotate: true,
+            touchRotate: true,
+            rotateControl: { closeOnZeroBearing: false },
+            preferCanvas:true
+        }).setView([46.5, 2.5], 6);
 
-  <!-- Notre script principal (module) -->
-  <script type="module">
-    // ------------------------------------------------------------
-    // Constantes & helpers
-    // ------------------------------------------------------------
-    const ORS_API_KEY = '5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d';
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            maxZoom: 19,
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Tiles &copy; CartoDB'
+        }).addTo(map);
 
-    const $ = sel => document.querySelector(sel);
-    const $$ = sel => document.querySelectorAll(sel);
-
-    const debounce = (fn, delay = 300) => {
-      let t; return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), delay); };
-    };
-
-    const fetchJson = async (...args) => {
-      const r = await fetch(...args);
-      if (!r.ok) throw new Error(`${r.status} : ${r.statusText}`);
-      return r.json();
-    };
-
-    // ------------------------------------------------------------
-    // Carte et couche de base
-    // ------------------------------------------------------------
-    const map = L.map('map', {
-      zoomControl: false,
-      rotate: true,
-      touchRotate: true,
-      rotateControl: { closeOnZeroBearing: false },
-      preferCanvas: true,
-    }).setView([46.5, 2.5], 6);
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap, © CartoDB',
-    }).addTo(map);
-
-    // Couche Panoramax (vector tiles)
-    (function addPanoramax() {
-      const URL = 'https://api.panoramax.xyz/api/users/e4933c0c-653b-429a-833a-f45f64e41726/map/{z}/{x}/{y}.mvt';
-      const opts = { maxDetailZoom: 15, filter: f => f?.type === 2, style: { color: 'red', weight: 3, opacity: 1 } };
-      const layerCtor = window.VectorTileLayer || window.vectorTileLayer || (L && L.vectorTileLayer);
-      if (!layerCtor) return;
-      const layer = layerCtor(URL, opts).addTo(map);
-      layer.once('load', () => {
-        const b = layer.getBounds?.();
-        if (b?.isValid()) map.fitBounds(b);
-      });
-    }());
-
-    // ------------------------------------------------------------
-    // Rotation utilitaire (double‑click pour réinitialiser)
-    // ------------------------------------------------------------
-    const clickRotateArrow = () => $('span.leaflet-control-rotate-arrow')?.click();
-
-    // ------------------------------------------------------------
-    // Tracking GPS
-    // ------------------------------------------------------------
-    let isTracking = false;
-    let watchId = null;
-    let currentCoords = [];
-    let currentLine = null;
-    const lineWeight = 3;
-
-    $('#trackButton').addEventListener('click', () => isTracking ? stopTracking() : startTracking());
-
-    const startTracking = () => {
-      if (!navigator.geolocation) return alert('La géolocalisation n\'est pas supportée.');
-      isTracking = true;
-      $('#trackButton').textContent = 'Terminer';
-      currentCoords = [];
-      currentLine = L.polyline([], { color: 'blue', weight: lineWeight }).addTo(map);
-      watchId = navigator.geolocation.watchPosition(onPos, onGeoError, {
-        enableHighAccuracy: true,
-        maximumAge: 5000,
-        timeout: 20000,
-      });
-      clickRotateArrow();
-    };
-
-    const stopTracking = () => {
-      navigator.geolocation.clearWatch(watchId);
-      isTracking = false;
-      $('#trackButton').textContent = 'Commencer';
-      if (currentLine) currentLine.setStyle({ color: 'green' });
-      if (currentCoords.length > 1) exportGeoJSON(currentCoords);
-      currentCoords = [];
-      currentLine = null;
-      clickRotateArrow(); clickRotateArrow();
-    };
-
-    const onPos = ({ coords }) => {
-      const latlng = [coords.latitude, coords.longitude];
-      currentCoords.push(latlng);
-      currentLine.setLatLngs(currentCoords);
-      map.panTo(latlng, { animate: false });
-    };
-
-    const onGeoError = err => alert(`Erreur géoloc : ${err.message}`);
-
-    const exportGeoJSON = coords => {
-      const feature = {
-        type: 'Feature',
-        properties: { finishedAt: new Date().toISOString() },
-        geometry: { type: 'LineString', coordinates: coords.map(([lat, lon]) => [lon, lat]) },
-      };
-      const blob = new Blob([JSON.stringify({ type: 'FeatureCollection', features: [feature] })], { type: 'application/geo+json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `trace_${new Date().toISOString().replace(/[T:.]/g, '-')}.geojson`;
-      a.click();
-      URL.revokeObjectURL(url);
-    };
-
-    // ------------------------------------------------------------
-    // Géocodage + itinéraire OpenRouteService
-    // ------------------------------------------------------------
-    const $input = $('#addressInput');
-    const $suggest = $('#addressSuggestions');
-    let routeLayer = null;
-
-    const geocodeORS = async query => {
-      const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
-      const data = await fetchJson(url);
-      return (data.features ?? []).map(f => ({ label: f.properties.label, coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]] }));
-    };
-
-    const showSuggestions = list => {
-      $suggest.innerHTML = '';
-      list.forEach(({ label, coords }) => {
-        const li = document.createElement('li');
-        li.textContent = label;
-        li.onclick = () => {
-          $suggest.innerHTML = '';
-          $input.value = label;
-          routeTo(coords);
+        // ------------------------------------------------------------------
+        // Couche Panoramax
+        // ------------------------------------------------------------------
+        const panoramaxURL = 'https://api.panoramax.xyz/api/users/e4933c0c-653b-429a-833a-f45f64e41726/map/{z}/{x}/{y}.mvt';
+        const vtOptions = {
+            filter: f => f && f.type === 2,
+            style: { color:'red', weight:3, opacity:1 },
+            maxDetailZoom: 15
         };
-        $suggest.appendChild(li);
-      });
-    };
+        let redLayer;
+        if (typeof window.VectorTileLayer === 'function') {
+            redLayer = new VectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+        } else if (typeof window.vectorTileLayer === 'function') {
+            redLayer = window.vectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+        } else if (L && L.vectorTileLayer) {
+            redLayer = L.vectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+        }
+        if (redLayer) {
+            redLayer.once('load', () => {
+                const bounds = (typeof redLayer.getBounds === 'function') ? redLayer.getBounds() : null;
+                if (bounds && bounds.isValid && bounds.isValid()) {
+                    map.fitBounds(bounds);
+                }
+            });
+        }
 
-    $input.addEventListener('input', debounce(async e => {
-      const val = e.target.value.trim();
-      if (val.length < 4) return showSuggestions([]);
-      try { showSuggestions((await geocodeORS(val)).slice(0, 3)); }
-      catch { showSuggestions([]); }
-    }));
+        // ------------------------------------------------------------------
+        // Rotation
+        // ------------------------------------------------------------------
+        function clickRotateArrow() {
+            const arrow = document.querySelector('span.leaflet-control-rotate-arrow');
+            if (arrow) arrow.click();
+        }
 
-    const decodePolyline = str => {
-      let idx = 0, lat = 0, lon = 0, pts = [];
-      while (idx < str.length) {
-        let b, shift = 0, result = 0;
-        do { b = str.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-        lat += (result & 1 ? ~(result >> 1) : result >> 1);
-        shift = 0; result = 0;
-        do { b = str.charCodeAt(idx++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-        lon += (result & 1 ? ~(result >> 1) : result >> 1);
-        pts.push([lat / 1e5, lon / 1e5]);
-      }
-      return pts;
-    };
+        // ------------------------------------------------------------------
+        // Suivi GPS
+        // ------------------------------------------------------------------
+        let isTracking = false;
+        let watchId = null;
+        let currentCoords = [];
+        let currentLine = null;
+        const lineWeight = 3;
+        const trackButton = document.getElementById('trackButton');
+        trackButton.addEventListener('click', () => isTracking ? stopTracking() : startTracking());
 
-    const routeTo = async ([lat2, lon2]) => {
-      if (!currentCoords.length) return alert('Démarrez d\'abord le suivi pour obtenir votre position.');
-      const [lat1, lon1] = currentCoords.at(-1);
-      const body = JSON.stringify({ coordinates: [[lon1, lat1], [lon2, lat2]], language: 'fr', instructions: false });
-      try {
-        const data = await fetchJson('https://api.openrouteservice.org/v2/directions/driving-car', {
-          method: 'POST',
-          headers: {
-            'Accept': 'application/json, application/geo+json',
-            'Authorization': ORS_API_KEY,
-            'Content-Type': 'application/json',
-          },
-          body,
+        function startTracking() {
+            if (!navigator.geolocation) { alert('La géolocalisation n\'est pas supportée.'); return; }
+            isTracking = true;
+            trackButton.textContent = 'Terminer';
+            currentCoords = [];
+            currentLine = L.polyline([], { color: 'blue', weight: lineWeight }).addTo(map);
+            watchId = navigator.geolocation.watchPosition(onPos, onGeoError, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
+            clickRotateArrow();
+        }
+
+        function onPos(pos) {
+            const latlng = [pos.coords.latitude, pos.coords.longitude];
+            currentCoords.push(latlng);
+            currentLine.setLatLngs(currentCoords);
+            map.panTo(latlng, { animate:false });
+        }
+
+        function onGeoError(err) {
+            console.error(err);
+            alert('Erreur géoloc : ' + err.message);
+        }
+
+        function stopTracking() {
+            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
+            isTracking = false;
+            trackButton.textContent = 'Commencer';
+            if (currentLine) currentLine.setStyle({ color: 'green' });
+            if (currentCoords.length > 1) exportGeoJSON(currentCoords);
+            currentCoords = [];
+            currentLine = null;
+            clickRotateArrow(); clickRotateArrow();
+        }
+
+        function exportGeoJSON(coords) {
+            const feature = {
+                type:'Feature',
+                properties:{ finishedAt:new Date().toISOString() },
+                geometry:{ type:'LineString', coordinates: coords.map(([lat,lon]) => [lon,lat]) }
+            };
+            const blob = new Blob([JSON.stringify({ type:'FeatureCollection', features:[feature] })], { type:'application/geo+json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'trace_' + new Date().toISOString().replace(/[:.]/g,'-') + '.geojson';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // ------------------------------------------------------------------
+        // Géocodage et itinéraire
+        // ------------------------------------------------------------------
+        let addrRouteLayer = null;
+
+        function geocodeORS(query) {
+            const url = https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)};
+            return fetch(url)
+                .then(r => r.ok ? r.json() : Promise.reject('Erreur géocodage'))
+                .then(data => (data.features || []).map(f => ({ label: f.properties.label, coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]] })));
+        }
+
+        function showSuggestions(list) {
+            const container = document.getElementById('addressSuggestions');
+            container.innerHTML = '';
+            list.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item.label;
+                li.addEventListener('click', () => {
+                    container.innerHTML = '';
+                    document.getElementById('addressInput').value = item.label;
+                    routeToAddress(item.coords);
+                });
+                container.appendChild(li);
+            });
+        }
+
+        document.getElementById('addressInput').addEventListener('input', e => {
+            const val = e.target.value;
+            if (val.length < 4) { showSuggestions([]); return; }
+            geocodeORS(val).then(s => showSuggestions(s.slice(0,3))).catch(() => showSuggestions([]));
         });
-        const coords = decodePolyline(data.routes[0].geometry).map(([la, lo]) => [lo, la]);
-        routeLayer?.remove();
-        routeLayer = L.polyline(coords, { color: '#333', weight: 4, opacity: .8 }).addTo(map);
-        map.fitBounds(routeLayer.getBounds(), { padding: [20, 20] });
-      } catch (err) { alert(err.message || err); }
-    };
-  </script>
+
+        function decodePolyline(str) {
+            // decode algorithm from ORS (Google polyline algorithm)
+            let index = 0, lat = 0, lon = 0, coords = [];
+            while (index < str.length) {
+                let b, shift = 0, result = 0;
+                do { b = str.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+                const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
+                lat += dlat;
+                shift = 0; result = 0;
+                do { b = str.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
+                const dlon = ((result & 1) ? ~(result >> 1) : (result >> 1));
+                lon += dlon;
+                coords.push([lat / 1e5, lon / 1e5]);
+            }
+            return coords;
+        }
+
+        function routeToAddress(destination) {
+            if (currentCoords.length === 0) { alert('Démarrez d\'abord le suivi pour obtenir votre position.'); return; }
+            const [lat1, lon1] = currentCoords[currentCoords.length - 1];
+            const [lat2, lon2] = destination;
+            const body = { coordinates: [[lon1, lat1], [lon2, lat2]], language: 'fr', instructions: false };
+            fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
+                method: 'POST',
+                headers: { 'Accept': 'application/json, application/geo+json', 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(r => r.ok ? r.json() : Promise.reject('Route non disponible'))
+            .then(data => {
+                const coords = decodePolyline(data.routes[0].geometry);
+                const geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: coords.map(([la,lo]) => [lo,la]) } };
+                if (addrRouteLayer) map.removeLayer(addrRouteLayer);
+                addrRouteLayer = L.geoJSON(geojson, { style: { color: '#333', weight: 4, opacity: 0.8 } }).addTo(map);
+                map.fitBounds(addrRouteLayer.getBounds(), { padding: [20,20] });
+            })
+            .catch(err => alert(err));
+        }
+    </script>
 </body>
 </html>
