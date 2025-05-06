@@ -35,7 +35,14 @@
         // ------------------------------------------------------------------
         // Carte de base
         // ------------------------------------------------------------------
-        const map = L.map('map', { preferCanvas:true }).setView([46.5, 2.5], 12);
+        const map = L.map('map', {
+            rotate: true,
+            touchRotate: true,
+            rotateControl: {
+              closeOnZeroBearing: false
+            },
+            preferCanvas:true 
+        }).setView([46.5, 2.5], 12);
 
         L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
             maxZoom:19,
@@ -65,22 +72,13 @@
         // Zoom initial sur l'emprise de la couche une fois chargée
         if (redLayer) {
             redLayer.once('load', () => {
-                if (redLayer.getBounds && redLayer.getBounds().isValid()) {
-                    map.fitBounds(redLayer.getBounds());
+                const bounds = (typeof redLayer.getBounds === 'function') ? redLayer.getBounds() : null;
+                if (bounds && bounds.isValid && bounds.isValid()) {
+                    map.fitBounds(bounds);
+                } else {
+                    console.warn('getBounds() indisponible ; recentrage ignoré');
                 }
             });
-        }
-
-        // ------------------------------------------------------------------
-        // Contrôle rotation : un seul, ajouté une fois
-        // ------------------------------------------------------------------
-        let rotateCtrl = null;
-        if (L.Control && L.Control.Rotate) {
-            rotateCtrl = L.control.rotate({ position:'topright' }).addTo(map);
-        }
-        // Désactiver la rotation au chargement
-        if (map.rotation && map.rotation.disable) {
-            map.rotation.disable();
         }
 
         // ------------------------------------------------------------------
@@ -99,12 +97,6 @@
             if (!navigator.geolocation) { alert('La géolocalisation n\'est pas supportée.'); return; }
             isTracking = true; trackButton.textContent = 'terminer';
             currentCoords = []; currentLine = L.polyline([], {color:'blue', weight:lineWeight}).addTo(map);
-
-            // Active uniquement la rotation (contrôle déjà présent)
-            if (map.rotation && map.rotation.enable) {
-                map.rotation.enable();
-            }
-
             watchId = navigator.geolocation.watchPosition(onPos, onGeoError, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
         }
 
@@ -123,11 +115,6 @@
             if (currentLine) { currentLine.setStyle({color:'green'}); }
             if (currentCoords.length > 1) { exportGeoJSON(currentCoords); }
             currentCoords = []; currentLine = null;
-
-            // Désactive la rotation (le contrôle reste, mais sans effet)
-            if (map.rotation && map.rotation.disable) {
-                map.rotation.disable();
-            }
         }
 
         function exportGeoJSON(coords) {
