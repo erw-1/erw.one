@@ -253,7 +253,7 @@
             const [lat1, lon1] = currentCoords[currentCoords.length - 1];
             const [lat2, lon2] = destination;
             const body = { coordinates: [[lon1, lat1], [lon2, lat2]], language: 'fr', instructions: false };
-            fetch('https://api.openrouteservice.org/v2/directions/foot-walking', {
+            fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
                 method: 'POST',
                 headers: { 'Accept': 'application/json, application/geo+json', 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
                 body: JSON.stringify(body)
