@@ -96,14 +96,14 @@
             isTracking=true;trackBtn.textContent='Terminer';currentCoords=[];
             currentLine=L.polyline([],{pane:'track',color:'blue',weight:LINE_WEIGHT}).addTo(map);
             watchId=navigator.geolocation.watchPosition(onPos,onGeoError,{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
-            compassReset();navigator.vibrate?.([15]);
+            navigator.vibrate?.([15]);
         }
         function stopTracking(){
             watchId!==null&&navigator.geolocation.clearWatch(watchId);
             isTracking=false;trackBtn.textContent='Commencer';
             currentLine?.setStyle({color:'green'});
             // currentCoords.length>1&&exportGeoJSON(currentCoords);
-            currentCoords=[];currentLine=null;compassReset();compassReset();navigator.vibrate?.([15]);
+            currentCoords=[];currentLine=null;navigator.vibrate?.([15]);
         }
         const onPos=({coords:{latitude,longitude}})=>{const ll=[latitude,longitude];currentCoords.push(ll);currentLine?.setLatLngs(currentCoords);map.panTo(ll,{animate:false})};
         const onGeoError=e=>alert('Erreur géoloc : '+e.message);
