@@ -55,10 +55,17 @@
         /* Couche MVT Panoramax : afficher uniquement les LineString (type === 2) */
         const panoramaxURL = 'https://api.panoramax.xyz/api/users/e4933c0c-653b-429a-833a-f45f64e41726/map/{z}/{x}/{y}.mvt';
 
-        const vectorTileLayerFn = window.vectorTileLayer || L.vectorTileLayer;   //  ← alias sûr
-        const redLayer = vectorTileLayerFn(panoramaxURL, {
-          filter: (f) => f && f.type === 2,          // 1 = Point, 2 = LineString, 3 = Polygon
-          style:  { color: 'red', weight: 3, opacity: 1 }
+        const redLayer = VectorTileLayer(panoramaxURL, {
+            // Garder uniquement les géométries de type "LineString"
+            filter: (feature /*, layerName, zoom */) => feature && feature.type === 2,
+
+            // Style global ou fonction — ici couleur rouge, même épaisseur que les traces GPS
+            style: {
+                color: 'red',
+                weight: 3,
+                opacity: 1,
+            },
+            // Les points et polygones ne sont plus rendus
         }).addTo(map);
 
         // --------------------------------------------------------------------
