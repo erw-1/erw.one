@@ -116,42 +116,89 @@
 
         // ------------------------------------------------------------------
         // ------------------------------------------------------------------
-        // Buffer & avoid_polygons (nouvelle approche : lecture _vectorTiles)
+        // ------------------------------------------------------------------
+        // Buffer & avoid_polygons – décodage direct des tuiles .mvt
         // ------------------------------------------------------------------
         let avoidPolygon=null, avoidLayer=null; const BUFFER_M=15;
 
-        function extractGeoJSONFeatures(vtl){
+        // librairies de décodage PBF / MVT (chargées dynamiquement la 1re fois)
+        let PbfLib=null, VTileLib=null;
+        function ensurePbfLibs(){
+            return new Promise((resolve,reject)=>{
+                if(PbfLib&&VTileLib) return resolve();
+                const urlsPrimary=[
+                    'https://unpkg.com/pbf@3.2.1/dist/pbf.js',
+                    'https://unpkg.com/@mapbox/vector-tile@1.3.1/dist/vector-tile.js'
+                ];
+                const urlsFallback=[
+                    'https://cdn.jsdelivr.net/npm/pbf@3.2.1/dist/pbf.min.js',
+                    'https://cdn.jsdelivr.net/npm/@mapbox/vector-tile@1.3.1/dist/vector-tile.min.js'
+                ];
+                let loaded=0, triedFallback=false;
+                function done(){ if(PbfLib&&VTileLib) return resolve(); if(!triedFallback){ triedFallback=true; loadSet(urlsFallback);} else reject('Échec chargement pbf/vector‑tile depuis 2 CDN'); }
+                function loadSet(urls){
+                    urls.forEach(src=>{
+                        const s=document.createElement('script');
+                        s.src=src; s.async=true;
+                        s.onload=()=>{ if(src.includes('pbf')) PbfLib=window.pbf||window.Pbf; if(src.includes('vector-tile')) VTileLib=window.VectorTile; loaded++; if(loaded%2===0) done(); };
+                        s.onerror=()=>{ loaded++; if(loaded%2===0) done(); };
+                        document.head.appendChild(s);
+                    });
+                }
+                loadSet(urlsPrimary);
+            });
+        }
+
+        async function fetchTile(z,x,y){
+            const url=panoramaxURL.replace('{z}',z).replace('{x}',x).replace('{y}',y);
+            const r=await fetch(url);
+            if(!r.ok) throw new Error('HTTP '+r.status);
+            const arrayBuffer=await r.arrayBuffer();
+            const vt=new VTileLib(new PbfLib(arrayBuffer));
             const feats=[];
-            if(!vtl||!vtl._vectorTiles) return feats;
-            for(const k in vtl._vectorTiles){
-                const t=vtl._vectorTiles[k];
-                if(!t.layers) continue;
-                for(const lname in t.layers){
-                    const l=t.layers[lname];
-                    if(!l.features) continue;
-                    l.features.forEach(f=>{ if(f.type!==2) return; feats.push(f.toGeoJSON(t.coords.x,t.coords.y,t.coords.z)); });
+            for(const lname in vt.layers){
+                const layer=vt.layers[lname];
+                for(let i=0;i<layer.length;i++){
+                    const feat=layer.feature(i);
+                    if(feat.type!==2) continue; // LineString only
+                    feats.push(feat.toGeoJSON(x,y,z));
                 }
             }
             return feats;
         }
 
-        function buildAvoidPolygon(){
-            const feats=extractGeoJSONFeatures(redLayer);
-            if(!feats.length){ log('⚠️ Pas encore de features dans _vectorTiles'); return; }
+        async function buildAvoidPolygon(){
+            try{
+                await ensurePbfLibs();
+            }catch(e){ log('❌ libs pbf : '+e); return; }
+            const bounds=map.getBounds();
+            const z=Math.floor(map.getZoom());
+            const tile2coord=n=>Math.floor(n);
+            const nw=map.project(bounds.getNorthWest(),z).divideBy(256);
+            const se=map.project(bounds.getSouthEast(),z).divideBy(256);
+            const xMin=tile2coord(nw.x), xMax=tile2coord(se.x);
+            const yMin=tile2coord(nw.y), yMax=tile2coord(se.y);
+            let feats=[];
+            try{
+                const promises=[];
+                for(let x=xMin;x<=xMax;x++) for(let y=yMin;y<=yMax;y++) promises.push(fetchTile(z,x,y));
+                const chunks=await Promise.all(promises);
+                chunks.forEach(arr=>feats=feats.concat(arr));
+            }catch(err){ log('fetchTile err : '+err); return; }
+            if(!feats.length){ log('⚠️ Aucune feature décodée'); return; }
             try{
                 let merged=feats[0];
                 for(let i=1;i<feats.length;i++) merged=turf.union(merged,feats[i]);
-                avoidPolygon=turf.buffer(merged, BUFFER_M/1000, {units:'kilometers'});
+                avoidPolygon=turf.buffer(merged, BUFFER_M/1000,{units:'kilometers'});
                 if(avoidLayer) map.removeLayer(avoidLayer);
                 avoidLayer=L.geoJSON(avoidPolygon,{style:{color:'#ff7800',weight:1,fillOpacity:0.25}}).addTo(map);
-                log('✅ Buffer généré ('+feats.length+' features)');
+                log('✅ Buffer généré ('+feats.length+' feats, '+(xMax-xMin+1)*(yMax-yMin+1)+' tiles)');
             }catch(err){ log('Buffer error :'+err); }
         }
 
-        if(redLayer){
-            redLayer.once('load', ()=>{ buildAvoidPolygon(); });
-            map.on('moveend', ()=>{ buildAvoidPolygon(); });
-        }
+        map.on('moveend zoomend', ()=>{ buildAvoidPolygon(); });
+        // appel initial
+        buildAvoidPolygon();
 
         // ------------------------------------------------------------------
         // Rotation helper
