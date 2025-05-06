@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-    <button id="trackButton">commencer</button>
+    <button id="trackButton">Commencer</button>
     <div id="map"></div>
 
     <!-- Leaflet JS -->
@@ -103,8 +103,8 @@
         trackButton.addEventListener('click', () => isTracking ? stopTracking() : startTracking());
 
         function startTracking() {
-            if (!navigator.geolocation) { alert('La géolocalisation n\\'est pas supportée.'); return; }
-            isTracking = true; trackButton.textContent = 'terminer';
+            if (!navigator.geolocation) { alert('La géolocalisation n\'est pas supportée.'); return; }
+            isTracking = true; trackButton.textContent = 'Terminer';
             currentCoords = []; currentLine = L.polyline([], {color:'blue', weight:lineWeight}).addTo(map);
             watchId = navigator.geolocation.watchPosition(onPos, onGeoError, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
             clickRotateArrow(); // active la rotation / remise à zéro
@@ -121,7 +121,7 @@
 
         function stopTracking() {
             if (watchId !== null) { navigator.geolocation.clearWatch(watchId); watchId = null; }
-            isTracking = false; trackButton.textContent = 'commencer';
+            isTracking = false; trackButton.textContent = 'Commencer';
             if (currentLine) { currentLine.setStyle({color:'green'}); }
             if (currentCoords.length > 1) { exportGeoJSON(currentCoords); }
             currentCoords = []; currentLine = null;
