@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Suivi GPS – Leaflet</title>
+
+    <!-- Leaflet CSS -->
+    <link
+        rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha512-I1lZP6odbyLS1MEcvE10u/hIybf1R+sdFpsVl2TdrmSadoNDhAbcVM4SEXVeXRpmETNfdGAvxijkP8S1o/IsyQ=="
+        crossorigin=""
+    />
+
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+        #trackButton {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+            background: white;
+            border: 2px solid #666;
+            border-radius: 4px;
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <button id="trackButton">commencer</button>
+    <div id="map"></div>
+
+    <!-- Leaflet JS -->
+    <script
+        src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha512-aNHY2ivGgqobS2Zb+KwXxu9pDDSIcbJK2te7QrH+YpQNe9qFyCYyxuEcbawJh6UaElT+yj1Ckw43+2xwtXemwg=="
+        crossorigin=""
+    ></script>
+
+    <!-- Leaflet.VectorGrid for MVT support -->
+    <script src="https://unpkg.com/leaflet.vectorgrid@1.3.0/dist/Leaflet.VectorGrid.bundled.js"></script>
+
+    <script>
+        // Initialisation de la carte
+        const map = L.map('map', {
+            preferCanvas: true,
+        }).setView([46.5, 2.5], 6);
+
+        // Fond CartoDB gris clair
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution:
+                '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Tiles &copy; CartoDB',
+            maxZoom: 19,
+        }).addTo(map);
+
+        // Couche vectorielle rouge (MVT)
+        const redLayer = L.vectorGrid.protobuf(
+            'https://api.panoramax.xyz/api/users/e4933c0c-653b-429a-833a-f45f64e41726/map/{z}/{x}/{y}.mvt',
+            {
+                vectorTileLayerStyles: {
+                    '*': {
+                        color: 'red',
+                        weight: 3,
+                        opacity: 1,
+                    },
+                },
+            },
+        ).addTo(map);
+
+        // Variables de suivi
+        let isTracking = false;
+        let watchId = null;
+        let currentCoords = [];
+        let currentLine = null;
+        const lineWeight = 3; // même épaisseur que la couche rouge
+
+        const trackButton = document.getElementById('trackButton');
+        trackButton.addEventListener('click', () => {
+            if (!isTracking) {
+                startTracking();
+            } else {
+                stopTracking();
+            }
+        });
+
+        function startTracking() {
+            if (!navigator.geolocation) {
+                alert('La géolocalisation n\'est pas supportée par votre navigateur.');
+                return;
+            }
+            isTracking = true;
+            trackButton.textContent = 'terminer';
+            currentCoords = [];
+            currentLine = L.polyline([], { color: 'blue', weight: lineWeight }).addTo(map);
+
+            watchId = navigator.geolocation.watchPosition(
+                (pos) => {
+                    const latlng = [pos.coords.latitude, pos.coords.longitude];
+                    currentCoords.push(latlng);
+                    currentLine.setLatLngs(currentCoords);
+                    // Centrer la carte sur la position courante pour le confort
+                    map.panTo(latlng, { animate: true });
+                },
+                (err) => {
+                    console.error(err);
+                    alert('Erreur de géolocalisation : ' + err.message);
+                },
+                {
+                    enableHighAccuracy: true,
+                    maximumAge: 5000,
+                    timeout: 20000,
+                },
+            );
+        }
+
+        function stopTracking() {
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            isTracking = false;
+            trackButton.textContent = 'commencer';
+
+            // Figer la trace en vert
+            if (currentLine) {
+                currentLine.setStyle({ color: 'green' });
+            }
+
+            // Télécharger la trace en GeoJSON
+            if (currentCoords.length > 1) {
+                downloadGeoJSON(currentCoords);
+            }
+
+            // Préparer pour une nouvelle trace
+            currentLine = null;
+            currentCoords = [];
+        }
+
+        function downloadGeoJSON(coords) {
+            const feature = {
+                type: 'Feature',
+                properties: {
+                    finishedAt: new Date().toISOString(),
+                },
+                geometry: {
+                    type: 'LineString',
+                    coordinates: coords.map((c) => [c[1], c[0]]), // [lon, lat]
+                },
+            };
+            const geojson = {
+                type: 'FeatureCollection',
+                features: [feature],
+            };
+            const blob = new Blob([JSON.stringify(geojson)], {
+                type: 'application/geo+json',
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'trace_' + new Date().toISOString().replace(/[:.]/g, '-') + '.geojson';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
