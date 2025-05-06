@@ -94,11 +94,28 @@
         // Couche Panoramax (vector tile)
         // ------------------------------------------------------------------
         const panoramaxURL = 'https://api.panoramax.xyz/api/users/e4933c0c-653b-429a-833a-f45f64e41726/map/{z}/{x}/{y}.mvt';
-        const vtOptions = { filter:f=>f&&f.type===2, style:{color:'red',weight:3,opacity:1}, maxDetailZoom:15 };
-        let redLayer = L.vectorTileLayer ? L.vectorTileLayer(panoramaxURL,vtOptions).addTo(map) : null;
+        const vtOptions = { filter:f=>f&&f.type===2, style:{ color:'red', weight:3, opacity:1 }, maxDetailZoom:15 };
+        let redLayer = null;
+
+        // Créer la couche en tenant compte des trois implémentations possibles du plugin
+        if (typeof window.VectorTileLayer === 'function') {
+            // UMD : new VectorTileLayer(...)
+            redLayer = new VectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+            log('VectorTileLayer UMD detected');
+        } else if (L && typeof L.vectorTileLayer === 'function') {
+            // leaflet.vector-tile-layer ajoute une factory L.vectorTileLayer
+            redLayer = L.vectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+            log('L.vectorTileLayer factory detected');
+        } else if (typeof window.vectorTileLayer === 'function') {
+            // global helper (rare)
+            redLayer = window.vectorTileLayer(panoramaxURL, vtOptions).addTo(map);
+            log('window.vectorTileLayer detected');
+        } else {
+            log('❌ Aucune implémentation VectorTileLayer trouvée — la couche rouge ne sera pas chargée');
+        }
 
         // ------------------------------------------------------------------
-        // Buffer & avoid_polygons
+        // Buffer & avoid_polygons & avoid_polygons
         // ------------------------------------------------------------------
         let avoidPolygon=null, avoidLayer=null; const BUFFER_M=15;
 
