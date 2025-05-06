@@ -115,12 +115,12 @@
         }
 
         // ------------------------------------------------------------------
-        // Buffer & avoid_polygons & avoid_polygons
+        // ------------------------------------------------------------------
+        // Buffer & avoid_polygons (nouvelle approche : lecture _vectorTiles)
         // ------------------------------------------------------------------
         let avoidPolygon=null, avoidLayer=null; const BUFFER_M=15;
 
-        // Utilitaire : extrait les GeoJSON d'une VectorTileLayer même sans toGeoJSON()
-        function extractGeoJSONFeatures(vtl) {
+        function extractGeoJSONFeatures(vtl){
             const feats=[];
             if(!vtl||!vtl._vectorTiles) return feats;
             for(const k in vtl._vectorTiles){
@@ -129,33 +129,28 @@
                 for(const lname in t.layers){
                     const l=t.layers[lname];
                     if(!l.features) continue;
-                    l.features.forEach(f=>{
-                        // include only LineString (type 2) like filter
-                        if(f.type!==2) return;
-                        const gj=f.toGeoJSON(t.coords.x,t.coords.y,t.coords.z);
-                        feats.push(gj);
-                    });
+                    l.features.forEach(f=>{ if(f.type!==2) return; feats.push(f.toGeoJSON(t.coords.x,t.coords.y,t.coords.z)); });
                 }
             }
             return feats;
         }
 
         function buildAvoidPolygon(){
-            const feats = redLayer.toGeoJSON ? redLayer.toGeoJSON().features : extractGeoJSONFeatures(redLayer);
-            if(!feats||!feats.length){ log('Buffer : aucune géométrie (tiles pas chargées)'); return; }
-            let merged=feats[0];
-            for(let i=1;i<feats.length;i++) merged=turf.union(merged,feats[i]);
-            avoidPolygon=turf.buffer(merged, BUFFER_M/1000, {units:'kilometers'});
-            if(avoidLayer) map.removeLayer(avoidLayer);
-            avoidLayer=L.geoJSON(avoidPolygon,{style:{color:'#ff7800',weight:1,fillOpacity:0.25}}).addTo(map);
-            log('Buffer généré avec '+feats.length+' feature(s)');
+            const feats=extractGeoJSONFeatures(redLayer);
+            if(!feats.length){ log('⚠️ Pas encore de features dans _vectorTiles'); return; }
+            try{
+                let merged=feats[0];
+                for(let i=1;i<feats.length;i++) merged=turf.union(merged,feats[i]);
+                avoidPolygon=turf.buffer(merged, BUFFER_M/1000, {units:'kilometers'});
+                if(avoidLayer) map.removeLayer(avoidLayer);
+                avoidLayer=L.geoJSON(avoidPolygon,{style:{color:'#ff7800',weight:1,fillOpacity:0.25}}).addTo(map);
+                log('✅ Buffer généré ('+feats.length+' features)');
+            }catch(err){ log('Buffer error :'+err); }
         }
 
         if(redLayer){
-            // Reconstruire le buffer après chaque batch de tuiles chargées
-            redLayer.on('load', ()=>{buildAvoidPolygon();});
-            // essayer aussi après 2 s pour être sûr
-            setTimeout(buildAvoidPolygon,2000);
+            redLayer.once('load', ()=>{ buildAvoidPolygon(); });
+            map.on('moveend', ()=>{ buildAvoidPolygon(); });
         }
 
         // ------------------------------------------------------------------
