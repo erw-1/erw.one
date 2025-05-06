@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Suivi GPS – Leaflet (avoid_polygons + logs)</title>
+    <title>Suivi GPS – Leaflet (avoid_polygons + logs v2)</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -13,7 +13,7 @@
         html, body {height: 100%; margin: 0;}
         #map {height: 100%; width: 100%;}
         *{font-family: 'Poppins', sans-serif;}
-        
+    
         #search-container {
             width: 320px;
             position: fixed;
@@ -25,7 +25,7 @@
             backdrop-filter: blur(5px);
             border-radius: 4px;
         }
-        
+    
         #addressInput { width: 313px; font-size: 1.2rem; border-radius: 4px; }
         #addressSuggestions { list-style: none; margin: 2px 0 0 0; padding: 0; }
         #addressSuggestions li {
@@ -42,8 +42,8 @@
         /* Small on‑screen logger */
         #log {
             position: fixed; bottom: 1rem; right: 1rem; z-index: 1500;
-            max-width: 340px; background: rgba(0,0,0,0.75); color:#fff;
-            padding: .5rem 1rem; border-radius:4px; font-size:.8rem;
+            max-width: 360px; background: rgba(0,0,0,0.75); color:#fff;
+            padding: .5rem 1rem; border-radius:4px; font-size:.75rem;
             pointer-events: none; white-space: pre-line;
         }
     </style>
@@ -72,12 +72,11 @@
 
     <script>
         // ------------------------------------------------------------------
-        // Outil de log rapide (console + overlay)
+        // Logger minimal (console + overlay)
         // ------------------------------------------------------------------
         function log(msg) {
             console.log(msg);
-            const el = document.getElementById('log');
-            el.textContent = msg;
+            document.getElementById('log').textContent = msg;
         }
 
         // ------------------------------------------------------------------
@@ -88,223 +87,87 @@
         // ------------------------------------------------------------------
         // Carte de base
         // ------------------------------------------------------------------
-        const map = L.map('map', {
-            zoomControl:false,
-            rotate: true,
-            touchRotate: true,
-            rotateControl: { closeOnZeroBearing: false },
-            preferCanvas:true
-        }).setView([46.5, 2.5], 6);
-
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-            maxZoom: 19,
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &bull; Tiles &copy; CartoDB'
-        }).addTo(map);
+        const map = L.map('map', { rotate:true, touchRotate:true, rotateControl:{closeOnZeroBearing:false}, preferCanvas:true }).setView([46.5,2.5],6);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {maxZoom:19}).addTo(map);
 
         // ------------------------------------------------------------------
-        // Couche Panoramax (ligne rouge)
+        // Couche Panoramax (vector tile)
         // ------------------------------------------------------------------
         const panoramaxURL = 'https://api.panoramax.xyz/api/users/e4933c0c-653b-429a-833a-f45f64e41726/map/{z}/{x}/{y}.mvt';
-        const vtOptions = {
-            filter: f => f && f.type === 2,
-            style: { color:'red', weight:3, opacity:1 },
-            maxDetailZoom: 15
-        };
-        let redLayer;
-        if (typeof window.VectorTileLayer === 'function') {
-            redLayer = new VectorTileLayer(panoramaxURL, vtOptions).addTo(map);
-        } else if (typeof window.vectorTileLayer === 'function') {
-            redLayer = window.vectorTileLayer(panoramaxURL, vtOptions).addTo(map);
-        } else if (L && L.vectorTileLayer) {
-            redLayer = L.vectorTileLayer(panoramaxURL, vtOptions).addTo(map);
-        }
+        const vtOptions = { filter:f=>f&&f.type===2, style:{color:'red',weight:3,opacity:1}, maxDetailZoom:15 };
+        let redLayer = L.vectorTileLayer ? L.vectorTileLayer(panoramaxURL,vtOptions).addTo(map) : null;
 
         // ------------------------------------------------------------------
         // Buffer & avoid_polygons
         // ------------------------------------------------------------------
-        let avoidPolygon = null;   // GeoJSON Polygon/MultiPolygon
-        let avoidLayer = null;     // Leaflet layer affichant le buffer
-        const BUFFER_M = 15;       // Rayon en mètres autour des traits Panoramax
+        let avoidPolygon=null, avoidLayer=null; const BUFFER_M=15;
 
-        function buildAvoidPolygon() {
-            if (!redLayer || !redLayer.toGeoJSON) { log('Impossible de générer le buffer : layer non prêt'); return; }
-            const geo = redLayer.toGeoJSON(); // FeatureCollection
-            if (!geo.features || !geo.features.length) { log('Pas de géométrie dans la couche !'); return; }
-            // Fusion des segments
-            let merged = geo.features[0];
-            for (let i=1;i<geo.features.length;i++) merged = turf.union(merged, geo.features[i]);
-            // Buffer
-            const buffered = turf.buffer(merged, BUFFER_M/1000, { units: 'kilometers' });
-            avoidPolygon = buffered;
-            // (re)dessin sur la carte
-            if (avoidLayer) map.removeLayer(avoidLayer);
-            avoidLayer = L.geoJSON(buffered, { style:{ color:'#ff7800', weight:1, fillOpacity:0.25 } }).addTo(map);
-            log('Buffer Panoramax prêt (radius '+BUFFER_M+' m)');
+        // Utilitaire : extrait les GeoJSON d'une VectorTileLayer même sans toGeoJSON()
+        function extractGeoJSONFeatures(vtl) {
+            const feats=[];
+            if(!vtl||!vtl._vectorTiles) return feats;
+            for(const k in vtl._vectorTiles){
+                const t=vtl._vectorTiles[k];
+                if(!t.layers) continue;
+                for(const lname in t.layers){
+                    const l=t.layers[lname];
+                    if(!l.features) continue;
+                    l.features.forEach(f=>{
+                        // include only LineString (type 2) like filter
+                        if(f.type!==2) return;
+                        const gj=f.toGeoJSON(t.coords.x,t.coords.y,t.coords.z);
+                        feats.push(gj);
+                    });
+                }
+            }
+            return feats;
         }
 
-        if (redLayer) {
-            redLayer.once('load', () => {
-                buildAvoidPolygon();
-                const bounds = redLayer.getBounds && redLayer.getBounds();
-                if (bounds && bounds.isValid && bounds.isValid()) map.fitBounds(bounds);
-            });
+        function buildAvoidPolygon(){
+            const feats = redLayer.toGeoJSON ? redLayer.toGeoJSON().features : extractGeoJSONFeatures(redLayer);
+            if(!feats||!feats.length){ log('Buffer : aucune géométrie (tiles pas chargées)'); return; }
+            let merged=feats[0];
+            for(let i=1;i<feats.length;i++) merged=turf.union(merged,feats[i]);
+            avoidPolygon=turf.buffer(merged, BUFFER_M/1000, {units:'kilometers'});
+            if(avoidLayer) map.removeLayer(avoidLayer);
+            avoidLayer=L.geoJSON(avoidPolygon,{style:{color:'#ff7800',weight:1,fillOpacity:0.25}}).addTo(map);
+            log('Buffer généré avec '+feats.length+' feature(s)');
+        }
+
+        if(redLayer){
+            // Reconstruire le buffer après chaque batch de tuiles chargées
+            redLayer.on('load', ()=>{buildAvoidPolygon();});
+            // essayer aussi après 2 s pour être sûr
+            setTimeout(buildAvoidPolygon,2000);
         }
 
         // ------------------------------------------------------------------
         // Rotation helper
         // ------------------------------------------------------------------
-        function clickRotateArrow() {
-            const arrow = document.querySelector('span.leaflet-control-rotate-arrow');
-            if (arrow) arrow.click();
-        }
+        function clickRotateArrow(){ const a=document.querySelector('span.leaflet-control-rotate-arrow'); if(a) a.click(); }
 
         // ------------------------------------------------------------------
-        // Suivi GPS
+        // Suivi GPS (auto‑start possible)
         // ------------------------------------------------------------------
-        let isTracking = false;
-        let watchId = null;
-        let currentCoords = [];
-        let currentLine = null;
-        const lineWeight = 3;
-        const trackButton = document.getElementById('trackButton');
-        trackButton.addEventListener('click', () => isTracking ? stopTracking() : startTracking());
+        let isTracking=false,watchId=null,currentCoords=[],currentLine=null; const lineWeight=3;
+        const trackButton=document.getElementById('trackButton'); trackButton.addEventListener('click',()=>isTracking?stopTracking():startTracking());
 
-        function startTracking() {
-            if (!navigator.geolocation) { alert('La géolocalisation n\'est pas supportée.'); return; }
-            isTracking = true;
-            trackButton.textContent = 'Terminer';
-            currentCoords = [];
-            currentLine = L.polyline([], { color: 'blue', weight: lineWeight }).addTo(map);
-            watchId = navigator.geolocation.watchPosition(onPos, onGeoError, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
-            clickRotateArrow();
-            log('Tracking…');
-        }
-
-        function onPos(pos) {
-            const latlng = [pos.coords.latitude, pos.coords.longitude];
-            currentCoords.push(latlng);
-            currentLine.setLatLngs(currentCoords);
-            map.panTo(latlng, { animate:false });
-        }
-
-        function onGeoError(err) {
-            console.error(err); log('Erreur géoloc : '+err.message);
-            alert('Erreur géoloc : ' + err.message);
-        }
-
-        function stopTracking() {
-            if (watchId !== null) navigator.geolocation.clearWatch(watchId);
-            isTracking = false;
-            trackButton.textContent = 'Commencer';
-            if (currentLine) currentLine.setStyle({ color: 'green' });
-            if (currentCoords.length > 1) exportGeoJSON(currentCoords);
-            currentCoords = [];
-            currentLine = null;
-            clickRotateArrow(); clickRotateArrow();
-            log('Tracking stoppé');
-        }
-
-        function exportGeoJSON(coords) {
-            const feature = {
-                type:'Feature',
-                properties:{ finishedAt:new Date().toISOString() },
-                geometry:{ type:'LineString', coordinates: coords.map(([lat,lon]) => [lon,lat]) }
-            };
-            const blob = new Blob([JSON.stringify({ type:'FeatureCollection', features:[feature] })], { type:'application/geo+json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'trace_' + new Date().toISOString().replace(/[:.]/g,'-') + '.geojson';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
+        function startTracking(){ if(!navigator.geolocation){alert('Géoloc non supportée');return;} isTracking=true; trackButton.textContent='Terminer'; currentCoords=[]; currentLine=L.polyline([],{color:'blue',weight:lineWeight}).addTo(map); watchId=navigator.geolocation.watchPosition(onPos,onGeoError,{enableHighAccuracy:true,maximumAge:5000,timeout:20000}); clickRotateArrow(); log('Tracking…'); }
+        function onPos(pos){ const ll=[pos.coords.latitude,pos.coords.longitude]; currentCoords.push(ll); currentLine.setLatLngs(currentCoords); map.panTo(ll,{animate:false}); }
+        function onGeoError(err){ log('Erreur géoloc : '+err.message); alert(err.message); }
+        function stopTracking(){ if(watchId!==null) navigator.geolocation.clearWatch(watchId); isTracking=false; trackButton.textContent='Commencer'; if(currentLine) currentLine.setStyle({color:'green'}); currentLine=null; currentCoords=[]; log('Tracking stoppé'); clickRotateArrow(); clickRotateArrow(); }
 
         // ------------------------------------------------------------------
-        // Géocodage et itinéraire (avec avoid_polygons)
+        // Géocodage + suggestions (ORS) + itinéraire
         // ------------------------------------------------------------------
-        let addrRouteLayer = null;
+        let addrRouteLayer=null;
+        function geocodeORS(q){ return fetch(`https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(q)}`).then(r=>r.ok?r.json():Promise.reject()).then(d=>(d.features||[]).map(f=>({label:f.properties.label,coords:[f.geometry.coordinates[1],f.geometry.coordinates[0]]}))); }
+        function showSuggestions(list){ const c=document.getElementById('addressSuggestions'); c.innerHTML=''; list.forEach(item=>{ const li=document.createElement('li'); li.textContent=item.label; li.onclick=()=>{ c.innerHTML=''; document.getElementById('addressInput').value=item.label; if(!isTracking){ startTracking(); navigator.geolocation.getCurrentPosition(p=>{ currentCoords.push([p.coords.latitude,p.coords.longitude]); routeTo(item.coords); },onGeoError,{enableHighAccuracy:true,timeout:10000}); } else { routeTo(item.coords);} }; c.appendChild(li);} ); }
+        document.getElementById('addressInput').addEventListener('input',e=>{ const v=e.target.value; if(v.length<4){showSuggestions([]);return;} geocodeORS(v).then(r=>showSuggestions(r.slice(0,5))).catch(()=>showSuggestions([])); });
 
-        function geocodeORS(query) {
-            const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
-            return fetch(url)
-                .then(r => r.ok ? r.json() : Promise.reject('Erreur géocodage'))
-                .then(data => (data.features || []).map(f => ({ label: f.properties.label, coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]] })));
-        }
+        function decodePolyline(str){ let i=0,lat=0,lon=0,coords=[]; while(i<str.length){ let b,shift=0,res=0; do{ b=str.charCodeAt(i++)-63; res|=(b&0x1f)<<shift; shift+=5;}while(b>=0x20); const dlat=((res&1)?~(res>>1):(res>>1)); lat+=dlat; shift=0; res=0; do{ b=str.charCodeAt(i++)-63; res|=(b&0x1f)<<shift; shift+=5;}while(b>=0x20); const dlon=((res&1)?~(res>>1):(res>>1)); lon+=dlon; coords.push([lat/1e5,lon/1e5]);} return coords; }
 
-        function showSuggestions(list) {
-            const container = document.getElementById('addressSuggestions');
-            container.innerHTML = '';
-            list.forEach(item => {
-                const li = document.createElement('li');
-                li.textContent = item.label;
-                li.addEventListener('click', () => {
-                    container.innerHTML = '';
-                    document.getElementById('addressInput').value = item.label;
-                    // Si le tracking n'est pas actif, on le lance et on attend la première position
-                    if (!isTracking) {
-                        startTracking();
-                        navigator.geolocation.getCurrentPosition(pos => {
-                            currentCoords.push([pos.coords.latitude, pos.coords.longitude]);
-                            routeToAddress(item.coords);
-                        }, onGeoError, { enableHighAccuracy:true, timeout:10000 });
-                    } else {
-                        routeToAddress(item.coords);
-                    }
-                });
-                container.appendChild(li);
-            });
-        }
-
-        document.getElementById('addressInput').addEventListener('input', e => {
-            const val = e.target.value;
-            if (val.length < 4) { showSuggestions([]); return; }
-            geocodeORS(val).then(s => showSuggestions(s.slice(0,5))).catch(() => showSuggestions([]));
-        });
-
-        function decodePolyline(str) {
-            let index = 0, lat = 0, lon = 0, coords = [];
-            while (index < str.length) {
-                let b, shift = 0, result = 0;
-                do { b = str.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-                const dlat = ((result & 1) ? ~(result >> 1) : (result >> 1));
-                lat += dlat;
-                shift = 0; result = 0;
-                do { b = str.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5; } while (b >= 0x20);
-                const dlon = ((result & 1) ? ~(result >> 1) : (result >> 1));
-                lon += dlon;
-                coords.push([lat / 1e5, lon / 1e5]);
-            }
-            return coords;
-        }
-
-        function routeToAddress(destination) {
-            if (currentCoords.length === 0) { log('En attente d\'une position GPS…'); return; }
-            if (!avoidPolygon) buildAvoidPolygon();
-
-            const [lat1, lon1] = currentCoords[currentCoords.length - 1];
-            const [lat2, lon2] = destination;
-            const body = { coordinates: [[lon1, lat1], [lon2, lat2]], language: 'fr', instructions: false, options: {} };
-            if (avoidPolygon) body.options.avoid_polygons = avoidPolygon.geometry;
-            log('Requête ORS\n→ avoid_polygons present : '+!!avoidPolygon);
-
-            fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
-                method: 'POST',
-                headers: { 'Accept': 'application/json, application/geo+json', 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            })
-            .then(r => r.ok ? r.json() : Promise.reject('Route non disponible'))
-            .then(data => {
-                const coords = decodePolyline(data.routes[0].geometry);
-                const geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: coords.map(([la,lo]) => [lo,la]) } };
-                if (addrRouteLayer) map.removeLayer(addrRouteLayer);
-                addrRouteLayer = L.geoJSON(geojson, { style: { color: '#333', weight: 4, opacity: 0.8 } }).addTo(map);
-                map.fitBounds(addrRouteLayer.getBounds(), { padding: [20,20] });
-                log('Itinéraire trouvé ('+Math.round(data.routes[0].summary.distance/100)/10+' km)');
-            })
-            .catch(err => { log('Échec itinéraire : '+err); alert(err); });
-        }
+        function routeTo(dest){ if(currentCoords.length===0){ log('Attente position GPS…'); return;} if(!avoidPolygon) buildAvoidPolygon(); const [lat1,lon1]=currentCoords[currentCoords.length-1]; const [lat2,lon2]=dest; const body={ coordinates:[[lon1,lat1],[lon2,lat2]], language:'fr', instructions:false, options:{}}; if(avoidPolygon) body.options.avoid_polygons=avoidPolygon.geometry; log('Request ORS (avoid '+!!avoidPolygon+')'); fetch('https://api.openrouteservice.org/v2/directions/driving-car',{method:'POST',headers:{'Accept':'application/json','Authorization':ORS_API_KEY,'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.ok?r.json():Promise.reject('ORS error')).then(data=>{ const coords=decodePolyline(data.routes[0].geometry); if(addrRouteLayer) map.removeLayer(addrRouteLayer); addrRouteLayer=L.geoJSON({type:'LineString',coordinates:coords.map(([la,lo])=>[lo,la])},{style:{color:'#333',weight:4,opacity:0.85}}).addTo(map); map.fitBounds(addrRouteLayer.getBounds(),{padding:[20,20]}); log('Itinéraire '+Math.round(data.routes[0].summary.distance/100)/10+' km'); }).catch(err=>{ log('Échec itinéraire :'+err); alert(err);}); }
     </script>
 </body>
 </html>
