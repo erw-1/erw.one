@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Suivi GPS – Leaflet (v2 : avoid_polygons)</title>
+    <title>Suivi GPS – Leaflet (avoid_polygons + logs)</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -26,41 +26,26 @@
             border-radius: 4px;
         }
         
-        #addressInput {
-            width: 313px;
-            font-size: 1.2rem;
-            border-radius: 4px;
-        }
-        
-        #addressSuggestions {
-            list-style: none;
-            margin: 2px 0 0 0;
-            padding: 0;
-        }
-        
+        #addressInput { width: 313px; font-size: 1.2rem; border-radius: 4px; }
+        #addressSuggestions { list-style: none; margin: 2px 0 0 0; padding: 0; }
         #addressSuggestions li {
-            width: auto;
-            border-radius: 4px;
-            margin-bottom: 1px;
-            background: rgba(255,255,255,0.5);
-            border: solid 1px rgba(0,0,0,0.5);
-            cursor: pointer;
+            width: auto; border-radius: 4px; margin-bottom: 1px;
+            background: rgba(255,255,255,0.5); border: solid 1px rgba(0,0,0,0.5); cursor: pointer;
         }
         #trackButton {
-            position: fixed;
-            bottom: 1rem;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-            background: #fff;
-            border: 2px solid #666;
-            border-radius: 4px;
-            padding: 0.5rem 1rem;
-            font-size: 4rem;
-            cursor: pointer;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
+            position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 1000;
+            background: #fff; border: 2px solid #666; border-radius: 4px; padding: 0.5rem 1rem;
+            font-size: 4rem; cursor: pointer; box-shadow: 0 2px 6px rgba(0, 0, 0, .3);
         }
         .leaflet-control-attribution.leaflet-control {display: none;}
+
+        /* Small on‑screen logger */
+        #log {
+            position: fixed; bottom: 1rem; right: 1rem; z-index: 1500;
+            max-width: 340px; background: rgba(0,0,0,0.75); color:#fff;
+            padding: .5rem 1rem; border-radius:4px; font-size:.8rem;
+            pointer-events: none; white-space: pre-line;
+        }
     </style>
 </head>
 <body>
@@ -73,6 +58,8 @@
     <button id="trackButton">Commencer</button>
     <!-- Carte -->
     <div id="map"></div>
+    <!-- Petit logger -->
+    <div id="log"></div>
 
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -84,6 +71,15 @@
     <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
 
     <script>
+        // ------------------------------------------------------------------
+        // Outil de log rapide (console + overlay)
+        // ------------------------------------------------------------------
+        function log(msg) {
+            console.log(msg);
+            const el = document.getElementById('log');
+            el.textContent = msg;
+        }
+
         // ------------------------------------------------------------------
         // Clé API OpenRouteService
         // ------------------------------------------------------------------
@@ -126,40 +122,36 @@
         // ------------------------------------------------------------------
         // Buffer & avoid_polygons
         // ------------------------------------------------------------------
-        // Nous allons créer un polygone (buffer de 15 m) autour des lignes panoramax, puis le fournir
-        // dans l'option "avoid_polygons" lors de l'appel directions ORS.
-        // La géométrie est stockée dans "avoidPolygon" (GeoJSON de type Polygon ou MultiPolygon)
-        //
-        // NOTE : obtenir la géométrie complète d'une couche MVT en entier n'est pas trivial ; on se limite
-        // pour l'instant aux tuiles chargées à l'écran (toGeoJSON) et on pourra raffiner.
-        // ------------------------------------------------------------------
-        let avoidPolygon = null;
+        let avoidPolygon = null;   // GeoJSON Polygon/MultiPolygon
+        let avoidLayer = null;     // Leaflet layer affichant le buffer
+        const BUFFER_M = 15;       // Rayon en mètres autour des traits Panoramax
 
         function buildAvoidPolygon() {
-            if (!redLayer || !redLayer.toGeoJSON) return;
-            const geo = redLayer.toGeoJSON(); // FeatureCollection (LineString)
-            if (!geo.features || !geo.features.length) return;
-            // Fusionner puis bufferiser avec turf
+            if (!redLayer || !redLayer.toGeoJSON) { log('Impossible de générer le buffer : layer non prêt'); return; }
+            const geo = redLayer.toGeoJSON(); // FeatureCollection
+            if (!geo.features || !geo.features.length) { log('Pas de géométrie dans la couche !'); return; }
+            // Fusion des segments
             let merged = geo.features[0];
-            if (geo.features.length > 1) {
-                merged = geo.features.reduce((acc, f) => turf.union(acc, f));
-            }
-            const buffered = turf.buffer(merged, 0.015, { units: 'kilometers' }); // ~15 m
+            for (let i=1;i<geo.features.length;i++) merged = turf.union(merged, geo.features[i]);
+            // Buffer
+            const buffered = turf.buffer(merged, BUFFER_M/1000, { units: 'kilometers' });
             avoidPolygon = buffered;
+            // (re)dessin sur la carte
+            if (avoidLayer) map.removeLayer(avoidLayer);
+            avoidLayer = L.geoJSON(buffered, { style:{ color:'#ff7800', weight:1, fillOpacity:0.25 } }).addTo(map);
+            log('Buffer Panoramax prêt (radius '+BUFFER_M+' m)');
         }
 
         if (redLayer) {
             redLayer.once('load', () => {
                 buildAvoidPolygon();
-                const bounds = (typeof redLayer.getBounds === 'function') ? redLayer.getBounds() : null;
-                if (bounds && bounds.isValid && bounds.isValid()) {
-                    map.fitBounds(bounds);
-                }
+                const bounds = redLayer.getBounds && redLayer.getBounds();
+                if (bounds && bounds.isValid && bounds.isValid()) map.fitBounds(bounds);
             });
         }
 
         // ------------------------------------------------------------------
-        // Rotation
+        // Rotation helper
         // ------------------------------------------------------------------
         function clickRotateArrow() {
             const arrow = document.querySelector('span.leaflet-control-rotate-arrow');
@@ -185,6 +177,7 @@
             currentLine = L.polyline([], { color: 'blue', weight: lineWeight }).addTo(map);
             watchId = navigator.geolocation.watchPosition(onPos, onGeoError, { enableHighAccuracy:true, maximumAge:5000, timeout:20000 });
             clickRotateArrow();
+            log('Tracking…');
         }
 
         function onPos(pos) {
@@ -195,7 +188,7 @@
         }
 
         function onGeoError(err) {
-            console.error(err);
+            console.error(err); log('Erreur géoloc : '+err.message);
             alert('Erreur géoloc : ' + err.message);
         }
 
@@ -208,6 +201,7 @@
             currentCoords = [];
             currentLine = null;
             clickRotateArrow(); clickRotateArrow();
+            log('Tracking stoppé');
         }
 
         function exportGeoJSON(coords) {
@@ -248,7 +242,16 @@
                 li.addEventListener('click', () => {
                     container.innerHTML = '';
                     document.getElementById('addressInput').value = item.label;
-                    routeToAddress(item.coords);
+                    // Si le tracking n'est pas actif, on le lance et on attend la première position
+                    if (!isTracking) {
+                        startTracking();
+                        navigator.geolocation.getCurrentPosition(pos => {
+                            currentCoords.push([pos.coords.latitude, pos.coords.longitude]);
+                            routeToAddress(item.coords);
+                        }, onGeoError, { enableHighAccuracy:true, timeout:10000 });
+                    } else {
+                        routeToAddress(item.coords);
+                    }
                 });
                 container.appendChild(li);
             });
@@ -257,7 +260,7 @@
         document.getElementById('addressInput').addEventListener('input', e => {
             const val = e.target.value;
             if (val.length < 4) { showSuggestions([]); return; }
-            geocodeORS(val).then(s => showSuggestions(s.slice(0,3))).catch(() => showSuggestions([]));
+            geocodeORS(val).then(s => showSuggestions(s.slice(0,5))).catch(() => showSuggestions([]));
         });
 
         function decodePolyline(str) {
@@ -277,22 +280,15 @@
         }
 
         function routeToAddress(destination) {
-            if (currentCoords.length === 0) { alert('Démarrez d\'abord le suivi pour obtenir votre position.'); return; }
-            if (!avoidPolygon) {
-                // On reconstruit le buffer si nécessaire (par ex. si l'utilisateur n'a pas attendu le chargement complet)
-                buildAvoidPolygon();
-            }
+            if (currentCoords.length === 0) { log('En attente d\'une position GPS…'); return; }
+            if (!avoidPolygon) buildAvoidPolygon();
+
             const [lat1, lon1] = currentCoords[currentCoords.length - 1];
             const [lat2, lon2] = destination;
-            const body = {
-                coordinates: [[lon1, lat1], [lon2, lat2]],
-                language: 'fr',
-                instructions: false,
-                options: {}
-            };
-            if (avoidPolygon) {
-                body.options.avoid_polygons = avoidPolygon.geometry; // GeoJSON geometry (Polygon/MultiPolygon)
-            }
+            const body = { coordinates: [[lon1, lat1], [lon2, lat2]], language: 'fr', instructions: false, options: {} };
+            if (avoidPolygon) body.options.avoid_polygons = avoidPolygon.geometry;
+            log('Requête ORS\n→ avoid_polygons present : '+!!avoidPolygon);
+
             fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
                 method: 'POST',
                 headers: { 'Accept': 'application/json, application/geo+json', 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
@@ -305,8 +301,9 @@
                 if (addrRouteLayer) map.removeLayer(addrRouteLayer);
                 addrRouteLayer = L.geoJSON(geojson, { style: { color: '#333', weight: 4, opacity: 0.8 } }).addTo(map);
                 map.fitBounds(addrRouteLayer.getBounds(), { padding: [20,20] });
+                log('Itinéraire trouvé ('+Math.round(data.routes[0].summary.distance/100)/10+' km)');
             })
-            .catch(err => alert(err));
+            .catch(err => { log('Échec itinéraire : '+err); alert(err); });
         }
     </script>
 </body>
