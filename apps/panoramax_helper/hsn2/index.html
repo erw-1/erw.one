@@ -227,7 +227,7 @@
         }
 
         function routeToAddress(destination) {
-            if (currentCoords.length === 0) { alert('Démarrez d'abord le suivi pour obtenir votre position.'); return; }
+            if (currentCoords.length === 0) { alert('Démarrez d\'abord le suivi pour obtenir votre position.'); return; }
             const [lat1, lon1] = currentCoords[currentCoords.length - 1];
             const [lat2, lon2] = destination;
             const body = { coordinates: [[lon1, lat1], [lon2, lat2]], language: 'fr', instructions: false };
