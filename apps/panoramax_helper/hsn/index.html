@@ -125,6 +125,7 @@
             if (currentLine) { currentLine.setStyle({color:'green'}); }
             if (currentCoords.length > 1) { exportGeoJSON(currentCoords); }
             currentCoords = []; currentLine = null;
+            clickRotateArrow();
             clickRotateArrow(); // désactive / remet le cap à zéro
         }
 
