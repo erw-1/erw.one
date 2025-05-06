@@ -161,13 +161,13 @@
         function onPos(pos) {
             const latlng = [pos.coords.latitude, pos.coords.longitude];
             currentCoords.push(latlng);
-            currentLine.setLatLngs(currentCoords);
+            if (currentLine) currentLine.setLatLngs(currentCoords);
             map.panTo(latlng, { animate:false });
         }
 
         function onGeoError(err) {
             console.error(err);
-            alert('Erreur géoloc : ' + err.message);
+            alert('Erreur géoloc\u202f: ' + err.message);
         }
 
         function stopTracking() {
@@ -204,7 +204,7 @@
         let addrRouteLayer = null;
 
         function geocodeORS(query) {
-            const url = https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)};
+            const url = `https://api.openrouteservice.org/geocode/autocomplete?api_key=${ORS_API_KEY}&text=${encodeURIComponent(query)}`;
             return fetch(url)
                 .then(r => r.ok ? r.json() : Promise.reject('Erreur géocodage'))
                 .then(data => (data.features || []).map(f => ({ label: f.properties.label, coords: [f.geometry.coordinates[1], f.geometry.coordinates[0]] })));
@@ -248,26 +248,66 @@
             return coords;
         }
 
+        // ------------------------------------------------------------------
+        // Itinéraire : version sans alerte, déclenche tracking automatique
+        // ------------------------------------------------------------------
         function routeToAddress(destination) {
-            if (currentCoords.length === 0) { alert('Démarrez d\'abord le suivi pour obtenir votre position.'); return; }
-            const [lat1, lon1] = currentCoords[currentCoords.length - 1];
             const [lat2, lon2] = destination;
-            const body = { coordinates: [[lon1, lat1], [lon2, lat2]], language: 'fr', instructions: false };
-            fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
-                method: 'POST',
-                headers: { 'Accept': 'application/json, application/geo+json', 'Authorization': ORS_API_KEY, 'Content-Type': 'application/json' },
-                body: JSON.stringify(body)
-            })
-            .then(r => r.ok ? r.json() : Promise.reject('Route non disponible'))
-            .then(data => {
-                const coords = decodePolyline(data.routes[0].geometry);
-                const geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates: coords.map(([la,lo]) => [lo,la]) } };
-                if (addrRouteLayer) map.removeLayer(addrRouteLayer);
-                addrRouteLayer = L.geoJSON(geojson, { style: { color: '#333', weight: 4, opacity: 0.8 } }).addTo(map);
-                map.fitBounds(addrRouteLayer.getBounds(), { padding: [20,20] });
-            })
-            .catch(err => alert(err));
+
+            // 1. sous‑fonction qui appelle ORS
+            function requestRoute(lat1, lon1) {
+                const body = {
+                    coordinates: [[lon1, lat1], [lon2, lat2]],
+                    language: 'fr',
+                    instructions: false
+                };
+                fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json, application/geo+json',
+                        'Authorization': ORS_API_KEY,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(body)
+                })
+                .then(r => r.ok ? r.json() : Promise.reject('Route non disponible'))
+                .then(data => {
+                    const coords = decodePolyline(data.routes[0].geometry);
+                    const geojson = {
+                        type: 'Feature',
+                        geometry: { type: 'LineString', coordinates: coords.map(([la, lo]) => [lo, la]) }
+                    };
+                    if (addrRouteLayer) map.removeLayer(addrRouteLayer);
+                    addrRouteLayer = L.geoJSON(geojson, { style: { color: '#333', weight: 4, opacity: 0.8 } }).addTo(map);
+                    map.fitBounds(addrRouteLayer.getBounds(), { padding: [20, 20] });
+                })
+                .catch(err => alert(err));
+            }
+
+            // 2. On a déjà des coordonner – on trace tout de suite
+            if (currentCoords.length) {
+                const [lat1, lon1] = currentCoords[currentCoords.length - 1];
+                requestRoute(lat1, lon1);
+                return;
+            }
+
+            // 3. Pas encore de point : on récupère un point ponctuel puis on lance le tracking
+            navigator.geolocation.getCurrentPosition(
+                pos => {
+                    const { latitude: lat1, longitude: lon1 } = pos.coords;
+                    if (!isTracking) startTracking();
+                    currentCoords.push([lat1, lon1]);
+                    if (currentLine) currentLine.setLatLngs(currentCoords);
+                    requestRoute(lat1, lon1);
+                },
+                onGeoError,
+                { enableHighAccuracy: true, timeout: 20000 }
+            );
+
+            // On s'assure de démarrer le tracking de toute manière
+            if (!isTracking) startTracking();
         }
+
     </script>
 </body>
 </html>
