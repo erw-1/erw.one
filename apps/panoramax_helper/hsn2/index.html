@@ -92,7 +92,14 @@
         map.createPane('track'); map.getPane('track').style.zIndex=650;
 
         // Couche Panoramax (restera sous nos tracés)
-        (window.VectorTileLayer||window.vectorTileLayer||L.vectorTileLayer)?.(panoramaxURL,{filter:f=>f?.type===2,style:{color:'red',weight:3,opacity:1},maxDetailZoom:15}).addTo(map)?.once('load',e=>{const b=e.target.getBounds?.();b?.isValid?.()&&map.fitBounds(b);});
+        (window.VectorTileLayer||window.vectorTileLayer||L.vectorTileLayer)?.(panoramaxURL,{filter:f=>f?.type===2,style:{color:'red',weight:3,opacity:1},maxDetailZoom:15}).addTo(map)?.once('load',e=>{
+            const b=e.target.getBounds?.();
+            b?.isValid?.()&&map.fitBounds(b);
+            // S'assurer d'un zoom minimum de 16 au premier affichage
+            if(map.getZoom()<16){
+                map.setZoom(16);
+            }
+        });
 
         /* -------------------------------------------------------------- */
         /* 3. Tracking GPS + recalcul itinéraire                           */
@@ -133,7 +140,16 @@
             currentCoords=[];currentLine=null;routeLayer=null;destCoords=null;lastRouteOrigin=null;
             navigator.vibrate?.([15]);
         }
-        const onPos=({coords:{latitude,longitude}})=>{const ll=[latitude,longitude];currentCoords.push(ll);currentLine?.setLatLngs(currentCoords);map.panTo(ll,{animate:false})};
+        const onPos=({coords:{latitude,longitude}})=>{
+            const ll=[latitude,longitude];
+            currentCoords.push(ll);
+            currentLine?.setLatLngs(currentCoords);
+            // Recentrage uniquement lors de la première position (zoom 16),
+            // les recentrages suivants seront gérés par drawRoute (toutes les ROUTE_REFRESH)
+            if(currentCoords.length===1){
+                map.setView(ll,16);
+            }
+        };
         const onGeoError=e=>alert('Erreur géoloc : '+e.message);
 
         function exportGeoJSON(coords){
