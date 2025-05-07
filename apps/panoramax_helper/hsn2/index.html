@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Suivi GPS – Leaflet</title>
+    <title>Aide Panoramax HSN</title>
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -16,13 +16,13 @@
         *{font-family:'Poppins',sans-serif}
 
         /* Zone de recherche */
-        #search-container{width:320px;position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(255,255,255,.5);backdrop-filter:blur(5px);border-radius:4px;padding:.25rem .5rem}
+        #search-container{width:320px;position:fixed;top:1rem;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(255,255,255,.5);backdrop-filter:blur(5px);border-radius:4px;}
         #addressInput{width:313px;font-size:1.2rem;border-radius:4px}
         #addressSuggestions{list-style:none;margin:2px 0 0;padding:0}
         #addressSuggestions li{border-radius:4px;margin-bottom:1px;background:rgba(255,255,255,.5);border:1px solid rgba(0,0,0,.5);cursor:pointer;padding:2px 4px}
 
         /* Bouton de suivi GPS */
-        #trackButton{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);z-index:1000;background:#fff;border:2px solid #666;border-radius:4px;padding:.5rem 1rem;font-size:4rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+        #trackButton{position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);z-index:1000;background:#fff;border:2px solid #666;border-radius:4px;padding:.5rem 1rem;font-size:2rem;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 
         .leaflet-control-attribution.leaflet-control{display:none}
 
@@ -49,8 +49,8 @@
 
     <!-- Option export -->
     <div id="options">
-        <input type="checkbox" id="exportCheckbox" checked>
-        <label for="exportCheckbox">Exporter en GeoJSON à la fin</label>
+        <input type="checkbox" id="exportCheckbox">
+        <label for="exportCheckbox">Télécharger la trace</label>
     </div>
 
     <!-- Carte -->
