@@ -1,0 +1,23 @@
+{
+  "presentation": {
+    "title": "Survey on GIS Projects",
+    "description": "As part of my geomatics research thesis, I’m collecting feedback on public GIS projects (successful, abandoned, or restarted). The survey is anonymous, takes 6 minutes, and a public map will be published. Thanks for contributing!",
+    "link": "https://limesurvey.example.com/123456",
+    "linkLabel": "Take the survey",
+    "boostText": "Shares, comments or bumps would help a lot!"
+  },
+  "posts": [
+    {
+      "label": "LinkedIn Post (EN)",
+      "url": "https://www.linkedin.com/posts/erwanvinot_gis-project-survey-456/"
+    },
+    {
+      "label": "Reddit Post - r/gis",
+      "url": "https://www.reddit.com/r/gis/comments/abcd/gis_project_survey/"
+    },
+    {
+      "label": "Mastodon Post (EN)",
+      "url": "https://mastodon.social/@erw1/987654321"
+    }
+  ]
+}
