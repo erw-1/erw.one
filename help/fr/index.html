@@ -51,6 +51,10 @@
       font-weight: bold;
       margin-bottom: 2rem;
     }
+    h2 {
+      color: white;
+      margin-top: 2rem;
+    }
     ul {
       list-style: none;
       padding: 0;
@@ -73,19 +77,24 @@
     <div class="card">
       <h1 id="title"></h1>
       <p id="description"></p>
-      <a id="surveyLink" class="button" href="#" target="_blank">Accéder à l'enquête</a>
-      <h2>Des reposts, des commentaires ou des bumps m'aideraient beaucoup !</h2>
+      <a id="surveyLink" class="button" href="#" target="_blank"></a>
+      <h2 id="boostTitle"></h2>
       <ul id="posts"></ul>
     </div>
   </div>
 
   <script>
-    fetch('enquete.json')
+    const lang = window.location.hash === "#en" ? "en.json" : "fr.json";
+
+    fetch(lang)
       .then(response => response.json())
       .then(data => {
         document.getElementById('title').textContent = data.presentation.title;
         document.getElementById('description').textContent = data.presentation.description;
-        document.getElementById('surveyLink').href = data.presentation.link;
+        const link = document.getElementById('surveyLink');
+        link.href = data.presentation.link;
+        link.textContent = data.presentation.linkLabel;
+        document.getElementById('boostTitle').textContent = data.presentation.boostText;
 
         const list = document.getElementById('posts');
         data.posts.forEach(post => {
