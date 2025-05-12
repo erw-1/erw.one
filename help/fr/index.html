@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enquête SIG</title>
+  <style>
+    :root {
+      --bg: #1e1e1e;
+      --text: #f0f0f0;
+      --card: #2a2a2a;
+      --accent: #4caf50;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 700px;
+      padding: 2rem;
+      text-align: center;
+    }
+    .card {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+    h1 {
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+    p {
+      line-height: 1.6;
+      margin-bottom: 2rem;
+    }
+    a.button {
+      display: inline-block;
+      background: var(--accent);
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-bottom: 2rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 1rem 0;
+    }
+    a.link {
+      color: var(--accent);
+      text-decoration: none;
+      transition: 0.3s;
+    }
+    a.link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <h1 id="title"></h1>
+      <p id="description"></p>
+      <a id="surveyLink" class="button" href="#" target="_blank">Accéder à l'enquête</a>
+      <h2>Où l'enquête a été partagée :</h2>
+      <ul id="posts"></ul>
+    </div>
+  </div>
+
+  <script>
+    fetch('enquete.json')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('title').textContent = data.presentation.title;
+        document.getElementById('description').textContent = data.presentation.description;
+        document.getElementById('surveyLink').href = data.presentation.link;
+
+        const list = document.getElementById('posts');
+        data.posts.forEach(post => {
+          const li = document.createElement('li');
+          const a = document.createElement('a');
+          a.href = post.url;
+          a.textContent = post.label;
+          a.target = '_blank';
+          a.className = 'link';
+          li.appendChild(a);
+          list.appendChild(li);
+        });
+      })
+      .catch(err => console.error('Erreur de chargement du JSON :', err));
+  </script>
+</body>
+</html>
