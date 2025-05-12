@@ -1,7 +1,7 @@
 {
   "presentation": {
     "title": "Enquête sur les projets SIG",
-    "description": "Dans le cadre de mon mémoire de recherche en géomatique, je collecte des retours d'expérience sur des projets SIG. L'enquête est anonyme, dure 6 minutes, s'adresse aux professionnels du SIG et une carte des résultats sera publiée. Merci pour votre contribution !",
+    "description": "Dans le cadre de mon mémoire de recherche en géomatique, je collecte des retours d'expérience sur des projets SIG. L'enquête est anonyme, dure 6 minutes, s'adresse aux professionnels du SIG. Merci pour votre contribution, une carte des résultats sera publiée !",
     "link": "https://limesurvey.example.com/123456",
     "linkLabel": "Accéder à l'enquête",
     "boostText": "Des reposts, des commentaires ou des bumps m'aideraient beaucoup !"
