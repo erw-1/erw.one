@@ -109,7 +109,7 @@
             if(!navigator.geolocation) return alert('Géolocalisation non supportée');
             isTracking=true;trackBtn.textContent='Terminer';currentCoords=[];
             currentLine=L.polyline([], {pane:'track',color:'blue',weight:LINE_WEIGHT}).addTo(map);
-            watchId=navigator.geolocation.watchPosition(onPos,{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
+            watchId=navigator.geolocation.watchPosition(onPos,onGeoError,{enableHighAccuracy:true,maximumAge:5000,timeout:20000});
             // démarrage du timer de recalcul
             routeTimer && clearInterval(routeTimer);
             routeTimer=setInterval(()=>{
@@ -143,6 +143,7 @@
                 map.setView(ll,16);
             }
         };
+        const onGeoError=e=>console.log('Erreur géoloc : '+e.message);
 
         function exportGeoJSON(coords){
             const blob=new Blob([JSON.stringify({type:'FeatureCollection',features:[{type:'Feature',properties:{finishedAt:new Date().toISOString()},geometry:{type:'LineString',coordinates:coords.map(([lat,lon])=>[lon,lat])}}]})],{type:'application/geo+json'});
@@ -179,7 +180,7 @@
                 routeLayer?.remove();
                 routeLayer=L.geoJSON({type:'Feature',geometry:{type:'LineString',coordinates:coords}},{pane:'route',style:{color:'#666',weight:4,opacity:.8,dashArray:'6 8'}}).addTo(map);
                 map.fitBounds(routeLayer.getBounds(),{padding:[20,20]});
-            }catch(e){}finally{spinner.hide();}
+            }catch(e){console.log(e.message)}finally{spinner.hide();}
         }
         
         async function routeToAddress([lat2,lon2]){
@@ -195,7 +196,7 @@
                 currentCoords.push([lat1,lon1]);currentLine?.setLatLngs(currentCoords);
                 lastRouteOrigin=[lat1,lon1];
                 await drawRoute(lat1,lon1,lat2,lon2);
-            },{enableHighAccuracy:true,timeout:20000});
+            },onGeoError,{enableHighAccuracy:true,timeout:20000});
             !isTracking&&startTracking();
         }
     })();
