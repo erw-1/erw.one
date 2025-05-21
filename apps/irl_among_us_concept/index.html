@@ -1,27 +1,35 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-    <title>Vector Tiles in Leaflet JS</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
-    <link href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css" rel="stylesheet" />
-    <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v4.0.2/leaflet-maptilersdk.umd.min.js"></script>
-    <style>
-      #map {position: absolute; top: 0; right: 0; bottom: 0; left: 0;}
-    </style>
-  </head>
-  <body>
-    <div id="map"></div>
-    <script>
-      const key = 'DtDN2wXXOhEt4LdQmFMi';
-      const styleAmongus = '0196f288-9a46-7cfe-9c43-b6693619c7e9';
-      const map = L.map('map').setView([0, 0], 1);
-      const mtLayer = L.maptiler.maptilerLayer({
-        apiKey: key,
-        style: L.maptiler.styleAmongus, //optional
-      }).addTo(map);
-    </script>
-  </body>
+<head>
+  <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
+  <title>Vector Tiles in Leaflet JS</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- MapTiler SDK & Leaflet plugin -->
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+  <link  href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css" rel="stylesheet"/>
+  <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v4.0.2/leaflet-maptilersdk.umd.min.js"></script>
+
+  <style>
+    #map{position:absolute;top:0;right:0;bottom:0;left:0;}
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+  const key          = 'DtDN2wXXOhEt4LdQmFMi';                     // ← key
+  const styleAmongus = '0196f288-9a46-7cfe-9c43-b6693619c7e9';     // ← custom style ID
+  const map          = L.map('map').setView([0,0], 1);
+
+  // Option 1 – just give the short style ID
+  L.maptiler.maptilerLayer({
+    apiKey: key,
+    style : styleAmongus
+  }).addTo(map);
+
+</script>
+</body>
 </html>
