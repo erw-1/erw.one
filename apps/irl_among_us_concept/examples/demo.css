@@ -125,3 +125,7 @@
     pointer-events: auto;
     cursor: pointer;
 }
+
+.leaflet-bar,.leaflet-control-attribution,.leaflet-touch-zoom > a > img {
+    display: none;
+}
