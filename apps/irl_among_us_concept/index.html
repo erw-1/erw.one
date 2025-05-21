@@ -2,13 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>MapLibre Basemap Example</title>
+    <title>MapLibre Basemap – GPS & Heading</title>
     <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
     <!-- MapLibre GL JS stylesheet -->
-    <link
-      href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css"
-      rel="stylesheet"
-    />
+    <link href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css" rel="stylesheet" />
     <style>
       /* Full‑screen map container */
       html,
@@ -31,18 +28,47 @@
     <!-- MapLibre GL JS library -->
     <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
     <script>
-      // Initialize the map
+      // Initialize the map with a temporary center; we'll replace it with GPS shortly
       const map = new maplibregl.Map({
         container: "map",
         style:
           "https://api.maptiler.com/maps/0196f288-9a46-7cfe-9c43-b6693619c7e9/style.json?key=DtDN2wXXOhEt4LdQmFMi",
-        center: [2.3522, 48.8566], // Paris (lon, lat)
-        zoom: 5,
+        center: [0, 0], // placeholder until geolocation succeeds
+        zoom: 2,
         attributionControl: true,
       });
 
       // Add zoom / rotation controls
       map.addControl(new maplibregl.NavigationControl(), "top-right");
+
+      // Add geolocation control with GPS tracking and device heading display
+      const geolocate = new maplibregl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: true,   // keeps the camera following the user
+        showUserHeading: true,     // draws device orientation arrow (supported browsers only)
+        fitBoundsOptions: { maxZoom: 17 },
+      });
+      map.addControl(geolocate, "top-right");
+
+      // On map load, attempt to center on the user's current GPS position once
+      map.once("load", () => {
+        if ("geolocation" in navigator) {
+          navigator.geolocation.getCurrentPosition(
+            ({ coords }) => {
+              const { longitude, latitude } = coords;
+              map.setCenter([longitude, latitude]);
+              map.setZoom(14);
+            },
+            (error) => console.error("Geolocation error:", error),
+            { enableHighAccuracy: true }
+          );
+        } else {
+          console.warn("Geolocation is not supported by this browser.");
+        }
+      });
+
+      // Optionally trigger continuous tracking immediately after map and control are ready
+      geolocate.on("ready", () => geolocate.trigger());
     </script>
   </body>
 </html>
