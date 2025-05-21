@@ -13,6 +13,11 @@
   <link  href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css" rel="stylesheet"/>
   <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v4.0.2/leaflet-maptilersdk.umd.min.js"></script>
 
+  <!-- leaflet-simple-locate plugin -->
+  <script src="https://raw.githubusercontent.com/mfhsieh/leaflet-simple-locate/refs/heads/main/src/leaflet-simple-locate.js"></script>
+  <link  href="https://raw.githubusercontent.com/mfhsieh/leaflet-simple-locate/refs/heads/main/examples/demo.css" rel="stylesheet"/>
+
+
   <style>
     #map{position:absolute;top:0;right:0;bottom:0;left:0;}
   </style>
@@ -20,15 +25,57 @@
 <body>
 <div id="map"></div>
 <script>
-  const key          = 'DtDN2wXXOhEt4LdQmFMi';                     // ← key
-  const styleAmongus = '0196f288-9a46-7cfe-9c43-b6693619c7e9';     // ← custom style ID
+  function set_viewport() {
+      document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px");
+  }
+
+  set_viewport();
+  window.addEventListener("resize", set_viewport);
+  
+  const key          = 'DtDN2wXXOhEt4LdQmFMi';
+  const styleAmongus = '0196f288-9a46-7cfe-9c43-b6693619c7e9';
   const map          = L.map('map').setView([0,0], 1);
 
-  // Option 1 – just give the short style ID
   L.maptiler.maptilerLayer({
     apiKey: key,
     style : styleAmongus
   }).addTo(map);
+
+  // leaflet-simple-locate
+  const control = new L.Control.SimpleLocate({
+            position: "topleft",
+            className: "button-locate",
+            afterClick: (result) => {
+                console.log("afterClick", result);
+                if (!result.geolocation) console.log("Geolocation Error");
+                if (!result.orientation) console.log("Orientation Error");
+            },
+            afterMarkerAdd: () => {
+                console.log("afterMarkerAdded");
+                const elem = document.getElementById("leaflet-simple-locate-icon-spot");
+                if (elem) {
+                    elem.addEventListener("click", (event) => {
+                        const latlng = control.getLatLng();
+                        const latlng_str = `geolocation: [${Math.round(latlng.lat * 100000) / 100000}, ${Math.round(latlng.lng * 100000) / 100000}]`;
+
+                        const accuracy = control.getAccuracy();
+                        const accuracy_str = `accuracy: ${Math.round(accuracy)} meter`;
+
+                        const angle = control.getAngle();
+                        const angle_str = `orientation: ${Math.round(angle)} degree`;
+
+                        L.popup()
+                            .setLatLng(latlng)
+                            .setContent(`<p style="margin: 0.25rem 0 0.25rem 0">${latlng_str}</p><p style="margin: 0.25rem 0 0.25rem 0">${accuracy_str}</p><p style="margin: 0.25rem 0 0.25rem 0">${angle_str}</p>`)
+                            .openOn(map);
+
+                        event.stopPropagation();
+                        event.preventDefault();
+                    });
+                }
+            },
+        }).addTo(map);
+  L.DomEvent.on(window, "ondeviceorientationabsolute" in window ? "deviceorientationabsolute" : "deviceorientation", (event) => console.log(event));
 
 </script>
 </body>
