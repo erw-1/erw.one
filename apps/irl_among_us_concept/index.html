@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>MapLibre Basemap Example</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <!-- MapLibre GL JS stylesheet -->
+    <link
+      href="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* Full‑screen map container */
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+      }
+
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <!-- MapLibre GL JS library -->
+    <script src="https://unpkg.com/maplibre-gl@3.6.1/dist/maplibre-gl.js"></script>
+    <script>
+      // Initialize the map
+      const map = new maplibregl.Map({
+        container: "map",
+        style:
+          "https://api.maptiler.com/maps/0196f288-9a46-7cfe-9c43-b6693619c7e9/style.json?key=DtDN2wXXOhEt4LdQmFMi",
+        center: [2.3522, 48.8566], // Paris (lon, lat)
+        zoom: 5,
+        attributionControl: true,
+      });
+
+      // Add zoom / rotation controls
+      map.addControl(new maplibregl.NavigationControl(), "top-right");
+    </script>
+  </body>
+</html>
