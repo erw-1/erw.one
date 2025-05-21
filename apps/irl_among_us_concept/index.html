@@ -1,40 +1,39 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<title>Locate the user</title>
-<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-<link href="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.css" rel="stylesheet">
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.12.0/mapbox-gl.js"></script>
-<style>
-  body { margin: 0; padding: 0; }
-  #map { position: absolute; top: 0; bottom: 0; width: 100%; }
-</style>
+  <meta charset="utf-8" />
+  <title>Leaflet + MapTiler custom style</title>
+
+  <!-- Leaflet core -->
+  <link rel="stylesheet"
+        href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+
+  <!-- MapTiler SDK (built on MapLibre GL) -->
+  <link rel="stylesheet"
+        href="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.0/maptiler-sdk.css" />
+  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.0.0/maptiler-sdk.umd.min.js"></script>
+
+  <!-- Leaflet plugin that lets MapTiler vector maps appear inside Leaflet -->
+  <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v3.0.0/leaflet-maptilersdk.js"></script>
+
+  <style>
+    html,body,#map{height:100%;margin:0;}
+  </style>
 </head>
+
 <body>
-<div id="map"></div>
-<script>
-  // A Mapbox access token is still required by Mapbox GL JS even if the
-  // basemap comes from another provider. Fill yours in below (it isn’t used
-  // for the MapTiler tiles themselves).
-  mapboxgl.accessToken = 'YOUR_MAPBOX_ACCESS_TOKEN';
+  <div id="map"></div>
 
-  const map = new mapboxgl.Map({
-    container: 'map',                         // container ID
-    style: 'https://api.maptiler.com/maps/0196f288-9a46-7cfe-9c43-b6693619c7e9/style.json?key=DtDN2wXXOhEt4LdQmFMi',
-                                              // MapTiler style URL
-    center: [-24, 42],                        // starting center [lng, lat]
-    zoom: 1                                   // starting zoom
-  });
+  <script>
+    // Start a Leaflet map – pick any centre/zoom you like
+    const map = L.map('map').setView([51.5, -0.12], 10);
 
-  // Add geolocate control to the map.
-  map.addControl(
-    new mapboxgl.GeolocateControl({
-      positionOptions: { enableHighAccuracy: true },
-      trackUserLocation: true,
-      showUserHeading: true
-    })
-  );
-</script>
+    // Add your MapTiler style as a layer
+    L.maptiler.maptilerLayer({
+      apiKey : 'DtDN2wXXOhEt4LdQmFMi',                       // same key you sent
+      style  : 'https://api.maptiler.com/maps/0196f288-9a46-7cfe-9c43-b6693619c7e9/style.json'
+    }).addTo(map);
+  </script>
 </body>
 </html>
