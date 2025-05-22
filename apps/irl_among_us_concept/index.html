@@ -47,6 +47,12 @@
       document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px");
   }
 
+  function clickRotateArrow() {
+      // Clique virtuellement sur le bouton flèche pour recentrer le cap
+      const arrow = document.querySelector('.leaflet-simple-locate.button-locate');
+      if (arrow) { arrow.click(); }
+}
+
   set_viewport();
   window.addEventListener("resize", set_viewport);
   
