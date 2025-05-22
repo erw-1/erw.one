@@ -20,10 +20,28 @@
 
   <style>
     #map{position:absolute;top:0;right:0;bottom:0;left:0;}
+    .corner-icon{
+      position:absolute;          /* se cale par rapport au conteneur #map  */
+      width:60px;                 /* dimension à ajuster */
+      height:auto;
+      z-index:1001;               /* au-dessus de Leaflet */
+      cursor:pointer;
+      user-select:none;
+    }
   </style>
 </head>
 <body>
-<div id="map"></div>
+<div id="map">
+    <!-- 3 images directement dans le conteneur -->
+  <img id="btn-quit"   class="corner-icon" style="top:12px;left:12px"
+       src="images/top_left.png"   alt="Quit">
+  
+  <img id="btn-gear"   class="corner-icon" style="top:12px;right:12px"
+       src="images/top_right.png"  alt="Options">
+  
+  <img id="btn-report" class="corner-icon" style="bottom:12px;right:12px"
+       src="images/bottom_right.png" alt="Report / Use">
+</div>
 <script>
   function set_viewport() {
       document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px");
