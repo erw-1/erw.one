@@ -1,0 +1,16 @@
+{
+	"type" : "FeatureCollection",
+	"name" : "hubs",
+	"features" : [
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ -0.0127950967, 51.5380806834 ]
+			},
+			"properties" : {
+				"id" : 1
+			}
+		}
+	]
+}
