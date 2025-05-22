@@ -26,8 +26,6 @@
   <img id="btn-quit"   class="corner-icon" style="top:12px;left:12px"  src="images/top_left.png"   alt="Quit">
   <img id="btn-gear"   class="corner-icon" style="top:12px;right:12px" src="images/top_right.png"  alt="Options">
   <img id="btn-report" class="corner-icon" style="bottom:12px;right:12px" src="images/bottom_right.png" alt="Report / Use">
-  <!-- NEW BUTTON -->
-  <img id="btn-find-playzone" class="corner-icon" style="bottom:12px;left:12px" src="images/bottom_left.png" alt="Find Closest Playzone">
 </div>
 
 <!-- Leaflet JS & Plugins -->
@@ -39,7 +37,6 @@
 <script>
 (function(){
   /* ================== CONFIG ================== */
-  const ORS_KEY = '5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d';
   const MAPTILER_KEY = 'DtDN2wXXOhEt4LdQmFMi';
   const MAP_STYLE_ID = '0196f288-9a46-7cfe-9c43-b6693619c7e9';
 
@@ -58,21 +55,8 @@
     maxDetailZoom: 15
   }).addTo(map);
 
-  /* ============= 3. Locate control ============== */
-  const locateCtl = new L.Control.SimpleLocate({
-    position : 'topleft',
-    className: 'button-locate'
-  }).addTo(map);
-
-  /* Helper kept for backward‑compat */
-  function clickRotateArrow(){
-    const arrow = document.querySelector('.leaflet-simple-locate.button-locate');
-    if(arrow){ arrow.click(); }
-  }
-  window.clickRotateArrow = clickRotateArrow;
-
   /* ============= 4. GeoJSON layers ============== */
-  let hubsLayer, playzonesLayer, targetHubLatLng, targetPlayzoneLayer, routeLayer;
+  let hubsLayer, playzonesLayer;
 
   Promise.all([
     fetch('data/hubs.geojson').then(r=>r.json()),
@@ -106,80 +90,6 @@
     // Initial view
     map.fitBounds(L.featureGroup([hubsLayer, playzonesLayer]).getBounds(), {padding:[20,20]});
   });
-
-  /* ============= 5. Main action ================= */
-  async function findClosestPlayzone(){
-    if(!targetHubLatLng || !targetPlayzoneLayer){
-      alert('Target playzone not loaded yet.');
-      return;
-    }
-
-    // 1️⃣  Trigger location
-    clickRotateArrow();
-
-    // 2️⃣  Wait for user position
-    const userLatLng = await waitForLocation();
-    if(!userLatLng){
-      alert('Could not retrieve your location.');
-      return;
-    }
-
-    // 3️⃣  Clear previous route (if any)
-    if(routeLayer){ map.removeLayer(routeLayer); }
-
-    // 4️⃣  Request ORS walking route
-    try{
-      const routeGeoJSON = await getRoute(userLatLng, targetHubLatLng);
-      routeLayer = L.geoJSON(routeGeoJSON, {style:{weight:4}}).addTo(map);
-    }catch(err){
-      console.error(err);
-      alert('OpenRouteService error – see console for details.');
-    }
-
-    // 5️⃣  Make sure highlighted playzone is visible
-    if(!map.hasLayer(targetPlayzoneLayer)){
-      targetPlayzoneLayer.addTo(map);
-    }
-
-    // 6️⃣  Zoom to everything
-    const group = L.featureGroup([targetPlayzoneLayer, routeLayer]);
-    map.fitBounds(group.getBounds(), {padding:[20,20]});
-  }
-
-  // 📡 Helper – wait until locateCtl has a LatLng
-  function waitForLocation(){
-    return new Promise(resolve=>{
-      const ready = locateCtl.getLatLng && locateCtl.getLatLng();
-      if(ready){ return resolve(ready); }
-      const start = Date.now();
-      const timer = setInterval(()=>{
-        const ll = locateCtl.getLatLng && locateCtl.getLatLng();
-        if(ll){ clearInterval(timer); resolve(ll); }
-        else if(Date.now()-start>10000){ clearInterval(timer); resolve(null); }
-      },500);
-    });
-  }
-
-  // � route helper
-  async function getRoute(fromLatLng, toLatLng){
-    const url = 'https://api.openrouteservice.org/v2/directions/foot-walking/geojson';
-    const body = {
-      coordinates:[
-        [fromLatLng.lng, fromLatLng.lat],
-        [toLatLng.lng,   toLatLng.lat]
-      ]
-    };
-    const res = await fetch(url,{
-      method :'POST',
-      headers:{
-        'Authorization': ORS_KEY,
-        'Content-Type' : 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    if(!res.ok){ throw new Error('ORS API error '+res.status); }
-    return res.json();
-  }
 
   // 🔘 Wire UI button
   document.getElementById('btn-find-playzone').addEventListener('click', findClosestPlayzone);
