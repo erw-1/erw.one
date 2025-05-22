@@ -2,29 +2,20 @@
 <html>
 <head>
   <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no"/>
-  <title>Vector Tiles in Leaflet JS</title>
-
-  <!-- Leaflet -->
+  <title>Find Closest Playzone Demo</title>
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- MapTiler SDK & Leaflet plugin -->
-  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
-  <link  href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css" rel="stylesheet"/>
-  <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v4.0.2/leaflet-maptilersdk.umd.min.js"></script>
-
-  <!-- leaflet-simple-locate plugin -->
-  <script src="dist/leaflet-simple-locate.min.js"></script>
-  <link rel="stylesheet" href="examples/demo.css" />
-
-
+  <!-- MapTiler CSS -->
+  <link rel="stylesheet" href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css"/>
+  <!-- Simple Locate CSS (demo stylesheet path) -->
+  <link rel="stylesheet" href="examples/demo.css"/>
   <style>
     #map{position:absolute;top:0;right:0;bottom:0;left:0;}
     .corner-icon{
-      position:absolute;          /* se cale par rapport au conteneur #map  */
-      width:60px;                 /* dimension à ajuster */
+      position:absolute;
+      width:60px;
       height:auto;
-      z-index:1001;               /* au-dessus de Leaflet */
+      z-index:1001;
       cursor:pointer;
       user-select:none;
     }
@@ -32,196 +23,167 @@
 </head>
 <body>
 <div id="map">
-    <!-- 3 images directement dans le conteneur -->
-  <img id="btn-quit"   class="corner-icon" style="top:12px;left:12px"
-       src="images/top_left.png"   alt="Quit">
-  
-  <img id="btn-gear"   class="corner-icon" style="top:12px;right:12px"
-       src="images/top_right.png"  alt="Options">
-  
-  <img id="btn-report" class="corner-icon" style="bottom:12px;right:12px"
-       src="images/bottom_right.png" alt="Report / Use">
+  <img id="btn-quit"   class="corner-icon" style="top:12px;left:12px"  src="images/top_left.png"   alt="Quit">
+  <img id="btn-gear"   class="corner-icon" style="top:12px;right:12px" src="images/top_right.png"  alt="Options">
+  <img id="btn-report" class="corner-icon" style="bottom:12px;right:12px" src="images/bottom_right.png" alt="Report / Use">
+  <!-- NEW BUTTON -->
+  <img id="btn-find-playzone" class="corner-icon" style="bottom:12px;left:12px" src="images/bottom_left.png" alt="Find Closest Playzone">
 </div>
+
+<!-- Leaflet JS & Plugins -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
+<script src="https://cdn.maptiler.com/leaflet-maptilersdk/v4.0.2/leaflet-maptilersdk.umd.min.js"></script>
+<script src="dist/leaflet-simple-locate.min.js"></script>
+
 <script>
-  function set_viewport() {
-      document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px");
+(function(){
+  /* ================== CONFIG ================== */
+  const ORS_KEY = '5b3ce3597851110001cf624873a9f82e7dce4b46a1e049860a2c461d';
+  const MAPTILER_KEY = 'DtDN2wXXOhEt4LdQmFMi';
+  const MAP_STYLE_ID = '0196f288-9a46-7cfe-9c43-b6693619c7e9';
+
+  /* ============= 1. Viewport helper ============ */
+  function set_viewport(){
+    document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
   }
-
-  function clickRotateArrow() {
-      // Clique virtuellement sur le bouton flèche pour recentrer le cap
-      const arrow = document.querySelector('.leaflet-simple-locate.button-locate');
-      if (arrow) { arrow.click(); }
-}
-
   set_viewport();
-  window.addEventListener("resize", set_viewport);
-  
-  const key          = 'DtDN2wXXOhEt4LdQmFMi';
-  const styleAmongus = '0196f288-9a46-7cfe-9c43-b6693619c7e9';
-  const map          = L.map('map').setView([0,0], 1);
+  window.addEventListener('resize', set_viewport);
 
+  /* ============= 2. Base map ==================== */
+  const map = L.map('map').setView([0,0], 2);
   L.maptiler.maptilerLayer({
-    apiKey: key,
-    style : styleAmongus,
+    apiKey: MAPTILER_KEY,
+    style : MAP_STYLE_ID,
     maxDetailZoom: 15
   }).addTo(map);
 
-  // leaflet-simple-locate
-  const control = new L.Control.SimpleLocate({
-            position: "topleft",
-            className: "button-locate",
-            afterClick: (result) => {
-                console.log("afterClick", result);
-                if (!result.geolocation) console.log("Geolocation Error");
-                if (!result.orientation) console.log("Orientation Error");
-            },
-            afterMarkerAdd: () => {
-                console.log("afterMarkerAdded");
-                const elem = document.getElementById("leaflet-simple-locate-icon-spot");
-                if (elem) {
-                    elem.addEventListener("click", (event) => {
-                        const latlng = control.getLatLng();
-                        const latlng_str = `geolocation: [${Math.round(latlng.lat * 100000) / 100000}, ${Math.round(latlng.lng * 100000) / 100000}]`;
-
-                        const accuracy = control.getAccuracy();
-                        const accuracy_str = `accuracy: ${Math.round(accuracy)} meter`;
-
-                        const angle = control.getAngle();
-                        const angle_str = `orientation: ${Math.round(angle)} degree`;
-
-                        L.popup()
-                            .setLatLng(latlng)
-                            .setContent(`<p style="margin: 0.25rem 0 0.25rem 0">${latlng_str}</p><p style="margin: 0.25rem 0 0.25rem 0">${accuracy_str}</p><p style="margin: 0.25rem 0 0.25rem 0">${angle_str}</p>`)
-                            .openOn(map);
-
-                        event.stopPropagation();
-                        event.preventDefault();
-                    });
-                }
-            },
-        }).addTo(map);
-   JS – with hubs & playzones</title>
-
-  <!-- Leaflet -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <!-- MapTiler SDK & Leaflet plugin -->
-  <script src="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.umd.min.js"></script>
-  <link  href="https://cdn.maptiler.com/maptiler-sdk-js/v3.2.0/maptiler-sdk.css" rel="stylesheet"/>
-  <script src="https://cdn.maptiler.com/leaflet-maptilersdk/v4.0.2/leaflet-maptilersdk.umd.min.js"></script>
-
-  <!-- leaflet-simple-locate plugin -->
-  <!-- Make sure the path below is correct for your project structure -->
-  <script src="dist/leaflet-simple-locate.min.js"></script>
-  <link rel="stylesheet" href="examples/demo.css" />
-
-  <style>
-    #map{position:absolute;top:0;right:0;bottom:0;left:0;}
-  </style>
-</head>
-<body>
-<div id="map"></div>
-<script>
-  /**
-   * Helper to keep 100‑vh on mobile browsers 📱
-   */
-  function set_viewport() {
-      document.documentElement.style.setProperty("--vh", window.innerHeight * 0.01 + "px");
-  }
-  set_viewport();
-  window.addEventListener("resize", set_viewport);
-
-  /**
-   * 1. Base map (MapTiler)
-   */
-  const key          = "DtDN2wXXOhEt4LdQmFMi";            // 🔑 ← your MapTiler API key
-  const styleAmongus = "0196f288-9a46-7cfe-9c43-b6693619c7e9"; // custom style ID
-  const map          = L.map("map").setView([0,0], 2);
-
-  L.maptiler.maptilerLayer({
-    apiKey: key,
-    style : styleAmongus
-  }).addTo(map);
-
-  /**
-   * 2. Locate‑me control (leaflet‑simple‑locate)
-   */
+  /* ============= 3. Locate control ============== */
   const locateCtl = new L.Control.SimpleLocate({
-      position: "topleft",
-      className: "button-locate",
-      afterClick: (result) => {
-          if (!result.geolocation) console.warn("Geolocation Error");
-          if (!result.orientation) console.warn("Orientation Error");
-      },
-      afterMarkerAdd: () => {
-          const spot = document.getElementById("leaflet-simple-locate-icon-spot");
-          if (!spot) return;
-          spot.addEventListener("click", (e) => {
-              const latlng = locateCtl.getLatLng();
-              const accuracy = locateCtl.getAccuracy();
-              const angle = locateCtl.getAngle();
-              L.popup()
-                  .setLatLng(latlng)
-                  .setContent(`<p style="margin:0.25rem 0"><strong>Lat/Lng:</strong> ${latlng.lat.toFixed(5)}, ${latlng.lng.toFixed(5)}</p><p style="margin:0.25rem 0"><strong>Accuracy:</strong> ${Math.round(accuracy)} m</p><p style="margin:0.25rem 0"><strong>Orientation:</strong> ${Math.round(angle)}°</p>`)
-                  .openOn(map);
-              e.stopPropagation();
-              e.preventDefault();
-          });
-      },
+    position : 'topleft',
+    className: 'button-locate'
   }).addTo(map);
 
-  /**
-   * 3. GeoJSON layers
-   *    – hubs       : points (circle‑markers)
-   *    – playzones : polygons (styled fill)
-   */
+  /* Helper kept for backward‑compat */
+  function clickRotateArrow(){
+    const arrow = document.querySelector('.leaflet-simple-locate.button-locate');
+    if(arrow){ arrow.click(); }
+  }
+  window.clickRotateArrow = clickRotateArrow;
+
+  /* ============= 4. GeoJSON layers ============== */
+  let hubsLayer, playzonesLayer, targetHubLatLng, targetPlayzoneLayer, routeLayer;
+
   Promise.all([
-      fetch("data/hubs.geojson").then(r => r.json()),
-      fetch("data/playzones.geojson").then(r => r.json())
-  ]).then(([hubsData, playzonesData]) => {
+    fetch('data/hubs.geojson').then(r=>r.json()),
+    fetch('data/playzones.geojson').then(r=>r.json())
+  ]).then(([hubsData, playzonesData])=>{
+    // Hubs
+    hubsLayer = L.geoJSON(hubsData, {
+      pointToLayer: (_,latlng)=>L.circleMarker(latlng,{
+        radius:6, fillColor:'#ff3b3b', color:'#ffffff', weight:1, opacity:1, fillOpacity:0.9
+      })
+    }).addTo(map);
 
-      // Hubs – point layer
-      const hubsLayer = L.geoJSON(hubsData, {
-          pointToLayer: (feature, latlng) => L.circleMarker(latlng, {
-              radius: 6,
-              fillColor: "#ff3b3b",
-              color: "#ffffff",
-              weight: 1,
-              opacity: 1,
-              fillOpacity: 0.9
-          }),
-          onEachFeature: (feature, layer) => {
-              const props = feature.properties || {};
-              const html = Object.entries(props).map(([k,v]) => `<strong>${k}</strong>: ${v}`).join("<br/>");
-              if (html) layer.bindPopup(html);
-          }
-      }).addTo(map);
+    // Playzones
+    playzonesLayer = L.geoJSON(playzonesData, {
+      style:{color:'#3388ff', weight:2, opacity:1, fillOpacity:0.25}
+    }).addTo(map);
 
-      // Playzones – polygon layer
-      const playzonesLayer = L.geoJSON(playzonesData, {
-          style: {
-              color: "#3388ff",
-              weight: 2,
-              opacity: 1,
-              fillOpacity: 0.25
-          },
-          onEachFeature: (feature, layer) => {
-              const props = feature.properties || {};
-              const html = Object.entries(props).map(([k,v]) => `<strong>${k}</strong>: ${v}`).join("<br/>");
-              if (html) layer.bindPopup(html);
-          }
-      }).addTo(map);
+    // Pre‑select id = 1 features for the new tool
+    const hubFeature  = hubsData.features.find(f=>Number(f.properties.id)===1);
+    if(hubFeature){
+      const [lng,lat] = hubFeature.geometry.coordinates;
+      targetHubLatLng = L.latLng(lat,lng);
+    }
+    const playFeature = playzonesData.features.find(f=>Number(f.properties.id)===1);
+    if(playFeature){
+      targetPlayzoneLayer = L.geoJSON(playFeature, {
+        style:{color:'#ff7800', weight:3, opacity:0.8, fillOpacity:0.3}
+      });
+    }
 
-  // Zoom to the combined extent of both layers
-  const group = new L.FeatureGroup([hubsLayer, playzonesLayer]);
-      map.fitBounds(group.getBounds(), {padding:[20,20]});
-  }).catch(err => {
-      console.error("Could not load GeoJSON files:", err);
+    // Initial view
+    map.fitBounds(L.featureGroup([hubsLayer, playzonesLayer]).getBounds(), {padding:[20,20]});
   });
 
-  L.DomEvent.on(window, "ondeviceorientationabsolute" in window ? "deviceorientationabsolute" : "deviceorientation", (event) => console.log(event));
+  /* ============= 5. Main action ================= */
+  async function findClosestPlayzone(){
+    if(!targetHubLatLng || !targetPlayzoneLayer){
+      alert('Target playzone not loaded yet.');
+      return;
+    }
 
+    // 1️⃣  Trigger location
+    clickRotateArrow();
+
+    // 2️⃣  Wait for user position
+    const userLatLng = await waitForLocation();
+    if(!userLatLng){
+      alert('Could not retrieve your location.');
+      return;
+    }
+
+    // 3️⃣  Clear previous route (if any)
+    if(routeLayer){ map.removeLayer(routeLayer); }
+
+    // 4️⃣  Request ORS walking route
+    try{
+      const routeGeoJSON = await getRoute(userLatLng, targetHubLatLng);
+      routeLayer = L.geoJSON(routeGeoJSON, {style:{weight:4}}).addTo(map);
+    }catch(err){
+      console.error(err);
+      alert('OpenRouteService error – see console for details.');
+    }
+
+    // 5️⃣  Make sure highlighted playzone is visible
+    if(!map.hasLayer(targetPlayzoneLayer)){
+      targetPlayzoneLayer.addTo(map);
+    }
+
+    // 6️⃣  Zoom to everything
+    const group = L.featureGroup([targetPlayzoneLayer, routeLayer]);
+    map.fitBounds(group.getBounds(), {padding:[20,20]});
+  }
+
+  // 📡 Helper – wait until locateCtl has a LatLng
+  function waitForLocation(){
+    return new Promise(resolve=>{
+      const ready = locateCtl.getLatLng && locateCtl.getLatLng();
+      if(ready){ return resolve(ready); }
+      const start = Date.now();
+      const timer = setInterval(()=>{
+        const ll = locateCtl.getLatLng && locateCtl.getLatLng();
+        if(ll){ clearInterval(timer); resolve(ll); }
+        else if(Date.now()-start>10000){ clearInterval(timer); resolve(null); }
+      },500);
+    });
+  }
+
+  // � route helper
+  async function getRoute(fromLatLng, toLatLng){
+    const url = 'https://api.openrouteservice.org/v2/directions/foot-walking/geojson';
+    const body = {
+      coordinates:[
+        [fromLatLng.lng, fromLatLng.lat],
+        [toLatLng.lng,   toLatLng.lat]
+      ]
+    };
+    const res = await fetch(url,{
+      method :'POST',
+      headers:{
+        'Authorization': ORS_KEY,
+        'Content-Type' : 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok){ throw new Error('ORS API error '+res.status); }
+    return res.json();
+  }
+
+  // 🔘 Wire UI button
+  document.getElementById('btn-find-playzone').addEventListener('click', findClosestPlayzone);
+})();
 </script>
 </body>
 </html>
