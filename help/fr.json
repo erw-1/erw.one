@@ -34,6 +34,10 @@
     {
       "label": "Thread OSM (FR)",
       "url": "https://forum.openstreetmap.fr/t/enquete-a-tous-les-pros-du-sig-sur-la-gestion-de-projet-5-min-recherche/33994"
-    } 
+    } ,
+    {
+      "label": "Mes posts en anglais",
+      "url": "https://erw.one/help#en"
+    }
   ]
 }
