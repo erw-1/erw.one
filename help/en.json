@@ -8,7 +8,7 @@
   },
   "posts": [
     {
-      "label": "LinkedIn Post (EN)",
+      "label": "LinkedIn Post",
       "url": "https://www.linkedin.com/posts/erwanvinot_gis-project-survey-456/"
     },
     {
@@ -16,8 +16,20 @@
       "url": "https://www.reddit.com/r/gis/comments/abcd/gis_project_survey/"
     },
     {
-      "label": "Mastodon Post (EN)",
-      "url": "https://mastodon.social/@erw1/987654321"
+      "label": "Twitter Post",
+      "url": "https://x.com/ErwanVinot/status/1926946609788502303"
+    },
+    {
+      "label": "Bluesky Post",
+      "url": "https://bsky.app/profile/erw.one/post/3lq2xcanocs2w"
+    },
+    {
+      "label": "Mastodon Post",
+      "url": "https://mastodon.social/@erw1/114573631340747890"
+    },
+    {
+      "label": "All my posts & survey in French",
+      "url": "https://erw.one/help#fr"
     }
   ]
 }
