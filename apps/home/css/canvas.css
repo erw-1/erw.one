@@ -91,7 +91,7 @@ footer.relative.z-10.text-center.py-8.text-sm.opacity-70 {
     gap: 0.4rem;
     padding: 0.6rem 1.2rem;
     border-radius: 9px;
-    background: rgba(255,255,255,0.11);
+    background: rgba(255,255,255,0.06);
     font-size: 0.9375rem;
     cursor: not-allowed;
     user-select: none;
