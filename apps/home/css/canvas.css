@@ -1,1 +1,112 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* Prevent scrollbars */
+  height: 100%; /* Full height */
+  width: 100%; /* Full width */
+  font-family: 'Poppins', sans-serif;
+}
 
+canvas {
+  display: block; /* Prevent inline spacing */
+  background-color: #000; /* Optional: Set background color */
+}
+
+header.relative.z-10.p-6 {
+    display: none;
+}
+
+footer, #hero-card {
+        position: absolute;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+    
+        color: #ffffff;
+        background: rgba(0,0,0,0);
+    
+        border-left:  2px solid rgba(255,255,255,0.11);
+        border-right: 2px solid rgba(255,255,255,0.11);
+        border-radius: 1.05rem;
+    
+        backdrop-filter: blur(3px);
+        -webkit-backdrop-filter: blur(3px);
+        padding: 10px;
+        mix-blend-mode: exclusion;
+        filter: saturate(0) contrast(1.2);
+        -webkit-mix-blend-mode: exclusion;
+        -webkit-filter: saturate(0) contrast(1.2);
+
+}
+
+footer.relative.z-10.text-center.py-8.text-sm.opacity-70 {
+    bottom: 0px;
+    transform: translate(-50%, -50%);
+    color: rgba(255,255,255,0.32);
+    padding: 0 5px 0 5px;
+
+}
+
+/* Hero card */
+#hero-card {
+    top: 50%;
+    min-width: 260px;
+    max-width: 90vw;
+}
+
+#hero-card h2 {
+    font-size: 2.25rem;
+    margin: 0 0 0.25rem 0;
+    letter-spacing: -0.02em;
+}
+
+#hero-card h3 {
+    font-size: 1.375rem;
+    font-weight: 400;
+    margin: 0 0 1rem 0;
+    opacity: 0.85;
+}
+
+#hero-card p {
+    margin: 0 0 1.5rem 0;
+    font-size: 1rem;
+    opacity: 0.4;
+}
+
+#hero-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+#hero-card li {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1.2rem;
+    border-radius: 9px;
+    background: rgba(255,255,255,0.11);
+    font-size: 0.9375rem;
+    cursor: not-allowed;
+    user-select: none;
+    opacity: 0.7;
+}
+
+/* Responsive tweaks */
+@media (max-width: 480px) {
+    #hero-card {
+        padding: 2rem 1.5rem;
+    }
+
+    #hero-card h2 {
+        font-size: 1.75rem;
+    }
+
+    #hero-card h3 {
+        font-size: 1.125rem;
+    }
+}
