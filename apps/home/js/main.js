@@ -39,7 +39,6 @@ function updateLayers(layers) {
         layer.rotation.y += 0.000001 * (layer.position.z + 300);
     });
 }
-<
 
 // card 
 const heroCard = document.getElementById('hero-card');
