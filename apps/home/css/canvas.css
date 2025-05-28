@@ -4,6 +4,7 @@ body, html {
   overflow: hidden; /* Prevent scrollbars */
   height: 100%; /* Full height */
   width: 100%; /* Full width */
+  font-family: 'Poppins', sans-serif;
 }
 
 canvas {
