@@ -14,3 +14,17 @@ canvas {
 header.relative.z-10.p-6 {
     display: none;
 }
+
+footer.relative.z-10.text-center.py-8.text-sm.opacity-70 {
+    color: #ffffff42;
+    background: #7f7f7f00;
+    border: solid 1px #7f7f7f36;
+    backdrop-filter: blur(10px);
+    border-radius: 100%;
+    position: fixed;
+    z-index: 1000;
+    bottom: 0px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 10px 10px;
+}
