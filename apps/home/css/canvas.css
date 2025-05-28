@@ -10,3 +10,7 @@ canvas {
   display: block; /* Prevent inline spacing */
   background-color: #000; /* Optional: Set background color */
 }
+
+header.relative.z-10.p-6 {
+    display: none;
+}
