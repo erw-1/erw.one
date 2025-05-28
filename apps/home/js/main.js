@@ -39,3 +39,38 @@ function updateLayers(layers) {
         layer.rotation.y += 0.000001 * (layer.position.z + 300);
     });
 }
+
+const heroCard = document.getElementById('hero-card');
+
+let mouseX = 0;
+let mouseY = 0;
+let targetX = 0;
+let targetY = 0;
+
+let speed = 0.05; // Smoothness factor
+
+function animateTilt() {
+    const rect = heroCard.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    let distX = mouseX - centerX;
+    let distY = mouseY - centerY;
+
+    targetX += (distX - targetX) * speed;
+    targetY += (distY - targetY) * speed;
+
+    const rotateX = -(targetY / rect.height) * 8; // maxTilt
+    const rotateY = (targetX / rect.width) * 8;
+
+    heroCard.style.transform = `translate(-50%, -50%) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+    
+    requestAnimationFrame(animateTilt);
+}
+
+document.addEventListener('mousemove', (e) => {
+    mouseX = e.clientX;
+    mouseY = e.clientY;
+});
+
+animateTilt();
