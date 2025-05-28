@@ -39,15 +39,17 @@ function updateLayers(layers) {
         layer.rotation.y += 0.000001 * (layer.position.z + 300);
     });
 }
+<
 
+// card 
 const heroCard = document.getElementById('hero-card');
 
-let mouseX = 0;
-let mouseY = 0;
+let mouseX = window.innerWidth / 2;
+let mouseY = window.innerHeight / 2;
 let targetX = 0;
 let targetY = 0;
 
-let speed = 0.05; // Smoothness factor
+const speed = 0.05; // Smoothness factor
 
 function animateTilt() {
     const rect = heroCard.getBoundingClientRect();
@@ -64,13 +66,71 @@ function animateTilt() {
     const rotateY = (targetX / rect.width) * 8;
 
     heroCard.style.transform = `translate(-50%, -50%) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-    
+
     requestAnimationFrame(animateTilt);
 }
 
+// 🖱️ Souris
 document.addEventListener('mousemove', (e) => {
     mouseX = e.clientX;
     mouseY = e.clientY;
 });
 
+// 📱 Tactile
+document.addEventListener('touchmove', (e) => {
+    const touch = e.touches[0];
+    mouseX = touch.clientX;
+    mouseY = touch.clientY;
+}, { passive: true });
+
+// 📡 Gyroscope (avec fallback iOS)
+function enableGyro() {
+    window.addEventListener('deviceorientation', (e) => {
+        const gamma = e.gamma || 0; // gauche-droite
+        const beta = e.beta || 0;   // haut-bas
+
+        // Convertit en coordonnées approximatives d'écran
+        mouseX = window.innerWidth / 2 + gamma * 10;
+        mouseY = window.innerHeight / 2 + beta * 10;
+    });
+}
+
+// 🔐 Demande permission iOS si nécessaire
+function requestGyroPermission() {
+    if (typeof DeviceOrientationEvent !== 'undefined' &&
+        typeof DeviceOrientationEvent.requestPermission === 'function') {
+
+        const button = document.createElement('button');
+        button.innerText = "Activer le gyroscope";
+        button.style.position = 'absolute';
+        button.style.top = '1rem';
+        button.style.left = '50%';
+        button.style.transform = 'translateX(-50%)';
+        button.style.zIndex = 9999;
+        button.style.padding = '0.5rem 1rem';
+        button.style.borderRadius = '8px';
+        button.style.background = '#ffffff22';
+        button.style.border = '1px solid #fff';
+        button.style.color = '#fff';
+        button.style.cursor = 'pointer';
+        button.style.backdropFilter = 'blur(10px)';
+        button.style.fontWeight = 'bold';
+
+        document.body.appendChild(button);
+
+        button.addEventListener('click', () => {
+            DeviceOrientationEvent.requestPermission().then(response => {
+                if (response === 'granted') {
+                    enableGyro();
+                    button.remove();
+                }
+            }).catch(console.error);
+        });
+    } else {
+        // Pour Android ou navigateur sans restriction
+        enableGyro();
+    }
+}
+
+requestGyroPermission();
 animateTilt();
