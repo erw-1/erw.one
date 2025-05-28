@@ -24,9 +24,9 @@ footer, #hero-card {
     
         color: #ffffff;
         background: rgba(0,0,0,0);
-    
-        border-left:  2px solid rgba(255,255,255,0.11);
-        border-right: 2px solid rgba(255,255,255,0.11);
+  
+        border-left: 2px solid rgb(52 52 52 / 89%);
+        border-right: 2px solid rgb(0 0 0 / 19%);
         border-radius: 1.05rem;
     
         backdrop-filter: blur(3px);
