@@ -1,15 +1,109 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Erwan Vinot - Experienced GIS Engineer specializing in Geographic Information Systems, data analysis, and mapping technologies.">
-    <meta name="keywords" content="Erwan Vinot, GIS Engineer, Geographic Information Systems, GIS, Data Analysis, Mapping, Géomatique, SIG, Cartographie">
-    <meta name="google-site-verification" content="CArYbUVj_S83myJhXaK4R7OK0kJtxdii16XyR-liruQ" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>Erwan Vinot | Géomaticien – Ingénieur SIG & Cartographe</title>
+
+    <!-- Primary Meta Tags -->
+    <meta name="description" content="Portfolio d’Erwan Vinot, géomaticien & ingénieur SIG spécialisé en analyse spatiale, cartographie web et ergonomie des outils SIG.">
+    <meta name="keywords" content="Erwan Vinot, Géomaticien, Ingénieur SIG, GIS Engineer, Geographic Information Systems, Cartographie, Spatial Data Analysis, Mapping, SIG, Geomatics">
+    <meta name="robots" content="index, follow">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://erw.one/">
+    <meta property="og:title" content="Erwan Vinot | Géomaticien – Ingénieur SIG & Cartographe">
+    <meta property="og:description" content="Portfolio d’Erwan Vinot, géomaticien & ingénieur SIG spécialisé en analyse spatiale, cartographie web et ergonomie des outils SIG.">
+    <meta property="og:image" content="https://erw.one/assets/preview.jpg">
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Erwan Vinot | Géomaticien – Ingénieur SIG & Cartographe">
+    <meta name="twitter:description" content="Portfolio d’Erwan Vinot, géomaticien & ingénieur SIG spécialisé en analyse spatiale, cartographie web et ergonomie des outils SIG.">
+    <meta name="twitter:image" content="https://erw.one/assets/preview.jpg">
+
+    <link rel="canonical" href="https://erw.one/">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+    <!-- Preload/Preconnect for performance (example if you use external fonts) -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <!-- Global styles & canvas -->
     <link rel="stylesheet" href="apps/home/css/canvas.css">
-    <title>Erwan Vinot</title>
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Person",
+          "@id": "https://erw.one/#person",
+          "name": "Erwan Vinot",
+          "url": "https://erw.one",
+          "jobTitle": ["Géomaticien", "Ingénieur SIG"],
+          "sameAs": [
+            "https://www.linkedin.com/in/erwanvinot",
+            "https://twitter.com/ErwanVinot",
+            "https://observablehq.com/@erwanvinot"
+          ],
+          "knowsAbout": ["Géomatique", "SIG", "Cartographie", "Spatial Data Analysis", "GIS Web Development"],
+          "alumniOf": {
+            "@type": "EducationalOrganization",
+            "name": "CY Cergy Paris Université"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://erw.one/#website",
+          "url": "https://erw.one",
+          "name": "erw.one",
+          "inLanguage": "fr-FR",
+          "publisher": { "@id": "https://erw.one/#person" },
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://erw.one/search?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        }
+      ]
+    }
+    </script>
 </head>
-<body>
+<body class="antialiased bg-black text-white">
+
+    <header class="relative z-10 p-6">
+        <h1 class="text-3xl font-bold tracking-tight">Erwan Vinot · Géomaticien &amp; Ingénieur SIG</h1>
+        <p class="mt-2 max-w-xl opacity-80">Je conçois des cartes interactives et des applications SIG ergonomiques pour transformer les données spatiales en décisions éclairées.</p>
+
+        <!-- Social links -->
+        <nav aria-label="Réseaux sociaux" class="mt-4 flex gap-4 text-sm">
+            <a href="https://www.linkedin.com/in/erwanvinot" target="_blank" rel="noopener noreferrer">LinkedIn</a>
+            <a href="https://twitter.com/ErwanVinot" target="_blank" rel="noopener noreferrer">Twitter</a>
+            <a href="mailto:contact@erw.one">Email</a>
+        </nav>
+    </header>
+
+    <main id="main" class="relative min-h-screen flex items-center justify-center">
+        <noscript>
+            <p>Vous consultez une version simplifiée du site d’Erwan Vinot. Activez JavaScript pour profiter de l’expérience interactive complète.</p>
+        </noscript>
+        <!-- 3D canvas or hero section injected by JS -->
+    </main>
+
+    <footer class="relative z-10 text-center py-8 text-sm opacity-70">
+        © <span id="year"></span> Erwan Vinot — Tous droits réservés.
+    </footer>
+
+    <script>
+        // Mise à jour automatique de l’année dans le footer
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
+
     <!-- Main script as a module -->
     <script type="module" src="apps/home/js/main.js"></script>
 </body>
