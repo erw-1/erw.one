@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Carte avec Filtres</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body {
+      margin: 0;
+      display: flex;
+    }
+    #map {
+      height: 100vh;
+      width: 70%;
+    }
+    #sidebar {
+      width: 30%;
+      padding: 10px;
+      background: #f9f9f9;
+      overflow-y: auto;
+    }
+    fieldset {
+      margin-bottom: 15px;
+    }
+    label[disabled] {
+      opacity: 0.5;
+    }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="sidebar">
+    <fieldset id="langFilter">
+      <legend>Langue</legend>
+    </fieldset>
+    <fieldset id="structureFilter">
+      <legend>Structure</legend>
+    </fieldset>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([46.5, 2.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    let allData = null;
+    let markers = L.layerGroup().addTo(map);
+
+    const langOptions = {
+      'fr': 'Français',
+      'en': 'Anglais'
+    };
+    const structureOptions = {
+      'Public territorial (collectivité, EPCI, département, région)': 'Public territorial (collectivité, EPCI, département, région)',
+      "Public d’État (ministère, service déconcentré, agence nationale)": "Public d’État (ministère, service déconcentré, agence nationale)",
+      "Privé (entreprise, bureau d’études)": "Privé (entreprise, bureau d’études)",
+      "Parapublic (syndicat mixte, EPIC…)": "Parapublic (syndicat mixte, EPIC…)",
+      "Autre": "Autre"
+    };
+
+    const filters = {
+      lang: new Set(Object.keys(langOptions)),
+      structure: new Set(Object.keys(structureOptions))
+    };
+
+    fetch('enquete_sig_testing.geojson')
+      .then(res => res.json())
+      .then(data => {
+        allData = data;
+        buildFilters();
+        updateMap();
+      });
+
+    function buildFilters() {
+      const langCounts = countValues('lang');
+      const structureCounts = countValues('structure');
+      buildCheckboxes('langFilter', langOptions, langCounts, 'lang');
+      buildCheckboxes('structureFilter', structureOptions, structureCounts, 'structure');
+    }
+
+    function buildCheckboxes(containerId, options, counts, type) {
+      const container = document.getElementById(containerId);
+      container.innerHTML = '';
+      for (const key in options) {
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.checked = true;
+        checkbox.value = key;
+        checkbox.id = `${type}_${key}`;
+        checkbox.disabled = counts[key] === 0;
+        checkbox.addEventListener('change', () => {
+          if (checkbox.checked) {
+            filters[type].add(key);
+          } else {
+            filters[type].delete(key);
+          }
+          updateMap();
+        });
+
+        const label = document.createElement('label');
+        label.htmlFor = checkbox.id;
+        if (counts[key] === 0) label.setAttribute('disabled', true);
+        label.textContent = `${options[key]} [${counts[key] || 0}] `;
+
+        container.appendChild(checkbox);
+        container.appendChild(label);
+        container.appendChild(document.createElement('br'));
+      }
+    }
+
+    function countValues(field) {
+      const counts = {};
+      if (!allData) return counts;
+      allData.features.forEach(f => {
+        const val = f.properties[field];
+        counts[val] = (counts[val] || 0) + 1;
+      });
+      return counts;
+    }
+
+    function updateMap() {
+      markers.clearLayers();
+      if (!allData) return;
+
+      const filtered = allData.features.filter(f =>
+        filters.lang.has(f.properties.lang) &&
+        filters.structure.has(f.properties.structure)
+      );
+
+      filtered.forEach(f => {
+        const coords = f.geometry.coordinates;
+        if (f.geometry.type === 'Point') {
+          L.marker([coords[1], coords[0]])
+            .bindPopup(`<b>${f.properties.lang}</b><br>${f.properties.structure}`)
+            .addTo(markers);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
