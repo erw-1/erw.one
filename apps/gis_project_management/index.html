@@ -1,202 +1,25 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Carte avec Filtres</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <title>Carte – Filters + Leaflet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Styles externes -->
+  <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <style>
-    body {
-      margin: 0;
-      display: flex;
-    }
-    #map {
-      height: 100vh;
-      width: 70%;
-    }
-    #sidebar {
-      width: 30%;
-      padding: 10px;
-      background: #f9f9f9;
-      overflow-y: auto;
-    }
-    fieldset {
-      margin-bottom: 15px;
-    }
-    label[disabled] {
-      opacity: 0.5;
-    }
-  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.css" />
 </head>
 <body>
+  <!-- Zone carte + panneau latéral -->
   <div id="map"></div>
-  <div id="sidebar" id="filterPanel"></div>
+  <aside id="sidebar"></aside>
 
+  <!-- Librairies -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script>
-    const map = L.map('map').setView([46.5, 2.5], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/15.7.0/nouislider.min.js"></script>
 
-    let allData = null;
-    let markers = L.layerGroup().addTo(map);
-
-    const filterConfig = {
-      lang: {
-        label: "Langue",
-        options: {
-          fr: "Français",
-          en: "Anglais"
-        },
-        inputType: "checkbox",
-        match: "equals"
-      },
-      structure: {
-        label: "Structure",
-        options: {
-          "Public territorial (collectivité, EPCI, département, région)": "Public territorial (collectivité, EPCI, département, région)",
-          "Public d’État (ministère, service déconcentré, agence nationale)": "Public d’État (ministère, service déconcentré, agence nationale)",
-          "Privé (entreprise, bureau d’études)": "Privé (entreprise, bureau d’études)",
-          "Parapublic (syndicat mixte, EPIC…)": "Parapublic (syndicat mixte, EPIC…)",
-          "Autre": "Autre"
-        },
-        inputType: "checkbox",
-        match: "equals"
-      },
-      docs_formats: {
-        label: "Formats de documentation",
-        inputType: "checkbox",
-        match: "hasAnyOf",
-        separator: ", "
-      }
-    };
-
-    const filters = {};
-    for (const key in filterConfig) {
-      const conf = filterConfig[key];
-      filters[key] = new Set(conf.options ? Object.keys(conf.options) : []);
-    }
-
-    fetch('enquete_sig_testing.geojson')
-      .then(res => res.json())
-      .then(data => {
-        allData = data;
-        buildFilters();
-        updateMap();
-      });
-
-    function buildFilters() {
-      const container = document.getElementById('sidebar');
-      container.innerHTML = '';
-
-      for (const field in filterConfig) {
-        const conf = filterConfig[field];
-        const counts = countDynamicValues(field);
-
-        const fieldset = document.createElement('fieldset');
-        const legend = document.createElement('legend');
-        legend.textContent = conf.label;
-        fieldset.appendChild(legend);
-
-        const values = conf.options || Object.fromEntries(
-          Object.keys(counts).map(k => [k, k])
-        );
-
-        for (const key in values) {
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.checked = filters[field].has(key);
-          checkbox.value = key;
-          checkbox.id = `${field}_${key}`;
-          checkbox.disabled = counts[key] === 0;
-          checkbox.addEventListener('change', () => {
-            if (checkbox.checked) {
-              filters[field].add(key);
-            } else {
-              filters[field].delete(key);
-            }
-            updateMap();
-            buildFilters();
-          });
-
-          const label = document.createElement('label');
-          label.htmlFor = checkbox.id;
-          if (counts[key] === 0) label.setAttribute('disabled', true);
-          label.textContent = `${values[key]} [${counts[key] || 0}]`;
-
-          fieldset.appendChild(checkbox);
-          fieldset.appendChild(label);
-          fieldset.appendChild(document.createElement('br'));
-        }
-
-        container.appendChild(fieldset);
-      }
-    }
-
-    function countDynamicValues(field) {
-      const conf = filterConfig[field];
-      const counts = {};
-      if (!allData) return counts;
-
-      allData.features.forEach(f => {
-        const props = f.properties;
-        let values = [];
-
-        if (conf.match === 'hasAnyOf') {
-          values = (props[field] || '').split(conf.separator || ',').map(v => v.trim()).filter(v => v);
-        } else {
-          values = [props[field]];
-        }
-
-        const otherFields = Object.keys(filterConfig).filter(k => k !== field);
-        const valid = otherFields.every(other => {
-          const otherConf = filterConfig[other];
-          const val = f.properties[other];
-          if (otherConf.match === 'hasAnyOf') {
-            const vals = (val || '').split(otherConf.separator || ',').map(v => v.trim());
-            return vals.some(v => filters[other].has(v));
-          }
-          return filters[other].has(val);
-        });
-
-        if (valid) {
-          values.forEach(v => {
-            counts[v] = (counts[v] || 0) + 1;
-          });
-        }
-      });
-
-      return counts;
-    }
-
-    function updateMap() {
-      markers.clearLayers();
-      if (!allData) return;
-
-      const filtered = allData.features.filter(f => {
-        return Object.keys(filterConfig).every(field => {
-          const conf = filterConfig[field];
-          const val = f.properties[field];
-
-          if (conf.match === 'hasAnyOf') {
-            const values = (val || '').split(conf.separator || ',').map(v => v.trim());
-            return values.some(v => filters[field].has(v));
-          }
-
-          return filters[field].has(val);
-        });
-      });
-
-      filtered.forEach(f => {
-        const coords = f.geometry.coordinates;
-        if (f.geometry.type === 'Point') {
-          L.marker([coords[1], coords[0]])
-            .bindPopup(`<b>${f.properties.lang}</b><br>${f.properties.structure}`)
-            .addTo(markers);
-        }
-      });
-    }
-  </script>
+  <!-- Code applicatif (module ES) -->
+  <script type="module" src="app.js"></script>
 </body>
 </html>
