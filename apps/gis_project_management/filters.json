@@ -1,0 +1,50 @@
+{
+  "lang": {
+    "label": "Langue",
+    "type": "checkbox",
+    "match": "equals",
+    "options": {
+      "fr": "Français",
+      "en": "Anglais"
+    }
+  },
+  "structure": {
+    "label": "Structure",
+    "type": "checkbox",
+    "match": "equals",
+    "options": {
+      "Public territorial (collectivité, EPCI, département, région)": "Public territorial (collectivité, EPCI, département, région)",
+      "Public d’État (ministère, service déconcentré, agence nationale)": "Public d’État (ministère, service déconcentré, agence nationale)",
+      "Privé (entreprise, bureau d’études)": "Privé (entreprise, bureau d’études)",
+      "Parapublic (syndicat mixte, EPIC…)": "Parapublic (syndicat mixte, EPIC…)",
+      "Autre": "Autre"
+    }
+  },
+  "docs_presence": {
+    "label": "Présence doc.",
+    "type": "checkbox",
+    "match": "equals",
+    "options": {
+      "Oui, structurée et à jour": "Oui, structurée et à jour",
+      "Oui, mais peu claire ou obsolète": "Oui, mais peu claire ou obsolète",
+      "Non, ou documentation informelle": "Non, ou documentation informelle",
+      "Je ne sais pas": "Je ne sais pas"
+    }
+  },
+  "docs_formats": {
+    "label": "Formats doc.",
+    "type": "checkbox",
+    "match": "hasAny",
+    "sep": ", "
+  },
+  "docs_nb_formats": {
+    "label": "Nb formats",
+    "type": "range",
+    "match": "range"
+  },
+  "docs_note": {
+    "label": "Note",
+    "type": "range",
+    "match": "range"
+  }
+}
