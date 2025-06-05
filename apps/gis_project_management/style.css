@@ -1,0 +1,21 @@
+/* Palette + resets */
+:root { --primary:#3b82f6; --border:#ddd; --bg:#f9f9f9; }
+*{box-sizing:border-box;margin:0}
+
+/* Layout */
+body        { display:flex; height:100vh; font-family:system-ui,sans-serif; }
+#map        { flex:1; }
+#sidebar    { width:340px; padding:12px; overflow-y:auto; background:var(--bg); }
+
+/* Filter groups */
+fieldset    { border:1px solid var(--border); margin-bottom:12px; padding:.6rem .8rem; }
+legend      { font-weight:600; }
+label.zero  { opacity:.5; }            /* 0 points après filtrage */
+label[disabled]{ opacity:.3; cursor:not-allowed; } /* jamais présents dans le jeu */
+
+/* Slider look */
+.noUi-connect{ background:var(--primary); }
+.noUi-horizontal .noUi-handle{
+  border-radius:50%; background:var(--primary); border:none;
+  box-shadow:0 0 0 3px rgba(59,130,246,.3);
+}
