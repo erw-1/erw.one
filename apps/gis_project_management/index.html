@@ -75,8 +75,8 @@
       });
 
     function buildFilters() {
-      const langCounts = countValues('lang');
-      const structureCounts = countValues('structure');
+      const langCounts = countDynamicValues('lang');
+      const structureCounts = countDynamicValues('structure');
       buildCheckboxes('langFilter', langOptions, langCounts, 'lang');
       buildCheckboxes('structureFilter', structureOptions, structureCounts, 'structure');
     }
@@ -87,7 +87,7 @@
       for (const key in options) {
         const checkbox = document.createElement('input');
         checkbox.type = 'checkbox';
-        checkbox.checked = true;
+        checkbox.checked = filters[type].has(key);
         checkbox.value = key;
         checkbox.id = `${type}_${key}`;
         checkbox.disabled = counts[key] === 0;
@@ -98,6 +98,7 @@
             filters[type].delete(key);
           }
           updateMap();
+          buildFilters(); // rebuild checkboxes with updated counts
         });
 
         const label = document.createElement('label');
@@ -111,13 +112,20 @@
       }
     }
 
-    function countValues(field) {
+    function countDynamicValues(field) {
       const counts = {};
       if (!allData) return counts;
+
       allData.features.forEach(f => {
-        const val = f.properties[field];
-        counts[val] = (counts[val] || 0) + 1;
+        const props = f.properties;
+        const val = props[field];
+
+        const otherField = field === 'lang' ? 'structure' : 'lang';
+        if (filters[otherField].has(props[otherField])) {
+          counts[val] = (counts[val] || 0) + 1;
+        }
       });
+
       return counts;
     }
 
