@@ -1,0 +1,115 @@
+id;specificite_sig;hypotheses;groupe
+136;La multiplicité des acteurs;H3;Organisationnel, Transversalité
+165;la dimension spatiale, la rapidité de dévelopement des outils ESRI, la transversalité avec les différents servcies;H1;Technique, Territorial, Transversalité
+175;Complexité de la données.;H1;Technique
+197;transversalité, multiplicité des utilisateurs, diversité des profils;H3;Humain, Organisationnel, Transversalité
+207;la variante spatiale;H1;Territorial
+270;Transversalité, IG utile pour tout et présente partout;H3;Transversalité, Territorial
+271;manipulation de données différentes, logiciels différents;H1;Technique
+301;La proximité avec les acteurs spécialisés;H3;Humain, Organisationnel
+304;L'utilisation de logiciels spécifiques qui n'est pas commun pour tous. La compréhension du fonctionnement des projets impliquant des SIG.;H1, H3;Technique, Humain
+307;Personne comprend ce qu'on fait.;H1;Humain
+314;aucune idée;;Pas de différence
+315;Comprégension des enjeux géographiques;H1;Humain, Territorial
+336;La multidisplinarité, la collaboration avec des personnes sans connaissances techniques;H1, H3;Organisationnel, Humain, Transversalité
+340;La méconnaissance de cet outil, de ses prérequis et de ce mode de penser font que les demandes sont souvent soit irréalistes soit inadaptées. Un SIG n'est nullement un outil de cartographie.;H1, H3;Humain, Organisationnel
+355;connaissance des standards / composantes géographiques;H2;Technique
+357;Dans le cadre de projet SIG , la place de la technologie, logiciel SIG utilisé va fortement rendre le projet singulier par rapport à un projet informatique classique;H1;Technique
+362;Je crois que ce qui a rendu la gestion de projet SIG spécifique est sa nature transversale, combinant un projet informatique et des données géographiques. Par conséquent, il est crucial de maîtriser les bases ou les fondamentaux du projet et du SIG pour qu’ils soient compréhensibles par tous. En sachant que les parties prenantes doivent prendre conscience de toutes les étapes nécessaires au traitement des données (collecte, nettoyage, agrégation, etc.) afin d’avoir des indicateurs et informations pertinents et actuels.;H1, H3;Technique, Organisationnel, Humain, Transversalité
+363;La multiplicité des techniques (langages, logiciels) utilisés en SIG permettent sur un même projet, d'avoir plusieurs acteurs avec des rôles prédéfinis. Cela nécessite donc un choix de méthode de gestion de projet bien adapté.;H1, H3;Technique, Organisationnel
+364;C'est son application sur les éléments de l'environnement ou du territoire;H1;Territorial
+367;Ils sont cinceptuellement (dimension tps/espace) plus difficiles à intégrer pour un néophyte;H1;Humain, Territorial
+384;aucune - sinon l'effet visuel, le Wooo quand Demo des POCs, 1er de série car support cartographique - impact de l'image / de la carte interactive;H1;Technique
+398;Le fait que chacun puisse s'identifier à un projet SIG au travers d'une carte rend les dialogues riches et complexes. En effet, chaque acteur voit l'outil final par son prisme et souhaite personnaliser son expérience pour son besoin. Cela rend difficile la mise en place technique du projet.;H1, H3;Humain, Organisationnel, Technique
+404;La diversité de domaines touchés et le type de données impliquées, avec leur superposition et la rapidité des stats;H1;Technique, Territorial
+411;la vision géographique;H1;Territorial
+412;Aucune;;Pas de différence
+417;La coordination entre les différents acteurs pour fournir ou créer la donnée implique beaucoup d’interdépendances. Une gestion de projet en mode agile permet d’identifier ces adhérences et de pouvoir prioriser ou mieux gérer cela;H1, H3;Organisationnel, Transversalité
+437;Cette expérience est singulière car il fait toujours être capable de faire le lien entre les besoins d’un public qui ne connaît pas la solution technique utilisée et l’équipe sig;H1, H3;Humain, Organisationnel
+438;"Les géomaticiens ne sont pas informaticiens ou spécialistes métiers. Ce rôle à mi-chemin entre les deux facettes est, certes intéressant, mais oblige à une compréhension ""complète"" des spécificités de chaque métier.";H1, H3;Humain, Organisationnel
+445;Le type de données (et leur représentation carto) peut davantage concerner les équipes métiers. Un géomaticien a plusieurs casquettes : gestionnaire de données, cartographes, développeur, et parfois chef de projet;H1;Technique, Humain
+446;Aucune particulière. À part que peu de personnes connaissent les SIG.;;Pas de différence
+448;L'interdisciplinarité des acteurs impliqués;H3;Organisationnel, Transversalité
+464;La compréhension de ce quoi une donnée géographie et les outils spécifiques qui vont avec. Les gens pensent souvent que c'est juste une donné comme une autre, et ne se rendent pas compte des subtilités;H1;Humain, Technique
+467;informations spatialisées et croisements de données en synergie;H1;Technique, Transversalité
+468;La transversalité, peu importe le service et le besoin, il y a toujours un intérêt et c'est simple d'adaptation;H3;Transversalité
+490;La dimension spatiale, patrimoniale et la technicité des opérations et matériels de relevés terrain;H1;Technique, Territorial
+493;La multiplicité des acteurs impliqués (services métiers / techniques);H3;Organisationnel, Transversalité
+518;multidisciplinarité;H3;Organisationnel, Transversalité
+525;L'aspect très multi diciplinaire (Architecture Informatique + DevWeb + Gestion BDD + IOT);H1, H3;Technique, Organisationnel, Transversalité
+528;beaucoup de données, la hiérarchie sépare trop souvent les 2 alors qu'ils devraient être ensemble.;H3;Organisationnel
+551;Le manque de compréhension du SIG. La MOA, dans la plupart des cas, ne connait pas le potentiel des SIG et/ou ne comprend pas ses limites.;H1, H3;Humain, Organisationnel
+568;Les utilisateurs finaux doivent s'approprier un minimum certains aspects techniques et participer à la production (contrôle qualité et corrections);H1, H3;Technique, Humain
+570;Elle ont une.dimension grand public inhérente car ça parle à tour le monde et à tous les niveau techniques d'acteurs. Donc on ne peut pas rester en tour d'Ivoire de spécialistes. Les utilisateurs finaud sont.de bas niveau technique et c'est tout de meme.possible de.les.embarquer sur ce type de projzt;H1, H3;Humain, Organisationnel
+574;Beaucoup de personnes, par exemple issues de formations en géographie et aménagement du territoire, savent utiliser les SIG et peuvent lancer des projets SIG. Mais pour mener un gros projet à terme, il faut souvent plus de compétences (développement) que ces personnes n'ont pas toujours. Il y a donc un risque que des projets n'aboutissent pas, ou alors qu'ils restent à un niveau artisanal. C'est le cas de mon projet, mais il est en train d'être repris par le pôle géomatique, ce qui permettra d'aboutir à un meilleur résultat, utilisable par tous les agents, et plus seulement par une poignée d'initiés.;H1, H3;Technique, Humain, Organisationnel
+577;Technicité projet et data;H1;Technique
+584;Aucune. Un projet en géomatique se gère exactement de la même manière qu’un projet informatique classique. Les spécificités techniques sont l’affaires des techniciens ou développeurs qui ont la compétence technique.;;Pas de différence
+589;Les rendus cartographiques sont plus parlants que les rendus des projets informatiques classiques.;H1;Technique, Humain
+593;Il faut souvent faire un lien entre un texte et la carte. C’est quelque chose de pas souvent simple quand on est face a des non géomaticien. C’est la que notre rôle de conseil est important. Il faut aussi réussir à trouver les outils de gestion de projet qui permettent à tout le monde de s’en sortir et de comprendre son rôle.;H1, H3;Organisationnel, Humain, Technique
+602;La maintenance des données et des architectures informatiques est primordibale, il faut associer du personne dédié et un matériel adequat;H1, H3;Technique, Organisationnel
+635;La transversalité;H3;Transversalité
+637;Le mode agile est complexe à maîtriser;H1;Organisationnel
+655;"Le service SIG doit disposer de compétences ""informatiques"" (notamment réseaux) pour améliorer les performances.";H1;Technique, Humain
+671;travail nécessairement effectué avec des acteurs qui ne s'y connaissent pas;H1, H3;Humain, Organisationnel
+679;Le poids des outils propriétaires et les contraintes de la donnée spatiale;H2;Technique
+687;la diversité des compétences et la méconnaissance des technicitéq;H1, H3;Humain
+691;L’impact visuel d’une carte, la rapidité et la flexibilité de l’utilisation d’un SIG permet une plus grande productivité et donc une efficacité de résultat.;H1;Technique, Humain
+694;Le volet visuel est déterminant, c'est un accélérateur de prise de décision. Néanmoins, en gestion de projet, cela nécessite un travail en background important mais n'étant ni SIGiste ni informaticienne, je ne vois pas de spécificité particulière.;;Pas de différence
+696;L'hétérogénéité des données mobilisées : formats, standards, projections, dimensions, périodes d'actualisations...;H1, H2;Technique
+720;Si le projet est bien ciblé, il sera bien reçu par les acteurs non?géomaticiens;H1, H3;Organisationnel, Humain
+733;Transversalité des enjeux et des compétences nécessaires;H3;Transversalité, Organisationnel, Humain
+756;La transversalité;H3;Transversalité
+778;La puissance d'analyse des données cartographique en post production;H1;Technique
+787;Transversalité avec les metiers;H3;Transversalité, Organisationnel
+788;S'agissant d'un projet pour l'organisation interne, sans visibilité extérieure, il est difficile d'impliquer les donneurs d'ordre, et de faire dégager du temps.;H3;Organisationnel
+792;Sans objet pour moi.;;Pas de différence
+797;En l'occurrence, pas de spécificité, ç'aurait été la même chose avec un projet non-SIG;;Pas de différence
+812;Certains formats d'échange sont différents et répondent à des normes plus stricts.;H2;Technique
+821;Certaines solutions sont rapides à mettre en place (réactivité) et répondent à un besoin bien précis;H1;Technique
+824;Domaine méconnu, Manque de reconnaissance, Casquette de technicien;H1;Humain
+911;"data is ever changing and "" routing errors can result in loss of life "" or a serious outcome";H1;Technique, Organisationnel
+940;Lorsqu'une entreprise doit gérer son patrimoine, c'est à dire ce qui lui appartient, il est essentiel de savoir où c'est. Pour un bureau classique on sait tous où est l'imprimante, pas besoin de le cartographier. Mais quand on gère une megafactory on a besoin de savoir où les câbles passent, où sont les vannes, leur état, leur date de pose, etc. C'est avec le SIG qu'on le fait.;H1, H3;Territorial, Organisationnel
+958;The need to work with multiples data's version;H1, H2;Technique
+979;GIS needs to demo results as it’s often unknown;H1;Humain
+980;No idea;;Pas de différence
+983;understanding the complexity and need for continuity;H1;Technique
+984;I don’t feel like it is different. The exceptions are when doing data collection or handling LiDAR.;;Pas de différence
+1011;Les moteurs applicatifs cartographiques sont compatibles avec les standards (SGBD, Outil de développement, ...);H2;Technique
+1018;Spatial domain knowledge;H1;Territorial, Humain
+1054;Unkown only worked as small team for small projects;;Pas de différence
+1102;Reliance on other business groups for SME, integrations and infrastructure.;H3;Organisationnel, Transversalité
+1107;You have to have a clear understanding of the end game. Are you producing a map, or are you producing insights from spatial data often in the form of a Dashboard or Final Report.;H1;Technique, Humain
+1124;multidisplinary. GIS often becomes the single source of truth.;H3;Organisationnel, Transversalité
+1129;I don't consider them distinct;;Pas de différence
+1131;A big change of infrastructure was needed, and other people needed to learn how to do things in a different way;H1, H3;Organisationnel, Humain
+1154;En général ce sont des projets très évolutifs dès lors que les agents ont compris les bénéfices sur leur quotidien.;H1;Organisationnel, Humain
+1158;The GIS projects involve more data format diversity and needs a transferable platform and a common base;H1, H2;Technique
+1160;public non averti au SIG qui doit manipuler des outils SIG;H1;Humain
+1162;La nature des données à manipuler et le produit final, une carte interprétable par tous;H1;Technique, Humain
+1170;Beats me;;Pas de différence
+1183;Le cadre fonctionnel des 5A;H1;Organisationnel
+1209;Getting the expertise to work it;H1;Humain
+1229;More hands on, link to operational/technical departements;H1, H3;Organisationnel, Technique
+1235;1. mix objet spatial et stockage de données / 2. l'aspect pluridisciplinaire indispensable dans les SIG contrairement à certains projets informatiques classiques / 3. compatibilité parfois très limitée, par exemple beaucoup de numérisation des réseaux eaux sur autocad durant les années 1990-2000 avec un tranfert relativement limité sur des SIG puisque l'association de la donnée à l'objet géométrique n'est pas du tout pensé de la même manière / 4. le côté évolutif, mise à jour en continu aussi qui n'est pas forcément nécessaire pour des projets infos classiques je suppose.;H1, H2, H3;Technique, Organisationnel, Humain
+1239;Nothing;;Pas de différence
+1243;I don't really see that much distinction.;;Pas de différence
+1273;Territorial stakeholder are closer;H3;Territorial, Organisationnel
+1308;Avec ce projet l'effort est moindre chaque année, car le format ne change pas ( seulement la donnée);H1;Technique
+1321;L'aspect spatial :) Bien que la thématique du projet soit cartographique, l'aspect spatial des données est souvent sous-estimé par rapport aux autres attributs des jeux de données étudiés. Aussi, les SIG sont à mi-chemin entre l'ingénierie (géomatique ou topographie - et encore tout le monde ne conçoit pas qu'il faut être ingénieur pour faire des cartes), le développement (les cartes interactives sont partout et la gestion des données est devenu un enjeu crucial de réussite d'un projet), et l'infographie/design (une carte moche n'a aucun impact) : les personnalités types de ces 3 domaines sont généralement différentes.;H1, H3;Technique, Humain
+1326;la spatialité des données;H1;Territorial, Technique
+1363;Besoin de compétences techniques, faible intuitivité;H1;Technique, Humain
+1383;aucune;;Pas de différence
+1403;La maniabilité des outils SIG, le niveau de compétence;H1;Technique, Humain
+1429;comprehension minimale des enjeux et objectifs par les operateurs SIG et inversement comprehension basique des outils par les pilotes des projets;H1, H3;Humain, Organisationnel
+1434;l'utilisation des orthophotos pour le géoreferencement dans l'atelier de convertion de données spatiales;H1;Technique
+1435;c'est un métier à part entière les gens ne le comprennent pas;H1;Humain
+1483;GIS can be intimately connected to multidisciplinary teams;H3;Organisationnel, Transversalité
+1486;Peut-être la masse de données, même si ce n'est pas exclusif aux SIG. Sinon aucune.;H1;Technique
+1496;GIS isn’t IT so this question doesn’t make sense. They are not even close to the same.;;Pas de différence
+1500;These are two very different things. GIS could be considered IT at macro level, but not at a project specific level.;;Pas de différence
+1503;I don't think it requires as much training and org;;Pas de différence
+1525;La réglementation pour certaines thématiques de données SIG (DT/DICT, GRACE, geostandard AEP/AC....) impose d'être toujours en veille sur les aspects réglementaires, les standards de données très riches en France.;H2;Technique, Organisationnel
+1526;Users can “see” the results. Databases/spreadsheets/graphs are helpful but don’t resonate as much. ESP when staff are outside maintenance staff;H1;Humain
+1532;La double casquette Géographe et Informaticien du Sigiste.;H1, H3;Humain, Organisationnel
+1544;Par mon expérience dans les deux domaines, je dirais aucune. Néanmoins ce qui est plus complexe pour le SIG c'est qu'un nombre important d'utilisateur sont des utilisateurs avertis et pensent donc être en capacité d'intervenir dans le projet (choix technique, orientation, etc);H1, H3;Humain, Organisationnel
+1148;Spatial solutions;H1;Technique, Territorial

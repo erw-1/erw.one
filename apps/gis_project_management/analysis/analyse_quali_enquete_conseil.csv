@@ -1,0 +1,120 @@
+id;conseil;hypotheses;groupe
+136;L'humain ;H3;Compétences et accompagnement
+165;Savoir traduire un besoin en fonctionalités simple. Eviter le côté usine à gaz. rendre l'application facile d'utilisation. Etre à l'écoute, tenir un plannig savoir communiquer et être pédagogue ;H1, H3;Cadrage du besoin et parties prenantes, Simplicité et pragmatisme, Communication et pédagogie, Organisation et pilotage
+175;Bien organisé les fichiers, bien documenter les métadonnées, bien documenter le projet pour sa transmission.;H1;Qualité des données et documentation
+197;Capacité de s'adapter, communiquer, communiquer, communiquer, patience;H3;Compétences et accompagnement, Communication et pédagogie
+207;nécessité de combinais expérience train et téorie;H1, H3;Compétences et accompagnement, Anticipation et pérennité
+229;"Négociez du temps dédié EN CONTINU, pas ""quand vous avez un moment""";H3;Organisation et pilotage, Anticipation et pérennité
+270;Dialogue, transversalité, géomatique de service, disponibilité, écoute des utilisateurs, identifier les besoins et usages;H3;Collaboration et transversalité, Cadrage du besoin et parties prenantes
+271;Structurer le besoin ;H1;Cadrage du besoin et parties prenantes
+301;La communication est la clé ;H3;Communication et pédagogie
+307;Nous ne somme pas informaticien;H3;Compétences et accompagnement
+314;Pour nous? Faire avec les habitant.es, source de motivation, de savoir, d'énergie sans aucune comparaison et impact direct du processus sur les habitant.es;H3;Collaboration et transversalité, Compétences et accompagnement
+336;Bien s'assurer de tous les éléments de réussite du projet avant de dire oui aux élus ou à la direction ;H1, H3;Organisation et pilotage, Cadrage du besoin et parties prenantes
+340;L'alcool aide, mais c'est onéreux et dangereux.;;
+350;De l'opensource, bien documenté, des tests unitaires pour éviter des régressions par l'autre équipe;H1, H2;Choix des outils et interopérabilité, Qualité des données et documentation
+355;recherchez des esprits curieux;H3;Compétences et accompagnement
+357;Vision claire et les outils adéquats et un bon suivi ;H1;Organisation et pilotage, Choix des outils et interopérabilité
+362;Toujours faire une sauvegarde des données avant tous changements.;H1;Qualité des données et documentation
+363;Ne pas hésiter à organiser ou demander des réunions en cas de difficulté;H3;Organisation et pilotage, Collaboration et transversalité
+364;Détermination, endurance et curiosité et surtout le travail en équipe ;H3;Compétences et accompagnement, Collaboration et transversalité
+367;Faire simple et ne pas lâcher l'affaire après les formations !;H1;Simplicité et pragmatisme, Compétences et accompagnement
+384;"laisser ""l'humain"" de côté, se concentrer sur le taf, rien que le taf";;
+398;Un classique : dites non aux fonctionnalités qui s'empilent. Expliquez votre choix de sujet en fonction du marché pu du contrat, et proposer de faire ça dans un autre temps. Sinon vous ne vous en sortirez pas.;H1;Simplicité et pragmatisme, Cadrage du besoin et parties prenantes
+404;Intégrer du terrain;H1, H3;Anticipation et pérennité, Collaboration et transversalité
+411;voir le projet dans sa globalité dès le début ;H1;Organisation et pilotage, Anticipation et pérennité
+412;Connaissez le sujet du projet en profondeur. Prenez du temps pour définir le cahier des charges et le chiffrage associé;H1;Cadrage du besoin et parties prenantes, Organisation et pilotage
+417;Avoir une bonne documentation et former les gens qui ne sont pas geomaticiens de formation ;H1, H3;Qualité des données et documentation, Compétences et accompagnement
+437;La communication et la pédagogie sont deux éléments clés de la réussite d’un projet ;H3;Communication et pédagogie
+438;Bien comprendre l'objectif;H1;Cadrage du besoin et parties prenantes
+445;Un géomaticien n'est pas qu'un cartographe : structurer ses données (modélisation, développer les process d'intégration en back-end etc.) est essentiel avant de proposer plein de fonctionnalités carto (souvent gadgets).  Il faut essayer de prioriser son propre besoin de géomaticien gestionnaire de données, avant de répondre aux besoins (souvent gadgets) cartographiques des autres équipes ;H1;Cadrage du besoin et parties prenantes, Qualité des données et documentation, Simplicité et pragmatisme
+446;Constituer une équipe solide et surtout imposer ses choix;H3;Compétences et accompagnement, Leadership et responsabilisation
+448;Comprendre le sens et la finalité du projet avant de s'y engager.;H1;Cadrage du besoin et parties prenantes
+458;Communiquer l'évolution du projet à l'ensemble des parties prenantes;H3;Communication et pédagogie, Cadrage du besoin et parties prenantes
+464;Expliquer aux personnes non métier de façon plus compréhensible ;H3;Communication et pédagogie
+467;importance de la coordination entre les acteurs impliqués;H3;Collaboration et transversalité, Organisation et pilotage
+468;Structurer bien votre équipe et répartissez vous bien les tâches;H3;Organisation et pilotage, Collaboration et transversalité
+490;L'analyse des besoins et la Pédagogie sont indispensables;H1, H3;Cadrage du besoin et parties prenantes, Communication et pédagogie
+493;Points de suivi réguliers mais bien construits avec un timing précis pour chaque sujet (éviter les temps de discussion trop longs/hors sujets);H1, H3;Organisation et pilotage
+518;gestion de projet correctement définie en amont!! ;H1;Organisation et pilotage
+525;Joindre l'informaticien avec chaque projet pour les aspects SI / Favorisé les solutions ouvertes open source / Arrêté de vouloir tout centralisé sur le SIG sans raison (Stop aux hyperviseurs bullshit);H1, H2, H3;Collaboration et transversalité, Choix des outils et interopérabilité
+528;Sur les jumeaux numériques, receuillir les besoins pour savoir si vraiement utile. Et tout mettre en cloud, bcp plus rapide.;H1, H2;Cadrage du besoin et parties prenantes, Choix des outils et interopérabilité
+551;La compréhension du besoin utilisateur et de son accompagnement est des facteur primordiale. ;H1, H3;Cadrage du besoin et parties prenantes, Compétences et accompagnement
+568;Il faut une personne dédiée à l'animation/gestion avec le temps necessaire.;H3;Organisation et pilotage, Compétences et accompagnement
+570;La volonté politique et/ou l'expertise technique ne font pas tout. La tenu d'un.projet dans le temps nécessite des compétences en gestion de projet à proprement parler qui sont essentielle, parfois plus que les détails techniques;H1, H3;Organisation et pilotage, Anticipation et pérennité
+577;L’organisation et de la communication ;H3;Organisation et pilotage, Communication et pédagogie
+584;Bien recenser le besoin et calibrer techniquement les attentes.;H1;Cadrage du besoin et parties prenantes
+589;Une bonne organisation et gestion du projet.;H1;Organisation et pilotage
+602;Fixer des objectifs clairs à des échéances a court , mloyen et long terme;H1;Organisation et pilotage, Anticipation et pérennité
+621;Communiquez bien avec l'équipe metier;H3;Communication et pédagogie
+637;Si le bateau commence à chavirer, prendre de la hauteur et un virage à 180° ça peut sauver le projet donc être résiliant et patient ;H3;Organisation et pilotage, Compétences et accompagnement
+655;Formaliser la méthode de projet au début: COPIL, COTEC, revue de projet hebdomadaires, acteurs et rôles...;H1, H3;Organisation et pilotage, Leadership et responsabilisation
+671;être polyvalent intellectuellement et avoir un projet dessiné dès le début ;H1, H3;Compétences et accompagnement, Organisation et pilotage
+679;Privilégier l'Open Source ;H2;Choix des outils et interopérabilité
+687;disposer d’un cahier de charge clair par rapport aux besoins ;H1;Cadrage du besoin et parties prenantes
+691;Maîtrise des coûts, des délais et gestion humaine de chaque intervenants pour avoir une plus grande efficacité et atteindre le résultat final ;H1, H3;Organisation et pilotage, Compétences et accompagnement
+694;Toujours rester connecter au besoin utilisateur;H1;Cadrage du besoin et parties prenantes
+696;Comme pour les cartes, il faut faire un grand travail d'édition pour la gestion d'un projet SIG. Savoir cadrer les demandes, dire non, et être réaliste par rapport au temps et budgets sont essentiels.;H1, H3;Simplicité et pragmatisme, Cadrage du besoin et parties prenantes
+699;Se faire accompagner, ne pas hésiter à poser des questions au client/service concerné par le projet ;H3;Compétences et accompagnement, Cadrage du besoin et parties prenantes
+733;Faire des tests comparatifs réguliers et bien versionner les livrables;H1, H2;Qualité des données et documentation, Choix des outils et interopérabilité
+756;Mise en place de documentation + documents méthodiques de chaque étape + schématisation du modèle de données + acteurs ;H1;Qualité des données et documentation, Organisation et pilotage
+778;S'adapter aux contraintes métier et simplifier les méthodes de saisie dans les outils SIG;H1;Simplicité et pragmatisme, Cadrage du besoin et parties prenantes
+787;Communication ;H3;Communication et pédagogie
+788;Ayez des outils optimisés pour l'utilisateur final ! (tant pis si l'administration est lourde);H1;Choix des outils et interopérabilité
+792;Exigence de performance d'affichage, pré-requis de stockage et d'administration des bases, bonne compréhension des potentialités des éditeurs (ne pas figer les choix au BPU);H2;Choix des outils et interopérabilité
+797;Ayez le chef de projet en interne, conservez-le, et prévoyez l'après-projet;H3;Organisation et pilotage, Leadership et responsabilisation
+812;Expliquer ce qu'on peut faire et ce qu'on ne peut pas faire à ses interlocuteurs;H3;Communication et pédagogie, Cadrage du besoin et parties prenantes
+821;Bien identifier le besoin;H1;Cadrage du besoin et parties prenantes
+824;Faites-vous entendre ! Vous avez une valeur ajoutée inestimable pour la pérénité de l'entreprise à moyen/long terme. Exposez les pour/contre de chaque option. Organisez des réunions de cadrages avec les managers et pas mes utilisateurs finaux (là on parlerait d'identification des besoins, ou retour d'expérience). Votre rôle s'inscrit au coeur des process, de la qualité, du managment de projet. Choisissez bien vos intermocuteurs et portez vos sujets aux bonnes personnes dans l'entreprise.;H3;Cadrage du besoin et parties prenantes, Leadership et responsabilisation
+836;Classement des données locales et conserver les métadonnées (source du producteur, année de production et condition de saisie en particulier);H1;Qualité des données et documentation
+842;S'organiser, communiquer, être à l'écoute, compétences techniques, s'adapter aux personnes qui vont utiliser l'outil, faire simple, construire brique par brique;H1, H3;Organisation et pilotage, Communication et pédagogie, Compétences et accompagnement, Simplicité et pragmatisme
+911;Dont give up Its so very tedious that one can lose patience or give in and lower the bar - don't ever lower the bar where accuracy is concerned ;H1;Qualité des données et documentation
+929;Go pure open source;H2;Choix des outils et interopérabilité
+940;Il est essentiel de comprendre ce dont la personne a vraiment besoin, ne pas s'arrêter à ce qu'elle demande. Elle exprimera sa demande de travers 100% du temps car elle n'a pas forcément conscience de ce qui est possible. Donc creuser la question au lieu de produire de la donnée bêtement.;H1, H3;Cadrage du besoin et parties prenantes, Communication et pédagogie
+979;Need stakeholder buy-in;H3;Cadrage du besoin et parties prenantes, Collaboration et transversalité
+980;Good data management;H1;Qualité des données et documentation
+983;sustained budget and continuity ;H1;Organisation et pilotage, Anticipation et pérennité
+984;Please donate to your Open Source projects when you use them.;H2;Choix des outils et interopérabilité
+1011;Réalisation d'une note de cadrage par le service demandeur afin que la demande soit clairement posée sur papier. Elle servira de point de départ pour le déroulement du projet.;H1, H3;Cadrage du besoin et parties prenantes, Organisation et pilotage
+1018;Have user buy-in;H3;Cadrage du besoin et parties prenantes, Collaboration et transversalité
+1042;Understand your users/team members GIS knowledge level and keep it simple/to their level. ;H1, H3;Simplicité et pragmatisme, Communication et pédagogie
+1054;Having a structure for time line and tasks would be helpful;H1;Organisation et pilotage
+1102;Adopt Agile and iterative methods.;H1;Organisation et pilotage
+1107;Take the extra time early on to make sure stakeholders understand the power of spatial data. If you can do all other roadblocks become something the organization wants to overcome not just the GIS or IT Departments. ;H3;Communication et pédagogie, Cadrage du besoin et parties prenantes
+1122;life's too short to work with assholes;;
+1124;Documentation and process are key. Make sure there is no single point of failure. ;H1, H3;Qualité des données et documentation, Organisation et pilotage
+1129;Don't lose track of what data you have, if you do you'll never spend the time auditing it again.;H1;Qualité des données et documentation
+1131;Show how the actual problems can be solved, but make sure people understand that the road will be bumpy ;H3;Communication et pédagogie
+1148;Organization ;H1, H3;Organisation et pilotage
+1154;"Mobiliser des personnes ""moteur"" qui seront un relais lors de la mise en place et feront vivre le projet par la suite";H3;Compétences et accompagnement, Leadership et responsabilisation
+1158;Have one transferable common structure for collecting data;H1;Qualité des données et documentation
+1160;support et assistance régulière;H3;Compétences et accompagnement
+1162;Travailler avec une équipe réduite;H3;Collaboration et transversalité
+1170;Ignore your bosses! Solve the problems you can, show how much you've saved, and then duck;H1, H3;Organisation et pilotage, Leadership et responsabilisation
+1183;Clarifiez rigoureusement les besoins dès le lancement et impliquez le ou les utilisateurs finaux à chaque étape : c’est la clé pour livrer un SIG réellement adapté aux attentes.;H1, H3;Cadrage du besoin et parties prenantes, Collaboration et transversalité
+1209;Get a GIS personnel to work it;H1;Compétences et accompagnement
+1229;Fully explain what you can do and cannot do with GIS to stakeholders;H3;Communication et pédagogie, Cadrage du besoin et parties prenantes
+1235;Une bonne compréhension des besoins en amont;H1;Cadrage du besoin et parties prenantes
+1239;Cultivate champions in the client org;H3;Leadership et responsabilisation, Collaboration et transversalité
+1243;Upfront planning.;H1;Organisation et pilotage
+1273;do to not make large teams .... to much people means to much mentality to handle;H1, H3;Organisation et pilotage, Collaboration et transversalité
+1281;Pensez loin, réfléchissez aux besoin futur et non juste au présent. Le projet doit rester en évolution pour ne pas être obsolète.;H1;Anticipation et pérennité
+1308;Savoir traduire les besoins des non géomaticiens pour un résultat qui soit pratique pour tous;H1;Cadrage du besoin et parties prenantes
+1321;Ne pas oublier les métadonnées. Elles conservent le savoir spatial, le potentiel et les limites d'utilisation des données;H1;Qualité des données et documentation
+1326;echanger;H3;Collaboration et transversalité
+1363;Formation;H3;Compétences et accompagnement
+1383;avoir des personnes compétentes en termes de logique processuelle;H1, H3;Compétences et accompagnement
+1403;Formation interne ;H3;Compétences et accompagnement
+1429;bien consevrer les outils documentaires et les bases de données et les reverifier avant implementation ;H1;Qualité des données et documentation
+1434;Travail d'équipe ;H3;Collaboration et transversalité
+1435;"nous sommes des couteaux suisses, nous savons travailler avec tout le monde et portons une vision car nous sommes a la fois metier et technique (sans cheville qui enfle ;; :-) )";H3;Collaboration et transversalité
+1481;il faut avoir des détails de réalisation de projet ainsi qu'une correction des expert pour une amélioration possible;H1;Organisation et pilotage
+1483;Set expectations and communicate budgets and timelines early, assuming that the project team will underestimate the effort.;H1, H3;Organisation et pilotage, Communication et pédagogie
+1486;"Entourez-vous de personnes compétentes, déterminées et investies. L'Humain est la clef de la réussite ou de l'échec. Désolé, mais un deuxième tout aussi important : Choisissez la simplicité par-dessus la complexité, comme l'a dit un jour Léonard De Vinci ""la simplicité est la sophistication suprême"".";H1, H3;Compétences et accompagnement, Simplicité et pragmatisme
+1496;Good data in good results out. Bad data in, bad results out. ;H1;Qualité des données et documentation
+1500;Get a GIS manager involved at the start of the project. The success of the project depends on getting GIS involved from the start. It cannot be reactive or an afterthoguht.;H3;Organisation et pilotage, Leadership et responsabilisation
+1503;Keep organized and make someone is able to jump right into a project without you being there to ask questions to ;H1;Organisation et pilotage
+1525;Porter une attention particulière sur la communication entre acteur. Elle doit être uniforme par profil d'acteur (même niveau d'information), régulière (pas de période trop longue sans contact), bienveillante et adaptée.  ;H3;Communication et pédagogie
+1526;Use the simplest data model and solution possible to accomplish your objectives;H1;Simplicité et pragmatisme
+1532;Distinguer clairement les compentences  en trois typologie : les géographes-cartographes, les  sigistes-Géomaticien (double casquette Carto et Informatiique) et les informaticien.  Tous ne sont pas compétent en tout  et réciproquement;H3;Compétences et accompagnement
+1544;Proche des commanditaires et utilisateurs. Ne pas faire de superflux. Eviter les communications empechant le bon avancement. ;H3;Cadrage du besoin et parties prenantes, Collaboration et transversalité
