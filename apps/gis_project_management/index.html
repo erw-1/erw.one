@@ -427,6 +427,22 @@
           mapTheme: { type: 'text' },
           popup: `<div><strong>Spécificité SIG :</strong> {specificite_sig}</div>`
         },
+        specificite_sig_groupe: {
+          label: 'Thèmes des spécificités',
+          group: 'Analyse qualitative',
+          type: 'multiva', match: 'hasAny', sep: ', ',
+          options: {
+            Technique: 'Technique', Territorial: 'Territorial', Humain: 'Humain',
+            'Pas de différence': 'Pas de différence', Organisationnel: 'Organisationnel', Transversalité: 'Transversalité'
+          },
+          colors: {
+            Technique: '#1f77b4', Territorial: '#ff7f0e', Humain: '#2ca02c',
+            'Pas de différence': '#d62728', Organisationnel: '#9467bd', Transversalité: '#8c564b'
+          },
+          dataviz: { type: 'bar-horizontal', split: ', ' },
+          mapTheme: { type: 'pie', multiField: 'specificite_sig_groupe'},
+          popup: `<div><strong>Spécificité SIG :</strong> {specificite_sig}</div><div><strong>Groupe·s :</strong> {specificite_sig_groupe}</div>`
+        },
         conseil: {
           label: 'Conseils',
           description: 'Texte libre : conseils ou retours généraux',
