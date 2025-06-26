@@ -66,6 +66,104 @@
     @media (max-width: 800px) {
       #charts { display: none; }
     }
+
+    /* manual patch 1 */
+    label, .title {
+        padding-left: 10px;
+    }
+    
+    .chart path, rect {
+        opacity: 0.5;
+    }
+    
+    .desc {
+        margin-bottom: 20px;
+        color:#a8b6ba;
+    }
+    
+    #sidebar {
+        background:#FAFAF8;
+        border-left: solid 1px #ebf1f3;
+    }
+    
+    #charts {
+        background:#FAFAF8;
+    }
+    
+    #sidebar, #charts {
+        width: 350px;
+    }
+    
+    details {
+        border: none;
+        border-radius: 10px;
+    }
+    
+    summary button.reset-group {  
+        font-weight: 600;
+        color: #dedede;
+    }
+    
+    summary:hover::before, summary button.reset-group:hover {
+        color: #a8b6ba;
+    }
+    
+    summary::before {
+        color: #dedede
+    }
+    
+    details[open] summary {
+        border-radius: 10px 10px 0px 0px;
+        background-color: #a8b6ba;
+        color: white ;
+    }
+    
+    details[open] summary::before, details[open] summary button.reset-group  {
+        color: white ;
+    }
+    
+    details[open] summary button.reset-group:hover, details[open] summary:hover::before  {
+        color: #dedede
+    }
+    
+    
+    .reset-global:hover {
+        background: #a8b6ba;
+    }
+    
+    .reset-global {
+        background: #D4DADC;
+        display: block;
+        margin: 0 auto;
+        margin-bottom: 12px;
+        font-weight: 600;
+    }
+    
+    
+    ::-webkit-scrollbar {
+        width: 12px;
+        background: #00000001 !important;
+    }
+    
+    ::-webkit-scrollbar-corner {
+        background-color: transparent !important;
+        
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background-color: #a8b6ba;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background-color: #D4DADC;
+    
+        border-radius: 10px;
+        border: 4px solid rgba(0, 0, 0, 0);
+        background-clip: padding-box;
+    }
+    
+    .wordcloud-svg {
+        border: none;
+    }
   </style>
 </head>
 <body>
