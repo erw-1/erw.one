@@ -43,7 +43,7 @@
  /**
   * CONFIGURATION COMPLÈTE
   */
- import CONFIG from './config.json' assert { type: 'json' };
+ import { CONFIG } from './config.js';
 
  /** TABLEAUX CALCULÉS */
  const ALL_FIELDS = Object.keys(CONFIG.fields);
