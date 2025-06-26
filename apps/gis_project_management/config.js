@@ -1,4 +1,4 @@
-export const CONFIG = {{
+export const CONFIG = {
    fields: {
      // Champs existants
      lang: {
