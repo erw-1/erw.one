@@ -421,23 +421,39 @@
         specificite_sig: {
           label: 'Spécificité SIG',
           description: 'Texte libre : défis ou points forts liés au SIG ?',
-          group: 'Texte Libre',
+          group: 'Analyse qualitative',
           type: 'text',
           dataviz: { type: 'wordcloud' },
           mapTheme: { type: 'text' },
           popup: `<div><strong>Spécificité SIG :</strong> {specificite_sig}</div>`
         },
+        specificite_sig_groupe: {
+          label: 'Thèmes des spécificités',
+          group: 'Analyse qualitative',
+          type: 'multiva', match: 'hasAny', sep: ', ',
+          dataviz: { type: 'bar-horizontal', split: ', ' },
+          mapTheme: { type: 'pie', multiField: 'specificite_sig_groupe'},
+          popup: `<div><strong>Spécificité SIG :</strong> {specificite_sig}</div><div><strong>Groupe·s :</strong> {specificite_sig_groupe}</div>`
+        },
         conseil: {
-          label: 'Conseil/Retour',
+          label: 'Conseils',
           description: 'Texte libre : conseils ou retours généraux',
-          group: 'Texte Libre',
+          group: 'Analyse qualitative',
           type: 'text',
           dataviz: { type: 'wordcloud' },
           mapTheme: { type: 'text' },
-          popup: `<div><strong>Conseil/Retour :</strong> {conseil}</div>`
+          popup: `<div><strong>Conseil :</strong> {conseil}</div>`
+        },
+        conseil_groupe: {
+          label: 'Thèmes des conseils',
+          group: 'Analyse qualitative',
+          type: 'multiva', match: 'hasAny', sep: ', ',
+          dataviz: { type: 'bar-horizontal', split: ', ' },
+          mapTheme: { type: 'pie', multiField: 'conseil_groupe'},
+          popup: `<div><strong>Conseil : :</strong> {conseil}</div><div><strong>Groupe·s :</strong> {conseil_groupe}</div>`
         }
       },
-      groupOrder: ['Général', 'Acteurs', 'Documentation', 'Texte Libre'],
+      groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Documentation'],
       continuousConfig: { docs_nb_formats: d3.interpolateBlues }
     };
 
