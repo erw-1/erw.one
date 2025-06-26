@@ -556,7 +556,7 @@
 
     /** INITIALISATION DE LA CARTE + COUCHE MARQUEURS */
     const map = L.map('map').setView([46.5, 2.5], 6);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+    L.tileLayer('https://cartodb-basemaps-a.global.ssl.fastly.net/light_nolabels/{z}/{x}/{y}.png', { attribution: 'cartodb' }).addTo(map);
     const markerLayer = L.layerGroup().addTo(map);
 
     /** LÉGENDE PERSONNALISÉE */
