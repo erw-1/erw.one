@@ -1,6 +1,6 @@
 {
 	"type" : "FeatureCollection",
-	"name" : "enquete_sig_testing_160525",
+	"name" : "fix_comprehension",
 	"features" : [
 		{
 			"type" : "Feature",
@@ -78,12 +78,12 @@
 				"methode_note" : 8,
 				"outil_proj_nb" : "3",
 				"outil_proj" : "excel, monday, autre",
-				"outil_proj_autre" : "Kobocollect/kobotoolbox",
 				"outil_proj_note" : 9,
 				"influence_nb" : "2",
 				"influence" : "humaine, budget",
-				"influence_humaine_com" : "Personnelle non compétant",
-				"influence_budget_com" : "Moyen financier intéressant"
+				"influence_budget_com" : "Moyen financier intéressant",
+				"outil_proj_autre" : "Kobocollect/kobotoolbox",
+				"influence_humaine_com" : "Personnelle non compétant"
 			}
 		},
 		{
@@ -120,13 +120,13 @@
 				"docs_note" : 5,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Methode personelle ",
 				"methode_note" : 5,
 				"outil_proj_nb" : "0",
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
-				"influence" : "technique"
+				"influence" : "technique",
+				"methode_autre" : "Methode personelle "
 			}
 		},
 		{
@@ -164,8 +164,8 @@
 				"outil_proj_note" : 1,
 				"influence_nb" : "2",
 				"influence" : "Orga, humaine",
-				"influence_orga_com" : "Pilotage insuffisant de ma part",
-				"influence_humaine_com" : "Personnel insuffisant ne permettant pas la suivi de projets pérennes de façon continue"
+				"influence_humaine_com" : "Personnel insuffisant ne permettant pas la suivi de projets pérennes de façon continue",
+				"influence_orga_com" : "Pilotage insuffisant de ma part"
 			}
 		},
 		{
@@ -289,8 +289,8 @@
 				"outil_proj_note" : 10,
 				"influence_nb" : "2",
 				"influence" : "Orga, humaine",
-				"influence_orga_com" : "deux personnes impliquées et engagées côté commanditaire",
-				"influence_humaine_com" : "personnes en charge et parties prenantes compétentes"
+				"influence_humaine_com" : "personnes en charge et parties prenantes compétentes",
+				"influence_orga_com" : "deux personnes impliquées et engagées côté commanditaire"
 			}
 		},
 		{
@@ -591,7 +591,6 @@
 				"presentation" : "Géocodage de 100 000 sujets d'étude",
 				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
 				"issue" : "Autre",
-				"issue_autre" : "Encore en cours",
 				"duree" : "Plus de 5 ans",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "2 – 3",
@@ -618,9 +617,10 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "Réussite",
 				"influence_humaine_com" : "Réussite",
-				"influence_technique_com" : "Réussite"
+				"influence_orga_com" : "Réussite",
+				"influence_technique_com" : "Réussite",
+				"issue_autre" : "Encore en cours"
 			}
 		},
 		{
@@ -643,7 +643,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Gros manque de compréhension des SIG",
-				"alea_reprise_autre" : "COmmunication déja faites, qui provoquent de l'attente de la part des demandeurs. Solution technique pas du tout prêtes.",
 				"specificite_sig" : "Personne comprend ce qu'on fait.",
 				"specificite_sig_hypotheses" : "H1",
 				"specificite_sig_groupe" : "Humain",
@@ -664,7 +663,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "humaine, politique, technique"
+				"influence" : "humaine, politique, technique",
+				"alea_reprise_autre" : "COmmunication déja faites, qui provoquent de l'attente de la part des demandeurs. Solution technique pas du tout prêtes."
 			}
 		},
 		{
@@ -680,10 +680,8 @@
 				"structure" : "Autre",
 				"structure_autre" : "financement agence d'aide au développement, portage équipe projet universitaire et associative",
 				"issue" : "Autre",
-				"issue_autre" : "succès partiel car collecte données, analyse toujours en cours, après vie dans les municipalités et autres acteurs non certaine",
 				"duree" : "3 à 5 ans",
 				"role" : "Autre",
-				"role_autre" : "Désolée, combi: coordinatrice, technicienne SIG interne, formatrice",
 				"nb_acteurs_differents" : "2 – 3",
 				"comprehension_sig_acteurs" : 1,
 				"repartition_roles" : "Plusieurs personnes impliquées durablement",
@@ -704,14 +702,16 @@
 				"docs_note" : 8,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Aucune théorie, mais en pratique agile, avec des moments de sprint et de carto intense, et une flexibilité pour s'adapter au contexte conflictuel et difficile de la région",
 				"methode_note" : 7,
 				"outil_proj_nb" : "0",
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
 				"influence" : "politique, technique",
+				"methode_autre" : "Aucune théorie, mais en pratique agile, avec des moments de sprint et de carto intense, et une flexibilité pour s'adapter au contexte conflictuel et difficile de la région",
 				"influence_technique_com" : "difficulté pour nous de servir des images sensible haute résolution, on a du passer par un prestataire externe et interrompre le service faute de financements. ",
+				"issue_autre" : "succès partiel car collecte données, analyse toujours en cours, après vie dans les municipalités et autres acteurs non certaine",
+				"role_autre" : "Désolée, combi: coordinatrice, technicienne SIG interne, formatrice",
 				"influence_politique_com" : "Difficulté du contexte israélo palestinien, très dur politiquement de faire des SIG en zone si sensible"
 			}
 		},
@@ -797,8 +797,8 @@
 				"outil_proj_note" : 2,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "Pas de communication de la direction avec les partenaires",
 				"influence_humaine_com" : "Expression du besoin pas claire, manque de direction",
+				"influence_orga_com" : "Pas de communication de la direction avec les partenaires",
 				"influence_technique_com" : "Manque de données"
 			}
 		},
@@ -822,7 +822,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Tant que ça marche, on ne s'en soucie pas",
-				"alea_reprise_autre" : "Ayant pu et su répondre seul à la commande, j'ai fait de l'ombre sans prêter allégeance. Aussi on m'a exclu d'autres projets ultérieurs.",
 				"specificite_sig" : "La méconnaissance de cet outil, de ses prérequis et de ce mode de penser font que les demandes sont souvent soit irréalistes soit inadaptées.  Un SIG n'est nullement un outil de cartographie. ",
 				"specificite_sig_hypotheses" : "H1, H3",
 				"specificite_sig_groupe" : "Humain, Organisationnel",
@@ -838,18 +837,19 @@
 				"docs_note" : 1,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Démerde-toi",
 				"methode_note" : 1,
 				"outil_proj_nb" : "1",
 				"outil_proj" : "autre",
-				"outil_proj_autre" : "Envoie le bois, c'est urgent",
 				"outil_proj_note" : 1,
 				"influence_nb" : "6",
 				"influence" : "Orga, humaine, budget, politique, technique, autre",
-				"influence_orga_com" : "Par son absence, elle n'influe pas le projet au début, ensuite l'objectif est de la juguler.",
-				"influence_humaine_com" : "cf organisationnelles",
 				"influence_budget_com" : "Le libre et l'open-source sont gratuits, parait-il, comme les heures supplémentaires. ",
+				"outil_proj_autre" : "Envoie le bois, c'est urgent",
+				"influence_humaine_com" : "cf organisationnelles",
+				"methode_autre" : "Démerde-toi",
+				"influence_orga_com" : "Par son absence, elle n'influe pas le projet au début, ensuite l'objectif est de la juguler.",
 				"influence_technique_com" : "Aide de toi, et le Ciel t'aidera",
+				"alea_reprise_autre" : "Ayant pu et su répondre seul à la commande, j'ai fait de l'ombre sans prêter allégeance. Aussi on m'a exclu d'autres projets ultérieurs.",
 				"influence_politique_com" : "Si cela sert des intérêts individuels supérieurs, en paix tu seras... Sinon, un chef viendra te gouverner et t'expliquer.",
 				"influence_autre_com" : "Gérer ses addictions.  "
 			}
@@ -874,7 +874,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Arrêt du financement et donc du projet en grande partie",
-				"alea_reprise_autre" : "Par rapport aux attentes \"durant le projet\", je pense que c'est très sous-utilisé.",
 				"conseil" : "De l'opensource, bien documenté, des tests unitaires pour éviter des régressions par l'autre équipe",
 				"conseil_hypotheses" : "H1, H2",
 				"conseil_groupe" : "Choix des outils et interopérabilité, Qualité des données et documentation",
@@ -892,7 +891,8 @@
 				"outil_proj" : "git",
 				"outil_proj_note" : 9,
 				"influence_nb" : "3",
-				"influence" : "humaine, budget, politique"
+				"influence" : "humaine, budget, politique",
+				"alea_reprise_autre" : "Par rapport aux attentes \"durant le projet\", je pense que c'est très sous-utilisé."
 			}
 		},
 		{
@@ -1154,9 +1154,9 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "5",
 				"influence" : "Orga, humaine, budget, technique, autre",
-				"influence_orga_com" : "Gouvernance partagée ",
-				"influence_humaine_com" : "Appropriation dorect car les utilisateurs ont fait les specs",
 				"influence_budget_com" : "Prix sans aucune mesure avec les s° sur étagères ",
+				"influence_humaine_com" : "Appropriation dorect car les utilisateurs ont fait les specs",
+				"influence_orga_com" : "Gouvernance partagée ",
 				"influence_technique_com" : "Techno complètement maîtrisée par l'équipe. ",
 				"influence_autre_com" : "L'outil est simple et va à l'essentiel. les produits sur étagères sont des usines à gaz"
 			}
@@ -1176,14 +1176,12 @@
 				"issue" : "Succès",
 				"duree" : "3 à 5 ans",
 				"role" : "Autre",
-				"role_autre" : "chef de projet heomatique côté métier et patrimoine / AMOA",
 				"nb_acteurs_differents" : "Plus de 5",
 				"comprehension_sig_acteurs" : 2,
 				"repartition_roles" : "Plusieurs personnes impliquées durablement",
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "mon arrivée _ reprise d'expression de Besoins auprès des métiers/ extension des métiers cibles _ suivi et MAJ et évolution du projet auprès du prestataire / évolution entre développement et MEP ",
-				"alea_reprise_autre" : "autre : projet initial très éloigné du projet final-du au fait d'arriver dans le projet et de le reprendre en main, rendre des livrables actualisés plus en phase avec les besoins métier qui ont évolués et aménagements changeants des plateformes ",
 				"specificite_sig" : "aucune - sinon l'effet visuel, le Wooo quand Demo des POCs, 1er de série car support cartographique - impact de l'image / de la carte interactive ",
 				"specificite_sig_hypotheses" : "H1",
 				"specificite_sig_groupe" : "Technique",
@@ -1202,13 +1200,15 @@
 				"methode_note" : 6,
 				"outil_proj_nb" : "1",
 				"outil_proj" : "autre",
-				"outil_proj_autre" : "TFS",
 				"outil_proj_note" : 5,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, budget, autre",
-				"influence_orga_com" : "un portage fort par l'entreprise - chefs de projets motives",
-				"influence_humaine_com" : "2 chefs de projets côté DGO, + 1 côté DSI + des prestataires ",
 				"influence_budget_com" : "aucune contrainte budgétaire,  ça aide",
+				"outil_proj_autre" : "TFS",
+				"influence_humaine_com" : "2 chefs de projets côté DGO, + 1 côté DSI + des prestataires ",
+				"influence_orga_com" : "un portage fort par l'entreprise - chefs de projets motives",
+				"alea_reprise_autre" : "autre : projet initial très éloigné du projet final-du au fait d'arriver dans le projet et de le reprendre en main, rendre des livrables actualisés plus en phase avec les besoins métier qui ont évolués et aménagements changeants des plateformes ",
+				"role_autre" : "chef de projet heomatique côté métier et patrimoine / AMOA",
 				"influence_autre_com" : "la volonté d'1 chef de projet d'être embauché par le Groupe... ça compte"
 			}
 		},
@@ -1224,7 +1224,6 @@
 				"presentation" : "Création d'un outil de cartographie et de gestion du patrimoine d'une mairie",
 				"structure" : "Public territorial (collectivité, EPCI, département, région)",
 				"issue" : "Autre",
-				"issue_autre" : "En cours avec des hauts et des bas",
 				"duree" : "6 mois à 1 an",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "Plus de 5",
@@ -1247,15 +1246,16 @@
 				"docs_note" : 5,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "On fait des points régulier avec les acteurs.",
 				"methode_note" : 5,
 				"outil_proj_nb" : "0",
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, politique",
-				"influence_orga_com" : "Le fait qu'on doivent traiter avec plusieurs services de la commune et plusieurs bases de données de l'état rend le tout complique à organisé.",
 				"influence_humaine_com" : "Personnes ne s'y connait en SIG, les demandes sont donc flou et parfois exagérées.",
+				"methode_autre" : "On fait des points régulier avec les acteurs.",
+				"influence_orga_com" : "Le fait qu'on doivent traiter avec plusieurs services de la commune et plusieurs bases de données de l'état rend le tout complique à organisé.",
+				"issue_autre" : "En cours avec des hauts et des bas",
 				"influence_politique_com" : "Le fait que les élus et la direction technique veuille absolument voir le projet émergé nous aide, malgré le manque de connaissance technique SIG des agents."
 			}
 		},
@@ -1271,7 +1271,6 @@
 				"presentation" : "Mise à jour du réseau d'assainissement",
 				"structure" : "Public territorial (collectivité, EPCI, département, région)",
 				"issue" : "Autre",
-				"issue_autre" : "partiellement abouti",
 				"duree" : "1 à 6 mois",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "2 – 3",
@@ -1300,7 +1299,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
-				"influence" : "Orga"
+				"influence" : "Orga",
+				"issue_autre" : "partiellement abouti"
 			}
 		},
 		{
@@ -1360,7 +1360,6 @@
 				"presentation" : "Numérisation de réseau d'eau",
 				"structure" : "Public territorial (collectivité, EPCI, département, région)",
 				"issue" : "Autre",
-				"issue_autre" : "Projet terminé mais insatisfaisant",
 				"duree" : "1 à 3 ans",
 				"role" : "Chef·fe de projet / coordinateur·rice",
 				"nb_acteurs_differents" : "4 – 5",
@@ -1369,7 +1368,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Changement de responsable en cours de projet. Manque de moyen",
-				"alea_reprise_autre" : "Nouvelle personne recrutée manquant de contexte. Manque de moyens",
 				"specificite_sig" : "Aucune",
 				"specificite_sig_hypotheses" : null,
 				"specificite_sig_groupe" : "Pas de différence",
@@ -1390,7 +1388,9 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, budget"
+				"influence" : "Orga, humaine, budget",
+				"issue_autre" : "Projet terminé mais insatisfaisant",
+				"alea_reprise_autre" : "Nouvelle personne recrutée manquant de contexte. Manque de moyens"
 			}
 		},
 		{
@@ -1431,10 +1431,10 @@
 				"methode_note" : 10,
 				"outil_proj_nb" : "3",
 				"outil_proj" : "jira, notion, autre",
-				"outil_proj_autre" : "Confluence",
 				"outil_proj_note" : 10,
 				"influence_nb" : "3",
 				"influence" : "humaine, technique, autre",
+				"outil_proj_autre" : "Confluence",
 				"influence_humaine_com" : "Porteurs de projets et managers pédagogiques et qui prennent le temps d’expliquer + très bonne documentation ",
 				"influence_technique_com" : "Avoir des technologies simples et bien gérées pour faciliter une bonne reprise ",
 				"influence_autre_com" : "Méthode Agile"
@@ -1471,10 +1471,10 @@
 				"methode_note" : 6,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "REPORTING SIG TYPE AGOL",
 				"outil_proj_note" : 5,
 				"influence_nb" : "4",
-				"influence" : "Orga, humaine, budget, politique"
+				"influence" : "Orga, humaine, budget, politique",
+				"outil_proj_autre" : "REPORTING SIG TYPE AGOL"
 			}
 		},
 		{
@@ -1561,8 +1561,8 @@
 				"outil_proj_note" : 4,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "Le projet était très peu défini au départ et les différentes étapes se sont faites à tâtons...",
 				"influence_humaine_com" : "Des agents spécialisés sur le métier, des agents experts du SIG mais le langage entre les deux n'est pas le même...",
+				"influence_orga_com" : "Le projet était très peu défini au départ et les différentes étapes se sont faites à tâtons...",
 				"influence_technique_com" : "Problèmes de compatibilité des outils bureautiques et web"
 			}
 		},
@@ -1621,7 +1621,6 @@
 				"presentation" : "Créer des typologies de bâtis pour personnaliser les financements de rénovation",
 				"structure" : "Public territorial (collectivité, EPCI, département, région)",
 				"issue" : "Autre",
-				"issue_autre" : "Le projets suit son chemin. Mais il est trés ralentit par des dissensions internes",
 				"duree" : "6 mois à 1 an",
 				"role" : "Chef·fe de projet / coordinateur·rice",
 				"nb_acteurs_differents" : "Plus de 5",
@@ -1652,6 +1651,7 @@
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, politique",
 				"influence_orga_com" : "Pas d'équipe dédiée, hiérarchie qui suit le projet au compte-goute",
+				"issue_autre" : "Le projets suit son chemin. Mais il est trés ralentit par des dissensions internes",
 				"influence_politique_com" : "Le projet est imménament politique et chacun cherche a se faire voir"
 			}
 		},
@@ -1711,7 +1711,6 @@
 				"presentation" : "Outil contrôle qualité",
 				"structure" : "Parapublic (syndicat mixte, EPIC…)",
 				"issue" : "Autre",
-				"issue_autre" : "En cours de production",
 				"duree" : "6 mois à 1 an",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "2 – 3",
@@ -1733,7 +1732,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 7,
 				"influence_nb" : "0",
-				"influence" : ""
+				"influence" : "",
+				"issue_autre" : "En cours de production"
 			}
 		},
 		{
@@ -1873,7 +1873,6 @@
 				"presentation" : "Cartographie à grande échelle ",
 				"structure" : "Privé (entreprise, bureau d’études)",
 				"issue" : "Autre",
-				"issue_autre" : "Lent à se developper ",
 				"duree" : "3 à 5 ans",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "2 – 3",
@@ -1882,7 +1881,6 @@
 				"copil" : "Non",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Renvoi d'une direction , problème de confiance",
-				"alea_reprise_autre" : "Changement de service",
 				"specificite_sig" : "La transversalité, peu importe le service et le besoin, il y a toujours un intérêt et c'est simple d'adaptation",
 				"specificite_sig_hypotheses" : "H3",
 				"specificite_sig_groupe" : "Transversalité",
@@ -1903,7 +1901,9 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 4,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, politique"
+				"influence" : "Orga, humaine, politique",
+				"issue_autre" : "Lent à se developper ",
+				"alea_reprise_autre" : "Changement de service"
 			}
 		},
 		{
@@ -2043,17 +2043,14 @@
 				"presentation" : "Impact du changement climatique sur la gestion de la viabilité hivernale ",
 				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
 				"issue" : "Autre",
-				"issue_autre" : "transition des objectifs",
 				"duree" : "6 mois à 1 an",
 				"role" : "Autre",
-				"role_autre" : "stagiaire",
 				"nb_acteurs_differents" : "2 – 3",
 				"comprehension_sig_acteurs" : 4,
 				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
 				"copil" : "Non",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "fin du stage",
-				"alea_reprise_autre" : "reprise de quelques résultats et adaptation des axes",
 				"specificite_sig" : "multidisciplinarité",
 				"specificite_sig_hypotheses" : "H3",
 				"specificite_sig_groupe" : "Organisationnel, Transversalité",
@@ -2075,9 +2072,12 @@
 				"outil_proj_note" : 2,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "trop grande autonomie",
 				"influence_humaine_com" : "manque de compétences en développement ",
-				"influence_technique_com" : "outil parfois non adapté (ex utilisation d'Excel pour + de 20M de lignes)"
+				"influence_orga_com" : "trop grande autonomie",
+				"influence_technique_com" : "outil parfois non adapté (ex utilisation d'Excel pour + de 20M de lignes)",
+				"issue_autre" : "transition des objectifs",
+				"alea_reprise_autre" : "reprise de quelques résultats et adaptation des axes",
+				"role_autre" : "stagiaire"
 			}
 		},
 		{
@@ -2100,7 +2100,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "1 fournisseurs différents pour chaque Horloge/Thermostat connecté/Capteurs/Actionneurs",
-				"alea_reprise_autre" : "Solution technique existantes, mais remontés dans Systeme SIG via API complexe, nécéssite des compétences en developpement WEB, et répéter les développements pour chaque marque/plateforme IOT. ",
 				"specificite_sig" : "L'aspect très multi diciplinaire (Architecture Informatique + DevWeb + Gestion BDD + IOT)",
 				"specificite_sig_hypotheses" : "H1, H3",
 				"specificite_sig_groupe" : "Technique, Organisationnel, Transversalité",
@@ -2122,9 +2121,10 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, politique, technique",
-				"influence_orga_com" : "Décideurs n'ont pas conscience de la réalité du travail d'un géomaticien. Et ne souhaite pas vraiment comprendre (manque de temps, dette technique >50ans etc)",
 				"influence_humaine_com" : "COmpétence informatique des géomaticiens très basique, inadapté au developpement WEB",
+				"influence_orga_com" : "Décideurs n'ont pas conscience de la réalité du travail d'un géomaticien. Et ne souhaite pas vraiment comprendre (manque de temps, dette technique >50ans etc)",
 				"influence_technique_com" : "Logiciels propriétaire \"clé en main\" très fermé au final, connection générique vers SIG via API très complexe, notament la remonté d'information et l'envoi d'instruction (Ex: Allumé/Eteindre EP). Nécéssite souvent d'avoir 2 solution/logiciels en parallèle, une pour la remontée et un autre solution pour l'envoi",
+				"alea_reprise_autre" : "Solution technique existantes, mais remontés dans Systeme SIG via API complexe, nécéssite des compétences en developpement WEB, et répéter les développements pour chaque marque/plateforme IOT. ",
 				"influence_politique_com" : "Projet avec élu, donc figé/abandonnée à la prochaine éléction si pas réelu."
 			}
 		},
@@ -2191,7 +2191,6 @@
 				"nb_acteurs_differents" : "Plus de 5",
 				"comprehension_sig_acteurs" : 4,
 				"repartition_roles" : "Autre",
-				"repartition_roles_autre" : "Equipe de geomaticiens (developpeur, commerciaux, technicien)",
 				"copil" : "Non",
 				"alea_reprise" : "Oui, reprise fluide",
 				"techno_nb" : "1",
@@ -2203,46 +2202,14 @@
 				"docs_note" : 8,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "SX",
 				"methode_note" : 5,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, jira",
 				"outil_proj_note" : 9,
 				"influence_nb" : "3",
-				"influence" : "humaine, budget, technique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.69804, 43.31511 ]
-			},
-			"properties" : {
-				"id" : 545,
-				"lang" : "fr",
-				"presentation" : "Carto règlementaire : réalisation des annexes parcellaires d'un projet de classement au titre des sites",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Succès",
-				"duree" : "1 à 3 ans",
-				"role" : "Prestataire externe / consultant·e",
-				"nb_acteurs_differents" : "Plus de 5",
-				"comprehension_sig_acteurs" : 3,
-				"techno_nb" : "3",
-				"techno" : "libre, code, standards",
-				"techno_note" : 8,
-				"docs_presence" : "Oui, mais peu claire ou obsolète",
-				"docs_nb_formats" : "2",
-				"docs_formats" : "docx, mails",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 9,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 9,
-				"influence_nb" : "0",
-				"influence" : ""
+				"influence" : "humaine, budget, technique",
+				"methode_autre" : "SX",
+				"repartition_roles_autre" : "Equipe de geomaticiens (developpeur, commerciaux, technicien)"
 			}
 		},
 		{
@@ -2257,13 +2224,11 @@
 				"presentation" : "Application web cartographique de remontée d'informations",
 				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
 				"issue" : "Autre",
-				"issue_autre" : "En cours d'échec",
 				"duree" : "1 à 6 mois",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "2 – 3",
 				"comprehension_sig_acteurs" : 1,
 				"repartition_roles" : "Autre",
-				"repartition_roles_autre" : "Aucune personne désignée comme gestionnaire du projet",
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Restructuration, manque de communication avec les utilisateurs (incompréhension du besoin), ajout d'un outil supplémentaire non désiré ",
@@ -2287,7 +2252,9 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 2,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, politique"
+				"influence" : "Orga, humaine, politique",
+				"issue_autre" : "En cours d'échec",
+				"repartition_roles_autre" : "Aucune personne désignée comme gestionnaire du projet"
 			}
 		},
 		{
@@ -2324,16 +2291,16 @@
 				"docs_note" : 5,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Fonce, vas-y, oubli que t'a aucune chance.",
 				"methode_note" : 5,
 				"outil_proj_nb" : "1",
 				"outil_proj" : "autre",
-				"outil_proj_autre" : "1 personne dédiée",
 				"outil_proj_note" : 4,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, politique",
-				"influence_orga_com" : "Une personne dédiées au suivi et animation",
+				"outil_proj_autre" : "1 personne dédiée",
 				"influence_humaine_com" : "Une équipe projet motivée et solidaire",
+				"methode_autre" : "Fonce, vas-y, oubli que t'a aucune chance.",
+				"influence_orga_com" : "Une personne dédiées au suivi et animation",
 				"influence_politique_com" : "Obligation règlementaire ayant servi de levier"
 			}
 		},
@@ -2375,13 +2342,13 @@
 				"methode_note" : 9,
 				"outil_proj_nb" : "3",
 				"outil_proj" : "excel, monday, autre",
-				"outil_proj_autre" : "Redmine",
 				"outil_proj_note" : 4,
 				"influence_nb" : "5",
 				"influence" : "Orga, humaine, budget, politique, technique",
-				"influence_orga_com" : "Un pilotage éclairé côté structure cliente est primordial. Éclairé au sens technique mais aussi organisationnel et sur les jeux d'acteurs",
-				"influence_humaine_com" : "Le chef de projet collectivité a de réelles compétences humaines, et j'ai pu bâtir une relation de confiance grâce à ces aspect la notamment",
 				"influence_budget_com" : "Le budget était la et permet après plus de un an de démarrage, de rentrer dans des processus d'amelioration continue. Il n'est pas possible de faire le tour du sujet avant d'avoir \"le nez dedans\" au cours du projet",
+				"outil_proj_autre" : "Redmine",
+				"influence_humaine_com" : "Le chef de projet collectivité a de réelles compétences humaines, et j'ai pu bâtir une relation de confiance grâce à ces aspect la notamment",
+				"influence_orga_com" : "Un pilotage éclairé côté structure cliente est primordial. Éclairé au sens technique mais aussi organisationnel et sur les jeux d'acteurs",
 				"influence_technique_com" : "Le choix de 2 logiciels complémentaires avec deux éditeurs reelement partenaire crée un écosystème vertueux",
 				"influence_politique_com" : "Des échéances politique fermr.mais raisonnables permet de impulser un tempo cohérent avec la montée en charge du projet, notamment viser la phase de formation aux utilisateurs sur plusieurs moi"
 			}
@@ -2398,7 +2365,6 @@
 				"presentation" : "Fusion des SIG vélo des Départements 67 et 68 dans le cadre de la création de la Collectivité européenne d'Alsace",
 				"structure" : "Public territorial (collectivité, EPCI, département, région)",
 				"issue" : "Autre",
-				"issue_autre" : "En cours",
 				"duree" : "3 à 5 ans",
 				"role" : "Chef·fe de projet / coordinateur·rice",
 				"nb_acteurs_differents" : "4 – 5",
@@ -2425,8 +2391,9 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, politique",
-				"influence_orga_com" : "Projet pas géré en mode projet (copil, cotech, date de rendu et planning...) mais au fil de l'eau, selon le temps disponible.",
 				"influence_humaine_com" : "Perte de temps liée au fait que le projet n'a pas été porté par le pôle géomatique au début.",
+				"influence_orga_com" : "Projet pas géré en mode projet (copil, cotech, date de rendu et planning...) mais au fil de l'eau, selon le temps disponible.",
+				"issue_autre" : "En cours",
 				"influence_politique_com" : "Projet initié en raison de la création de la Collectivité européenne d'Alsace. Il fallait fusionner les deux SIG."
 			}
 		},
@@ -2444,7 +2411,6 @@
 				"issue" : "Succès",
 				"duree" : "Plus de 5 ans",
 				"role" : "Autre",
-				"role_autre" : "Cheffe de projet responsable fonctionelle ",
 				"nb_acteurs_differents" : "4 – 5",
 				"comprehension_sig_acteurs" : 2,
 				"repartition_roles" : "Plusieurs personnes impliquées durablement",
@@ -2472,10 +2438,11 @@
 				"outil_proj_note" : 7,
 				"influence_nb" : "5",
 				"influence" : "Orga, humaine, budget, politique, technique",
-				"influence_orga_com" : "Le chef de projet ",
-				"influence_humaine_com" : "Un bon responsable fonctionelle ",
 				"influence_budget_com" : "Un budget réalité ",
+				"influence_humaine_com" : "Un bon responsable fonctionelle ",
+				"influence_orga_com" : "Le chef de projet ",
 				"influence_technique_com" : "Pas trop de dette technique ",
+				"role_autre" : "Cheffe de projet responsable fonctionelle ",
 				"influence_politique_com" : "Loi de programmation militaire "
 			}
 		},
@@ -2497,11 +2464,9 @@
 				"nb_acteurs_differents" : "4 – 5",
 				"comprehension_sig_acteurs" : 4,
 				"repartition_roles" : "Autre",
-				"repartition_roles_autre" : "Les porteurs du projet avec un pouvoir de décision ont régulièrement changés et donc les orientations stratégiques aussi. Les porteurs techniques présents au début ont peu à peu transmis leur connaissance mais il y avait malgré tout des pertes de connaissances.",
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Départs d’agents mais également et surtout des stratégies court-terme qui s’opposaient les unes des autres. Le projet étant porté sur le long terme, l’investissement massif et historique était l’argument qui bloquait un nouveau départ ou une refonte.",
-				"alea_reprise_autre" : "Mon équipe a été missionné pour proposer une solution tierce pour venant concurrencer le projet en souffrance. ",
 				"specificite_sig" : "Aucune. Un projet en géomatique se gère exactement de la même manière qu’un projet informatique classique. Les spécificités techniques sont l’affaires des techniciens ou développeurs qui ont la compétence technique.",
 				"specificite_sig_hypotheses" : null,
 				"specificite_sig_groupe" : "Pas de différence",
@@ -2517,17 +2482,19 @@
 				"docs_note" : 5,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Gestion qui se disait agile mais ne l’était pas.",
 				"methode_note" : 3,
 				"outil_proj_nb" : "3",
 				"outil_proj" : "excel, jira, git",
 				"outil_proj_note" : 5,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, budget, technique",
-				"influence_orga_com" : "Les savoirs techniques se sont transmis d’équipes à équipes, prestataires à prestataires sans contrôle ou validation des connaissances ce qui faisait perdre énormément de temps (re-explications des sujets a chaque changement). ",
-				"influence_humaine_com" : "Les internes entre les différents services ne s’entendaient pas forcément et se mettaient des bâtons dans les roues.",
 				"influence_budget_com" : "Les ressources investis sur le long terme étaient le premier argument pour ne pas produire s’orienter vers une refonte. ",
-				"influence_technique_com" : "La solution initiale était prévu pour une initialisation des données et non pas une mise à jour."
+				"influence_humaine_com" : "Les internes entre les différents services ne s’entendaient pas forcément et se mettaient des bâtons dans les roues.",
+				"methode_autre" : "Gestion qui se disait agile mais ne l’était pas.",
+				"influence_orga_com" : "Les savoirs techniques se sont transmis d’équipes à équipes, prestataires à prestataires sans contrôle ou validation des connaissances ce qui faisait perdre énormément de temps (re-explications des sujets a chaque changement). ",
+				"influence_technique_com" : "La solution initiale était prévu pour une initialisation des données et non pas une mise à jour.",
+				"alea_reprise_autre" : "Mon équipe a été missionné pour proposer une solution tierce pour venant concurrencer le projet en souffrance. ",
+				"repartition_roles_autre" : "Les porteurs du projet avec un pouvoir de décision ont régulièrement changés et donc les orientations stratégiques aussi. Les porteurs techniques présents au début ont peu à peu transmis leur connaissance mais il y avait malgré tout des pertes de connaissances."
 			}
 		},
 		{
@@ -2550,7 +2517,6 @@
 				"copil" : "Non",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Projet non prioritaire.",
-				"alea_reprise_autre" : "Toujours considérer comme non prioritaire mais intéressant.",
 				"specificite_sig" : "Les rendus cartographiques sont plus parlants que les rendus des projets informatiques classiques.",
 				"specificite_sig_hypotheses" : "H1",
 				"specificite_sig_groupe" : "Technique, Humain",
@@ -2571,7 +2537,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, politique"
+				"influence" : "Orga, humaine, politique",
+				"alea_reprise_autre" : "Toujours considérer comme non prioritaire mais intéressant."
 			}
 		},
 		{
@@ -2605,14 +2572,14 @@
 				"docs_note" : 5,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Organisation interne sur Grist (même principe que Google sheet mais + performant). Remplissage ligne par ligne des infos sur chaque illustration à produire. Automatisation sur R à partir de ce tableau ensuite. ",
 				"methode_note" : 10,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "Grist",
 				"outil_proj_note" : 10,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
+				"influence" : "Orga, humaine, technique",
+				"outil_proj_autre" : "Grist",
+				"methode_autre" : "Organisation interne sur Grist (même principe que Google sheet mais + performant). Remplissage ligne par ligne des infos sur chaque illustration à produire. Automatisation sur R à partir de ce tableau ensuite. "
 			}
 		},
 		{
@@ -2688,13 +2655,13 @@
 				"docs_note" : 5,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Thése",
 				"methode_note" : 5,
 				"outil_proj_nb" : "0",
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
-				"influence" : "Orga, humaine"
+				"influence" : "Orga, humaine",
+				"methode_autre" : "Thése"
 			}
 		},
 		{
@@ -2796,7 +2763,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Recadrage avec mise en place de cahier de livraisons et de recette pour les développements, instauration de personnes clés techniques côté client exploitant pour une meilleure compréhension avec les métiers utilisateurs. Restriction des vannes financières pour se concentrer sur des spéciale synthétiques répondants aux besoins essentiels de chaque entités (grosse coordination a dû être mis en place) ",
-				"alea_reprise_autre" : "Les participants aux tests étaient moins enthousiastes ",
 				"specificite_sig" : "Le mode agile est complexe à maîtriser ",
 				"specificite_sig_hypotheses" : "H1",
 				"specificite_sig_groupe" : "Organisationnel",
@@ -2818,8 +2784,9 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "5",
 				"influence" : "Orga, humaine, budget, politique, technique",
-				"influence_orga_com" : "Placer les bonnes personnes avec les compétences aux bons endroits ",
 				"influence_budget_com" : "Il faut un bon budget pour des projets avec solution propriétaire mais pas non plus illimité sinon on se perd dans du détail ce qui fait perdre du temps et la motivation des équipes",
+				"influence_orga_com" : "Placer les bonnes personnes avec les compétences aux bons endroits ",
+				"alea_reprise_autre" : "Les participants aux tests étaient moins enthousiastes ",
 				"influence_politique_com" : "Une personne en direction qui porte le projet et lève les fonds qui s’en va et une autre avec une toute autre ligne de conduite peu annuler un projet "
 			}
 		},
@@ -2843,7 +2810,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Direction métier motiviée",
-				"alea_reprise_autre" : "Un POC avait été réalisé sur une emprise limitée avec des technos open source (hors cadrages informatiques/SIG)",
 				"specificite_sig" : "Le service SIG doit disposer de compétences \"informatiques\" (notamment réseaux) pour améliorer les performances.",
 				"specificite_sig_hypotheses" : "H1",
 				"specificite_sig_groupe" : "Technique, Humain",
@@ -2865,10 +2831,11 @@
 				"outil_proj_note" : 9,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, budget, technique",
-				"influence_orga_com" : "COPIL annuel peu décisionnaire",
-				"influence_humaine_com" : "RH internes peu managées",
 				"influence_budget_com" : "Peu de budgets",
-				"influence_technique_com" : "Serveur d'images à venir (tardivement)"
+				"influence_humaine_com" : "RH internes peu managées",
+				"influence_orga_com" : "COPIL annuel peu décisionnaire",
+				"influence_technique_com" : "Serveur d'images à venir (tardivement)",
+				"alea_reprise_autre" : "Un POC avait été réalisé sur une emprise limitée avec des technos open source (hors cadrages informatiques/SIG)"
 			}
 		},
 		{
@@ -2955,7 +2922,6 @@
 				"presentation" : "Application pour le suivi des projets d'une direction sur l'habitat indigne ",
 				"structure" : "Parapublic (syndicat mixte, EPIC…)",
 				"issue" : "Autre",
-				"issue_autre" : "en cours, pour l'instant c'est sur la bonne voie mais ça reste compliqué",
 				"duree" : "1 à 6 mois",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "2 – 3",
@@ -2984,7 +2950,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 8,
 				"influence_nb" : "2",
-				"influence" : "humaine, technique"
+				"influence" : "humaine, technique",
+				"issue_autre" : "en cours, pour l'instant c'est sur la bonne voie mais ça reste compliqué"
 			}
 		},
 		{
@@ -3001,7 +2968,6 @@
 				"issue" : "Succès",
 				"duree" : "Plus de 5 ans",
 				"role" : "Autre",
-				"role_autre" : "Développeur SIG",
 				"nb_acteurs_differents" : "Plus de 5",
 				"comprehension_sig_acteurs" : 4,
 				"repartition_roles" : "Rôle tournant",
@@ -3028,10 +2994,11 @@
 				"outil_proj_note" : 10,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, budget, technique",
-				"influence_orga_com" : "L'amélioration continue a un impact sur les réorganisations",
-				"influence_humaine_com" : "Une excellente communication inter-equipes est nécessaire, rôle primordial de l'équipe DevOps pierre angulaire du projet",
 				"influence_budget_com" : "Meilleure conduite du budget",
-				"influence_technique_com" : "Priorité à l'efficience "
+				"influence_humaine_com" : "Une excellente communication inter-equipes est nécessaire, rôle primordial de l'équipe DevOps pierre angulaire du projet",
+				"influence_orga_com" : "L'amélioration continue a un impact sur les réorganisations",
+				"influence_technique_com" : "Priorité à l'efficience ",
+				"role_autre" : "Développeur SIG"
 			}
 		},
 		{
@@ -3048,14 +3015,12 @@
 				"issue" : "Échec puis relance",
 				"duree" : "Plus de 5 ans",
 				"role" : "Autre",
-				"role_autre" : "je n'étais pas au début du projet",
 				"nb_acteurs_differents" : "4 – 5",
 				"comprehension_sig_acteurs" : 2,
 				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "départ du projet vers une autre structure",
-				"alea_reprise_autre" : "avec une nouvelle équipe",
 				"techno_nb" : "3",
 				"techno" : "code, proprio, standards",
 				"techno_note" : 8,
@@ -3068,14 +3033,16 @@
 				"methode_note" : 1,
 				"outil_proj_nb" : "1",
 				"outil_proj" : "autre",
-				"outil_proj_autre" : "je ne sais pas",
 				"outil_proj_note" : 1,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, budget, technique",
-				"influence_orga_com" : "mauvaise gouvernance",
-				"influence_humaine_com" : "manque de compétence",
 				"influence_budget_com" : "pas de réinjection de financement dans le projet",
-				"influence_technique_com" : "pas d'évolution logicielle"
+				"outil_proj_autre" : "je ne sais pas",
+				"influence_humaine_com" : "manque de compétence",
+				"influence_orga_com" : "mauvaise gouvernance",
+				"influence_technique_com" : "pas d'évolution logicielle",
+				"alea_reprise_autre" : "avec une nouvelle équipe",
+				"role_autre" : "je n'étais pas au début du projet"
 			}
 		},
 		{
@@ -3116,10 +3083,10 @@
 				"methode_note" : 5,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "openproject",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
-				"influence" : "Orga"
+				"influence" : "Orga",
+				"outil_proj_autre" : "openproject"
 			}
 		},
 		{
@@ -3134,7 +3101,6 @@
 				"presentation" : "Développement territorial dans les énergies renouvelables ",
 				"structure" : "Privé (entreprise, bureau d’études)",
 				"issue" : "Autre",
-				"issue_autre" : "En cours",
 				"duree" : "6 mois à 1 an",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "4 – 5",
@@ -3164,6 +3130,7 @@
 				"influence_nb" : "2",
 				"influence" : "humaine, politique",
 				"influence_humaine_com" : "Différentes expertises (urbanisme, commercial, SIG) mises en relation",
+				"issue_autre" : "En cours",
 				"influence_politique_com" : "Differents décrets mis en application qui ont changé notre méthodologie et notre approche"
 			}
 		},
@@ -3202,15 +3169,15 @@
 				"docs_note" : 6,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Méthode propre à chaque projet- résultat attendus, séquençage du projet et des étapes, répartition fines du rôles des intervenants. Pilotage étroit du rétroplaning",
 				"methode_note" : 8,
 				"outil_proj_nb" : "1",
 				"outil_proj" : "excel",
 				"outil_proj_note" : 6,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, politique",
-				"influence_orga_com" : "Organisation de plusieurs ateliers de travail, participation importante des élus ",
 				"influence_humaine_com" : "Travail avec des partenaires compétents pour organiser les ateliers sur le fonds du sujet et rôle d'interface du chef de projet pour traduction en cartes SIG",
+				"methode_autre" : "Méthode propre à chaque projet- résultat attendus, séquençage du projet et des étapes, répartition fines du rôles des intervenants. Pilotage étroit du rétroplaning",
+				"influence_orga_com" : "Organisation de plusieurs ateliers de travail, participation importante des élus ",
 				"influence_politique_com" : "Les ZAEnR étaient obligatoires pour les communes mais elles n'étaient pas outillées ni pour les définir ni pour les formaliser "
 			}
 		},
@@ -3228,7 +3195,6 @@
 				"issue" : "Échec (abandon, gel, oubli)",
 				"duree" : "Moins de 1 mois",
 				"role" : "Autre",
-				"role_autre" : "Etudiant",
 				"nb_acteurs_differents" : "1 seul",
 				"comprehension_sig_acteurs" : 6,
 				"repartition_roles" : "Une personne clé portait le projet",
@@ -3256,7 +3222,8 @@
 				"outil_proj_note" : 1,
 				"influence_nb" : "1",
 				"influence" : "Orga",
-				"influence_orga_com" : "Trop de projets simultanés et besoin de laisser ce projet de côté"
+				"influence_orga_com" : "Trop de projets simultanés et besoin de laisser ce projet de côté",
+				"role_autre" : "Etudiant"
 			}
 		},
 		{
@@ -3273,11 +3240,9 @@
 				"issue" : "Succès",
 				"duree" : "1 à 6 mois",
 				"role" : "Autre",
-				"role_autre" : "À la fois géomaticienne et chef de projet ",
 				"nb_acteurs_differents" : "2 – 3",
 				"comprehension_sig_acteurs" : 4,
 				"repartition_roles" : "Autre",
-				"repartition_roles_autre" : "Chaque personne a un rôle bien défini dans le projet 1 personne création et initialisation du projet 1 personne intégration des données 1 personne pour former l'acteur non géomaticien ",
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"conseil" : "Se faire accompagner, ne pas hésiter à poser des questions au client/service concerné par le projet ",
@@ -3299,7 +3264,9 @@
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "1er projet",
-				"influence_technique_com" : ", données sources non uniforme ce qui a retardé le projet "
+				"influence_technique_com" : ", données sources non uniforme ce qui a retardé le projet ",
+				"role_autre" : "À la fois géomaticienne et chef de projet ",
+				"repartition_roles_autre" : "Chaque personne a un rôle bien défini dans le projet 1 personne création et initialisation du projet 1 personne intégration des données 1 personne pour former l'acteur non géomaticien "
 			}
 		},
 		{
@@ -3389,7 +3356,6 @@
 				"presentation" : "Calcul de plans urbains en fonction de la réglementation",
 				"structure" : "Privé (entreprise, bureau d’études)",
 				"issue" : "Autre",
-				"issue_autre" : "En cours et en développement continu",
 				"duree" : "3 à 5 ans",
 				"role" : "Chef·fe de projet / coordinateur·rice",
 				"nb_acteurs_differents" : "4 – 5",
@@ -3416,11 +3382,12 @@
 				"methode_note" : 10,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "git, autre",
-				"outil_proj_autre" : "FTP",
 				"outil_proj_note" : 8,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "La communication régulière et des tests réguliers, réunion hebdomadaires courtes, ont positivement influées"
+				"outil_proj_autre" : "FTP",
+				"influence_humaine_com" : "La communication régulière et des tests réguliers, réunion hebdomadaires courtes, ont positivement influées",
+				"issue_autre" : "En cours et en développement continu"
 			}
 		},
 		{
@@ -3471,7 +3438,6 @@
 				"presentation" : "Automatisation d’un process pour des demandes quotidiennes ",
 				"structure" : "Privé (entreprise, bureau d’études)",
 				"issue" : "Autre",
-				"issue_autre" : "En cours ",
 				"duree" : "1 à 3 ans",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "4 – 5",
@@ -3480,7 +3446,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Départ du créateur du script ",
-				"alea_reprise_autre" : "Prise en main du script ",
 				"specificite_sig" : "La transversalité ",
 				"specificite_sig_hypotheses" : "H3",
 				"specificite_sig_groupe" : "Transversalité",
@@ -3496,7 +3461,6 @@
 				"docs_note" : 6,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Rida ",
 				"methode_note" : 7,
 				"outil_proj_nb" : "1",
 				"outil_proj" : "trello",
@@ -3504,7 +3468,10 @@
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Complications de la transversalité des sig ",
-				"influence_technique_com" : "Problème de partage vers l’extérieur /dsi"
+				"methode_autre" : "Rida ",
+				"influence_technique_com" : "Problème de partage vers l’extérieur /dsi",
+				"issue_autre" : "En cours ",
+				"alea_reprise_autre" : "Prise en main du script "
 			}
 		},
 		{
@@ -3545,12 +3512,12 @@
 				"methode_note" : 7,
 				"outil_proj_nb" : "1",
 				"outil_proj" : "autre",
-				"outil_proj_autre" : "Suite Google - Keep - Doc",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "Lancement en doucuer, ajout année par année des cas d'usage",
+				"outil_proj_autre" : "Suite Google - Keep - Doc",
 				"influence_humaine_com" : "communication et suivi des utilisateurs",
+				"influence_orga_com" : "Lancement en doucuer, ajout année par année des cas d'usage",
 				"influence_technique_com" : "outil métier adapté et simplifié"
 			}
 		},
@@ -3574,7 +3541,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Sponsor de la Direction Générale ",
-				"alea_reprise_autre" : "Après une cyber attaque. Reprise difficile car tout devait être reconstruit.",
 				"specificite_sig" : "Transversalité avec les metiers",
 				"specificite_sig_hypotheses" : "H3",
 				"specificite_sig_groupe" : "Transversalité, Organisationnel",
@@ -3590,16 +3556,17 @@
 				"docs_note" : 5,
 				"methode_nb" : "3",
 				"methode_proj" : "scrum, waterfall, autre",
-				"methode_autre" : "Mix agile et en V… on passe au devops pour les parties purement informatique s",
 				"methode_note" : 7,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "jira, git",
 				"outil_proj_note" : 6,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "Organisation claire. Répartition et Appropriation des tâches . Gouvernance des données et du code",
 				"influence_humaine_com" : "Communication ",
-				"influence_technique_com" : "Logiciel intuitif et puissant. En phase avec les exigences RSSI . "
+				"methode_autre" : "Mix agile et en V… on passe au devops pour les parties purement informatique s",
+				"influence_orga_com" : "Organisation claire. Répartition et Appropriation des tâches . Gouvernance des données et du code",
+				"influence_technique_com" : "Logiciel intuitif et puissant. En phase avec les exigences RSSI . ",
+				"alea_reprise_autre" : "Après une cyber attaque. Reprise difficile car tout devait être reconstruit."
 			}
 		},
 		{
@@ -3737,7 +3704,6 @@
 				"issue" : "Échec (abandon, gel, oubli)",
 				"duree" : "1 à 6 mois",
 				"role" : "Autre",
-				"role_autre" : "Pas encore employé",
 				"nb_acteurs_differents" : "1 seul",
 				"comprehension_sig_acteurs" : 1,
 				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
@@ -3765,7 +3731,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "Orga",
-				"influence_orga_com" : "Pas de chef de projet en interne"
+				"influence_orga_com" : "Pas de chef de projet en interne",
+				"role_autre" : "Pas encore employé"
 			}
 		},
 		{
@@ -3788,7 +3755,6 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Le service en charge des serveurs ne veut pas travailler.",
-				"alea_reprise_autre" : "Pour l'instant en off. On espère une reprise avec une nouvelle direction qui va amener un nouveau souffle.",
 				"specificite_sig" : "Certains formats d'échange sont différents et répondent à des normes plus stricts.",
 				"specificite_sig_hypotheses" : "H2",
 				"specificite_sig_groupe" : "Technique",
@@ -3810,7 +3776,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Le service en charge des serveur trouve des excuses pour ne pas travailler et déployer l'application"
+				"influence_humaine_com" : "Le service en charge des serveur trouve des excuses pour ne pas travailler et déployer l'application",
+				"alea_reprise_autre" : "Pour l'instant en off. On espère une reprise avec une nouvelle direction qui va amener un nouveau souffle."
 			}
 		},
 		{
@@ -3896,9 +3863,9 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, budget",
-				"influence_orga_com" : "Roue libre, pas de directive claire, projet piloté par un technicien \"illégitime\" pour donner des directives",
+				"influence_budget_com" : "Zero budget mais besoin d'une efficience parfaite",
 				"influence_humaine_com" : "La direction donne une mission structurante au service sig sans la soutenir dans le développement du projet",
-				"influence_budget_com" : "Zero budget mais besoin d'une efficience parfaite"
+				"influence_orga_com" : "Roue libre, pas de directive claire, projet piloté par un technicien \"illégitime\" pour donner des directives"
 			}
 		},
 		{
@@ -3939,8 +3906,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "classement des données",
 				"influence_humaine_com" : "Je pratique en autoformation depuis 20 ans",
+				"influence_orga_com" : "classement des données",
 				"influence_technique_com" : "Qgis"
 			}
 		},
@@ -4025,9 +3992,9 @@
 				"outil_proj_note" : 4,
 				"influence_nb" : "6",
 				"influence" : "Orga, humaine, budget, politique, technique, autre",
-				"influence_orga_com" : "WE were committed and not walking away from the Need of accurate 911 gis accuracy  ",
-				"influence_humaine_com" : "Dedication when things got ugly never giving up  led to Success ",
 				"influence_budget_com" : "Constant battles and adjustments Keep Finance in the loop and educate them on the project ",
+				"influence_humaine_com" : "Dedication when things got ugly never giving up  led to Success ",
+				"influence_orga_com" : "WE were committed and not walking away from the Need of accurate 911 gis accuracy  ",
 				"influence_technique_com" : "Project went on longer than expected tech kept evolving we had to adjust esp where hardware was concerned ",
 				"influence_politique_com" : "keep your stake holders INFORMED in the loop as deadlines move ",
 				"influence_autre_com" : "losing key players on the vendor side  - Establishing s good rapport is KEY "
@@ -4071,8 +4038,8 @@
 				"outil_proj_note" : 8,
 				"influence_nb" : "2",
 				"influence" : "Orga, budget",
-				"influence_orga_com" : "Constant management reorganization of teams",
-				"influence_budget_com" : "Federal government annual budget announcements"
+				"influence_budget_com" : "Federal government annual budget announcements",
+				"influence_orga_com" : "Constant management reorganization of teams"
 			}
 		},
 		{
@@ -4116,9 +4083,9 @@
 				"outil_proj_note" : 2,
 				"influence_nb" : "5",
 				"influence" : "Orga, humaine, budget, politique, technique",
-				"influence_orga_com" : "Réussite : Personnes moteur, motivation générale",
-				"influence_humaine_com" : "Réussite : équipe très compétente",
 				"influence_budget_com" : "Vers l'échec : budget de plus en plus serré",
+				"influence_humaine_com" : "Réussite : équipe très compétente",
+				"influence_orga_com" : "Réussite : Personnes moteur, motivation générale",
 				"influence_technique_com" : "Vers l'échec : non adoption des outils, retard sur la MCO",
 				"influence_politique_com" : "Vers l'échec : y'a moins d'argent coté client"
 			}
@@ -4203,8 +4170,8 @@
 				"outil_proj_note" : 8,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "City manager directed staff to execute adoption of GIS related program ",
 				"influence_humaine_com" : "New GIS program was online sharing new capabilities ",
+				"influence_orga_com" : "City manager directed staff to execute adoption of GIS related program ",
 				"influence_technique_com" : "Software was available to solve a big problem cheaply "
 			}
 		},
@@ -4292,8 +4259,8 @@
 				"outil_proj_note" : 7,
 				"influence_nb" : "2",
 				"influence" : "Orga, budget",
-				"influence_orga_com" : "strong management team ",
-				"influence_budget_com" : "budget has to be maintained and supported "
+				"influence_budget_com" : "budget has to be maintained and supported ",
+				"influence_orga_com" : "strong management team "
 			}
 		},
 		{
@@ -4334,10 +4301,10 @@
 				"methode_note" : 1,
 				"outil_proj_nb" : "3",
 				"outil_proj" : "excel, git, autre",
-				"outil_proj_autre" : "ServiceNow",
 				"outil_proj_note" : 1,
 				"influence_nb" : "1",
 				"influence" : "technique",
+				"outil_proj_autre" : "ServiceNow",
 				"influence_technique_com" : "Using open source software made the project more flexible and easier to complete."
 			}
 		},
@@ -4424,8 +4391,8 @@
 				"outil_proj_note" : 6,
 				"influence_nb" : "3",
 				"influence" : "Orga, budget, technique",
-				"influence_orga_com" : "Departments felt satisfied",
 				"influence_budget_com" : "Coded internally, saving money",
+				"influence_orga_com" : "Departments felt satisfied",
 				"influence_technique_com" : "Reduced Gis software costs"
 			}
 		},
@@ -4600,7 +4567,6 @@
 				"presentation" : "Enterprise Wide Utility Network Migration",
 				"structure" : "Privé (entreprise, bureau d’études)",
 				"issue" : "Autre",
-				"issue_autre" : "Ongoing",
 				"duree" : "3 à 5 ans",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "Plus de 5",
@@ -4631,6 +4597,7 @@
 				"influence_nb" : "2",
 				"influence" : "technique, autre",
 				"influence_technique_com" : "Lack of resources to test and implement while still working on day to day tasks.",
+				"issue_autre" : "Ongoing",
 				"influence_autre_com" : "Waterfall approach."
 			}
 		},
@@ -4675,8 +4642,8 @@
 				"outil_proj_note" : 7,
 				"influence_nb" : "4",
 				"influence" : "Orga, budget, politique, technique",
-				"influence_orga_com" : "Strong backing from Elected Officials ",
 				"influence_budget_com" : "Auditor, treasurer, engineer and commissioners all back the project monetarily ",
+				"influence_orga_com" : "Strong backing from Elected Officials ",
 				"influence_technique_com" : "Right mix of custom scripts and Esri backbone ",
 				"influence_politique_com" : "County Officials were in agreement to fully support increase GIS Development "
 			}
@@ -4779,7 +4746,6 @@
 				"copil" : "Non",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Project completed successfully, but remains unbuilt.",
-				"alea_reprise_autre" : "Reassesment recently completed relied on many files from 4-5 years ago; staff continuinity is really the only reason re-assessment was successful. ",
 				"specificite_sig" : "multidisplinary. GIS often becomes the single source of truth. ",
 				"specificite_sig_hypotheses" : "H3",
 				"specificite_sig_groupe" : "Organisationnel, Transversalité",
@@ -4795,13 +4761,14 @@
 				"docs_note" : 8,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "I think project began before some of these exist - it was more of a manual/excel based task oriented project management. Also GIS was not the primary focus, but supported all disciplines.",
 				"methode_note" : 5,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, monday",
 				"outil_proj_note" : 7,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
+				"influence" : "Orga, humaine, technique",
+				"methode_autre" : "I think project began before some of these exist - it was more of a manual/excel based task oriented project management. Also GIS was not the primary focus, but supported all disciplines.",
+				"alea_reprise_autre" : "Reassesment recently completed relied on many files from 4-5 years ago; staff continuinity is really the only reason re-assessment was successful. "
 			}
 		},
 		{
@@ -4845,9 +4812,9 @@
 				"outil_proj_note" : 4,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, budget, technique",
-				"influence_orga_com" : "We delivered this despite a lack of support from management because we needed it",
-				"influence_humaine_com" : "Under resourced so our proof of concept became BAU",
 				"influence_budget_com" : "Our time is not free to give and we have no dedicated budget",
+				"influence_humaine_com" : "Under resourced so our proof of concept became BAU",
+				"influence_orga_com" : "We delivered this despite a lack of support from management because we needed it",
 				"influence_technique_com" : "Our choice of commodity AWS and FOSS tools has meant we can migrate with minimal issues"
 			}
 		},
@@ -4892,9 +4859,9 @@
 				"outil_proj_note" : 10,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, budget, technique",
-				"influence_orga_com" : "Management needs to be on board from the beginning ",
-				"influence_humaine_com" : "Trying my best to being people on board with all the changes",
 				"influence_budget_com" : "For that I needed to rely solely on open source software ",
+				"influence_humaine_com" : "Trying my best to being people on board with all the changes",
+				"influence_orga_com" : "Management needs to be on board from the beginning ",
 				"influence_technique_com" : "Strong support needed from IT sector"
 			}
 		},
@@ -4912,7 +4879,6 @@
 				"issue" : "Succès",
 				"duree" : "Plus de 5 ans",
 				"role" : "Autre",
-				"role_autre" : "Intern",
 				"nb_acteurs_differents" : "2 – 3",
 				"comprehension_sig_acteurs" : 1,
 				"repartition_roles" : "Plusieurs personnes impliquées durablement",
@@ -4939,8 +4905,9 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
 				"influence" : "Orga, humaine",
+				"influence_humaine_com" : "Cartography ",
 				"influence_orga_com" : "Communication ",
-				"influence_humaine_com" : "Cartography "
+				"role_autre" : "Intern"
 			}
 		},
 		{
@@ -5025,10 +4992,10 @@
 				"methode_note" : 7,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "Toggle",
 				"outil_proj_note" : 8,
 				"influence_nb" : "2",
 				"influence" : "Orga, politique",
+				"outil_proj_autre" : "Toggle",
 				"influence_orga_com" : "poor management and not having a clear method",
 				"influence_politique_com" : "The whole project was abandoned after the new cabin take over the municipal projects"
 			}
@@ -5140,7 +5107,6 @@
 				"copil" : "Non",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Me",
-				"alea_reprise_autre" : "No, it was completed in three weeks and remains in effect for trouble call address augmentation ",
 				"specificite_sig" : "Beats me ",
 				"specificite_sig_hypotheses" : null,
 				"specificite_sig_groupe" : "Pas de différence",
@@ -5162,9 +5128,10 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, politique, technique",
-				"influence_orga_com" : "I did it without getting approval for the project first ",
 				"influence_humaine_com" : "I was the only one in the building let alone probably 98% of all Comcast personnel who had any idea how to accomplish this",
+				"influence_orga_com" : "I did it without getting approval for the project first ",
 				"influence_technique_com" : "I was able to use the free Google Maps API for all 3500 locations from my free tier new account ",
+				"alea_reprise_autre" : "No, it was completed in three weeks and remains in effect for trouble call address augmentation ",
 				"influence_politique_com" : "I got in trouble initially, until I was able to communicate the multi-tens of millions cost savings "
 			}
 		},
@@ -5187,7 +5154,6 @@
 				"repartition_roles" : "Une personne clé portait le projet",
 				"copil" : "Non",
 				"alea_reprise" : "Autre",
-				"alea_reprise_autre" : "No disruption ",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 8,
@@ -5203,7 +5169,8 @@
 				"outil_proj_note" : 10,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Unclear communication creates setbacks and need for data corrections"
+				"influence_humaine_com" : "Unclear communication creates setbacks and need for data corrections",
+				"alea_reprise_autre" : "No disruption "
 			}
 		},
 		{
@@ -5247,8 +5214,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, politique",
-				"influence_orga_com" : "Transversalité",
 				"influence_humaine_com" : "Appropriation par les services car forte demande interne",
+				"influence_orga_com" : "Transversalité",
 				"influence_politique_com" : "Volonté politique de réaliser une refonte du SIG et de l'observatoire"
 			}
 		},
@@ -5271,7 +5238,6 @@
 				"repartition_roles" : "Une personne clé portait le projet",
 				"copil" : "Non",
 				"alea_reprise" : "Autre",
-				"alea_reprise_autre" : "No disruption ",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 8,
@@ -5287,7 +5253,8 @@
 				"outil_proj_note" : 10,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Unclear communication creates setbacks and need for data corrections"
+				"influence_humaine_com" : "Unclear communication creates setbacks and need for data corrections",
+				"alea_reprise_autre" : "No disruption "
 			}
 		},
 		{
@@ -5360,14 +5327,14 @@
 				"docs_note" : 5,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "Self management",
 				"methode_note" : 8,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "Microsoft Planner",
 				"outil_proj_note" : 9,
 				"influence_nb" : "1",
-				"influence" : "technique"
+				"influence" : "technique",
+				"outil_proj_autre" : "Microsoft Planner",
+				"methode_autre" : "Self management"
 			}
 		},
 		{
@@ -5411,8 +5378,8 @@
 				"outil_proj_note" : 2,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "trust in operational management",
 				"influence_humaine_com" : "regular meetings",
+				"influence_orga_com" : "trust in operational management",
 				"influence_technique_com" : "good software and operator skills"
 			}
 		},
@@ -5451,15 +5418,15 @@
 				"docs_note" : 3,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "ISO 21500 et 10006",
 				"methode_note" : 5,
 				"outil_proj_nb" : "1",
 				"outil_proj" : "excel",
 				"outil_proj_note" : 7,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "Petite équipe / client avec peu de connaissance avec une confiance totale envers l'entreprise retenue pour mener à bien ce projet et donc grande liberté laissée au chef de projet",
 				"influence_humaine_com" : "Chef de projet avec une double compétences (Eau et SIG)",
+				"methode_autre" : "ISO 21500 et 10006",
+				"influence_orga_com" : "Petite équipe / client avec peu de connaissance avec une confiance totale envers l'entreprise retenue pour mener à bien ce projet et donc grande liberté laissée au chef de projet",
 				"influence_technique_com" : "logiciel libre avec une immense communauté à travers le monde, de nombreux tutos, de nombreux outils développés par la communauté qui ont permis de fournir de nombreuses fonctionnalités au client contrairement à des logiciels payants proposés par ESRI par exemple."
 			}
 		},
@@ -5475,7 +5442,6 @@
 				"presentation" : "Creating decision support tools for government stakeholders from multiple real time GIS data sources",
 				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
 				"issue" : "Autre",
-				"issue_autre" : "Success followed by limited support, gradual decline in quality.",
 				"duree" : "Plus de 5 ans",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "4 – 5",
@@ -5484,7 +5450,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Research org halted promotions and recruitement, large amount of project team got better offers elsewhere. ",
-				"alea_reprise_autre" : "Yes Resumed but at a much lower technical level ",
 				"specificite_sig" : "Nothing",
 				"specificite_sig_hypotheses" : null,
 				"specificite_sig_groupe" : "Pas de différence",
@@ -5506,9 +5471,11 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, politique, technique",
-				"influence_orga_com" : "Strong project manager, strong champions within client orgs",
 				"influence_humaine_com" : "Good motivation and drive to succeed in technical staff",
+				"influence_orga_com" : "Strong project manager, strong champions within client orgs",
 				"influence_technique_com" : "Strong FOSS skills and experience",
+				"issue_autre" : "Success followed by limited support, gradual decline in quality.",
+				"alea_reprise_autre" : "Yes Resumed but at a much lower technical level ",
 				"influence_politique_com" : "Change of org leadership and political issues caused staff turnover"
 			}
 		},
@@ -5637,8 +5604,8 @@
 				"outil_proj_note" : 7,
 				"influence_nb" : "4",
 				"influence" : "humaine, budget, technique, autre",
-				"influence_humaine_com" : "Personnes motivées, désireuses de bien faire et minimum 2 personnes afin de garantir la pérennité du projet. Pour moi, la passation du projet est très importante.",
 				"influence_budget_com" : "Possibilité de passer de nombreuse heures à créer une structure viable, passation sur plusieurs mois, évolution du projet en fonction des évolutions technique, support possible en cas de question pratique.",
+				"influence_humaine_com" : "Personnes motivées, désireuses de bien faire et minimum 2 personnes afin de garantir la pérennité du projet. Pour moi, la passation du projet est très importante.",
 				"influence_technique_com" : "Logiciels connus et utiliser par plusieurs personnes est importante ainsi que le développement du logiciel SIG afin de suivre l'évolution.",
 				"influence_autre_com" : "Structure de données avec des sous-type, domaine et bon type de champs afin de garantir une bonne homogénéité des données ainsi que la formalisation des noms de champs, bien renseigner l'histoire et l'utilisation de chaques champs dans la doc etc..."
 			}
@@ -5864,14 +5831,11 @@
 				"structure" : "Autre",
 				"structure_autre" : "une association",
 				"issue" : "Autre",
-				"issue_autre" : "En cours",
 				"duree" : "1 à 6 mois",
 				"role" : "Autre",
-				"role_autre" : "stagiaire en urbanisme pour une association",
 				"nb_acteurs_differents" : "2 – 3",
 				"comprehension_sig_acteurs" : 2,
 				"repartition_roles" : "Autre",
-				"repartition_roles_autre" : "Je suis stagiaire et seul à porter le projet",
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"techno_nb" : "1",
@@ -5889,7 +5853,10 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "autre",
-				"influence_autre_com" : "projet encore en cours"
+				"issue_autre" : "En cours",
+				"role_autre" : "stagiaire en urbanisme pour une association",
+				"influence_autre_com" : "projet encore en cours",
+				"repartition_roles_autre" : "Je suis stagiaire et seul à porter le projet"
 			}
 		},
 		{
@@ -5911,7 +5878,6 @@
 				"repartition_roles" : "Plusieurs personnes impliquées durablement",
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
-				"alea_reprise_autre" : "logique générale mal pensée en termes de processus, doublé par ailleurs d'un code abscon non commenté",
 				"specificite_sig" : "aucune",
 				"specificite_sig_hypotheses" : null,
 				"specificite_sig_groupe" : "Pas de différence",
@@ -5932,7 +5898,8 @@
 				"outil_proj" : "excel, git",
 				"outil_proj_note" : 6,
 				"influence_nb" : "1",
-				"influence" : "humaine"
+				"influence" : "humaine",
+				"alea_reprise_autre" : "logique générale mal pensée en termes de processus, doublé par ailleurs d'un code abscon non commenté"
 			}
 		},
 		{
@@ -6060,10 +6027,10 @@
 				"methode_note" : 9,
 				"outil_proj_nb" : "5",
 				"outil_proj" : "excel, monday, jira, git, autre",
-				"outil_proj_autre" : "je ne sais pas le reste ",
 				"outil_proj_note" : 8,
 				"influence_nb" : "5",
-				"influence" : "Orga, humaine, budget, politique, technique"
+				"influence" : "Orga, humaine, budget, politique, technique",
+				"outil_proj_autre" : "je ne sais pas le reste "
 			}
 		},
 		{
@@ -6078,7 +6045,6 @@
 				"presentation" : "deploiement du sig à l'agglomeration de thonon",
 				"structure" : "Public territorial (collectivité, EPCI, département, région)",
 				"issue" : "Autre",
-				"issue_autre" : "plus long que prévu encore en cours",
 				"duree" : "Plus de 5 ans",
 				"role" : "Chef·fe de projet / coordinateur·rice",
 				"nb_acteurs_differents" : "Plus de 5",
@@ -6087,7 +6053,6 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "depart d'agent, forte resistance au changement, non d'office",
-				"alea_reprise_autre" : "car chef de projet pugnace ",
 				"specificite_sig" : "c'est un metier a part entiere les gens ne le comprennent pas ",
 				"specificite_sig_hypotheses" : "H1",
 				"specificite_sig_groupe" : "Humain",
@@ -6103,18 +6068,20 @@
 				"docs_note" : 6,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "agile tout court ",
 				"methode_note" : 5,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "outil prestataire",
 				"outil_proj_note" : 5,
 				"influence_nb" : "5",
 				"influence" : "Orga, humaine, budget, politique, technique",
-				"influence_orga_com" : "soutien de la hierarchie",
-				"influence_humaine_com" : "s'appuyer sur les volontaires motivés, les autres suivront",
 				"influence_budget_com" : "soutien des élus, bonne argumentation de la hierarchie",
+				"outil_proj_autre" : "outil prestataire",
+				"influence_humaine_com" : "s'appuyer sur les volontaires motivés, les autres suivront",
+				"methode_autre" : "agile tout court ",
+				"influence_orga_com" : "soutien de la hierarchie",
 				"influence_technique_com" : "soutenable financierement ",
+				"issue_autre" : "plus long que prévu encore en cours",
+				"alea_reprise_autre" : "car chef de projet pugnace ",
 				"influence_politique_com" : "president et maire avec preference pour maire, "
 			}
 		},
@@ -6132,7 +6099,6 @@
 				"issue" : "Échec puis relance",
 				"duree" : "1 à 6 mois",
 				"role" : "Autre",
-				"role_autre" : "stagiaire",
 				"nb_acteurs_differents" : "2 – 3",
 				"comprehension_sig_acteurs" : 2,
 				"repartition_roles" : "Je ne sais pas",
@@ -6155,7 +6121,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 10,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
+				"influence" : "Orga, humaine, technique",
+				"role_autre" : "stagiaire"
 			}
 		},
 		{
@@ -6195,10 +6162,10 @@
 				"methode_note" : 5,
 				"outil_proj_nb" : "2",
 				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "SharePoint",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
+				"outil_proj_autre" : "SharePoint",
 				"influence_humaine_com" : "Large collaboration and communication. Daily prioritization during key stages."
 			}
 		},
@@ -6455,9 +6422,9 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "4",
 				"influence" : "Orga, humaine, budget, technique",
-				"influence_orga_com" : "Majorité des acteurs clés sont restés présents et impliqués",
-				"influence_humaine_com" : "Bonne implication des acteurs, élément essentiel de la réussite.",
 				"influence_budget_com" : "très peu de cout en investissement (brique logicielle déjà acquise), cout important en temps agent",
+				"influence_humaine_com" : "Bonne implication des acteurs, élément essentiel de la réussite.",
+				"influence_orga_com" : "Majorité des acteurs clés sont restés présents et impliqués",
 				"influence_technique_com" : "La bonne visibilité sur les capacités logicielles ont permis de construire un outils en adéquation avec les besoins sans réels freins techniques."
 			}
 		},
@@ -6518,7 +6485,6 @@
 				"presentation" : "Cartographe militaire",
 				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
 				"issue" : "Autre",
-				"issue_autre" : "Rendu caduque par l'évolution technologique permettant la réalisation de la tâche à distance par un service spécialisé.",
 				"duree" : "1 à 3 ans",
 				"role" : "Géomaticien·ne / technicien·ne SIG interne",
 				"nb_acteurs_differents" : "Plus de 5",
@@ -6549,6 +6515,7 @@
 				"influence_nb" : "2",
 				"influence" : "humaine, politique",
 				"influence_humaine_com" : "Lobby de spécilste ( télédetecteur, informaticien) voyant le géomaticient comme empiétant sur son domaine",
+				"issue_autre" : "Rendu caduque par l'évolution technologique permettant la réalisation de la tâche à distance par un service spécialisé.",
 				"influence_politique_com" : "Intérêt ou désintérêt du chef pour la gémotique"
 			}
 		},
@@ -6592,8 +6559,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "humaine, budget, technique",
-				"influence_humaine_com" : "Equipe projet sénior / Communication efficiente par la réducation des interactions inutiles (réunions, sur validation, etc)",
 				"influence_budget_com" : "Couts faibles",
+				"influence_humaine_com" : "Equipe projet sénior / Communication efficiente par la réducation des interactions inutiles (réunions, sur validation, etc)",
 				"influence_technique_com" : "Maitrise complete de la chaine de fabrication"
 			}
 		},
@@ -6617,7 +6584,6 @@
 				"copil" : "Non",
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Départ de l'agent initialement sur le projet",
-				"alea_reprise_autre" : "Migration partielle effectuée par un prestataire, aucune documentation sur les données ",
 				"specificite_sig" : "Transversalité : compétences techniques nécessaires sur le socle SIG et nécessaire intérêt pour la où les thématiques métiers ",
 				"specificite_sig_hypotheses" : "H1",
 				"specificite_sig_groupe" : "Technique, Transversalité",
@@ -6633,51 +6599,15 @@
 				"docs_note" : 8,
 				"methode_nb" : "1",
 				"methode_proj" : "autre",
-				"methode_autre" : "La mienne.",
 				"methode_note" : 5,
 				"outil_proj_nb" : "0",
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Compétences de l'agent initialement sur le poste insuffisante"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.08956, 50.36921 ]
-			},
-			"properties" : {
-				"id" : 1593,
-				"lang" : "fr",
-				"presentation" : "carto web patrimoine d'un bailleur",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "1 à 3 ans",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "1 seul",
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 10,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "2",
-				"docs_formats" : "comments, qgz",
-				"docs_note" : 1,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 1,
-				"outil_proj_nb" : "0",
-				"outil_proj" : "rien",
-				"outil_proj_note" : 1,
-				"influence_nb" : "2",
-				"influence" : "Orga, budget",
-				"influence_orga_com" : "beaucoup de temps accordé",
-				"influence_budget_com" : "le coût minime a permis de débuter le projet"
+				"influence_humaine_com" : "Compétences de l'agent initialement sur le poste insuffisante",
+				"methode_autre" : "La mienne.",
+				"alea_reprise_autre" : "Migration partielle effectuée par un prestataire, aucune documentation sur les données "
 			}
 		},
 		{
@@ -6803,8 +6733,8 @@
 				"outil_proj_note" : 7,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_orga_com" : "Échanges important entre les membres de l'équipe projet",
 				"influence_humaine_com" : "Bon relationnel avec le client permettant des échanges fluides et \"détendu\" (communication simplifié)",
+				"influence_orga_com" : "Échanges important entre les membres de l'équipe projet",
 				"influence_technique_com" : "Orientation vers des solutions open sources mieux maîtrisées, plus simple à construire et a déployer du fait de la connaissance technique"
 			}
 		},
@@ -6848,6 +6778,78 @@
 				"outil_proj_note" : 1,
 				"influence_nb" : "2",
 				"influence" : "Orga, humaine"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 5.69804, 43.31511 ]
+			},
+			"properties" : {
+				"id" : 545,
+				"lang" : "fr",
+				"presentation" : "Carto règlementaire : réalisation des annexes parcellaires d'un projet de classement au titre des sites",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "1 à 3 ans",
+				"role" : "Prestataire externe / consultant·e",
+				"nb_acteurs_differents" : "Plus de 5",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Autre",
+				"techno_nb" : "3",
+				"techno" : "libre, code, standards",
+				"techno_note" : 8,
+				"docs_presence" : "Oui, mais peu claire ou obsolète",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "docx, mails",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 9,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 9,
+				"influence_nb" : "0",
+				"influence" : ""
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.08956, 50.36921 ]
+			},
+			"properties" : {
+				"id" : 1593,
+				"lang" : "fr",
+				"presentation" : "carto web patrimoine d'un bailleur",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "1 à 3 ans",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "1 seul",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 10,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "comments, qgz",
+				"docs_note" : 1,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 1,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 1,
+				"influence_nb" : "2",
+				"influence" : "Orga, budget",
+				"influence_budget_com" : "le coût minime a permis de débuter le projet",
+				"influence_orga_com" : "beaucoup de temps accordé"
 			}
 		}
 	]
