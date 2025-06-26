@@ -1236,7 +1236,7 @@
               const sortedVals = Object.keys(store.totals[multi] || {}).sort();
               COLOR_FNS[multi] = v => {
                 const idx = sortedVals.indexOf(v);
-                return d3.schemeTableau10[idx % 10] || '#ccc';
+                return d3.schemePaired[idx % 12] || '#ccc';
               };
             }
             COLOR_FNS[field] = v => COLOR_FNS[multi](v);
@@ -1244,7 +1244,7 @@
             const sortedVals = Object.keys(store.totals[field] || {}).sort();
             COLOR_FNS[field] = v => {
               const idx = sortedVals.indexOf(v);
-              return d3.schemeTableau10[idx % 10] || '#ccc';
+              return d3.schemePaired[idx % 12] || '#ccc';
             };
           }
         });
