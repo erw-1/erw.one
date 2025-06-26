@@ -501,9 +501,45 @@
           dataviz: { type: 'bar-horizontal', split: ', ' },
           mapTheme: { type: 'pie', multiField: 'conseil_groupe'},
           popup: `<div><strong>Conseil : :</strong> {conseil}</div><div><strong>Groupe·s :</strong> {conseil_groupe}</div>`
+        },
+        techno: {
+          label: 'Choix techniques',
+          description: 'Technologies différentes utilisées',
+          group: 'Technologie',
+          type: 'multiva', match: 'hasAny', sep: ', ',
+          options: {
+             libre: 'Logiciels libres (ex. QGIS, PostGIS…)',
+             proprio: 'Solutions propriétaires (ex. ArcGIS, FME…)',
+             standards: 'Standards ouverts (OGC, GeoJSON, WMS…)',
+             code: 'Scripts internes / code maison',
+             nsp: 'Je ne sais pas / non impliqué·e techniquement'
+          },
+          colors: {
+             libre: '#1f77b4',
+             proprio: '#ff7f0e',
+             standards: '#2ca02c',
+             code: '#d62728',
+             nsp: '#9467bd'
+          },
+          dataviz: { type: 'bar-horizontal', split: ', ' },
+          mapTheme: { type: 'pie', multiField: 'techno', sizeField: 'techno_nb' },
+          popup: `<div><strong>Technologies :</strong> {techno}</div><div><strong>Nombre de technologies utilisées :</strong> {techno_nb}</div>`
+        },
+        techno_nb: {
+          label: 'Nombre de technologies utilisées',
+          group: 'Technologie',
+          type: 'range', match: 'range',
+          dataviz: null
+        },
+        techno_note: {
+          label: 'Note technologie',
+          description: '',
+          group: 'Technologie',
+          type: 'range', match: 'range',
+          dataviz: null
         }
       },
-      groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Documentation'],
+      groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Technologie', 'Documentation'],
       continuousConfig: { docs_nb_formats: d3.interpolateBlues }
     };
 
