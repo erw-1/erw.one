@@ -552,9 +552,54 @@
           group: 'Méthode de gestion',
           type: 'range', match: 'range',
           dataviz: null
+        },
+        outil_proj: {
+          label: 'Outils de gestion de projet choisis',
+          group: 'Outils de gestion',
+          type: 'multiva', match: 'hasAny', sep: ', ',
+          options: {
+            jira: 'Jira / Jira Software',
+            trello: 'Trello',
+            monday: 'Monday.com',
+            project: 'Microsoft Project',
+            asana: 'Asana',
+            git: 'GitLab Issues / Boards / GitHub Projects',
+            excel: 'Tableur (Excel, LibreOffice Calc, Google Sheets)',
+            notion: 'Basecamp / Notion / plateformes collaboratives',
+            rien: 'Aucun outil dédié',
+            autre: 'Autre (voir carte)'
+          },
+          colors: {
+            jira: '#1f77b4',
+            trello: '#ff7f0e',
+            monday: '#2ca02c',
+            project: '#d62728',
+            asana: '#9467bd',
+            git: '#8c564b',
+            excel: '#e377c2',
+            notion: '#7f7f7f',
+            rien: '#bcbd22',
+            autre: '#17becf'
+          },
+          dataviz: { type: 'bar-horizontal', split: ', ' },
+          mapTheme: { type: 'pie', multiField: 'outil_proj', sizeField: 'outil_proj_nb' },
+          popup: `<div><strong>Outils de gestion :</strong> {outil_proj}</div><div><strong>Nombre d'outils utilisées :</strong> {outil_proj_nb}</div>`
+        },
+        outil_proj_nb: {
+          label: "Nombre d'outils utilisés",
+          group: 'Outils de gestion',
+          type: 'range', match: 'range',
+          dataviz: null
+        },
+        outil_proj_note: {
+          label: 'Note des outis de gestion',
+          description: '',
+          group: 'Outils de gestion',
+          type: 'range', match: 'range',
+          dataviz: null
         }
       },
-      groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Technologie', 'Documentation', 'Méthode de gestion'],
+      groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Technologie', 'Documentation', 'Méthode de gestion', 'Outils de gestion'],
       continuousConfig: { docs_nb_formats: d3.interpolateBlues }
     };
 
