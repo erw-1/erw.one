@@ -272,7 +272,7 @@
     /**
      * CONFIGURATION COMPLÈTE
      */
-    CONFIG = {
+    const CONFIG = {
       fields: {
         // Champs existants
         lang: {
@@ -331,6 +331,13 @@
           group: 'Acteurs',
           type: 'checkbox', match: 'equals',
           dataviz: { type: 'pie' }
+        },
+        nb_acteurs_differents: {
+          label: 'Nombre d’acteurs impliqués',
+          group: 'Acteurs',
+          type: 'checkbox', match: 'equals',
+          dataviz: { type: 'bar-horizontal' },
+          mapTheme: { type: 'color' }
         },
         docs_presence: {
           label: 'Présence documentation',
