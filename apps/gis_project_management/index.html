@@ -556,7 +556,7 @@
         outil_proj: {
           label: 'Outils de gestion de projet choisis',
           group: 'Outils de gestion',
-          type: 'multiva', match: 'hasAny', sep: ', ',
+          type: 'multiva', match: 'equals', sep: ', ',
           options: {
             jira: 'Jira / Jira Software',
             trello: 'Trello',
@@ -592,7 +592,7 @@
           dataviz: null
         },
         outil_proj_note: {
-          label: 'Note des outis de gestion',
+          label: 'Note des outils de gestion',
           description: '',
           group: 'Outils de gestion',
           type: 'range', match: 'range',
