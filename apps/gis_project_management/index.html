@@ -392,12 +392,22 @@
           group: 'Documentation',
           type: 'multiva', match: 'hasAny', sep: ', ',
           options: {
-            catalog: 'catalog', qgz: 'qgz', docx: 'docx',
-            mails: 'mails', tuto: 'tuto', wiki: 'wiki', comments: 'comments'
+            catalog: 'catalog',
+             qgz: 'qgz',
+             docx: 'docx',
+             mails: 'mails',
+             tuto: 'tuto',
+             wiki: 'wiki',
+             comments: 'comments'
           },
           colors: {
-            catalog: '#1f77b4', qgz: '#ff7f0e', docx: '#2ca02c',
-            mails: '#d62728', tuto: '#9467bd', wiki: '#8c564b', comments: '#e377c2'
+            catalog: '#1f77b4',
+             qgz: '#ff7f0e',
+             docx: '#2ca02c',
+             mails: '#d62728',
+             tuto: '#9467bd',
+             wiki: '#8c564b',
+             comments: '#e377c2'
           },
           dataviz: { type: 'bar-horizontal', split: ', ' },
           mapTheme: { type: 'pie', multiField: 'docs_formats', sizeField: 'docs_nb_formats' },
@@ -432,12 +442,20 @@
           group: 'Analyse qualitative',
           type: 'multiva', match: 'hasAny', sep: ', ',
           options: {
-            Technique: 'Technique', Territorial: 'Territorial', Humain: 'Humain',
-            'Pas de différence': 'Pas de différence', Organisationnel: 'Organisationnel', Transversalité: 'Transversalité'
+            Technique: 'Technique',
+             Territorial: 'Territorial',
+             Humain: 'Humain',            
+            'Pas de différence': 'Pas de différence',
+             Organisationnel: 'Organisationnel',
+             Transversalité: 'Transversalité'
           },
           colors: {
-            Technique: '#1f77b4', Territorial: '#ff7f0e', Humain: '#2ca02c',
-            'Pas de différence': '#d62728', Organisationnel: '#9467bd', Transversalité: '#8c564b'
+            Technique: '#1f77b4',
+             Territorial: '#ff7f0e',
+             Humain: '#2ca02c',            
+            'Pas de différence': '#d62728',
+             Organisationnel: '#9467bd',
+             Transversalité: '#8c564b'
           },
           dataviz: { type: 'bar-horizontal', split: ', ' },
           mapTheme: { type: 'pie', multiField: 'specificite_sig_groupe'},
@@ -451,6 +469,38 @@
           dataviz: { type: 'wordcloud' },
           mapTheme: { type: 'text' },
           popup: `<div><strong>Conseil :</strong> {conseil}</div>`
+        },
+        conseil_groupe: {
+          label: 'Thèmes des conseils',
+          group: 'Analyse qualitative',
+          type: 'multiva', match: 'hasAny', sep: ', ',
+          options: {
+            'Cadrage du besoin et parties prenantes': 'Cadrage du besoin et parties prenantes',
+            'Communication et pédagogie': 'Communication et pédagogie',
+            'Organisation et pilotage': 'Organisation et pilotage',
+            'Collaboration et transversalité': 'Collaboration et transversalité',
+            'Simplicité et pragmatisme': 'Simplicité et pragmatisme',
+            'Qualité des données et documentation': 'Qualité des données et documentation',
+            'Compétences et accompagnement': 'Compétences et accompagnement',
+            'Choix des outils et interopérabilité': 'Choix des outils et interopérabilité',
+            'Anticipation et pérennité': 'Anticipation et pérennité',
+            'Leadership et responsabilisation': 'Leadership et responsabilisation'
+          },
+          colors: {
+            'Cadrage du besoin et parties prenantes': '#1f77b4',
+            'Communication et pédagogie': '#ff7f0e',
+            'Organisation et pilotage': '#2ca02c',
+            'Collaboration et transversalité': '#d62728',
+            'Simplicité et pragmatisme': '#9467bd',
+            'Qualité des données et documentation': '#8c564b',
+            'Compétences et accompagnement': '#e377c2',
+            'Choix des outils et interopérabilité': '#7f7f7f',
+            'Anticipation et pérennité': '#bcbd22',
+            'Leadership et responsabilisation': '#17becf'
+          },
+          dataviz: { type: 'bar-horizontal', split: ', ' },
+          mapTheme: { type: 'pie', multiField: 'conseil_groupe'},
+          popup: `<div><strong>Conseil : :</strong> {conseil}</div><div><strong>Groupe·s :</strong> {conseil_groupe}</div>`
         }
       },
       groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Documentation'],
