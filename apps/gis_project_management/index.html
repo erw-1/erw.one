@@ -291,7 +291,7 @@
           description: 'Choisissez la langue du questionnaire',
           group: 'Général',
           type: 'checkbox', match: 'equals',
-          options: { 'Succès': 'Succès', 'Échec puis relance': 'Échec puis relance', 'Échec (abandon, gel, oubli)': 'Échec (abandon, gel, oubli)', 'Autre': 'Autre (voir carte)' },
+          options: {'Autre': 'Autre (voir carte)' },
           colors: { 'Succès': 'green', 'Échec puis relance': 'orange', 'Échec (abandon, gel, oubli)': 'red', 'Autre': 'purple' },
           dataviz: { type: 'pie' },
           mapTheme: { type: 'color' },
@@ -370,12 +370,6 @@
           description: 'Qualité ou existence de la documentation',
           group: 'Documentation',
           type: 'checkbox', match: 'equals',
-          options: {
-            'Oui, structurée et à jour': 'Oui, structurée et à jour',
-            'Oui, mais peu claire ou obsolète': 'Oui, mais peu claire ou obsolète',
-            'Non, ou documentation informelle': 'Non, ou documentation informelle',
-            'Je ne sais pas': 'Je ne sais pas'
-          },
           colors: {
             'Oui, structurée et à jour': '#2ca02c',
             'Oui, mais peu claire ou obsolète': '#ff7f0e',
@@ -392,13 +386,13 @@
           group: 'Documentation',
           type: 'multiva', match: 'hasAny', sep: ', ',
           options: {
-            catalog: 'catalog',
-             qgz: 'qgz',
-             docx: 'docx',
-             mails: 'mails',
-             tuto: 'tuto',
-             wiki: 'wiki',
-             comments: 'comments'
+            catalog: 'Catalogue de métadonnées',
+             qgz: 'Fichier "projet" des logiciels (.qgz, .fmw., .aprx...) et données géographiques',
+             docx: 'Fichiers bureautiques : Word, PDF, etc',
+             mails: 'Historique des mails, compte-rendus de réunion, Note interne',
+             tuto: 'Tutoriels',
+             wiki: 'Wiki interne / Confluence',
+             comments: 'Commentaires dans le code, Readme'
           },
           colors: {
             catalog: '#1f77b4',
@@ -441,14 +435,6 @@
           label: 'Thèmes des spécificités',
           group: 'Analyse qualitative',
           type: 'multiva', match: 'hasAny', sep: ', ',
-          options: {
-            Technique: 'Technique',
-             Territorial: 'Territorial',
-             Humain: 'Humain',            
-            'Pas de différence': 'Pas de différence',
-             Organisationnel: 'Organisationnel',
-             Transversalité: 'Transversalité'
-          },
           colors: {
             Technique: '#1f77b4',
              Territorial: '#ff7f0e',
