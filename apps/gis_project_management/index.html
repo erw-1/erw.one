@@ -443,14 +443,6 @@
           dataviz: { type: 'wordcloud' },
           mapTheme: { type: 'text' },
           popup: `<div><strong>Conseil :</strong> {conseil}</div>`
-        },
-        conseil_groupe: {
-          label: 'Thèmes des conseils',
-          group: 'Analyse qualitative',
-          type: 'multiva', match: 'hasAny', sep: ', ',
-          dataviz: { type: 'bar-horizontal', split: ', ' },
-          mapTheme: { type: 'pie', multiField: 'conseil_groupe'},
-          popup: `<div><strong>Conseil : :</strong> {conseil}</div><div><strong>Groupe·s :</strong> {conseil_groupe}</div>`
         }
       },
       groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Documentation'],
@@ -1236,7 +1228,7 @@
               const sortedVals = Object.keys(store.totals[multi] || {}).sort();
               COLOR_FNS[multi] = v => {
                 const idx = sortedVals.indexOf(v);
-                return d3.schemePaired[idx % 12] || '#ccc';
+                return d3.schemeTableau10[idx % 10] || '#ccc';
               };
             }
             COLOR_FNS[field] = v => COLOR_FNS[multi](v);
@@ -1244,7 +1236,7 @@
             const sortedVals = Object.keys(store.totals[field] || {}).sort();
             COLOR_FNS[field] = v => {
               const idx = sortedVals.indexOf(v);
-              return d3.schemePaired[idx % 12] || '#ccc';
+              return d3.schemeTableau10[idx % 10] || '#ccc';
             };
           }
         });
