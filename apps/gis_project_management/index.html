@@ -511,9 +511,50 @@
           group: 'Technologie',
           type: 'range', match: 'range',
           dataviz: null
+        },
+        methode_proj: {
+          label: 'Méthode de gestion de projet choisie',
+          group: 'Méthode de gestion',
+          type: 'multiva', match: 'hasAny', sep: ', ',
+          options: {
+            scrum: 'Agile - Scrum',
+            kamban: 'Agile - Kanban',
+            waterfall: 'Cycle en V / Waterfall',
+            prince2: 'PRINCE2',
+            lean: 'Lean / DevOps',
+            rien: 'Aucune',
+            autre: 'Autre (voir carte)',
+            nsp: 'Je ne sais pas'
+          },
+          colors: {
+            scrum: '#1f77b4',
+            kamban: '#ff7f0e',
+            waterfall: '#2ca02c',
+            prince2: '#d62728',
+            lean: '#9467bd',
+            rien: '#8c564b',
+            autre: '#e377c2',
+            nsp: '#7f7f7f'
+          },
+          dataviz: { type: 'bar-horizontal', split: ', ' },
+          mapTheme: { type: 'pie', multiField: 'methode_proj', sizeField: 'methode_nb' },
+          popup: `<div><strong>Méthode de gestion :</strong> {methode_proj}</div><div><strong>Nombre de méthodes utilisées :</strong> {methode_nb}</div>`
+        },
+        methode_nb: {
+          label: 'Nombre de méthodes utilisées',
+          group: 'Méthode de gestion',
+          type: 'range', match: 'range',
+          dataviz: null
+        },
+        methode_note: {
+          label: 'Note de la méthode',
+          description: '',
+          group: 'Méthode de gestion',
+          type: 'range', match: 'range',
+          dataviz: null
         }
       },
-      groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Technologie', 'Documentation'],
+      groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Technologie', 'Documentation', 'Méthode de gestion'],
       continuousConfig: { docs_nb_formats: d3.interpolateBlues }
     };
 
