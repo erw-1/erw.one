@@ -1,13 +1,10 @@
 {
 	"type" : "FeatureCollection",
-	"name" : "enquete_sig_testing",
+	"name" : "enquete_sig_testing_160525",
 	"features" : [
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.01618, 47.24822 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 136,
 				"lang" : "fr",
@@ -24,7 +21,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Utilisation de FME pour l'agrégation des données ",
 				"specificite_sig" : "La multiplicité des acteurs",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel, Transversalité",
 				"conseil" : "L'humain ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 7,
@@ -84,10 +85,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.08109, 49.03463 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 165,
 				"lang" : "fr",
@@ -102,7 +100,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "la dimension saptiale, la rapidité de dévelopement des outils ESRI, la transversalité avec les différents servcies ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Territorial, Transversalité",
 				"conseil" : "Savoir traduire un besoin en fonctionalités simple. Eviter le côté usine à gaz. rendre l'application facile d'utilisation. Etre à l'écoute, tenir un plannig savoir communiquer et être pédagogue ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Simplicité et pragmatisme, Communication et pédagogie, Organisation et pilotage",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 9,
@@ -162,10 +164,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.98828, 46.55886 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 175,
 				"lang" : "fr",
@@ -180,7 +179,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Complexité de la données.",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Bien organisé les fichiers, bien documenter les métadonnées, bien documenter le projet pour sa transmission.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 10,
@@ -238,10 +241,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 1.00305, 46.07838 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 197,
 				"lang" : "fr",
@@ -257,7 +257,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Evolutions règlementaires dans certains services (notamment eau et assainissement)",
 				"specificite_sig" : "transversalité, multiplicité des utilisateurs, diversité des profils",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel, Transversalité",
 				"conseil" : "Capacité de s'adapter, communiquer, communiquer, communiquer, patience",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement, Communication et pédagogie",
 				"techno_nb" : "2",
 				"techno" : "libre, standards",
 				"techno_note" : 10,
@@ -279,10 +283,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -5.97656, 32.13345 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 207,
 				"lang" : "fr",
@@ -298,7 +299,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Volonté et combinaison entre Téorie et expérience professionnelle ",
 				"specificite_sig" : "la variante spatiale",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Territorial",
 				"conseil" : "nécessité de combinais expérience train et téorie",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Compétences et accompagnement, Anticipation et pérennité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -318,10 +323,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 4.84085, 45.73958 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 229,
 				"lang" : "fr",
@@ -338,6 +340,8 @@
 				"alea_reprise" : "Autre",
 				"alea_detail" : "Départ d'agent puis manque de temps dédié, puis départ d'agent",
 				"conseil" : "Négociez du temps dédié EN CONTINU, pas \"quand vous avez un moment\"",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Organisation et pilotage, Anticipation et pérennité",
 				"techno_nb" : "2",
 				"techno" : "libre, code",
 				"techno_note" : 10,
@@ -429,10 +433,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.93227, 45.56715 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 270,
 				"lang" : "fr",
@@ -448,7 +449,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Insistance et persuasion, stratégie",
 				"specificite_sig" : "Transversalité, IG utile pour tout et présente partout",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Transversalité, Territorial",
 				"conseil" : "Dialogue, transversalité, géomatique de service, disponibilité, écoute des utilisateurs, identifier les besoins et usages",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Collaboration et transversalité, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 9,
@@ -470,10 +475,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.90618, 46.74701 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 271,
 				"lang" : "fr",
@@ -488,7 +490,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "manipulation de données différentes, logiciels différents",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Structurer le besoin ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 8,
@@ -509,10 +515,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.41699, 48.91929 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 301,
 				"lang" : "fr",
@@ -527,7 +530,11 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "La proximité avec les acteurs spécialisés",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "La communication est la clé ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 4,
@@ -547,10 +554,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.41699, 48.8888 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 304,
 				"lang" : "fr",
@@ -567,6 +571,8 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Changement régulier d'agent",
 				"specificite_sig" : "L'utilisation de logiciels spécifiques qui n'est pas commun pour tous. La compréhension du fonctionnement des projets impliquant des SIG.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 9,
@@ -589,10 +595,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.3909, 47.07838 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 307,
 				"lang" : "fr",
@@ -609,7 +612,11 @@
 				"alea_detail" : "Gros manque de compréhension des SIG",
 				"alea_reprise_autre" : "COmmunication déja faites, qui provoquent de l'attente de la part des demandeurs. Solution technique pas du tout prêtes.",
 				"specificite_sig" : "Personne comprend ce qu'on fait.",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain",
 				"conseil" : "Nous ne somme pas informaticien",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "3",
 				"techno" : "libre, proprio, standards",
 				"techno_note" : 5,
@@ -629,10 +636,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 35.354, 31.59725 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 314,
 				"lang" : "fr",
@@ -650,7 +654,11 @@
 				"copil" : "Non",
 				"alea_detail" : "Fin des financements, a signifié la fin du service d'une partie des images. Et manque de temps pour analyse a ralenti le progres. ",
 				"specificite_sig" : "aucune idée",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Pour nous? Faire avec les habitant.es, source de motivation, de savoir, d'énergie sans aucune comparaison et impact direct du processus sur les habitant.es",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Collaboration et transversalité, Compétences et accompagnement",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 10,
@@ -673,10 +681,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 7.57507, 47.96718 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 315,
 				"lang" : "fr",
@@ -693,6 +698,8 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "ras",
 				"specificite_sig" : "Comprégension des enjeux géographiques",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain, Territorial",
 				"techno_nb" : "2",
 				"techno" : "libre, standards",
 				"techno_note" : 9,
@@ -712,10 +719,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.04248, 47.78223 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 336,
 				"lang" : "fr",
@@ -731,7 +735,11 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "Donnés demandées jamais transmises",
 				"specificite_sig" : "La multidisplinarité, la collaboration avec des personnes sans connaissances techniques",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Organisationnel, Humain, Transversalité",
 				"conseil" : "Bien s'assurer de tous les éléments de réussite du projet avant de dire oui aux élus ou à la direction ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 9,
@@ -754,10 +762,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.43274, 43.52764 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 340,
 				"lang" : "fr",
@@ -774,7 +779,11 @@
 				"alea_detail" : "Tant que ça marche, on ne s'en soucie pas",
 				"alea_reprise_autre" : "Ayant pu et su répondre seul à la commande, j'ai fait de l'ombre sans prêter allégeance. Aussi on m'a exclu d'autres projets ultérieurs.",
 				"specificite_sig" : "La méconnaissance de cet outil, de ses prérequis et de ce mode de penser font que les demandes sont souvent soit irréalistes soit inadaptées.  Un SIG n'est nullement un outil de cartographie. ",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "L'alcool aide, mais c'est onéreux et dangereux.",
+				"conseil_hypotheses" : null,
+				"conseil_groupe" : null,
 				"techno_nb" : "2",
 				"techno" : "libre, code",
 				"techno_note" : 10,
@@ -802,10 +811,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 106.34766, -6.06772 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 350,
 				"lang" : "fr",
@@ -822,6 +828,8 @@
 				"alea_detail" : "Arrêt du financement et donc du projet en grande partie",
 				"alea_reprise_autre" : "Par rapport aux attentes \"durant le projet\", je pense que c'est très sous-utilisé.",
 				"conseil" : "De l'opensource, bien documenté, des tests unitaires pour éviter des régressions par l'autre équipe",
+				"conseil_hypotheses" : "H1, H2",
+				"conseil_groupe" : "Choix des outils et interopérabilité, Qualité des données et documentation",
 				"techno_nb" : "2",
 				"techno" : "libre, standards",
 				"techno_note" : 10,
@@ -841,10 +849,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 0, 49.18769 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 355,
 				"lang" : "fr",
@@ -861,7 +866,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Embauche d'un poste dédié au projet",
 				"specificite_sig" : "connaissance des standards / composantes géographiques",
+				"specificite_sig_hypotheses" : "H2",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "recherchez des esprits curieux",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -883,10 +892,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.46094, 47.35371 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 357,
 				"lang" : "fr",
@@ -901,7 +907,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Dans le cadre de projet SIG , la place de la technologie, logiciel SIG utilisé va fortement rendre le projet singulier par rapport à un projet informatique classique ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Vision claire et les outils adéquats et un bon suivi ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage, Choix des outils et interopérabilité",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -921,10 +931,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.2316, 49.04904 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 362,
 				"lang" : "fr",
@@ -940,7 +947,11 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "Le gestionnaire de la donnée à changer pour aller vers un gestionnaire non‑géomaticien.",
 				"specificite_sig" : "Je crois que ce qui a rendu la gestion de projet SIG spécifique est sa nature transversale, combinant un projet informatique et des données géographiques. Par conséquent, il est crucial de maîtriser les bases ou les fondamentaux du projet et du SIG pour qu’ils soient compréhensibles par tous. En sachant que les parties prenantes doivent prendre conscience de toutes les étapes nécessaires au traitement des données (collecte, nettoyage, agrégation, etc.) afin d’avoir des indicateurs et informations pertinents et actuels.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Organisationnel, Humain, Transversalité",
 				"conseil" : "Toujours faire une sauvegarde des données avant tous changements.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 6,
@@ -961,10 +972,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.21173, 48.89346 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 363,
 				"lang" : "fr",
@@ -979,7 +987,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "La multiplicité des techniques (langages, logiciels) utilisés en SIG permettent sur un même projet, d'avoir plusieurs acteurs avec des rôles prédéfinis. Cela nécessite donc un choix de méthode de gestion de projet bien adapté.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Organisationnel",
 				"conseil" : "Ne pas hésiter à organiser ou demander des réunions en cas de difficulté",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Organisation et pilotage, Collaboration et transversalité",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 8,
@@ -1000,10 +1012,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 1.66759, 9.70523 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 364,
 				"lang" : "fr",
@@ -1019,7 +1028,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "départ de l'informaticien et son remplacement ",
 				"specificite_sig" : "C'est son application sur les éléments de l'environnement ou du territoire",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Territorial",
 				"conseil" : "Détermination, endurance et curiosité et surtout le travail en équipe ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement, Collaboration et transversalité",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 5,
@@ -1039,10 +1052,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 4.82437, 46.29488 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 367,
 				"lang" : "fr",
@@ -1058,7 +1068,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "implication des utilisateurs dès la phase de spécifications. Dvt rapide. Tests et résolution des bugs rapides. Formations dès livraison. Suivi ds le temps des utilisateurs. ",
 				"specificite_sig" : "Ils sont cinceptuellement (dimension tps/espace) plus difficiles à intégrer pour un néophyte ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain, Territorial",
 				"conseil" : "Faire simple et ne pas lâcher l'affaire après les formations !",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Simplicité et pragmatisme, Compétences et accompagnement",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 8,
@@ -1083,10 +1097,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.39502, 48.85026 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 384,
 				"lang" : "fr",
@@ -1105,7 +1116,11 @@
 				"alea_detail" : "mon arrivée _ reprise d'expression de Besoins auprès des métiers/ extension des métiers cibles _ suivi et MAJ et évolution du projet auprès du prestataire / évolution entre développement et MEP ",
 				"alea_reprise_autre" : "autre : projet initial très éloigné du projet final-du au fait d'arriver dans le projet et de le reprendre en main, rendre des livrables actualisés plus en phase avec les besoins métier qui ont évolués et aménagements changeants des plateformes ",
 				"specificite_sig" : "aucune - sinon l'effet visuel, le Wooo quand Demo des POCs, 1er de série car support cartographique - impact de l'image / de la carte interactive ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "laisser \"l'humain\" de côté, se concentrer sur le taf, rien que le taf",
+				"conseil_hypotheses" : null,
+				"conseil_groupe" : null,
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 6,
@@ -1130,10 +1145,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.395, 47.98249 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 398,
 				"lang" : "fr",
@@ -1149,7 +1161,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Le fait que chacun puisse s'identifier à un projet SIG au travers d'une carte rend les dialogues riches et complexes. En effet, chaque acteur voit l'outil final par son prisme et souhaite personnaliser son expérience pour son besoin. Cela rend difficile la mise en place technique du projet.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel, Technique",
 				"conseil" : "Un classique : dites non aux fonctionnalités qui s'empilent. Expliquez votre choix de sujet en fonction du marché pu du contrat, et proposer de faire ça dans un autre temps. Sinon vous ne vous en sortirez pas.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Simplicité et pragmatisme, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 8,
@@ -1173,10 +1189,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.69771, 45.95406 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 404,
 				"lang" : "fr",
@@ -1193,7 +1206,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "départ d'agent",
 				"specificite_sig" : "La diversité de domaines touchés et le type de données impliquées, avec leur superposition et la rapidité des stats",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Territorial",
 				"conseil" : "Intégrer du terrain",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Anticipation et pérennité, Collaboration et transversalité",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 10,
@@ -1213,10 +1230,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.73398, 50.2595 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 411,
 				"lang" : "fr",
@@ -1232,7 +1246,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "acteur ajouté en fin de projet qui a demandé de revoir une partie de la méthodologie",
 				"specificite_sig" : "la vision géographique",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Territorial",
 				"conseil" : "voir le projet dans sa globalité dès le début ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage, Anticipation et pérennité",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -1254,10 +1272,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.23731, 47.5864 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 412,
 				"lang" : "fr",
@@ -1275,7 +1290,11 @@
 				"alea_detail" : "Changement de responsable en cours de projet. Manque de moyen",
 				"alea_reprise_autre" : "Nouvelle personne recrutée manquant de contexte. Manque de moyens",
 				"specificite_sig" : "Aucune",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Connaissez le sujet du projet en profondeur. Prenez du temps pour définir le cahier des charges et le chiffrage associé",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Organisation et pilotage",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 9,
@@ -1295,10 +1314,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.23572, 48.89294 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 417,
 				"lang" : "fr",
@@ -1314,7 +1330,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Réussite : équipe impliquée et bonne gestion de projet qui permet de réaliser des transferts de compétence efficaces (pas de perte d’information) même après le départ et/ou l’arrivée de personnes ",
 				"specificite_sig" : "La coordination entre les différents acteurs pour fournir ou créer la donnée implique beaucoup d’interdépendances. Une gestion de projet en mode agile permet d’identifier ces adhérences et de pouvoir prioriser ou mieux gérer cela ",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Organisationnel, Transversalité",
 				"conseil" : "Avoir une bonne documentation et former les gens qui ne sont pas geomaticiens de formation ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Qualité des données et documentation, Compétences et accompagnement",
 				"techno_nb" : "3",
 				"techno" : "code, proprio, standards",
 				"techno_note" : 7,
@@ -1375,10 +1395,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 4.69528, 44.3754 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 437,
 				"lang" : "fr",
@@ -1393,7 +1410,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Cette expérience est singulière car il fait toujours être capable de faire le lien entre les besoins d’un public qui ne connaît pas la solution technique utilisée et l’équipe sig ",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "La communication et la pédagogie sont deux éléments clés de la réussite d’un projet ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 5,
@@ -1415,10 +1436,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -0.55035, 47.47647 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 438,
 				"lang" : "fr",
@@ -1433,7 +1451,11 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Les géomaticiens ne sont pas informaticiens ou spécialistes métiers. Ce rôle à mi-chemin entre les deux facettes est, certes intéressant, mais oblige à une compréhension \"complète\" des spécificités de chaque métier.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "Bien comprendre l'objectif",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 9,
@@ -1456,10 +1478,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.02148, 48.83037 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 445,
 				"lang" : "fr",
@@ -1475,7 +1494,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "POC (Preuve de concept) pour convaincre initialement notre DSI",
 				"specificite_sig" : "Le type de données (et leur représentation carto) peut davantage concerner les équipes métiers. Un géomaticien a plusieurs casquettes : gestionnaire de données, cartographes, développeur,  et parfois chef de projet",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Un géomaticien n'est pas qu'un cartographe : structurer ses données (modélisation, développer les process d'intégration en back-end etc.) est essentiel avant de proposer plein de fonctionnalités carto (souvent gadgets).  Il faut essayer de prioriser son propre besoin de géomaticien gestionnaire de données, avant de répondre aux besoins (souvent gadgets) cartographiques des autres équipes ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Qualité des données et documentation, Simplicité et pragmatisme",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 5,
@@ -1495,10 +1518,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -1.08376, 44.21978 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 446,
 				"lang" : "fr",
@@ -1515,7 +1535,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Chacun cherche à tirer son épingle du jeu et tire la couverture quand ça l'arrange",
 				"specificite_sig" : "Aucune particulière. À part que peu de personnes connaissent les SIG.",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Constituer une équipe solide et surtout imposer ses choix",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement, Leadership et responsabilisation",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 1,
@@ -1537,10 +1561,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.34908, 48.82626 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 448,
 				"lang" : "fr",
@@ -1555,7 +1576,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Oui, reprise fluide",
 				"specificite_sig" : "L'interdisciplinarité des acteurs impliqués ",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel, Transversalité",
 				"conseil" : "Comprendre le sens et la finalité du projet avant de s'y engager.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 8,
@@ -1614,10 +1639,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -3.12836, 47.49508 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 458,
 				"lang" : "fr",
@@ -1632,6 +1654,8 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"conseil" : "Communiquer l'évolution du projet à l'ensemble des parties prenantes",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 8,
@@ -1652,10 +1676,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.35704, 48.86133 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 464,
 				"lang" : "fr",
@@ -1670,7 +1691,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "La compréhension de ce quoi une donnée géographie et les outils spécifiques qui vont avec. Les gens pensent souvent que c'est juste une donné comme une autre, et ne se rendent pas compte des subtilités ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain, Technique",
 				"conseil" : "Expliquer aux personnes non métier de façon plus compréhensible ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie",
 				"techno_nb" : "3",
 				"techno" : "code, proprio, standards",
 				"techno_note" : 5,
@@ -1690,10 +1715,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -63.04827, 18.0824 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 467,
 				"lang" : "fr",
@@ -1709,7 +1731,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "le pilote du projet est un excellent coordinateur",
 				"specificite_sig" : "informations spatialisées et croisements de données en synergie",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Transversalité",
 				"conseil" : "importance de la coordination entre les acteurs impliqués",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Collaboration et transversalité, Organisation et pilotage",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 5,
@@ -1729,10 +1755,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.12531, 48.80501 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 468,
 				"lang" : "fr",
@@ -1750,7 +1773,11 @@
 				"alea_detail" : "Renvoi d'une direction , problème de confiance",
 				"alea_reprise_autre" : "Changement de service",
 				"specificite_sig" : "La transversalité, peu importe le service et le besoin, il y a toujours un intérêt et c'est simple d'adaptation",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Transversalité",
 				"conseil" : "Structurer bien votre équipe et répartissez vous bien les tâches",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Organisation et pilotage, Collaboration et transversalité",
 				"techno_nb" : "2",
 				"techno" : "libre, code",
 				"techno_note" : 9,
@@ -1808,10 +1835,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -1.41174, 46.67727 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 490,
 				"lang" : "fr",
@@ -1827,7 +1851,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "RAS",
 				"specificite_sig" : "La dimension spatiale, patrimoniale et la technicité des opérations et matériels de relevés terrain",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Territorial",
 				"conseil" : "L'analyse des besoins et la Pédagogie sont indispensables",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Communication et pédagogie",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 8,
@@ -1847,10 +1875,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -1.67102, 48.11467 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 493,
 				"lang" : "fr",
@@ -1866,7 +1891,11 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "Fin de contrat ",
 				"specificite_sig" : "La multiplicité des acteurs impliqués (services métiers / techniques)",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel, Transversalité",
 				"conseil" : "Points de suivi réguliers mais bien construits avec un timing précis pour chaque sujet (éviter les temps de discussion trop longs/hors sujets)",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 9,
@@ -1887,10 +1916,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.21552, 48.65905 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 518,
 				"lang" : "fr",
@@ -1909,7 +1935,11 @@
 				"alea_detail" : "fin du stage",
 				"alea_reprise_autre" : "reprise de quelques résultats et adaptation des axes",
 				"specificite_sig" : "multidisciplinarité",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel, Transversalité",
 				"conseil" : "gestion de projet correctement définie en amont!! ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage",
 				"techno_nb" : "2",
 				"techno" : "libre, code",
 				"techno_note" : 7,
@@ -1932,10 +1962,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.35107, 46.75241 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 525,
 				"lang" : "fr",
@@ -1952,7 +1979,11 @@
 				"alea_detail" : "1 fournisseurs différents pour chaque Horloge/Thermostat connecté/Capteurs/Actionneurs",
 				"alea_reprise_autre" : "Solution technique existantes, mais remontés dans Systeme SIG via API complexe, nécéssite des compétences en developpement WEB, et répéter les développements pour chaque marque/plateforme IOT. ",
 				"specificite_sig" : "L'aspect très multi diciplinaire (Architecture Informatique + DevWeb + Gestion BDD + IOT)",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Organisationnel, Transversalité",
 				"conseil" : "Joindre l'informaticien avec chaque projet pour les aspects SI / Favorisé les solutions ouvertes open source / Arrêté de vouloir tout centralisé sur le SIG sans raison (Stop aux hyperviseurs bullshit)",
+				"conseil_hypotheses" : "H1, H2, H3",
+				"conseil_groupe" : "Collaboration et transversalité, Choix des outils et interopérabilité",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 1,
@@ -1976,10 +2007,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.87842, 47.35123 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 528,
 				"lang" : "fr",
@@ -1995,7 +2023,11 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "Lenteur des serveurs, de l'équipement",
 				"specificite_sig" : "beaucoup de données,  la hiérarchie sépare trop souvent les 2 alors qu'ils devraient être ensemble. ",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel",
 				"conseil" : "Sur les jumeaux numériques, receuillir les besoins pour savoir si vraiement utile. Et tout mettre en cloud, bcp plus rapide.",
+				"conseil_hypotheses" : "H1, H2",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Choix des outils et interopérabilité",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 1,
@@ -2089,10 +2121,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.28516, 48.77791 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 551,
 				"lang" : "fr",
@@ -2110,7 +2139,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Restructuration, manque de communication avec les utilisateurs (incompréhension du besoin), ajout d'un outil supplémentaire non désiré ",
 				"specificite_sig" : "Le manque de compréhension du SIG. La MOA, dans la plupart des cas, ne connait pas le potentiel des SIG et/ou ne comprend pas ses limites. ",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "La compréhension du besoin utilisateur et de son accompagnement est des facteur primordiale. ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Compétences et accompagnement",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 8,
@@ -2130,10 +2163,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.72626, 42.73562 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 568,
 				"lang" : "fr",
@@ -2148,7 +2178,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Les utilisateurs finaux doivent s'approprier un minimum certains aspects techniques et participer à la production (contrôle qualité et corrections)",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Il faut une personne dédiée à l'animation/gestion avec le temps necessaire.",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Organisation et pilotage, Compétences et accompagnement",
 				"techno_nb" : "2",
 				"techno" : "libre, code",
 				"techno_note" : 5,
@@ -2173,10 +2207,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.5554, 46.68393 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 570,
 				"lang" : "fr",
@@ -2192,7 +2223,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Le projet ne partait pas de 0 mais d'un existant avec une mécanique de migration. L'avantage est que les parties prenantes sont bien accultures aux enjeux et méthodes, l'inconve.ient c'est qu'il est toujours difficile de se détacher de l'existant pour certains acteurs et de se projeter vers un changement, quand bien même il amène des aspects \"mieux\" à terme",
 				"specificite_sig" : "Elle ont une.dimension grand public inhérente car ça parle à tour le monde et à tous les niveau techniques d'acteurs. Donc on ne peut pas rester en tour d'Ivoire de spécialistes. Les utilisateurs finaud sont.de bas niveau technique et c'est tout de meme.possible de.les.embarquer sur ce type de projzt",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "La volonté politique et/ou l'expertise technique ne font pas tout. La tenu d'un.projet dans le temps nécessite des compétences en gestion de projet à proprement parler qui sont essentielle, parfois plus que les détails techniques",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage, Anticipation et pérennité",
 				"techno_nb" : "3",
 				"techno" : "libre, proprio, standards",
 				"techno_note" : 7,
@@ -2218,10 +2253,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 7.74701, 48.57761 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 574,
 				"lang" : "fr",
@@ -2238,6 +2270,8 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Projet initié pour répondre à un besoin interne, mais géré de manière artisanale par des personnes impliquées personnellement, le pôle géomatique étant mobilisé sur d'autres priorités. Il a été fait appel à des stagiaires qui ont permis de faire avancer les choses, car travaillant à 100% sur le sujet. Maintenant le pôle géomatique reprend le projet, ce qui permettra d'aboutir à l'objectif final.",
 				"specificite_sig" : "Beaucoup de personnes, par exemple issues de formations en géographie et aménagement du territoire, savent utiliser les SIG et peuvent lancer des projets SIG. Mais pour mener un gros projet à terme, il faut souvent plus de compétences (développement) que ces personnes n'ont pas toujours. Il y a donc un risque que des projets n'aboutissent pas, ou alors qu'ils restent à un niveau artisanal. C'est le cas de mon projet, mais il est en train d'être repris par le pôle géomatique, ce qui permettra d'aboutir à un meilleur résultat, utilisable par tous les agents, et plus seulement par une poignée d'initiés.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Humain, Organisationnel",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 5,
@@ -2260,10 +2294,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 0.70313, 42.55308 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 577,
 				"lang" : "fr",
@@ -2280,7 +2311,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Changement d’industriel ",
 				"specificite_sig" : "Technicité projet et data",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "L’organisation et de la communication ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Organisation et pilotage, Communication et pédagogie",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 7,
@@ -2305,10 +2340,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.35234, 48.92154 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 584,
 				"lang" : "fr",
@@ -2327,7 +2359,11 @@
 				"alea_detail" : "Départs d’agents mais également et surtout des stratégies court-terme qui s’opposaient les unes des autres. Le projet étant porté sur le long terme, l’investissement massif et historique était l’argument qui bloquait un nouveau départ ou une refonte.",
 				"alea_reprise_autre" : "Mon équipe a été missionné pour proposer une solution tierce pour venant concurrencer le projet en souffrance. ",
 				"specificite_sig" : "Aucune. Un projet en géomatique se gère exactement de la même manière qu’un projet informatique classique. Les spécificités techniques sont l’affaires des techniciens ou développeurs qui ont la compétence technique.",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Bien recenser le besoin et calibrer techniquement les attentes.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 4,
@@ -2352,10 +2388,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.34283, 48.83439 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 589,
 				"lang" : "fr",
@@ -2372,7 +2405,11 @@
 				"alea_detail" : "Projet non prioritaire.",
 				"alea_reprise_autre" : "Toujours considérer comme non prioritaire mais intéressant.",
 				"specificite_sig" : "Les rendus cartographiques sont plus parlants que les rendus des projets informatiques classiques.",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Une bonne organisation et gestion du projet.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 5,
@@ -2392,10 +2429,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.30839, 48.85055 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 593,
 				"lang" : "fr",
@@ -2410,6 +2444,8 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Il faut souvent faire un lien entre un texte et la carte. C’est quelque chose de pas souvent simple quand on est face a des non géomaticien. C’est la que notre rôle de conseil est important. Il faut aussi réussir à trouver les outils de gestion de projet qui permettent à tout le monde de s’en sortir et de comprendre son rôle. ",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Organisationnel, Humain, Technique",
 				"techno_nb" : "2",
 				"techno" : "libre, code",
 				"techno_note" : 10,
@@ -2469,10 +2505,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.45703, 45.99187 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 602,
 				"lang" : "fr",
@@ -2488,7 +2521,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Doctorant impliqué et une direction de thèse de proximité",
 				"specificite_sig" : "La maintenance des données et des architectures informatiques est primordibale, il faut associer du personne dédié et un matériel adequat",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Organisationnel",
 				"conseil" : "Fixer des objectifs clairs à des échéances a court , mloyen et long terme",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage, Anticipation et pérennité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 5,
@@ -2509,10 +2546,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.34798, 48.85525 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 621,
 				"lang" : "fr",
@@ -2527,6 +2561,8 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"conseil" : "Communiquez bien avec l'équipe metier",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 4,
@@ -2546,10 +2582,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.72662, 45.19172 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 635,
 				"lang" : "fr",
@@ -2565,6 +2598,8 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Arrivée d’une ressource technique ",
 				"specificite_sig" : "La transversalité ",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Transversalité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 10,
@@ -2584,10 +2619,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.94319, 43.53959 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 637,
 				"lang" : "fr",
@@ -2604,7 +2636,11 @@
 				"alea_detail" : "Recadrage avec mise en place de cahier de livraisons et de recette pour les développements, instauration de personnes clés techniques côté client exploitant pour une meilleure compréhension avec les métiers utilisateurs. Restriction des vannes financières pour se concentrer sur des spéciale synthétiques répondants aux besoins essentiels de chaque entités (grosse coordination a dû être mis en place) ",
 				"alea_reprise_autre" : "Les participants aux tests étaient moins enthousiastes ",
 				"specificite_sig" : "Le mode agile est complexe à maîtriser ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Organisationnel",
 				"conseil" : "Si le bateau commence à chavirer, prendre de la hauteur et un virage à 180° ça peut sauver le projet donc être résiliant et patient ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Organisation et pilotage, Compétences et accompagnement",
 				"techno_nb" : "2",
 				"techno" : "proprio, standards",
 				"techno_note" : 7,
@@ -2627,10 +2663,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.42412, 48.81395 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 655,
 				"lang" : "fr",
@@ -2647,7 +2680,11 @@
 				"alea_detail" : "Direction métier motiviée",
 				"alea_reprise_autre" : "Un POC avait été réalisé sur une emprise limitée avec des technos open source (hors cadrages informatiques/SIG)",
 				"specificite_sig" : "Le service SIG doit disposer de compétences \"informatiques\" (notamment réseaux) pour améliorer les performances.",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Formaliser la méthode de projet au début: COPIL, COTEC, revue de projet hebdomadaires, acteurs et rôles...",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage, Leadership et responsabilisation",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 8,
@@ -2743,10 +2780,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.79053, 48.66784 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 671,
 				"lang" : "fr",
@@ -2763,7 +2797,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "arrivée d'une alternante avec une bonne idée ",
 				"specificite_sig" : "travail nécessairement effectué avec des acteurs qui ne s'y connaissent pas ",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "être polyvalent intellectuellement et avoir un projet dessiné dès le début ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Compétences et accompagnement, Organisation et pilotage",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 6,
@@ -2783,10 +2821,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.28939, 48.90696 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 679,
 				"lang" : "fr",
@@ -2802,7 +2837,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Le poids des outils propriétaires et les contraintes de la donnée spatiale",
+				"specificite_sig_hypotheses" : "H2",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Privilégier l'Open Source ",
+				"conseil_hypotheses" : "H2",
+				"conseil_groupe" : "Choix des outils et interopérabilité",
 				"techno_nb" : "3",
 				"techno" : "libre, proprio, standards",
 				"techno_note" : 10,
@@ -2870,10 +2909,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.30713, 48.96599 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 687,
 				"lang" : "fr",
@@ -2889,7 +2925,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "aucun",
 				"specificite_sig" : "la diversité des compétences et la méconnaissance des technicitéq",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain",
 				"conseil" : "disposer d’un cahier de charge clair par rapport aux besoins ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 8,
@@ -2910,10 +2950,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.35046, 43.32415 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 691,
 				"lang" : "fr",
@@ -2929,7 +2966,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "L’impact visuel d’une carte, la rapidité et la flexibilité de l’utilisation d’un SIG permet une plus grande productivité et donc une efficacité de résultat. ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Maîtrise des coûts, des délais et gestion humaine de chaque intervenants pour avoir une plus grande efficacité et atteindre le résultat final ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage, Compétences et accompagnement",
 				"techno_nb" : "2",
 				"techno" : "libre, standards",
 				"techno_note" : 5,
@@ -2951,10 +2992,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.44767, 45.39368 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 694,
 				"lang" : "fr",
@@ -2970,7 +3008,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "pas d'évènement particulier",
 				"specificite_sig" : "Le volet visuel est déterminant, c'est un accélérateur de prise de décision. Néanmoins, en gestion de projet, cela nécessite un travail en background important mais n'étant ni SIGiste ni informaticienne, je ne vois pas de spécificité particulière.",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Toujours rester connecter au besoin utilisateur",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 5,
@@ -2994,10 +3036,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.91268, 47.49243 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 696,
 				"lang" : "fr",
@@ -3014,7 +3053,11 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "Surcharge de travail, trop de projets simultanés : le projet avait besoin d'être mis à jour mais le temps manquait.",
 				"specificite_sig" : "L'hétérogénéité des données mobilisées : formats, standards, projections, dimensions, périodes d'actualisations...",
+				"specificite_sig_hypotheses" : "H1, H2",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Comme pour les cartes, il faut faire un grand travail d'édition pour la gestion d'un projet SIG. Savoir cadrer les demandes, dire non, et être réaliste par rapport au temps et budgets sont essentiels.",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Simplicité et pragmatisme, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "4",
 				"techno" : "libre, code, proprio, standards",
 				"techno_note" : 10,
@@ -3035,10 +3078,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.87846, 47.99622 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 699,
 				"lang" : "fr",
@@ -3055,6 +3095,8 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"conseil" : "Se faire accompagner, ne pas hésiter à poser des questions au client/service concerné par le projet ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "4",
 				"techno" : "libre, code, proprio, standards",
 				"techno_note" : 5,
@@ -3112,10 +3154,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 4.34705, 48.96177 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 720,
 				"lang" : "fr",
@@ -3130,6 +3169,8 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Si le projet est bien ciblé, il sera bien reçu par les acteurs non‑géomaticiens",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Organisationnel, Humain",
 				"techno_nb" : "3",
 				"techno" : "libre, proprio, standards",
 				"techno_note" : 8,
@@ -3149,10 +3190,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 1.8457, 47.20091 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 733,
 				"lang" : "fr",
@@ -3169,7 +3207,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Départ d'agent simplifiant la suite (sans que cet ayant ait eut une influence négative avant)",
 				"specificite_sig" : "Transversalité des enjeux et des compétences nécessaires",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Transversalité, Organisationnel, Humain",
 				"conseil" : "Faire des tests comparatifs réguliers et bien versionner les livrables",
+				"conseil_hypotheses" : "H1, H2",
+				"conseil_groupe" : "Qualité des données et documentation, Choix des outils et interopérabilité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -3227,10 +3269,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.42773, 49.46812 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 756,
 				"lang" : "fr",
@@ -3248,7 +3287,11 @@
 				"alea_detail" : "Départ du créateur du script ",
 				"alea_reprise_autre" : "Prise en main du script ",
 				"specificite_sig" : "La transversalité ",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Transversalité",
 				"conseil" : "Mise en place de documentation + documents méthodiques de chaque étape + schématisation du modèle de données + acteurs ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation, Organisation et pilotage",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 7,
@@ -3271,10 +3314,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.44995, 48.98536 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 778,
 				"lang" : "fr",
@@ -3290,7 +3330,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Projet demandé et soutenu par le directeur d'exploitation, ce qui contribue à la réussite",
 				"specificite_sig" : "La puissance d'analyse des données cartographique en post production",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "S'adapter aux contraintes métier et simplifier les méthodes de saisie dans les outils SIG",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Simplicité et pragmatisme, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 7,
@@ -3314,10 +3358,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.30975, 48.87492 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 787,
 				"lang" : "fr",
@@ -3334,7 +3375,11 @@
 				"alea_detail" : "Sponsor de la Direction Générale ",
 				"alea_reprise_autre" : "Après une cyber attaque. Reprise difficile car tout devait être reconstruit.",
 				"specificite_sig" : "Transversalité avec les metiers",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Transversalité, Organisationnel",
 				"conseil" : "Communication ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -3358,10 +3403,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 1.81274, 45.25491 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 788,
 				"lang" : "fr",
@@ -3377,7 +3419,11 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "Sous-effectif criant, désintérêt pour le projet, résistance au changement",
 				"specificite_sig" : "S'agissant d'un projet pour l'organisation interne, sans visibilité extérieure, il est difficile d'impliquer les donneurs d'ordre, et de faire dégager du temps.",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel",
 				"conseil" : "Ayez des outils optimisés pour l'utilisateur final ! (tant pis si l'administration est lourde)",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Choix des outils et interopérabilité",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 9,
@@ -3433,10 +3479,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.55016, 46.66962 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 792,
 				"lang" : "fr",
@@ -3451,7 +3494,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Sans objet pour moi.",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Exigence de performance d'affichage, pré-requis de stockage et d'administration des bases, bonne compréhension des potentialités des éditeurs (ne pas figer les choix au BPU)",
+				"conseil_hypotheses" : "H2",
+				"conseil_groupe" : "Choix des outils et interopérabilité",
 				"techno_nb" : "4",
 				"techno" : "libre, code, proprio, standards",
 				"techno_note" : 8,
@@ -3471,10 +3518,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 1.76743, 45.26466 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 797,
 				"lang" : "fr",
@@ -3491,7 +3535,11 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "Départ de l'agent moteur, prestation externe",
 				"specificite_sig" : "En l'occurrence, pas de spécificité, ç'aurait été la même chose avec un projet non-SIG",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Ayez le chef de projet en interne, conservez-le, et prévoyez l'après-projet",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Organisation et pilotage, Leadership et responsabilisation",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -3512,10 +3560,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -0.78003, 44.7343 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 812,
 				"lang" : "fr",
@@ -3532,7 +3577,11 @@
 				"alea_detail" : "Le service en charge des serveurs ne veut pas travailler.",
 				"alea_reprise_autre" : "Pour l'instant en off. On espère une reprise avec une nouvelle direction qui va amener un nouveau souffle.",
 				"specificite_sig" : "Certains formats d'échange sont différents et répondent à des normes plus stricts.",
+				"specificite_sig_hypotheses" : "H2",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Expliquer ce qu'on peut faire et ce qu'on ne peut pas faire à ses interlocuteurs",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "2",
 				"techno" : "libre, code",
 				"techno_note" : 10,
@@ -3553,10 +3602,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.37854, 48.8228 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 821,
 				"lang" : "fr",
@@ -3571,7 +3617,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Certaines solutions sont rapides à mettre en place (réactivité) et répondent à un besoin bien précis",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Bien identifier le besoin",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -3591,10 +3641,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.37305, 48.83736 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 824,
 				"lang" : "fr",
@@ -3610,7 +3657,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Réussite car imposé par la direction à un moment oú le géomaticien n'arrivait pas à faire appliquer ses méthodologies et process.",
 				"specificite_sig" : "Domaine méconnu, Manque de reconnaissance, Casquette de technicien",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain",
 				"conseil" : "Faites-vous entendre ! Vous avez une valeur ajoutée inestimable pour la pérénité de l'entreprise à moyen/long terme. Exposez les pour/contre de chaque option. Organisez des réunions de cadrages avec les managers et pas mes utilisateurs finaux (là on parlerait d'identification des besoins, ou retour d'expérience). Votre rôle s'inscrit au coeur des process, de la qualité, du managment de projet. Choisissez bien vos intermocuteurs et portez vos sujets aux bonnes personnes dans l'entreprise.",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Leadership et responsabilisation",
 				"techno_nb" : "4",
 				"techno" : "libre, code, proprio, standards",
 				"techno_note" : 10,
@@ -3633,10 +3684,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 1.94237, 45.09184 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 836,
 				"lang" : "fr",
@@ -3652,6 +3700,8 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Un classement \"logique\" des donnees (collectées et produites)",
 				"conseil" : "Classement des données locales et conserver les métadonnées (source du producteur, année de production et condition de saisie en particulier)",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 9,
@@ -3674,10 +3724,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.69092, 46.69216 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 842,
 				"lang" : "fr",
@@ -3693,6 +3740,8 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Aucun pour l'instant",
 				"conseil" : "S'organiser, communiquer, être à l'écoute, compétences techniques, s'adapter aux personnes qui vont utiliser l'outil, faire simple, construire brique par brique",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage, Communication et pédagogie, Compétences et accompagnement, Simplicité et pragmatisme",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 10,
@@ -3712,10 +3761,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -122.87109, 47.04018 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 911,
 				"lang" : "en",
@@ -3731,7 +3777,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Director of IT NOT giving up as well as Sev key Players full Dedication",
 				"specificite_sig" : "data is ever changing and \" routing errors can result in loss of life \" or a serious outcome ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Organisationnel",
 				"conseil" : "Dont give up Its so very tedious that one can lose patience or give in and lower the bar - don't ever lower the bar where accuracy is concerned ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 5,
@@ -3757,10 +3807,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -75.69374, 45.42148 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 929,
 				"lang" : "fr",
@@ -3776,6 +3823,8 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Was successful but reorganization meant we lost half our team, increasing the time to complete dramatically ",
 				"conseil" : "Go pure open source",
+				"conseil_hypotheses" : "H2",
+				"conseil_groupe" : "Choix des outils et interopérabilité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -3797,10 +3846,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.33984, 45.0166 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 940,
 				"lang" : "fr",
@@ -3816,7 +3862,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Réussite: zéro turnover, agents compétents, équipe soudée. On connait mieux la donnée que ceux qui nous demandent de la gérer.",
 				"specificite_sig" : "Lorsqu'une entreprise doit gérer son patrimoine, c'est à dire ce qui lui appartient, il est essentiel de savoir où c'est. Pour un bureau classique on sait tous où est l'imprimante, pas besoin de le cartographier. Mais quand on gère une megafactory on a besoin de savoir où les câbles passent, où sont les vannes, leur état, leur date de pose, etc. C'est avec le SIG qu'on le fait.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Territorial, Organisationnel",
 				"conseil" : "Il est essentiel de comprendre ce dont la personne a vraiment besoin, ne pas s'arrêter à ce qu'elle demande. Elle exprimera sa demande de travers 100% du temps car elle n'a pas forcément conscience de ce qui est possible. Donc creuser la question au lieu de produire de la donnée bêtement.",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Communication et pédagogie",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -3841,10 +3891,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 7.20154, 43.69728 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 958,
 				"lang" : "en",
@@ -3859,6 +3906,8 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "The need to work with multiples data's version ",
+				"specificite_sig_hypotheses" : "H1, H2",
+				"specificite_sig_groupe" : "Technique",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 8,
@@ -3878,10 +3927,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -81.49658, 27.50827 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 979,
 				"lang" : "en",
@@ -3897,7 +3943,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Cory manager",
 				"specificite_sig" : "GIS needs to demo results as it’s often unknown ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain",
 				"conseil" : "Need stakeholder buy-in",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Collaboration et transversalité",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 8,
@@ -3920,10 +3970,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 4.41101, 51.19312 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 980,
 				"lang" : "en",
@@ -3938,7 +3985,11 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "No idea",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Good data management",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 7,
@@ -3959,10 +4010,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 24.84009, -33.77298 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 983,
 				"lang" : "en",
@@ -3978,7 +4026,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "funding ",
 				"specificite_sig" : "understanding the complexity and need for continuity ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "sustained budget and continuity ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage, Anticipation et pérennité",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 8,
@@ -4000,10 +4052,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -78.78227, 35.78718 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 984,
 				"lang" : "en",
@@ -4019,7 +4068,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Other projects taking away time from this one.",
 				"specificite_sig" : "I don’t feel like it is different. The exceptions are when doing data collection or handling LiDAR.",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Please donate to your Open Source projects when you use them.",
+				"conseil_hypotheses" : "H2",
+				"conseil_groupe" : "Choix des outils et interopérabilité",
 				"techno_nb" : "4",
 				"techno" : "libre, code, proprio, standards",
 				"techno_note" : 10,
@@ -4041,10 +4094,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -3.45383, 48.7334 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1011,
 				"lang" : "fr",
@@ -4059,7 +4109,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Les moteurs applicatifs cartographiques sont compatibles avec les standards (SGBD, Outil de développement, ...) ",
+				"specificite_sig_hypotheses" : "H2",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Réalisation d'une note de cadrage par le service demandeur afin que la demande soit clairement posée sur papier. Elle servira de point de départ pour le déroulement du projet.",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Organisation et pilotage",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -4079,10 +4133,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -80.52429, 43.44893 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1018,
 				"lang" : "en",
@@ -4098,7 +4149,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Time efficiency ",
 				"specificite_sig" : "Spatial domain knowledge",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Territorial, Humain",
 				"conseil" : "Have user buy-in",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Collaboration et transversalité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 9,
@@ -4121,10 +4176,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -82.30957, 31.1282 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1042,
 				"lang" : "en",
@@ -4140,6 +4192,8 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Staff Turnover",
 				"conseil" : "Understand your users/team members GIS knowledge level and keep it simple/to their level. ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Simplicité et pragmatisme, Communication et pédagogie",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 10,
@@ -4159,10 +4213,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -82.5234, 29.68308 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1054,
 				"lang" : "en",
@@ -4178,7 +4229,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "None",
 				"specificite_sig" : "Unkown only worked as small team for small projects",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Having a structure for time line and tasks would be helpful",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 3,
@@ -4274,10 +4329,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -114.60937, 33.13755 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1102,
 				"lang" : "en",
@@ -4294,7 +4346,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Waterfall Approach for large organizations seems challenging as we don’t know what we don’t know until after waterwall",
 				"specificite_sig" : "Reliance on other business groups for SME, integrations and infrastructure.",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel, Transversalité",
 				"conseil" : "Adopt Agile and iterative methods.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 9,
@@ -4316,10 +4372,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -83.63342, 41.36119 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1107,
 				"lang" : "en",
@@ -4335,7 +4388,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Budgeting, lack of dedicated staff/turn over, strong backing from Elected officials/County Commissioners ",
 				"specificite_sig" : "You have to have a clear understanding of the end game. Are you producing a map, or are you producing insights from spatial data often in the form of a Dashboard or Final Report. ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Take the extra time early on to make sure stakeholders understand the power of spatial data. If you can do all other roadblocks become something the organization wants to overcome not just the GIS or IT Departments. ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "4",
 				"techno" : "libre, code, proprio, standards",
 				"techno_note" : 7,
@@ -4396,10 +4453,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -121.81641, 49.43765 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1122,
 				"lang" : "en",
@@ -4415,6 +4469,8 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "high staff turnover ",
 				"conseil" : "life's too short to work with assholes",
+				"conseil_hypotheses" : null,
+				"conseil_groupe" : null,
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -4435,10 +4491,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -96.72363, 32.75402 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1124,
 				"lang" : "en",
@@ -4455,7 +4508,11 @@
 				"alea_detail" : "Project completed successfully, but remains unbuilt.",
 				"alea_reprise_autre" : "Reassesment recently completed relied on many files from 4-5 years ago; staff continuinity is really the only reason re-assessment was successful. ",
 				"specificite_sig" : "multidisplinary. GIS often becomes the single source of truth. ",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel, Transversalité",
 				"conseil" : "Documentation and process are key. Make sure there is no single point of failure. ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Qualité des données et documentation, Organisation et pilotage",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 8,
@@ -4476,10 +4533,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -0.1193, 51.5081 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1129,
 				"lang" : "en",
@@ -4495,7 +4549,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "External client demands drove BAU requirement",
 				"specificite_sig" : "I don't consider them distinct",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Don't lose track of what data you have, if you do you'll never spend the time auditing it again.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 8,
@@ -4519,10 +4577,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -47.4115, -23.54351 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1131,
 				"lang" : "en",
@@ -4538,7 +4593,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Team acceptance of change",
 				"specificite_sig" : "A big change of infrastructure was needed, and other people needed to learn how to do things in a different way",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Organisationnel, Humain",
 				"conseil" : "Show how the actual problems can be solved, but make sure people understand that the road will be bumpy ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie",
 				"techno_nb" : "2",
 				"techno" : "libre, standards",
 				"techno_note" : 9,
@@ -4562,10 +4621,49 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.30931, 48.6266 ]
-			},
+			"geometry" : null,
+			"properties" : {
+				"id" : 1148,
+				"lang" : "en",
+				"presentation" : "The alaska anadramous  catalog ",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "Plus de 5 ans",
+				"role" : "Autre",
+				"role_autre" : "Intern",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 1,
+				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"copil" : "Non",
+				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
+				"specificite_sig" : "Spatial solutions",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Territorial",
+				"conseil" : "Organization ",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage",
+				"techno_nb" : "1",
+				"techno" : "proprio",
+				"techno_note" : 5,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "5",
+				"docs_formats" : "catalog, qgz, docx, mails, tuto",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 5,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 5,
+				"influence_nb" : "2",
+				"influence" : "Orga, humaine",
+				"influence_orga_com" : "Communication ",
+				"influence_humaine_com" : "Cartography "
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : null,
 			"properties" : {
 				"id" : 1154,
 				"lang" : "fr",
@@ -4581,7 +4679,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Animation autour du projet tout au long de la phase mise en place et même après.",
 				"specificite_sig" : "En général ce sont des projets très évolutifs dès lors que les agents ont compris les bénéfices sur leur quotidien.",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Organisationnel, Humain",
 				"conseil" : "Mobiliser des personnes \"moteur\" qui seront un relais lors de la mise en place et feront vivre le projet par la suite",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement, Leadership et responsabilisation",
 				"techno_nb" : "3",
 				"techno" : "libre, proprio, standards",
 				"techno_note" : 8,
@@ -4602,10 +4704,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 51.15234, 35.46067 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1158,
 				"lang" : "en",
@@ -4621,7 +4720,11 @@
 				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
 				"alea_detail" : "Reorganization of the municipal structure and staff",
 				"specificite_sig" : "The GIS projects involve more data format diversity and needs a transferable platform and a common base",
+				"specificite_sig_hypotheses" : "H1, H2",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Have one transferable common structure for collecting data",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "1",
 				"techno" : "code",
 				"techno_note" : 3,
@@ -4644,10 +4747,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.3291, 48.8358 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1160,
 				"lang" : "fr",
@@ -4662,7 +4762,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "public non averti au SIG qui doit manipuler des outils SIG",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain",
 				"conseil" : "support et assistance régulière",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 8,
@@ -4682,10 +4786,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -0.37255, 43.29284 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1162,
 				"lang" : "fr",
@@ -4701,7 +4802,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Nouveau DSI",
 				"specificite_sig" : "La nature des données à manipuler et le produit final, une carte interprétable par tous",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Travailler avec une équipe réduite",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Collaboration et transversalité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 9,
@@ -4723,10 +4828,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -104.90293, 39.61144 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1170,
 				"lang" : "en",
@@ -4743,7 +4845,11 @@
 				"alea_detail" : "Me",
 				"alea_reprise_autre" : "No, it was completed in three weeks and remains in effect for trouble call address augmentation ",
 				"specificite_sig" : "Beats me ",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Ignore your bosses! Solve the problems you can, show how much you've saved, and then duck",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage, Leadership et responsabilisation",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 5,
@@ -4805,10 +4911,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 0.42984, 44.36157 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1183,
 				"lang" : "fr",
@@ -4824,7 +4927,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Positionnement hiérarchique du géomaticien sous la Direction Générale, ce qui a permis de la transversalité.",
 				"specificite_sig" : "Le cadre fonctionnel des 5A",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Organisationnel",
 				"conseil" : "Clarifiez rigoureusement les besoins dès le lancement et impliquez le ou les utilisateurs finaux à chaque étape : c’est la clé pour livrer un SIG réellement adapté aux attentes.",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Collaboration et transversalité",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -4885,10 +4992,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -0.57026, 6.0593 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1209,
 				"lang" : "en",
@@ -4903,7 +5007,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Getting the expertise to work it",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain",
 				"conseil" : "Get a GIS personnel to work it",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -4961,10 +5069,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -61.48169, 16.30327 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1229,
 				"lang" : "en",
@@ -4980,7 +5085,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "autonomy as a GIS, trust by operators, enough time",
 				"specificite_sig" : "More hands on, link to operational/technical departements",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Organisationnel, Technique",
 				"conseil" : "Fully explain what you can do and cannot do with GIS to stakeholders",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie, Cadrage du besoin et parties prenantes",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -5003,10 +5112,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.75162, 46.57434 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1235,
 				"lang" : "fr",
@@ -5022,7 +5128,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Sous-traitant pour les levés topos flexible (microentreprise avec un seul salarié) / Chef de projet avec connaissance métier de par sa formation et connaissance SIG par intérêt une fois arrivé en bureau d'études",
 				"specificite_sig" : "1. mix objet spatial et stockage de données / 2. l'aspect pluridisciplinaire indispensable dans les SIG contrairement à certains projets informatiques classiques / 3. compatibilité parfois très limitée, par exemple beaucoup de numérisation des réseaux eaux sur autocad durant les années 1990-2000 avec un tranfert relativement limité sur des SIG puisque l'association de la donnée à l'objet géométrique n'est pas du tout pensé de la même manière / 4. le côté évolutif, mise à jour en continu aussi qui n'est pas forcément nécessaire pour des projets infos classiques je suppose.",
+				"specificite_sig_hypotheses" : "H1, H2, H3",
+				"specificite_sig_groupe" : "Technique, Organisationnel, Humain",
 				"conseil" : "Une bonne compréhension des besoins en amont",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 10,
@@ -5046,10 +5156,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 25.83984, -29.32951 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1239,
 				"lang" : "en",
@@ -5067,7 +5174,11 @@
 				"alea_detail" : "Research org halted promotions and recruitement, large amount of project team got better offers elsewhere. ",
 				"alea_reprise_autre" : "Yes Resumed but at a much lower technical level ",
 				"specificite_sig" : "Nothing",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Cultivate champions in the client org",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Leadership et responsabilisation, Collaboration et transversalité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -5091,10 +5202,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -151.41797, 65.64378 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1243,
 				"lang" : "en",
@@ -5110,7 +5218,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Committed Staff made for success.",
 				"specificite_sig" : "I don't really see that much distinction.",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Upfront planning.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 9,
@@ -5131,10 +5243,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 4.85156, 33.63658 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1273,
 				"lang" : "en",
@@ -5150,7 +5259,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "2 leader of the project, turnover",
 				"specificite_sig" : "Territorial stakeholder are closer ",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Territorial, Organisationnel",
 				"conseil" : "do to not make large teams .... to much people means to much mentality to handle",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage, Collaboration et transversalité",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 9,
@@ -5170,10 +5283,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.81427, 47.02595 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1281,
 				"lang" : "fr",
@@ -5189,6 +5299,8 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Suite à la fin de ma mission, la transmission du projet sur plusieurs mois à été bénéfique.",
 				"conseil" : "Pensez loin, réfléchissez aux besoin futur et non juste au présent. Le projet doit rester en évolution pour ne pas être obsolète.",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Anticipation et pérennité",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 7,
@@ -5248,10 +5360,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.47644, 46.58608 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1308,
 				"lang" : "fr",
@@ -5266,7 +5375,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Avec ce projet l'effort est moindre chaque année, car le format ne change pas ( seulement la donnée)",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Savoir traduire les besoins des non géomaticiens pour un résultat qui soit pratique pour tous",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 5,
@@ -5286,10 +5399,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -66.09959, 50.48941 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1321,
 				"lang" : "fr",
@@ -5304,7 +5414,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "L'aspect spatial :) Bien que la thématique du projet soit cartographique, l'aspect spatial des données est souvent sous-estimé par rapport aux autres attributs des jeux de données étudiés. Aussi, les SIG sont à mi-chemin entre l'ingénierie (géomatique ou topographie - et encore tout le monde ne conçoit pas qu'il faut être ingénieur pour faire des cartes), le développement (les cartes interactives sont partout et la gestion des données est devenu un enjeu crucial de réussite d'un projet), et l'infographie/design (une carte moche n'a aucun impact) : les personnalités types de ces 3 domaines sont généralement différentes.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Ne pas oublier les métadonnées. Elles conservent le savoir spatial, le potentiel et les limites d'utilisation des données",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -5326,10 +5440,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.97729, 45.90585 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1326,
 				"lang" : "fr",
@@ -5345,7 +5456,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "restructuration ",
 				"specificite_sig" : "la spatialité des données ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Territorial, Technique",
 				"conseil" : "echanger",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Collaboration et transversalité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 9,
@@ -5365,10 +5480,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -7.66846, 33.54139 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1363,
 				"lang" : "fr",
@@ -5384,7 +5496,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "changement d'équipe",
 				"specificite_sig" : "Besoin de compétences techniques, faible intuitivité",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Formation",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 5,
@@ -5445,10 +5561,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 1.93359, 47.84266 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1383,
 				"lang" : "fr",
@@ -5464,7 +5577,11 @@
 				"alea_reprise" : "Autre",
 				"alea_reprise_autre" : "logique générale mal pensée en termes de processus, doublé par ailleurs d'un code abscon non commenté",
 				"specificite_sig" : "aucune",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "avoir des personnes compétentes en termes de logique processuelle",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 10,
@@ -5484,10 +5601,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.1392, 45.50129 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1403,
 				"lang" : "fr",
@@ -5503,7 +5617,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Formation aux SIG, assistance technique SIG",
 				"specificite_sig" : "La maniabilité des outils SIG, le niveau de compétence ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
 				"conseil" : "Formation interne ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "1",
 				"techno" : "libre",
 				"techno_note" : 4,
@@ -5525,10 +5643,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.51563, 43.58039 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1429,
 				"lang" : "fr",
@@ -5544,7 +5659,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "emploi de stagiaires qui impliquent des arrets et reprise  sous conditions de finacment",
 				"specificite_sig" : "comprehension minimale des enjeux et objectifs par lesoperateurs SIG et inversement comprehension basique des outils par les pilotes des projets ",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "bien consevrer les outils documentaires et les bases de données et les reverifier avant implementation ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "2",
 				"techno" : "libre, code",
 				"techno_note" : 5,
@@ -5564,10 +5683,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -4.00932, 5.31506 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1434,
 				"lang" : "fr",
@@ -5582,7 +5698,11 @@
 				"copil" : "Oui",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "l'utilisation des orthophotos pour le géoreferencement dans l'atelier de convertion de données spaciales ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Travail d'équipe ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Collaboration et transversalité",
 				"techno_nb" : "3",
 				"techno" : "libre, code, standards",
 				"techno_note" : 9,
@@ -5603,10 +5723,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.33001, 46.29958 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1435,
 				"lang" : "fr",
@@ -5624,7 +5741,11 @@
 				"alea_detail" : "depart d'agent, forte resistance au changement, non d'office",
 				"alea_reprise_autre" : "car chef de projet pugnace ",
 				"specificite_sig" : "c'est un metier a part entiere les gens ne le comprennent pas ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain",
 				"conseil" : "nous sommes des couteaux suisses, nous savons travailler avec tout le monde et portons une vision car nous sommes a la fois metier et technique (sans cheville qui enfle ;; :-) )",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Collaboration et transversalité",
 				"techno_nb" : "2",
 				"techno" : "libre, proprio",
 				"techno_note" : 5,
@@ -5651,10 +5772,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 7.73895, 48.5754 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1481,
 				"lang" : "fr",
@@ -5670,6 +5788,8 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"conseil" : "il faut avoir des détails de réalisation de projet ainsi qu'une correction des expert pour une amélioration possible",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage",
 				"techno_nb" : "2",
 				"techno" : "libre, standards",
 				"techno_note" : 5,
@@ -5689,10 +5809,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -52.73987, 47.56351 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1483,
 				"lang" : "en",
@@ -5707,7 +5824,11 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "GIS can be intimately connected to multidisciplinary teams",
+				"specificite_sig_hypotheses" : "H3",
+				"specificite_sig_groupe" : "Organisationnel, Transversalité",
 				"conseil" : "Set expectations and communicate budgets and timelines early, assuming that the project team will underestimate the effort.",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Organisation et pilotage, Communication et pédagogie",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 7,
@@ -5729,10 +5850,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -68.64258, 48.32339 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1486,
 				"lang" : "fr",
@@ -5749,7 +5867,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "La détermination à faire aboutir le projet des différents acteurs et le recrutement de personnes avec les compétences nécessaires",
 				"specificite_sig" : "Peut-être la masse de données, même si ce n'est pas exclusif aux SIG. Sinon aucune.",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique",
 				"conseil" : "Entourez-vous de personnes compétentes, déterminées et investies. L'Humain est la clef de la réussite ou de l'échec. Désolé, mais un deuxième tout aussi important : Choisissez la simplicité par-dessus la complexité, comme l'a dit un jour Léonard De Vinci \"la simplicité est la sophistication suprême\".",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Compétences et accompagnement, Simplicité et pragmatisme",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 10,
@@ -5770,10 +5892,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -122.69531, 50.51343 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1496,
 				"lang" : "en",
@@ -5789,7 +5908,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "Client",
 				"specificite_sig" : "GIS isn’t IT so this question doesn’t make sense. They are not even close to the same. ",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Good data in good results out. Bad data in, bad results out. ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Qualité des données et documentation",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 4,
@@ -5810,10 +5933,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -106.43555, 34.13795 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1500,
 				"lang" : "en",
@@ -5829,7 +5949,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "n/a",
 				"specificite_sig" : "These are two very different things. GIS could be considered IT at macro level, but not at a project specific level. ",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Get a GIS manager involved at the start of the project. The success of the project depends on getting GIS involved from the start. It cannot be reactive or an afterthoguht.",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Organisation et pilotage, Leadership et responsabilisation",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 5,
@@ -5849,10 +5973,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -76.81222, 36.42045 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1503,
 				"lang" : "en",
@@ -5867,7 +5988,11 @@
 				"copil" : "Je ne sais pas",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "I don't think it requires as much training and org",
+				"specificite_sig_hypotheses" : null,
+				"specificite_sig_groupe" : "Pas de différence",
 				"conseil" : "Keep organized and make someone is able to jump right into a project without you being there to ask questions to ",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Organisation et pilotage",
 				"techno_nb" : "2",
 				"techno" : "code, proprio",
 				"techno_note" : 8,
@@ -5925,10 +6050,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -0.59326, 44.78573 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1525,
 				"lang" : "fr",
@@ -5944,7 +6066,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Départ d'un agent",
 				"specificite_sig" : "La réglementation pour certaines thématiques de données SIG (DT/DICT, GRACE, geostandard AEP/AC....) impose d'être toujours en veille sur les aspects réglementaires, les standards de données très riches en France.",
+				"specificite_sig_hypotheses" : "H2",
+				"specificite_sig_groupe" : "Technique, Organisationnel",
 				"conseil" : "Porter une attention particulière sur la communication entre acteur. Elle doit être uniforme par profil d'acteur (même niveau d'information), régulière (pas de période trop longue sans contact), bienveillante et adaptée.  ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie",
 				"techno_nb" : "3",
 				"techno" : "libre, code, proprio",
 				"techno_note" : 6,
@@ -5968,10 +6094,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -79.10156, 38.41056 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1526,
 				"lang" : "en",
@@ -5987,7 +6110,11 @@
 				"alea_reprise" : "Oui, reprise fluide",
 				"alea_detail" : "Adoption by non GIS users",
 				"specificite_sig" : "Users can “see” the results. Databases/spreadsheets/graphs are helpful but don’t resonate as much. ESP when staff are outside maintenance staff",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Humain",
 				"conseil" : "Use the simplest data model and solution possible to accomplish your objectives",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Simplicité et pragmatisme",
 				"techno_nb" : "1",
 				"techno" : "proprio",
 				"techno_note" : 10,
@@ -6009,10 +6136,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -1.66992, 48.09276 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1532,
 				"lang" : "fr",
@@ -6029,7 +6153,11 @@
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"alea_detail" : "L'évolution technologique à rendu le projet caduque en permettant le recours à un service spécialisé à distance",
 				"specificite_sig" : "La double casquette Géographe et Informaticien du Sigiste.",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "Distinguer clairement les compentences  en trois typologie : les géographes-cartographes, les  sigistes-Géomaticien (double casquette Carto et Informatiique) et les informaticien.  Tous ne sont pas compétent en tout  et réciproquement",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Compétences et accompagnement",
 				"techno_nb" : "3",
 				"techno" : "libre, proprio, standards",
 				"techno_note" : 3,
@@ -6051,10 +6179,7 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -1.82373, 47.95621 ]
-			},
+			"geometry" : null,
 			"properties" : {
 				"id" : 1544,
 				"lang" : "fr",
@@ -6069,7 +6194,11 @@
 				"copil" : "Non",
 				"alea_reprise" : "Non concerné (même équipe, projet actif)",
 				"specificite_sig" : "Par mon expérience dans les deux domaines, je dirais aucune. Néanmoins ce qui est plus complexe pour le SIG c'est qu'un nombre important d'utilisateur sont des utilisateurs avertis et pensent donc être en capacité d'intervenir dans le projet (choix technique, orientation, etc)",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Humain, Organisationnel",
 				"conseil" : "Proche des commanditaires et utilisateurs. Ne pas faire de superflux. Eviter les communications empechant le bon avancement. ",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Collaboration et transversalité",
 				"techno_nb" : "4",
 				"techno" : "libre, code, proprio, standards",
 				"techno_note" : 5,
@@ -6092,43 +6221,240 @@
 		},
 		{
 			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -152.41797, 65.84378 ]
-			},
+			"geometry" : null,
 			"properties" : {
-				"id" : 1148,
-				"lang" : "en",
-				"presentation" : "The alaska anadramous  catalog ",
+				"id" : 1571,
+				"lang" : "fr",
+				"presentation" : "Migration en version majeure d'une appli web SiG ",
 				"structure" : "Public territorial (collectivité, EPCI, département, région)",
 				"issue" : "Succès",
 				"duree" : "Plus de 5 ans",
-				"role" : "Autre",
-				"role_autre" : "Intern",
-				"nb_acteurs_differents" : "2 – 3",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "Plus de 5",
 				"comprehension_sig_acteurs" : 1,
-				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"repartition_roles" : "Une personne clé portait le projet",
 				"copil" : "Non",
-				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
-				"specificite_sig" : "Spatial solutions",
-				"conseil" : "Organization ",
-				"techno_nb" : "1",
-				"techno" : "proprio",
+				"alea_reprise" : "Autre",
+				"alea_detail" : "Départ de l'agent initialement sur le projet",
+				"alea_reprise_autre" : "Migration partielle effectuée par un prestataire, aucune documentation sur les données ",
+				"specificite_sig" : "Transversalité : compétences techniques nécessaires sur le socle SIG et nécessaire intérêt pour la où les thématiques métiers ",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Transversalité",
+				"conseil" : "Écouter les utilisateurs finaux",
+				"conseil_hypotheses" : "H1",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes",
+				"techno_nb" : "3",
+				"techno" : "libre, proprio, standards",
 				"techno_note" : 5,
 				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "5",
-				"docs_formats" : "catalog, qgz, docx, mails, tuto",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
+				"docs_nb_formats" : "1",
+				"docs_formats" : "docx",
+				"docs_note" : 8,
+				"methode_nb" : "1",
+				"methode_proj" : "autre",
+				"methode_autre" : "La mienne.",
 				"methode_note" : 5,
 				"outil_proj_nb" : "0",
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
+				"influence_nb" : "1",
+				"influence" : "humaine",
+				"influence_humaine_com" : "Compétences de l'agent initialement sur le poste insuffisante"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.08956, 50.36921 ]
+			},
+			"properties" : {
+				"id" : 1593,
+				"lang" : "fr",
+				"presentation" : "carto web patrimoine d'un bailleur",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "1 à 3 ans",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "1 seul",
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 10,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "comments, qgz",
+				"docs_note" : 1,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 1,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 1,
 				"influence_nb" : "2",
-				"influence" : "Orga, humaine",
-				"influence_orga_com" : "Communication ",
-				"influence_humaine_com" : "Cartography "
+				"influence" : "Orga, budget",
+				"influence_orga_com" : "beaucoup de temps accordé",
+				"influence_budget_com" : "le coût minime a permis de débuter le projet"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : null,
+			"properties" : {
+				"id" : 1631,
+				"lang" : "fr",
+				"presentation" : "Gestion de la cartographie du réseau d'eau potable",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "3 à 5 ans",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 4,
+				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"conseil" : "Prendre le projet par le métier et non pas par la technique/le SIg/ l'informatique",
+				"conseil_hypotheses" : "H1, H3",
+				"conseil_groupe" : "Simplicité et pragmatisme, Leadership et responsabilisation",
+				"techno_nb" : "4",
+				"techno" : "libre, code, proprio, standards",
+				"techno_note" : 8,
+				"docs_presence" : "Oui, mais peu claire ou obsolète",
+				"docs_nb_formats" : "4",
+				"docs_formats" : "qgz, docx, mails, tuto",
+				"docs_note" : 4,
+				"methode_nb" : "1",
+				"methode_proj" : "kamban",
+				"methode_note" : 4,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 4,
+				"influence_nb" : "3",
+				"influence" : "Orga, humaine, technique"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : null,
+			"properties" : {
+				"id" : 1632,
+				"lang" : "fr",
+				"presentation" : "Intégrer les plans de récolement eau assainissement et potable",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Échec puis relance",
+				"duree" : "3 à 5 ans",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Rôle tournant",
+				"copil" : "Je ne sais pas",
+				"alea_reprise" : "Oui, reprise fluide",
+				"alea_detail" : "Départ côté service SIG et service de l'Eau",
+				"specificite_sig" : "On se sert des outils informatiques mais toutes la partie gestion du patrimoine logiciel est maintenu par le service SIG",
+				"specificite_sig_hypotheses" : "H1, H3",
+				"specificite_sig_groupe" : "Technique, Transversalité",
+				"conseil" : "Faites le plus de suivi",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Qualité des données et documentation, Compétences et accompagnement, ",
+				"techno_nb" : "2",
+				"techno" : "libre, proprio",
+				"techno_note" : 7,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, mails",
+				"docs_note" : 8,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 8,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 8,
+				"influence_nb" : "1",
+				"influence" : "humaine",
+				"influence_humaine_com" : "Peu de personnes sont resté sur tout le projet "
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : null,
+			"properties" : {
+				"id" : 1647,
+				"lang" : "fr",
+				"presentation" : "Outil aide à prise de décision implantation structure de soin",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "1 à 6 mois",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 1,
+				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"specificite_sig" : "Tout le volet représentation de l'intérieur formation qui de part sa nature géographique en fait un outil atypique",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
+				"conseil" : "Force de proposition",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Cadrage du besoin et parties prenantes, Organisation et pilotage, Collaboration et transversalité",
+				"techno_nb" : "3",
+				"techno" : "libre, code, proprio",
+				"techno_note" : 8,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "5",
+				"docs_formats" : "catalog, comments, docx, mails, tuto",
+				"docs_note" : 8,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 5,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 7,
+				"influence_nb" : "3",
+				"influence" : "Orga, humaine, technique",
+				"influence_orga_com" : "Échanges important entre les membres de l'équipe projet",
+				"influence_humaine_com" : "Bon relationnel avec le client permettant des échanges fluides et \"détendu\" (communication simplifié)",
+				"influence_technique_com" : "Orientation vers des solutions open sources mieux maîtrisées, plus simple à construire et a déployer du fait de la connaissance technique"
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : null,
+			"properties" : {
+				"id" : 1654,
+				"lang" : "fr",
+				"presentation" : "atlas cartographique Telecom",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Échec puis relance",
+				"duree" : "1 à 6 mois",
+				"role" : "Prestataire externe / consultant·e",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Je ne sais pas",
+				"copil" : "Non",
+				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
+				"specificite_sig" : "connaitre la cartographie sémantique est un prérequis par exemple",
+				"specificite_sig_hypotheses" : "H1",
+				"specificite_sig_groupe" : "Technique, Humain",
+				"conseil" : "échanger, partager",
+				"conseil_hypotheses" : "H3",
+				"conseil_groupe" : "Communication et pédagogie, Cadrage du besoin et parties prenantes, Organisation et pilotage, Collaboration et transversalité",
+				"techno_nb" : "1",
+				"techno" : "code",
+				"techno_note" : 6,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "1",
+				"docs_formats" : "docx",
+				"docs_note" : 3,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 1,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 1,
+				"influence_nb" : "2",
+				"influence" : "Orga, humaine"
 			}
 		}
 	]
