@@ -390,19 +390,19 @@
           mapTheme: { type: 'pie', multiField: 'docs_formats', sizeField: 'docs_nb_formats' },
           popup: `<div><strong>Formats :</strong> {docs_formats}</div><div><strong>Nb formats :</strong> {docs_nb_formats}</div>`
         },
-        docs_nb_formats: {
-          label: 'Nb formats',
-          description: 'Nombre de formats cités',
-          group: 'Documentation',
-          type: 'range', match: 'range',
-          dataviz: { type: 'histogram' }
-        },
         docs_note: {
           label: 'Note',
           description: '',
           group: 'Documentation',
           type: 'range', match: 'range',
           dataviz: null
+        },
+        docs_nb_formats: {
+          label: 'Nb formats',
+          description: 'Nombre de formats cités',
+          group: 'Documentation',
+          type: 'range', match: 'range',
+          dataviz: { type: 'histogram' }
         },
         // **Champs “texte libre” avec thème dédié**
         specificite_sig: {
