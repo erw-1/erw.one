@@ -597,9 +597,81 @@
           group: 'Outils de gestion',
           type: 'range', match: 'range',
           dataviz: null
+        },
+        influence: {
+          label: 'Causes principales',
+          group: 'Influences sur la réussite ou l’échec',
+          type: 'multiva', match: 'hasAny', sep: ', ',
+          options: {
+            Orga: 'Organisationnelles (pilotage, RH, gouvernance…)',
+            budget: 'Budgétaires',
+            technique: 'Techniques (choix logiciels, dette technique, infrastructure…)',            
+            humaine: 'Humaines (compétences, communication, appropriation…)',
+            politique: 'Conjoncturelles / politiques (changement d’élus, urgence, opportunité…)',
+            autre: 'Autres (voir carte)'
+          },
+          colors: {
+            Orga: '#1f77b4',
+            budget: '#ff7f0e',
+            technique: '#2ca02c',            
+            humaine: '#d62728',
+            politique: '#9467bd',
+            autre: '#8c564b'
+          },
+          dataviz: { type: 'bar-horizontal', split: ', ' },
+          mapTheme: { type: 'pie', multiField: 'influence', sizeField: 'influence_nb'},
+          popup: `<div><strong>Influences :</strong> {influence}</div>`
+        },
+        influence_orga_com: {
+          label: 'Influences organisationnelles',
+          group: 'Influences sur la réussite ou l’échec',
+          type: 'text',
+          dataviz: { type: 'wordcloud' },
+          mapTheme: { type: 'text' },
+          popup: `<div><strong>Influences organisationnelles (pilotage, RH, gouvernance…) :</strong> {influence_orga_com}</div>`
+        },
+        influence_budget_com: {
+          label: 'Influences budgétaires',
+          group: 'Influences sur la réussite ou l’échec',
+          type: 'text',
+          dataviz: { type: 'wordcloud' },
+          mapTheme: { type: 'text' },
+          popup: `<div><strong>Influences Budgétaires :</strong> {influence_budget_com}</div>`
+        },
+        influence_technique_com: {
+          label: 'Influences techniques',
+          group: 'Influences sur la réussite ou l’échec',
+          type: 'text',
+          dataviz: { type: 'wordcloud' },
+          mapTheme: { type: 'text' },
+          popup: `<div><strong>Influences techniques (choix logiciels, dette technique, infrastructure…) :</strong> {influence_technique_com}</div>`
+        },
+        influence_humaine_com: {
+          label: 'Influences humaines',
+          group: 'Influences sur la réussite ou l’échec',
+          type: 'text',
+          dataviz: { type: 'wordcloud' },
+          mapTheme: { type: 'text' },
+          popup: `<div><strong>Influences humaines (compétences, communication, appropriation…) :</strong> {influence_humaine_com}</div>`
+        },
+        influence_politique_com: {
+          label: 'Influences politiques / conjoncturelles',
+          group: 'Influences sur la réussite ou l’échec',
+          type: 'text',
+          dataviz: { type: 'wordcloud' },
+          mapTheme: { type: 'text' },
+          popup: `<div><strong>Influences conjoncturelles / politiques (changement d’élus, urgence, opportunité…) :</strong> {influence_politique_com}</div>`
+        },
+        influence_autre_com: {
+          label: 'Autres influences',
+          group: 'Influences sur la réussite ou l’échec',
+          type: 'text',
+          dataviz: { type: 'wordcloud' },
+          mapTheme: { type: 'text' },
+          popup: `<div><strong>Autres influences :</strong> {influence_autre_com}</div>`
         }
       },
-      groupOrder: ['Général', 'Acteurs', 'Analyse qualitative', 'Technologie', 'Documentation', 'Méthode de gestion', 'Outils de gestion'],
+      groupOrder: ['Général', 'Acteurs', 'Influences sur la réussite ou l’échec', 'Analyse qualitative', 'Technologie', 'Documentation', 'Méthode de gestion', 'Outils de gestion'],
       continuousConfig: { docs_nb_formats: d3.interpolateBlues }
     };
 
