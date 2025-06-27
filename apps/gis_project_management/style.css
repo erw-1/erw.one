@@ -199,3 +199,30 @@
   .apply-map-theme {
       filter: grayscale(1);
   }
+
+/* manual patch 3 */
+.desc {
+    margin-bottom: 5px;
+}
+
+fieldset {
+    margin-bottom: 20px;
+}
+
+input {
+    margin-bottom: 10px;
+}
+
+.legend {
+    max-height: 500px !important;
+    backdrop-filter: blur(5px);
+}
+
+.count {
+    display: none;
+}
+
+#sidebar {
+    width: auto;
+    max-width: 500px;
+}
