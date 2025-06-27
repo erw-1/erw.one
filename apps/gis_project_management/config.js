@@ -26,7 +26,11 @@
  export const STOPWORDS = new Set([
    'et','le','la','les','de','des','du','un','une','pour','avec','aux',
    'dans','ce','ces','il','elle','sur','pas','plus','the','of','to',
-   'and','in','a','for','is','on','it','that'
+   'and','in','a','for','is','on','it','that','l','se','n','qui','il',
+   'se','est','sont','3','pls','parfois','au','vers','2','3500','SIG','GIS',
+   'ne','ex','en','me','s','car','peu','d','n','y','1','fait','projet','projets',
+   'à','bon','etc','va','effet','ainsi','cours','que','tous','mais','+','i','as',
+   'son','bien','or','souvent','faut','ou','être','ses','qu','avoir'
  ]);
 
 export const CONFIG = {
