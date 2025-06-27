@@ -39,7 +39,9 @@
    'with','from','use','so','via','was','place','fallut','t','you','part','dès','sujet',
    'if','too','how','get','all','not','dont','don','one','it\'s','at','ever','moret',
    'have','got','after','up','our','bau','key','due','incl','e','day','but','not',
-   'this','did'
+   'this','did','deux','agir','par','your','by','esp','has','could','able','my','let',
+   'led','any','only','when','under','avez','sure','doit','nez','côté','sens','doivent',
+   'traiter'
  ]);
 
 export const CONFIG = {
