@@ -167,7 +167,8 @@ export const CONFIG = {
           Humain: '#2ca02c',            
          'Pas de différence': '#d62728',
           Organisationnel: '#9467bd',
-          Transversalité: '#8c564b'
+          Transversalité: '#8c564b',
+          Vide:'#777777'
        },
        dataviz: { type: 'bar-horizontal', split: ', ' },
        mapTheme: { type: 'pie', multiField: 'specificite_sig_groupe'},
@@ -196,7 +197,8 @@ export const CONFIG = {
          'Compétences et accompagnement': '#e377c2',
          'Choix des outils et interopérabilité': '#7f7f7f',
          'Anticipation et pérennité': '#bcbd22',
-         'Leadership et responsabilisation': '#17becf'
+         'Leadership et responsabilisation': '#17becf',
+          Vide:'#777777'
        },
        dataviz: { type: 'bar-horizontal', split: ', ' },
        mapTheme: { type: 'pie', multiField: 'conseil_groupe'},
