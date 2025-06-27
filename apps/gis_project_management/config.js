@@ -30,7 +30,12 @@
    'se','est','sont','3','pls','parfois','au','vers','2','3500','SIG','GIS',
    'ne','ex','en','me','s','car','peu','d','n','y','1','fait','projet','projets',
    'à','bon','etc','va','effet','ainsi','cours','que','tous','mais','+','i','as',
-   'son','bien','or','souvent','faut','ou','être','ses','qu','avoir'
+   'son','bien','or','souvent','faut','ou','être','ses','qu','avoir','suit','911',
+   'fil','eau','état','rend','était','ma','il','be','3d','ouvrir','sans','project',
+   '=','j','we','ai','sig','pu','clé','while','été','ayant','ni','mise','si','mis',
+   'nous','autre','juste','très','veuille','afin','-','establishing','type','good',
+   '/','sa','je','can','très','aussi','faire','ils','cela','tout','donc','ont','gis',
+   'sans','même','où','c','C','-','are','leur','ça','si','do'
  ]);
 
 export const CONFIG = {
