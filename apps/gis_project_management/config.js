@@ -138,14 +138,14 @@ export const CONFIG = {
        description: 'Nombre de formats cités',
        group: 'Documentation',
        type: 'range', match: 'range',
-       dataviz: { type: 'histogram' }
+       dataviz: null
      },
      docs_note: {
-       label: 'Note',
-       description: '',
+       label: 'Note du choix de format de documentation',
+       description: 'Influence sur la pérennité du projet, 1 = influence très négative, 5 = neutre, 10 = influence très positive',
        group: 'Documentation',
        type: 'range', match: 'range',
-       dataviz: null
+       dataviz: { type: 'histogram' }
      },
      // **Champs “texte libre” avec thème dédié**
      specificite_sig: {
@@ -234,11 +234,11 @@ export const CONFIG = {
        dataviz: null
      },
      techno_note: {
-       label: 'Note technologie',
-       description: '',
+       label: 'Note du choix technique',
+       description: 'Influence sur la pérennité du projet, 1 = influence très négative, 5 = neutre, 10 = influence très positive',
        group: 'Technologie',
        type: 'range', match: 'range',
-       dataviz: null
+       dataviz: { type: 'histogram' }
      },
      methode_proj: {
        label: 'Méthode de gestion de projet choisie',
@@ -275,11 +275,11 @@ export const CONFIG = {
        dataviz: null
      },
      methode_note: {
-       label: 'Note de la méthode',
-       description: '',
+       label: 'Note du choix de la méthode',
+       description: 'Influence sur la pérennité du projet, 1 = influence très négative, 5 = neutre, 10 = influence très positive',
        group: 'Méthode de gestion',
        type: 'range', match: 'range',
-       dataviz: null
+       dataviz: { type: 'histogram' }
      },
      outil_proj: {
        label: 'Outils de gestion de projet choisis',
@@ -320,11 +320,11 @@ export const CONFIG = {
        dataviz: null
      },
      outil_proj_note: {
-       label: 'Note des outils de gestion',
-       description: '',
+       label: 'Note du choix des outils de gestion',
+       description: 'Influence sur la pérennité du projet, 1 = influence très négative, 5 = neutre, 10 = influence très positive',
        group: 'Outils de gestion',
        type: 'range', match: 'range',
-       dataviz: null
+       dataviz: { type: 'histogram' }
      },
      influence: {
        label: 'Causes principales',
@@ -400,5 +400,5 @@ export const CONFIG = {
      }
    },
    groupOrder: ['Général', 'Acteurs', 'Influences sur la réussite ou l’échec', 'Analyse qualitative', 'Technologie', 'Documentation', 'Méthode de gestion', 'Outils de gestion'],
-   continuousConfig: { docs_nb_formats: d3.interpolateBlues }
+   continuousConfig: { outil_proj_note : d3.interpolateWarm, methode_note : d3.interpolateWarm, techno_note : d3.interpolateWarm, docs_note : d3.interpolateWarm }
  }
