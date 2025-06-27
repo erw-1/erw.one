@@ -361,7 +361,7 @@
    container.innerHTML = '';
    const field = currentTheme.field;
    if (!field) {
-     container.append(create('span', { text: 'Aucun thème actif : cliquez sur un bouton "🗺️" dans le volet des graphiques pour voir les symbologies et pouvoir cliquer sur les points pour accéder aux détails', attrs: { style: 'color:#555' } }));
+     container.append(create('span', { text: 'Aucun thème actif : un clic sur "🗺️" dans le volet des graphs activer un thème et pouvoir cliquer sur les points pour voir les détails', attrs: { style: 'color:#555' } }));
      return;
    }
    const fieldCfg = CONFIG.fields[field];
