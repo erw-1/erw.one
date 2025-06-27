@@ -147,6 +147,10 @@ export const CONFIG = {
        type: 'range', match: 'range',
        dataviz: null
      },
+     quali: {
+       group: 'Analyse qualitative',
+       type: 'checkbox', match: 'equals'
+     },
      // **Champs “texte libre” avec thème dédié**
      specificite_sig: {
        label: 'Spécificité SIG',
