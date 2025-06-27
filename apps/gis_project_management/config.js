@@ -145,7 +145,7 @@ export const CONFIG = {
        description: 'Influence sur la pérennité du projet, 1 = influence très négative, 5 = neutre, 10 = influence très positive',
        group: 'Documentation',
        type: 'range', match: 'range',
-       dataviz: { type: 'pie' }
+       dataviz: { type: 'bar-horizontal' }
      },
      // **Champs “texte libre” avec thème dédié**
      specificite_sig: {
