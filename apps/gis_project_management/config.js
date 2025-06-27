@@ -22,7 +22,7 @@
    }
  };
 
- /** PETITE LISTE DE STOPWORDS FRANÇAIS/ANGLAIS */
+ /** 'PETITE' LISTE DE STOPWORDS FRANÇAIS/ANGLAIS */
  export const STOPWORDS = new Set([
    'et','le','la','les','de','des','du','un','une','pour','avec','aux',
    'dans','ce','ces','il','elle','sur','pas','plus','the','of','to',
