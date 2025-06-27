@@ -238,7 +238,7 @@ export const CONFIG = {
        description: 'Influence sur la pérennité du projet, 1 = influence très négative, 5 = neutre, 10 = influence très positive',
        group: 'Technologie',
        type: 'range', match: 'range',
-       dataviz: { type: 'histogram' }
+       dataviz: { type: 'wordcloud' }
      },
      methode_proj: {
        label: 'Méthode de gestion de projet choisie',
