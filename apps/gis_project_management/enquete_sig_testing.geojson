@@ -44,46 +44,8 @@
 				"outil_proj_note" : 4,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, budget",
-				"influence_budget_com" : "Parfois compliqué "
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.09043, 7.00447 ]
-			},
-			"properties" : {
-				"id" : 160,
-				"lang" : "fr",
-				"presentation" : "Correction du Plan d'Action de Réinstallation (PAR) dans le cadre d’un projet d’accès l’énergie électrique",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "1 à 6 mois",
-				"role" : "Prestataire externe / consultant·e",
-				"nb_acteurs_differents" : "Plus de 5",
-				"comprehension_sig_acteurs" : 1,
-				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
-				"copil" : "Oui",
-				"alea_reprise" : "Oui, reprise fluide",
-				"techno_nb" : "2",
-				"techno" : "libre, standards",
-				"techno_note" : 9,
-				"docs_presence" : "Oui, mais peu claire ou obsolète",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "qgz, docx, mails",
-				"docs_note" : 8,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 8,
-				"outil_proj_nb" : "3",
-				"outil_proj" : "excel, project, autre",
-				"outil_proj_autre" : "Kobocollect/kobotoolbox",
-				"outil_proj_note" : 9,
-				"influence_nb" : "2",
-				"influence" : "humaine, budget",
-				"influence_budget_com" : "Moyen financier intéressant",
-				"influence_humaine_com" : "Personnelle non compétant"
+				"influence_budget_com" : "Parfois compliqué ",
+				"quali" : 1
 			}
 		},
 		{
@@ -126,46 +88,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
-				"influence" : "technique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.39404, 48.90565 ]
-			},
-			"properties" : {
-				"id" : 171,
-				"lang" : "fr",
-				"presentation" : "Cartographie historique sur la région Lorraine : SIGisbert",
-				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
-				"issue" : "Échec (abandon, gel, oubli)",
-				"duree" : "1 à 3 ans",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 1,
-				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
-				"alea_detail" : "Dispersion des acteurs accaparés par d'autres tâches",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 5,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "4",
-				"docs_formats" : "catalog, qgz, docx, mails",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 1,
-				"outil_proj_nb" : "0",
-				"outil_proj" : "rien",
-				"outil_proj_note" : 1,
-				"influence_nb" : "2",
-				"influence" : "Orga, humaine",
-				"influence_humaine_com" : "Personnel insuffisant ne permettant pas la suivi de projets pérennes de façon continue",
-				"influence_orga_com" : "Pilotage insuffisant de ma part"
+				"influence" : "technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -207,45 +131,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
-				"influence" : "humaine, technique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.75684, 45.20268 ]
-			},
-			"properties" : {
-				"id" : 187,
-				"lang" : "fr",
-				"presentation" : "Déploiement d'une solution Qfield pour la saisie de terrain",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Succès",
-				"duree" : "6 mois à 1 an",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 2,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "2",
-				"techno" : "libre, code",
-				"techno_note" : 10,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "qgz, docx, tuto",
-				"docs_note" : 10,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 5,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 5,
-				"influence_nb" : "2",
-				"influence" : "budget, technique",
-				"influence_budget_com" : "Solution open source = coût limité",
-				"influence_technique_com" : "Avoir les moyens techniques de mettre ne place les solutions informatiques adaptés"
+				"influence" : "humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -290,7 +177,8 @@
 				"influence_nb" : "2",
 				"influence" : "Orga, humaine",
 				"influence_humaine_com" : "personnes en charge et parties prenantes compétentes",
-				"influence_orga_com" : "deux personnes impliquées et engagées côté commanditaire"
+				"influence_orga_com" : "deux personnes impliquées et engagées côté commanditaire",
+				"quali" : 1
 			}
 		},
 		{
@@ -333,7 +221,8 @@
 				"outil_proj" : "excel, project, git, notion",
 				"outil_proj_note" : 10,
 				"influence_nb" : "4",
-				"influence" : "Orga, budget, politique, technique"
+				"influence" : "Orga, budget, politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -374,79 +263,8 @@
 				"outil_proj" : "trello",
 				"outil_proj_note" : 6,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, politique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 4.53735, 45.37402 ]
-			},
-			"properties" : {
-				"id" : 253,
-				"lang" : "fr",
-				"presentation" : "Délimitation cadastrale des sites inscrits Auvergne-Rhône-Alpes",
-				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
-				"issue" : "Succès",
-				"duree" : "Plus de 5 ans",
-				"role" : "Prestataire externe / consultant·e",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 4,
-				"repartition_roles" : "Plusieurs personnes impliquées durablement",
-				"copil" : "Oui",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 10,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "1",
-				"docs_formats" : "docx",
-				"docs_note" : 10,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 10,
-				"outil_proj_nb" : "0",
-				"outil_proj" : "rien",
-				"outil_proj_note" : 10,
-				"influence_nb" : "1",
-				"influence" : "technique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.60742, 46.15447 ]
-			},
-			"properties" : {
-				"id" : 260,
-				"lang" : "fr",
-				"presentation" : "Cartographie de zones naturelles autour de sites",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "Moins de 1 mois",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 4,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 10,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "2",
-				"docs_formats" : "qgz, docx",
-				"docs_note" : 8,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 1,
-				"outil_proj_nb" : "0",
-				"outil_proj" : "rien",
-				"outil_proj_note" : 1,
-				"influence_nb" : "1",
-				"influence" : "technique"
+				"influence" : "Orga, humaine, politique",
+				"quali" : 1
 			}
 		},
 		{
@@ -491,7 +309,8 @@
 				"influence_nb" : "2",
 				"influence" : "budget, technique",
 				"influence_budget_com" : "Peu onéreux",
-				"influence_technique_com" : "Bien documentée"
+				"influence_technique_com" : "Bien documentée",
+				"quali" : 1
 			}
 		},
 		{
@@ -534,7 +353,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "compétence et connaissance"
+				"influence_humaine_com" : "compétence et connaissance",
+				"quali" : 1
 			}
 		},
 		{
@@ -576,7 +396,8 @@
 				"outil_proj" : "jira",
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
-				"influence" : "humaine, technique"
+				"influence" : "humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -620,7 +441,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Réussite",
 				"influence_orga_com" : "Réussite",
-				"influence_technique_com" : "Réussite"
+				"influence_technique_com" : "Réussite",
+				"quali" : 1
 			}
 		},
 		{
@@ -664,7 +486,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "humaine, politique, technique"
+				"influence" : "humaine, politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -705,7 +528,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 7,
 				"influence_nb" : "1",
-				"influence" : "humaine"
+				"influence" : "humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -751,7 +575,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Expression du besoin pas claire, manque de direction",
 				"influence_orga_com" : "Pas de communication de la direction avec les partenaires",
-				"influence_technique_com" : "Manque de données"
+				"influence_technique_com" : "Manque de données",
+				"quali" : 1
 			}
 		},
 		{
@@ -803,7 +628,8 @@
 				"influence_orga_com" : "Par son absence, elle n'influe pas le projet au début, ensuite l'objectif est de la juguler.",
 				"influence_technique_com" : "Aide de toi, et le Ciel t'aidera",
 				"influence_politique_com" : "Si cela sert des intérêts individuels supérieurs, en paix tu seras... Sinon, un chef viendra te gouverner et t'expliquer.",
-				"influence_autre_com" : "Gérer ses addictions.  "
+				"influence_autre_com" : "Gérer ses addictions.  ",
+				"quali" : 1
 			}
 		},
 		{
@@ -844,7 +670,8 @@
 				"outil_proj" : "git",
 				"outil_proj_note" : 9,
 				"influence_nb" : "3",
-				"influence" : "humaine, budget, politique"
+				"influence" : "humaine, budget, politique",
+				"quali" : 1
 			}
 		},
 		{
@@ -890,7 +717,8 @@
 				"influence_nb" : "3",
 				"influence" : "humaine, politique, technique",
 				"influence_humaine_com" : "bonne entente au sein de l'équipe projet",
-				"influence_politique_com" : "politique d'obligation de remontée des données naturalistes"
+				"influence_politique_com" : "politique d'obligation de remontée des données naturalistes",
+				"quali" : 1
 			}
 		},
 		{
@@ -932,7 +760,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 10,
 				"influence_nb" : "4",
-				"influence" : "Orga, humaine, budget, technique"
+				"influence" : "Orga, humaine, budget, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -976,7 +805,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Manque de connaissances et compétences techniques pour assurer durablement la base de données."
+				"influence_humaine_com" : "Manque de connaissances et compétences techniques pour assurer durablement la base de données.",
+				"quali" : 1
 			}
 		},
 		{
@@ -1019,7 +849,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "technique",
-				"influence_technique_com" : "En apprenant à me développer sur PostgreSQL j'ai pu finaliser le projet bien plus facilement"
+				"influence_technique_com" : "En apprenant à me développer sur PostgreSQL j'ai pu finaliser le projet bien plus facilement",
+				"quali" : 1
 			}
 		},
 		{
@@ -1062,7 +893,8 @@
 				"outil_proj" : "jira",
 				"outil_proj_note" : 10,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
+				"influence" : "Orga, humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -1110,7 +942,8 @@
 				"influence_humaine_com" : "Appropriation dorect car les utilisateurs ont fait les specs",
 				"influence_orga_com" : "Gouvernance partagée ",
 				"influence_technique_com" : "Techno complètement maîtrisée par l'équipe. ",
-				"influence_autre_com" : "L'outil est simple et va à l'essentiel. les produits sur étagères sont des usines à gaz"
+				"influence_autre_com" : "L'outil est simple et va à l'essentiel. les produits sur étagères sont des usines à gaz",
+				"quali" : 1
 			}
 		},
 		{
@@ -1161,7 +994,8 @@
 				"influence_budget_com" : "aucune contrainte budgétaire,  ça aide",
 				"influence_humaine_com" : "2 chefs de projets côté DGO, + 1 côté DSI + des prestataires ",
 				"influence_orga_com" : "un portage fort par l'entreprise - chefs de projets motives",
-				"influence_autre_com" : "la volonté d'1 chef de projet d'être embauché par le Groupe... ça compte"
+				"influence_autre_com" : "la volonté d'1 chef de projet d'être embauché par le Groupe... ça compte",
+				"quali" : 1
 			}
 		},
 		{
@@ -1208,7 +1042,8 @@
 				"influence" : "Orga, humaine, politique",
 				"influence_humaine_com" : "Personnes ne s'y connait en SIG, les demandes sont donc flou et parfois exagérées.",
 				"influence_orga_com" : "Le fait qu'on doivent traiter avec plusieurs services de la commune et plusieurs bases de données de l'état rend le tout complique à organisé.",
-				"influence_politique_com" : "Le fait que les élus et la direction technique veuille absolument voir le projet émergé nous aide, malgré le manque de connaissance technique SIG des agents."
+				"influence_politique_com" : "Le fait que les élus et la direction technique veuille absolument voir le projet émergé nous aide, malgré le manque de connaissance technique SIG des agents.",
+				"quali" : 1
 			}
 		},
 		{
@@ -1252,7 +1087,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
-				"influence" : "Orga"
+				"influence" : "Orga",
+				"quali" : 1
 			}
 		},
 		{
@@ -1297,7 +1133,8 @@
 				"influence_nb" : "2",
 				"influence" : "humaine, technique",
 				"influence_humaine_com" : "une communication importante pour une meilleure avancée et compréhension du projet par tous ",
-				"influence_technique_com" : "libre choix des logiciels pour répondre plus facilement au projet"
+				"influence_technique_com" : "libre choix des logiciels pour répondre plus facilement au projet",
+				"quali" : 1
 			}
 		},
 		{
@@ -1342,7 +1179,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, budget"
+				"influence" : "Orga, humaine, budget",
+				"quali" : 1
 			}
 		},
 		{
@@ -1389,44 +1227,8 @@
 				"influence" : "humaine, technique, autre",
 				"influence_humaine_com" : "Porteurs de projets et managers pédagogiques et qui prennent le temps d’expliquer + très bonne documentation ",
 				"influence_technique_com" : "Avoir des technologies simples et bien gérées pour faciliter une bonne reprise ",
-				"influence_autre_com" : "Méthode Agile"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 46.72458, 24.71387 ]
-			},
-			"properties" : {
-				"id" : 426,
-				"lang" : "fr",
-				"presentation" : "Projet d'aménagement urbain type MASTER PLAN",
-				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
-				"issue" : "Succès",
-				"duree" : "Plus de 5 ans",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "Plus de 5",
-				"comprehension_sig_acteurs" : 2,
-				"repartition_roles" : "Plusieurs personnes impliquées durablement",
-				"copil" : "Oui",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "proprio",
-				"techno_note" : 6,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "4",
-				"docs_formats" : "catalog, docx, mails, tuto",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 6,
-				"outil_proj_nb" : "2",
-				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "REPORTING SIG TYPE AGOL",
-				"outil_proj_note" : 5,
-				"influence_nb" : "4",
-				"influence" : "Orga, humaine, budget, politique"
+				"influence_autre_com" : "Méthode Agile",
+				"quali" : 1
 			}
 		},
 		{
@@ -1470,7 +1272,8 @@
 				"influence_nb" : "2",
 				"influence" : "humaine, technique",
 				"influence_humaine_com" : "Bonne communication avec les acteurices concernés par l’application développée ce qui a permis de faire des rex réguliers pour faire évoluer l’application ",
-				"influence_technique_com" : "Utilisation de logiciels propriétaires maîtrisé plus ou moins bien par l’ensemble des parties concernées "
+				"influence_technique_com" : "Utilisation de logiciels propriétaires maîtrisé plus ou moins bien par l’ensemble des parties concernées ",
+				"quali" : 1
 			}
 		},
 		{
@@ -1515,7 +1318,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Des agents spécialisés sur le métier, des agents experts du SIG mais le langage entre les deux n'est pas le même...",
 				"influence_orga_com" : "Le projet était très peu défini au départ et les différentes étapes se sont faites à tâtons...",
-				"influence_technique_com" : "Problèmes de compatibilité des outils bureautiques et web"
+				"influence_technique_com" : "Problèmes de compatibilité des outils bureautiques et web",
+				"quali" : 1
 			}
 		},
 		{
@@ -1558,7 +1362,8 @@
 				"outil_proj" : "excel, project, git",
 				"outil_proj_note" : 6,
 				"influence_nb" : "2",
-				"influence" : "Orga, technique"
+				"influence" : "Orga, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -1604,7 +1409,8 @@
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, politique",
 				"influence_orga_com" : "Pas d'équipe dédiée, hiérarchie qui suit le projet au compte-goute",
-				"influence_politique_com" : "Le projet est imménament politique et chacun cherche a se faire voir"
+				"influence_politique_com" : "Le projet est imménament politique et chacun cherche a se faire voir",
+				"quali" : 1
 			}
 		},
 		{
@@ -1648,44 +1454,8 @@
 				"influence_nb" : "3",
 				"influence" : "Orga, budget, technique",
 				"influence_budget_com" : "Nécessite un investissement important au démarrage du projet",
-				"influence_technique_com" : "La clé de la réussite réside dans la maîtrise de l'IA ainsi que la disposition d'une infrastructure puissante"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.34764, 48.85335 ]
-			},
-			"properties" : {
-				"id" : 453,
-				"lang" : "fr",
-				"presentation" : "Outil contrôle qualité",
-				"structure" : "Parapublic (syndicat mixte, EPIC…)",
-				"issue" : "Autre",
-				"issue_autre" : "En cours de production",
-				"duree" : "6 mois à 1 an",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Plusieurs personnes impliquées durablement",
-				"copil" : "Oui",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "2",
-				"techno" : "code, proprio",
-				"techno_note" : 3,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "2",
-				"docs_formats" : "comments, docx",
-				"docs_note" : 6,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 5,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 7,
-				"influence_nb" : "0",
-				"influence" : ""
+				"influence_technique_com" : "La clé de la réussite réside dans la maîtrise de l'IA ainsi que la disposition d'une infrastructure puissante",
+				"quali" : 1
 			}
 		},
 		{
@@ -1725,7 +1495,8 @@
 				"outil_proj_note" : 4,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Communication peu efficace (chaînes de mails...)"
+				"influence_humaine_com" : "Communication peu efficace (chaînes de mails...)",
+				"quali" : 1
 			}
 		},
 		{
@@ -1767,7 +1538,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 1,
 				"influence_nb" : "3",
-				"influence" : "Orga, budget, technique"
+				"influence" : "Orga, budget, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -1810,7 +1582,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
-				"influence" : "Orga, humaine"
+				"influence" : "Orga, humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -1855,45 +1628,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 4,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, politique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.27548, 44.54646 ]
-			},
-			"properties" : {
-				"id" : 486,
-				"lang" : "fr",
-				"presentation" : "Atlas de cartes pour l'aide à la définition des Zones d'Accélération des Energies Renouvelables (ZAER)",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Succès",
-				"duree" : "1 à 3 ans",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Plusieurs personnes impliquées durablement",
-				"copil" : "Non",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "2",
-				"techno" : "libre, standards",
-				"techno_note" : 10,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "qgz, docx, mails",
-				"docs_note" : 6,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 5,
-				"outil_proj_nb" : "0",
-				"outil_proj" : "rien",
-				"outil_proj_note" : 5,
-				"influence_nb" : "2",
-				"influence" : "humaine, politique",
-				"influence_humaine_com" : "La bonne cohésion de l'équipe nous a permis de bien communiquer et d'avancer sur le projet",
-				"influence_politique_com" : "Mise en place de la loi ZAN (ZAER), il a fallut agir très rapidement et sans consignes claires de l'Etat, donc la mise en place du projet a été compliquée"
+				"influence" : "Orga, humaine, politique",
+				"quali" : 1
 			}
 		},
 		{
@@ -1936,7 +1672,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 8,
 				"influence_nb" : "4",
-				"influence" : "Orga, humaine, politique, technique"
+				"influence" : "Orga, humaine, politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -1980,7 +1717,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "budget",
-				"influence_budget_com" : "Contrat non-renouvellé "
+				"influence_budget_com" : "Contrat non-renouvellé ",
+				"quali" : 1
 			}
 		},
 		{
@@ -2029,7 +1767,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "manque de compétences en développement ",
 				"influence_orga_com" : "trop grande autonomie",
-				"influence_technique_com" : "outil parfois non adapté (ex utilisation d'Excel pour + de 20M de lignes)"
+				"influence_technique_com" : "outil parfois non adapté (ex utilisation d'Excel pour + de 20M de lignes)",
+				"quali" : 1
 			}
 		},
 		{
@@ -2077,7 +1816,8 @@
 				"influence_humaine_com" : "COmpétence informatique des géomaticiens très basique, inadapté au developpement WEB",
 				"influence_orga_com" : "Décideurs n'ont pas conscience de la réalité du travail d'un géomaticien. Et ne souhaite pas vraiment comprendre (manque de temps, dette technique >50ans etc)",
 				"influence_technique_com" : "Logiciels propriétaire \"clé en main\" très fermé au final, connection générique vers SIG via API très complexe, notament la remonté d'information et l'envoi d'instruction (Ex: Allumé/Eteindre EP). Nécéssite souvent d'avoir 2 solution/logiciels en parallèle, une pour la remontée et un autre solution pour l'envoi",
-				"influence_politique_com" : "Projet avec élu, donc figé/abandonnée à la prochaine éléction si pas réelu."
+				"influence_politique_com" : "Projet avec élu, donc figé/abandonnée à la prochaine éléction si pas réelu.",
+				"quali" : 1
 			}
 		},
 		{
@@ -2123,45 +1863,8 @@
 				"influence" : "budget, politique, autre",
 				"influence_budget_com" : "Demande un jumeaux 3D mais le PC est en PLS pour ouvrir 3 dalles RASTER",
 				"influence_politique_com" : "Juste un effet de mode sans réelle utilité",
-				"influence_autre_com" : "Effet gadet du projet, projet très futile "
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.1853, 49.68473 ]
-			},
-			"properties" : {
-				"id" : 541,
-				"lang" : "fr",
-				"presentation" : "Plate-forme SIGcom pour les communes du Luxembourg",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "Plus de 5 ans",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "Plus de 5",
-				"comprehension_sig_acteurs" : 4,
-				"repartition_roles" : "Autre",
-				"repartition_roles_autre" : "Equipe de geomaticiens (developpeur, commerciaux, technicien)",
-				"copil" : "Non",
-				"alea_reprise" : "Oui, reprise fluide",
-				"techno_nb" : "1",
-				"techno" : "proprio",
-				"techno_note" : 9,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "7",
-				"docs_formats" : "catalog, comments, qgz, docx, mails, tuto, wiki",
-				"docs_note" : 8,
-				"methode_nb" : "1",
-				"methode_proj" : "autre",
-				"methode_autre" : "SX",
-				"methode_note" : 5,
-				"outil_proj_nb" : "2",
-				"outil_proj" : "excel, jira",
-				"outil_proj_note" : 9,
-				"influence_nb" : "3",
-				"influence" : "humaine, budget, technique"
+				"influence_autre_com" : "Effet gadet du projet, projet très futile ",
+				"quali" : 1
 			}
 		},
 		{
@@ -2206,7 +1909,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 2,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, politique"
+				"influence" : "Orga, humaine, politique",
+				"quali" : 1
 			}
 		},
 		{
@@ -2253,7 +1957,8 @@
 				"influence" : "Orga, humaine, politique",
 				"influence_humaine_com" : "Une équipe projet motivée et solidaire",
 				"influence_orga_com" : "Une personne dédiées au suivi et animation",
-				"influence_politique_com" : "Obligation règlementaire ayant servi de levier"
+				"influence_politique_com" : "Obligation règlementaire ayant servi de levier",
+				"quali" : 1
 			}
 		},
 		{
@@ -2302,7 +2007,8 @@
 				"influence_humaine_com" : "Le chef de projet collectivité a de réelles compétences humaines, et j'ai pu bâtir une relation de confiance grâce à ces aspect la notamment",
 				"influence_orga_com" : "Un pilotage éclairé côté structure cliente est primordial. Éclairé au sens technique mais aussi organisationnel et sur les jeux d'acteurs",
 				"influence_technique_com" : "Le choix de 2 logiciels complémentaires avec deux éditeurs reelement partenaire crée un écosystème vertueux",
-				"influence_politique_com" : "Des échéances politique fermr.mais raisonnables permet de impulser un tempo cohérent avec la montée en charge du projet, notamment viser la phase de formation aux utilisateurs sur plusieurs moi"
+				"influence_politique_com" : "Des échéances politique fermr.mais raisonnables permet de impulser un tempo cohérent avec la montée en charge du projet, notamment viser la phase de formation aux utilisateurs sur plusieurs moi",
+				"quali" : 1
 			}
 		},
 		{
@@ -2346,7 +2052,8 @@
 				"influence" : "Orga, humaine, politique",
 				"influence_humaine_com" : "Perte de temps liée au fait que le projet n'a pas été porté par le pôle géomatique au début.",
 				"influence_orga_com" : "Projet pas géré en mode projet (copil, cotech, date de rendu et planning...) mais au fil de l'eau, selon le temps disponible.",
-				"influence_politique_com" : "Projet initié en raison de la création de la Collectivité européenne d'Alsace. Il fallait fusionner les deux SIG."
+				"influence_politique_com" : "Projet initié en raison de la création de la Collectivité européenne d'Alsace. Il fallait fusionner les deux SIG.",
+				"quali" : 1
 			}
 		},
 		{
@@ -2395,7 +2102,8 @@
 				"influence_humaine_com" : "Un bon responsable fonctionelle ",
 				"influence_orga_com" : "Le chef de projet ",
 				"influence_technique_com" : "Pas trop de dette technique ",
-				"influence_politique_com" : "Loi de programmation militaire "
+				"influence_politique_com" : "Loi de programmation militaire ",
+				"quali" : 1
 			}
 		},
 		{
@@ -2446,7 +2154,8 @@
 				"influence_budget_com" : "Les ressources investis sur le long terme étaient le premier argument pour ne pas produire s’orienter vers une refonte. ",
 				"influence_humaine_com" : "Les internes entre les différents services ne s’entendaient pas forcément et se mettaient des bâtons dans les roues.",
 				"influence_orga_com" : "Les savoirs techniques se sont transmis d’équipes à équipes, prestataires à prestataires sans contrôle ou validation des connaissances ce qui faisait perdre énormément de temps (re-explications des sujets a chaque changement). ",
-				"influence_technique_com" : "La solution initiale était prévu pour une initialisation des données et non pas une mise à jour."
+				"influence_technique_com" : "La solution initiale était prévu pour une initialisation des données et non pas une mise à jour.",
+				"quali" : 1
 			}
 		},
 		{
@@ -2490,7 +2199,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, politique"
+				"influence" : "Orga, humaine, politique",
+				"quali" : 1
 			}
 		},
 		{
@@ -2531,45 +2241,8 @@
 				"outil_proj_autre" : "Grist",
 				"outil_proj_note" : 10,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 1.08421, 49.43457 ]
-			},
-			"properties" : {
-				"id" : 599,
-				"lang" : "fr",
-				"presentation" : "Definition et cartographie de l'armature territoriale de Rouen",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Succès",
-				"duree" : "6 mois à 1 an",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Plusieurs personnes impliquées durablement",
-				"copil" : "Oui",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 5,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "qgz, docx, mails",
-				"docs_note" : 6,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 7,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "trello",
-				"outil_proj_note" : 8,
-				"influence_nb" : "2",
-				"influence" : "humaine, technique",
-				"influence_humaine_com" : "Equipe bienveillante, délais tenus",
-				"influence_technique_com" : "Logiciels libres et connus de tous "
+				"influence" : "Orga, humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -2613,7 +2286,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
-				"influence" : "Orga, humaine"
+				"influence" : "Orga, humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -2652,7 +2326,8 @@
 				"outil_proj" : "excel, trello",
 				"outil_proj_note" : 4,
 				"influence_nb" : "1",
-				"influence" : "humaine"
+				"influence" : "humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -2692,7 +2367,8 @@
 				"outil_proj" : "trello, git",
 				"outil_proj_note" : 10,
 				"influence_nb" : "4",
-				"influence" : "Orga, humaine, politique, technique"
+				"influence" : "Orga, humaine, politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -2739,7 +2415,8 @@
 				"influence" : "Orga, humaine, budget, politique, technique",
 				"influence_budget_com" : "Il faut un bon budget pour des projets avec solution propriétaire mais pas non plus illimité sinon on se perd dans du détail ce qui fait perdre du temps et la motivation des équipes",
 				"influence_orga_com" : "Placer les bonnes personnes avec les compétences aux bons endroits ",
-				"influence_politique_com" : "Une personne en direction qui porte le projet et lève les fonds qui s’en va et une autre avec une toute autre ligne de conduite peu annuler un projet "
+				"influence_politique_com" : "Une personne en direction qui porte le projet et lève les fonds qui s’en va et une autre avec une toute autre ligne de conduite peu annuler un projet ",
+				"quali" : 1
 			}
 		},
 		{
@@ -2787,79 +2464,8 @@
 				"influence_budget_com" : "Peu de budgets",
 				"influence_humaine_com" : "RH internes peu managées",
 				"influence_orga_com" : "COPIL annuel peu décisionnaire",
-				"influence_technique_com" : "Serveur d'images à venir (tardivement)"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -3.97156, 48.21003 ]
-			},
-			"properties" : {
-				"id" : 658,
-				"lang" : "fr",
-				"presentation" : "Mise en place d'un cadastre solaire",
-				"structure" : "Parapublic (syndicat mixte, EPIC…)",
-				"issue" : "Succès",
-				"duree" : "6 mois à 1 an",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 2,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Oui",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "proprio",
-				"techno_note" : 10,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "4",
-				"docs_formats" : "catalog, docx, mails, tuto",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 5,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 5,
-				"influence_nb" : "2",
-				"influence" : "humaine, technique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 4.48242, 44.3651 ]
-			},
-			"properties" : {
-				"id" : 662,
-				"lang" : "fr",
-				"presentation" : "Analyse de données BD communale / Régionale / EPCI",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "6 mois à 1 an",
-				"role" : "Décideur·se / élu·e / direction",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "2",
-				"techno" : "libre, code",
-				"techno_note" : 10,
-				"docs_presence" : "Je ne sais pas",
-				"docs_nb_formats" : "2",
-				"docs_formats" : "qgz, mails",
-				"docs_note" : 5,
-				"methode_nb" : "1",
-				"methode_proj" : "kamban",
-				"methode_note" : 10,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "jira",
-				"outil_proj_note" : 10,
-				"influence_nb" : "2",
-				"influence" : "humaine, technique"
+				"influence_technique_com" : "Serveur d'images à venir (tardivement)",
+				"quali" : 1
 			}
 		},
 		{
@@ -2903,7 +2509,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 8,
 				"influence_nb" : "2",
-				"influence" : "humaine, technique"
+				"influence" : "humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -2950,51 +2557,8 @@
 				"influence_budget_com" : "Meilleure conduite du budget",
 				"influence_humaine_com" : "Une excellente communication inter-equipes est nécessaire, rôle primordial de l'équipe DevOps pierre angulaire du projet",
 				"influence_orga_com" : "L'amélioration continue a un impact sur les réorganisations",
-				"influence_technique_com" : "Priorité à l'efficience "
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 0.23291, 47.96271 ]
-			},
-			"properties" : {
-				"id" : 684,
-				"lang" : "fr",
-				"presentation" : "web sig départemental",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Échec puis relance",
-				"duree" : "Plus de 5 ans",
-				"role" : "Autre",
-				"role_autre" : "je n'étais pas au début du projet",
-				"nb_acteurs_differents" : "4 – 5",
-				"comprehension_sig_acteurs" : 2,
-				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
-				"copil" : "Oui",
-				"alea_reprise" : "Autre",
-				"alea_reprise_autre" : "avec une nouvelle équipe",
-				"alea_detail" : "départ du projet vers une autre structure",
-				"techno_nb" : "3",
-				"techno" : "code, proprio, standards",
-				"techno_note" : 8,
-				"docs_presence" : "Oui, mais peu claire ou obsolète",
-				"docs_nb_formats" : "2",
-				"docs_formats" : "docx, mails",
-				"docs_note" : 1,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 1,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "autre",
-				"outil_proj_autre" : "je ne sais pas",
-				"outil_proj_note" : 1,
-				"influence_nb" : "4",
-				"influence" : "Orga, humaine, budget, technique",
-				"influence_budget_com" : "pas de réinjection de financement dans le projet",
-				"influence_humaine_com" : "manque de compétence",
-				"influence_orga_com" : "mauvaise gouvernance",
-				"influence_technique_com" : "pas d'évolution logicielle"
+				"influence_technique_com" : "Priorité à l'efficience ",
+				"quali" : 1
 			}
 		},
 		{
@@ -3038,7 +2602,8 @@
 				"outil_proj_autre" : "openproject",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
-				"influence" : "Orga"
+				"influence" : "Orga",
+				"quali" : 1
 			}
 		},
 		{
@@ -3083,7 +2648,8 @@
 				"influence_nb" : "2",
 				"influence" : "humaine, politique",
 				"influence_humaine_com" : "Différentes expertises (urbanisme, commercial, SIG) mises en relation",
-				"influence_politique_com" : "Differents décrets mis en application qui ont changé notre méthodologie et notre approche"
+				"influence_politique_com" : "Differents décrets mis en application qui ont changé notre méthodologie et notre approche",
+				"quali" : 1
 			}
 		},
 		{
@@ -3130,7 +2696,8 @@
 				"influence" : "Orga, humaine, politique",
 				"influence_humaine_com" : "Travail avec des partenaires compétents pour organiser les ateliers sur le fonds du sujet et rôle d'interface du chef de projet pour traduction en cartes SIG",
 				"influence_orga_com" : "Organisation de plusieurs ateliers de travail, participation importante des élus ",
-				"influence_politique_com" : "Les ZAEnR étaient obligatoires pour les communes mais elles n'étaient pas outillées ni pour les définir ni pour les formaliser "
+				"influence_politique_com" : "Les ZAEnR étaient obligatoires pour les communes mais elles n'étaient pas outillées ni pour les définir ni pour les formaliser ",
+				"quali" : 1
 			}
 		},
 		{
@@ -3175,7 +2742,8 @@
 				"outil_proj_note" : 1,
 				"influence_nb" : "1",
 				"influence" : "Orga",
-				"influence_orga_com" : "Trop de projets simultanés et besoin de laisser ce projet de côté"
+				"influence_orga_com" : "Trop de projets simultanés et besoin de laisser ce projet de côté",
+				"quali" : 1
 			}
 		},
 		{
@@ -3218,43 +2786,8 @@
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "1er projet",
-				"influence_technique_com" : ", données sources non uniforme ce qui a retardé le projet "
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -95.11021, 29.48811 ]
-			},
-			"properties" : {
-				"id" : 719,
-				"lang" : "fr",
-				"presentation" : "Inspection photos par drones d'infrastructures.",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "Plus de 5 ans",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 4,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Oui",
-				"alea_reprise" : "Oui, reprise fluide",
-				"techno_nb" : "2",
-				"techno" : "code, proprio",
-				"techno_note" : 8,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "comments, docx, tuto",
-				"docs_note" : 8,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 8,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 5,
-				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
+				"influence_technique_com" : ", données sources non uniforme ce qui a retardé le projet ",
+				"quali" : 1
 			}
 		},
 		{
@@ -3293,7 +2826,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "humaine, politique, technique"
+				"influence" : "humaine, politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -3339,43 +2873,8 @@
 				"outil_proj_note" : 8,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "La communication régulière et des tests réguliers, réunion hebdomadaires courtes, ont positivement influées"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 6.80174, 47.50635 ]
-			},
-			"properties" : {
-				"id" : 748,
-				"lang" : "fr",
-				"presentation" : "Étude sur le potentiel foncier agricole",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Succès",
-				"duree" : "1 à 6 mois",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Oui",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 6,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "2",
-				"docs_formats" : "docx, mails",
-				"docs_note" : 6,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 6,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 6,
-				"influence_nb" : "2",
-				"influence" : "Orga, humaine"
+				"influence_humaine_com" : "La communication régulière et des tests réguliers, réunion hebdomadaires courtes, ont positivement influées",
+				"quali" : 1
 			}
 		},
 		{
@@ -3423,7 +2922,8 @@
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Complications de la transversalité des sig ",
-				"influence_technique_com" : "Problème de partage vers l’extérieur /dsi"
+				"influence_technique_com" : "Problème de partage vers l’extérieur /dsi",
+				"quali" : 1
 			}
 		},
 		{
@@ -3470,7 +2970,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "communication et suivi des utilisateurs",
 				"influence_orga_com" : "Lancement en doucuer, ajout année par année des cas d'usage",
-				"influence_technique_com" : "outil métier adapté et simplifié"
+				"influence_technique_com" : "outil métier adapté et simplifié",
+				"quali" : 1
 			}
 		},
 		{
@@ -3518,7 +3019,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Communication ",
 				"influence_orga_com" : "Organisation claire. Répartition et Appropriation des tâches . Gouvernance des données et du code",
-				"influence_technique_com" : "Logiciel intuitif et puissant. En phase avec les exigences RSSI . "
+				"influence_technique_com" : "Logiciel intuitif et puissant. En phase avec les exigences RSSI . ",
+				"quali" : 1
 			}
 		},
 		{
@@ -3561,43 +3063,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
-				"influence" : "Orga, humaine"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.35931, 48.85822 ]
-			},
-			"properties" : {
-				"id" : 790,
-				"lang" : "fr",
-				"presentation" : "Projet lié à l'assainissement ",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "1 à 3 ans",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 4,
-				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
-				"copil" : "Oui",
-				"alea_reprise" : "Oui, reprise fluide",
-				"techno_nb" : "1",
-				"techno" : "proprio",
-				"techno_note" : 5,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "4",
-				"docs_formats" : "qgz, docx, mails, tuto",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 5,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 8,
-				"influence_nb" : "1",
-				"influence" : "Orga"
+				"influence" : "Orga, humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -3639,7 +3106,8 @@
 				"outil_proj" : "excel, git",
 				"outil_proj_note" : 6,
 				"influence_nb" : "4",
-				"influence" : "Orga, humaine, budget, technique"
+				"influence" : "Orga, humaine, budget, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -3684,7 +3152,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "Orga",
-				"influence_orga_com" : "Pas de chef de projet en interne"
+				"influence_orga_com" : "Pas de chef de projet en interne",
+				"quali" : 1
 			}
 		},
 		{
@@ -3729,7 +3198,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Le service en charge des serveur trouve des excuses pour ne pas travailler et déployer l'application"
+				"influence_humaine_com" : "Le service en charge des serveur trouve des excuses pour ne pas travailler et déployer l'application",
+				"quali" : 1
 			}
 		},
 		{
@@ -3771,7 +3241,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "2",
-				"influence" : "humaine, technique"
+				"influence" : "humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -3817,7 +3288,8 @@
 				"influence" : "Orga, humaine, budget",
 				"influence_budget_com" : "Zero budget mais besoin d'une efficience parfaite",
 				"influence_humaine_com" : "La direction donne une mission structurante au service sig sans la soutenir dans le développement du projet",
-				"influence_orga_com" : "Roue libre, pas de directive claire, projet piloté par un technicien \"illégitime\" pour donner des directives"
+				"influence_orga_com" : "Roue libre, pas de directive claire, projet piloté par un technicien \"illégitime\" pour donner des directives",
+				"quali" : 1
 			}
 		},
 		{
@@ -3860,7 +3332,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Je pratique en autoformation depuis 20 ans",
 				"influence_orga_com" : "classement des données",
-				"influence_technique_com" : "Qgis"
+				"influence_technique_com" : "Qgis",
+				"quali" : 1
 			}
 		},
 		{
@@ -3900,7 +3373,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "humaine, budget, technique"
+				"influence" : "humaine, budget, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -3949,7 +3423,8 @@
 				"influence_orga_com" : "WE were committed and not walking away from the Need of accurate 911 gis accuracy  ",
 				"influence_technique_com" : "Project went on longer than expected tech kept evolving we had to adjust esp where hardware was concerned ",
 				"influence_politique_com" : "keep your stake holders INFORMED in the loop as deadlines move ",
-				"influence_autre_com" : "losing key players on the vendor side  - Establishing s good rapport is KEY "
+				"influence_autre_com" : "losing key players on the vendor side  - Establishing s good rapport is KEY ",
+				"quali" : 1
 			}
 		},
 		{
@@ -3991,7 +3466,8 @@
 				"influence_nb" : "2",
 				"influence" : "Orga, budget",
 				"influence_budget_com" : "Federal government annual budget announcements",
-				"influence_orga_com" : "Constant management reorganization of teams"
+				"influence_orga_com" : "Constant management reorganization of teams",
+				"quali" : 1
 			}
 		},
 		{
@@ -4039,7 +3515,8 @@
 				"influence_humaine_com" : "Réussite : équipe très compétente",
 				"influence_orga_com" : "Réussite : Personnes moteur, motivation générale",
 				"influence_technique_com" : "Vers l'échec : non adoption des outils, retard sur la MCO",
-				"influence_politique_com" : "Vers l'échec : y'a moins d'argent coté client"
+				"influence_politique_com" : "Vers l'échec : y'a moins d'argent coté client",
+				"quali" : 1
 			}
 		},
 		{
@@ -4078,7 +3555,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 7,
 				"influence_nb" : "2",
-				"influence" : "politique, technique"
+				"influence" : "politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -4124,7 +3602,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "New GIS program was online sharing new capabilities ",
 				"influence_orga_com" : "City manager directed staff to execute adoption of GIS related program ",
-				"influence_technique_com" : "Software was available to solve a big problem cheaply "
+				"influence_technique_com" : "Software was available to solve a big problem cheaply ",
+				"quali" : 1
 			}
 		},
 		{
@@ -4167,7 +3646,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "technique",
-				"influence_technique_com" : "Complexity of project. Due to knowledge and results (incl. Good visualization) the difficulty could be communicated."
+				"influence_technique_com" : "Complexity of project. Due to knowledge and results (incl. Good visualization) the difficulty could be communicated.",
+				"quali" : 1
 			}
 		},
 		{
@@ -4212,7 +3692,8 @@
 				"influence_nb" : "2",
 				"influence" : "Orga, budget",
 				"influence_budget_com" : "budget has to be maintained and supported ",
-				"influence_orga_com" : "strong management team "
+				"influence_orga_com" : "strong management team ",
+				"quali" : 1
 			}
 		},
 		{
@@ -4257,7 +3738,8 @@
 				"outil_proj_note" : 1,
 				"influence_nb" : "1",
 				"influence" : "technique",
-				"influence_technique_com" : "Using open source software made the project more flexible and easier to complete."
+				"influence_technique_com" : "Using open source software made the project more flexible and easier to complete.",
+				"quali" : 1
 			}
 		},
 		{
@@ -4299,7 +3781,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
-				"influence" : "humaine, politique, technique"
+				"influence" : "humaine, politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -4345,7 +3828,8 @@
 				"influence" : "Orga, budget, technique",
 				"influence_budget_com" : "Coded internally, saving money",
 				"influence_orga_com" : "Departments felt satisfied",
-				"influence_technique_com" : "Reduced Gis software costs"
+				"influence_technique_com" : "Reduced Gis software costs",
+				"quali" : 1
 			}
 		},
 		{
@@ -4385,7 +3869,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 3,
 				"influence_nb" : "2",
-				"influence" : "humaine, technique"
+				"influence" : "humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -4430,81 +3915,8 @@
 				"influence_nb" : "2",
 				"influence" : "budget, technique",
 				"influence_budget_com" : "Billed for a low budget but took longer than expected ",
-				"influence_technique_com" : "esri arcgis is so problematic in adding new users within a corporate account, in addition the software is so locked up with proprietary software that doing anything is a slog. Switched to QGIS and had a smoother time."
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 2.62024, 50.5758 ]
-			},
-			"properties" : {
-				"id" : 1065,
-				"lang" : "en",
-				"presentation" : "Creating GIS layers to manage flood risk",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Succès",
-				"duree" : "1 à 6 mois",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "1 seul",
-				"comprehension_sig_acteurs" : 4,
-				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 9,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "0",
-				"docs_formats" : "rien",
-				"docs_note" : 2,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 2,
-				"outil_proj_nb" : "0",
-				"outil_proj" : "rien",
-				"outil_proj_note" : 7,
-				"influence_nb" : "1",
-				"influence" : "Orga"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -89.42871, 33.25584 ]
-			},
-			"properties" : {
-				"id" : 1071,
-				"lang" : "en",
-				"presentation" : "State-scale high-resolution land cover classification",
-				"structure" : "Autre",
-				"structure_autre" : "Public (academic with support form internal university funding)",
-				"issue" : "Succès",
-				"duree" : "1 à 3 ans",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "1 seul",
-				"comprehension_sig_acteurs" : 2,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Oui, reprise fluide",
-				"techno_nb" : "3",
-				"techno" : "libre, code, proprio",
-				"techno_note" : 10,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "comments, qgz, mails",
-				"docs_note" : 6,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 3,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "notion",
-				"outil_proj_note" : 6,
-				"influence_nb" : "1",
-				"influence" : "technique",
-				"influence_technique_com" : "Use of open-source software facilitated easy collaboration with technical stakeholders from various backgrounds (i.e., agriculture, environmental, computer science)"
+				"influence_technique_com" : "esri arcgis is so problematic in adding new users within a corporate account, in addition the software is so locked up with proprietary software that doing anything is a slog. Switched to QGIS and had a smoother time.",
+				"quali" : 1
 			}
 		},
 		{
@@ -4550,7 +3962,8 @@
 				"influence_nb" : "2",
 				"influence" : "technique, autre",
 				"influence_technique_com" : "Lack of resources to test and implement while still working on day to day tasks.",
-				"influence_autre_com" : "Waterfall approach."
+				"influence_autre_com" : "Waterfall approach.",
+				"quali" : 1
 			}
 		},
 		{
@@ -4597,44 +4010,8 @@
 				"influence_budget_com" : "Auditor, treasurer, engineer and commissioners all back the project monetarily ",
 				"influence_orga_com" : "Strong backing from Elected Officials ",
 				"influence_technique_com" : "Right mix of custom scripts and Esri backbone ",
-				"influence_politique_com" : "County Officials were in agreement to fully support increase GIS Development "
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -3.52249, 14.07432 ]
-			},
-			"properties" : {
-				"id" : 1115,
-				"lang" : "fr",
-				"presentation" : "cartographie des villages menant des activités maraichères ",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Échec (abandon, gel, oubli)",
-				"duree" : "6 mois à 1 an",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "Plus de 5",
-				"comprehension_sig_acteurs" : 1,
-				"repartition_roles" : "Rôle tournant",
-				"copil" : "Oui",
-				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
-				"alea_detail" : "le projet a été abandonné à cause de l'insécurité dans la zone ",
-				"techno_nb" : "4",
-				"techno" : "libre, code, proprio, standards",
-				"techno_note" : 7,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "1",
-				"docs_formats" : "docx",
-				"docs_note" : 8,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 3,
-				"outil_proj_nb" : "2",
-				"outil_proj" : "excel, project",
-				"outil_proj_note" : 4,
-				"influence_nb" : "3",
-				"influence" : "Orga, humaine, politique"
+				"influence_politique_com" : "County Officials were in agreement to fully support increase GIS Development ",
+				"quali" : 1
 			}
 		},
 		{
@@ -4675,7 +4052,8 @@
 				"outil_proj_note" : 3,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "high turnover, toxic work environment,  successful in spite of the organization "
+				"influence_humaine_com" : "high turnover, toxic work environment,  successful in spite of the organization ",
+				"quali" : 1
 			}
 		},
 		{
@@ -4720,7 +4098,8 @@
 				"outil_proj" : "excel, project",
 				"outil_proj_note" : 7,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
+				"influence" : "Orga, humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -4767,7 +4146,8 @@
 				"influence_budget_com" : "Our time is not free to give and we have no dedicated budget",
 				"influence_humaine_com" : "Under resourced so our proof of concept became BAU",
 				"influence_orga_com" : "We delivered this despite a lack of support from management because we needed it",
-				"influence_technique_com" : "Our choice of commodity AWS and FOSS tools has meant we can migrate with minimal issues"
+				"influence_technique_com" : "Our choice of commodity AWS and FOSS tools has meant we can migrate with minimal issues",
+				"quali" : 1
 			}
 		},
 		{
@@ -4814,7 +4194,8 @@
 				"influence_budget_com" : "For that I needed to rely solely on open source software ",
 				"influence_humaine_com" : "Trying my best to being people on board with all the changes",
 				"influence_orga_com" : "Management needs to be on board from the beginning ",
-				"influence_technique_com" : "Strong support needed from IT sector"
+				"influence_technique_com" : "Strong support needed from IT sector",
+				"quali" : 1
 			}
 		},
 		{
@@ -4859,7 +4240,8 @@
 				"influence_nb" : "2",
 				"influence" : "Orga, humaine",
 				"influence_humaine_com" : "Cartography ",
-				"influence_orga_com" : "Communication "
+				"influence_orga_com" : "Communication ",
+				"quali" : 1
 			}
 		},
 		{
@@ -4903,7 +4285,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "3",
 				"influence" : "Orga, humaine, technique",
-				"influence_humaine_com" : "Agents impliqués dans le projet - comprennait le bénéfice de l'application"
+				"influence_humaine_com" : "Agents impliqués dans le projet - comprennait le bénéfice de l'application",
+				"quali" : 1
 			}
 		},
 		{
@@ -4949,7 +4332,8 @@
 				"influence_nb" : "2",
 				"influence" : "Orga, politique",
 				"influence_orga_com" : "poor management and not having a clear method",
-				"influence_politique_com" : "The whole project was abandoned after the new cabin take over the municipal projects"
+				"influence_politique_com" : "The whole project was abandoned after the new cabin take over the municipal projects",
+				"quali" : 1
 			}
 		},
 		{
@@ -4991,7 +4375,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 7,
 				"influence_nb" : "3",
-				"influence" : "humaine, budget, technique"
+				"influence" : "humaine, budget, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -5036,7 +4421,8 @@
 				"influence_nb" : "2",
 				"influence" : "Orga, technique",
 				"influence_orga_com" : "Nouveau DSI",
-				"influence_technique_com" : "Pérennisation grâce aux logiciels libres"
+				"influence_technique_com" : "Pérennisation grâce aux logiciels libres",
+				"quali" : 1
 			}
 		},
 		{
@@ -5084,45 +4470,8 @@
 				"influence_humaine_com" : "I was the only one in the building let alone probably 98% of all Comcast personnel who had any idea how to accomplish this",
 				"influence_orga_com" : "I did it without getting approval for the project first ",
 				"influence_technique_com" : "I was able to use the free Google Maps API for all 3500 locations from my free tier new account ",
-				"influence_politique_com" : "I got in trouble initially, until I was able to communicate the multi-tens of millions cost savings "
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -75.56883, 6.21232 ]
-			},
-			"properties" : {
-				"id" : 1182,
-				"lang" : "en",
-				"presentation" : "Geo database, metadata and set of maps for environmental impact assessment study",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "1 à 6 mois",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Autre",
-				"alea_reprise_autre" : "No disruption ",
-				"techno_nb" : "1",
-				"techno" : "proprio",
-				"techno_note" : 8,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "qgz, docx, mails",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 5,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 10,
-				"influence_nb" : "1",
-				"influence" : "humaine",
-				"influence_humaine_com" : "Unclear communication creates setbacks and need for data corrections"
+				"influence_politique_com" : "I got in trouble initially, until I was able to communicate the multi-tens of millions cost savings ",
+				"quali" : 1
 			}
 		},
 		{
@@ -5168,45 +4517,8 @@
 				"influence" : "Orga, humaine, politique",
 				"influence_humaine_com" : "Appropriation par les services car forte demande interne",
 				"influence_orga_com" : "Transversalité",
-				"influence_politique_com" : "Volonté politique de réaliser une refonte du SIG et de l'observatoire"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -75.56883, 6.21232 ]
-			},
-			"properties" : {
-				"id" : 1185,
-				"lang" : "fr",
-				"presentation" : "Geo database, metadata and set of maps for environmental impact assessment study",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "1 à 6 mois",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Autre",
-				"alea_reprise_autre" : "No disruption ",
-				"techno_nb" : "1",
-				"techno" : "proprio",
-				"techno_note" : 8,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "qgz, docx, mails",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 5,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 10,
-				"influence_nb" : "1",
-				"influence" : "humaine",
-				"influence_humaine_com" : "Unclear communication creates setbacks and need for data corrections"
+				"influence_politique_com" : "Volonté politique de réaliser une refonte du SIG et de l'observatoire",
+				"quali" : 1
 			}
 		},
 		{
@@ -5248,45 +4560,8 @@
 				"outil_proj" : "git",
 				"outil_proj_note" : 10,
 				"influence_nb" : "4",
-				"influence" : "Orga, humaine, budget, technique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ -74.0118, 40.70446 ]
-			},
-			"properties" : {
-				"id" : 1215,
-				"lang" : "en",
-				"presentation" : "Ongoing micromobility spatial data analysis for Citi Bike and e-scooters",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Succès",
-				"duree" : "3 à 5 ans",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "1 seul",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 8,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "qgz, docx, mails",
-				"docs_note" : 5,
-				"methode_nb" : "1",
-				"methode_proj" : "autre",
-				"methode_autre" : "Self management",
-				"methode_note" : 8,
-				"outil_proj_nb" : "2",
-				"outil_proj" : "excel, autre",
-				"outil_proj_autre" : "Microsoft Planner",
-				"outil_proj_note" : 9,
-				"influence_nb" : "1",
-				"influence" : "technique"
+				"influence" : "Orga, humaine, budget, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -5332,7 +4607,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "regular meetings",
 				"influence_orga_com" : "trust in operational management",
-				"influence_technique_com" : "good software and operator skills"
+				"influence_technique_com" : "good software and operator skills",
+				"quali" : 1
 			}
 		},
 		{
@@ -5379,7 +4655,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Chef de projet avec une double compétences (Eau et SIG)",
 				"influence_orga_com" : "Petite équipe / client avec peu de connaissance avec une confiance totale envers l'entreprise retenue pour mener à bien ce projet et donc grande liberté laissée au chef de projet",
-				"influence_technique_com" : "logiciel libre avec une immense communauté à travers le monde, de nombreux tutos, de nombreux outils développés par la communauté qui ont permis de fournir de nombreuses fonctionnalités au client contrairement à des logiciels payants proposés par ESRI par exemple."
+				"influence_technique_com" : "logiciel libre avec une immense communauté à travers le monde, de nombreux tutos, de nombreux outils développés par la communauté qui ont permis de fournir de nombreuses fonctionnalités au client contrairement à des logiciels payants proposés par ESRI par exemple.",
+				"quali" : 1
 			}
 		},
 		{
@@ -5428,7 +4705,8 @@
 				"influence_humaine_com" : "Good motivation and drive to succeed in technical staff",
 				"influence_orga_com" : "Strong project manager, strong champions within client orgs",
 				"influence_technique_com" : "Strong FOSS skills and experience",
-				"influence_politique_com" : "Change of org leadership and political issues caused staff turnover"
+				"influence_politique_com" : "Change of org leadership and political issues caused staff turnover",
+				"quali" : 1
 			}
 		},
 		{
@@ -5472,7 +4750,8 @@
 				"outil_proj_note" : 1,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Everyone knew their role and worked to keep project on track."
+				"influence_humaine_com" : "Everyone knew their role and worked to keep project on track.",
+				"quali" : 1
 			}
 		},
 		{
@@ -5515,7 +4794,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 4,
 				"influence_nb" : "2",
-				"influence" : "Orga, humaine"
+				"influence" : "Orga, humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -5559,43 +4839,8 @@
 				"influence_budget_com" : "Possibilité de passer de nombreuse heures à créer une structure viable, passation sur plusieurs mois, évolution du projet en fonction des évolutions technique, support possible en cas de question pratique.",
 				"influence_humaine_com" : "Personnes motivées, désireuses de bien faire et minimum 2 personnes afin de garantir la pérennité du projet. Pour moi, la passation du projet est très importante.",
 				"influence_technique_com" : "Logiciels connus et utiliser par plusieurs personnes est importante ainsi que le développement du logiciel SIG afin de suivre l'évolution.",
-				"influence_autre_com" : "Structure de données avec des sous-type, domaine et bon type de champs afin de garantir une bonne homogénéité des données ainsi que la formalisation des noms de champs, bien renseigner l'histoire et l'utilisation de chaques champs dans la doc etc..."
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 7.55859, 46.6092 ]
-			},
-			"properties" : {
-				"id" : 1303,
-				"lang" : "fr",
-				"presentation" : "Identification des zones constructibles  a préserver",
-				"structure" : "Public territorial (collectivité, EPCI, département, région)",
-				"issue" : "Succès",
-				"duree" : "6 mois à 1 an",
-				"role" : "Géomaticien·ne / technicien·ne SIG interne",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 4,
-				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
-				"copil" : "Oui",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "2",
-				"techno" : "code, proprio",
-				"techno_note" : 5,
-				"docs_presence" : "Oui, mais peu claire ou obsolète",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "qgz, docx, mails",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 5,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 5,
-				"influence_nb" : "5",
-				"influence" : "Orga, humaine, budget, politique, technique"
+				"influence_autre_com" : "Structure de données avec des sous-type, domaine et bon type de champs afin de garantir une bonne homogénéité des données ainsi que la formalisation des noms de champs, bien renseigner l'histoire et l'utilisation de chaques champs dans la doc etc...",
+				"quali" : 1
 			}
 		},
 		{
@@ -5637,7 +4882,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
-				"influence" : "humaine"
+				"influence" : "humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -5681,7 +4927,8 @@
 				"influence_nb" : "2",
 				"influence" : "humaine, technique",
 				"influence_humaine_com" : "Le projet était destiné à extraire des indicateurs clés, les gérer et les étudier à des fins d'études hydrauliques. Il n'y avait pas nécessairement besoin d'une gouvernance élaborée mais la communication claire et directe a permis d'arriver au résultat souhaité.",
-				"influence_technique_com" : "L'open source a été sans aucun doute un facteur important de succès (rapidité, efficacité, entraide, communauté). "
+				"influence_technique_com" : "L'open source a été sans aucun doute un facteur important de succès (rapidité, efficacité, entraide, communauté). ",
+				"quali" : 1
 			}
 		},
 		{
@@ -5724,7 +4971,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 4,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, budget"
+				"influence" : "Orga, humaine, budget",
+				"quali" : 1
 			}
 		},
 		{
@@ -5767,48 +5015,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 5,
 				"influence_nb" : "4",
-				"influence" : "Orga, humaine, politique, technique"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 5.79075, 45.17994 ]
-			},
-			"properties" : {
-				"id" : 1367,
-				"lang" : "fr",
-				"presentation" : "Cartographie des bâtiments d'une commune en ajoutant l'année de livraison, la source de cette information, la typologie, la hauteur.",
-				"structure" : "Autre",
-				"structure_autre" : "une association",
-				"issue" : "Autre",
-				"issue_autre" : "En cours",
-				"duree" : "1 à 6 mois",
-				"role" : "Autre",
-				"role_autre" : "stagiaire en urbanisme pour une association",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 2,
-				"repartition_roles" : "Autre",
-				"repartition_roles_autre" : "Je suis stagiaire et seul à porter le projet",
-				"copil" : "Je ne sais pas",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 5,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "0",
-				"docs_formats" : "rien",
-				"docs_note" : 5,
-				"methode_nb" : "0",
-				"methode_proj" : "nsp",
-				"methode_note" : 5,
-				"outil_proj_nb" : "0",
-				"outil_proj" : "rien",
-				"outil_proj_note" : 5,
-				"influence_nb" : "1",
-				"influence" : "autre",
-				"influence_autre_com" : "projet encore en cours"
+				"influence" : "Orga, humaine, politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -5851,7 +5059,8 @@
 				"outil_proj" : "excel, git",
 				"outil_proj_note" : 6,
 				"influence_nb" : "1",
-				"influence" : "humaine"
+				"influence" : "humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -5896,7 +5105,8 @@
 				"influence_nb" : "2",
 				"influence" : "humaine, technique",
 				"influence_humaine_com" : "Compétences limitées en interne, besoin de formation ",
-				"influence_technique_com" : "Anciens livrables non référencés, base de donnée complexe "
+				"influence_technique_com" : "Anciens livrables non référencés, base de donnée complexe ",
+				"quali" : 1
 			}
 		},
 		{
@@ -5939,7 +5149,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 6,
 				"influence_nb" : "3",
-				"influence" : "humaine, budget, politique"
+				"influence" : "humaine, budget, politique",
+				"quali" : 1
 			}
 		},
 		{
@@ -5982,7 +5193,8 @@
 				"outil_proj_autre" : "je ne sais pas le reste ",
 				"outil_proj_note" : 8,
 				"influence_nb" : "5",
-				"influence" : "Orga, humaine, budget, politique, technique"
+				"influence" : "Orga, humaine, budget, politique, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -6034,7 +5246,8 @@
 				"influence_humaine_com" : "s'appuyer sur les volontaires motivés, les autres suivront",
 				"influence_orga_com" : "soutien de la hierarchie",
 				"influence_technique_com" : "soutenable financierement ",
-				"influence_politique_com" : "president et maire avec preference pour maire, "
+				"influence_politique_com" : "president et maire avec preference pour maire, ",
+				"quali" : 1
 			}
 		},
 		{
@@ -6074,7 +5287,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 10,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
+				"influence" : "Orga, humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -6118,7 +5332,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Large collaboration and communication. Daily prioritization during key stages."
+				"influence_humaine_com" : "Large collaboration and communication. Daily prioritization during key stages.",
+				"quali" : 1
 			}
 		},
 		{
@@ -6163,7 +5378,8 @@
 				"outil_proj_note" : 1,
 				"influence_nb" : "5",
 				"influence" : "Orga, humaine, politique, technique, autre",
-				"influence_autre_com" : "une combinaison de tout ces facteurs"
+				"influence_autre_com" : "une combinaison de tout ces facteurs",
+				"quali" : 1
 			}
 		},
 		{
@@ -6207,7 +5423,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "technique",
-				"influence_technique_com" : "ArcPro used and proper data management "
+				"influence_technique_com" : "ArcPro used and proper data management ",
+				"quali" : 1
 			}
 		},
 		{
@@ -6250,7 +5467,8 @@
 				"outil_proj" : "excel, monday",
 				"outil_proj_note" : 8,
 				"influence_nb" : "1",
-				"influence" : "humaine"
+				"influence" : "humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -6293,44 +5511,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Skills"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 85.8609, 20.25002 ]
-			},
-			"properties" : {
-				"id" : 1508,
-				"lang" : "en",
-				"presentation" : "Dashboard for climate risk information dissemination to municipal stakeholders",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "6 mois à 1 an",
-				"role" : "Membre d’une équipe métier (urbanisme, environnement, voirie, etc.)",
-				"nb_acteurs_differents" : "2 – 3",
-				"comprehension_sig_acteurs" : 1,
-				"repartition_roles" : "Plusieurs personnes impliquées durablement",
-				"copil" : "Je ne sais pas",
-				"alea_reprise" : "Oui, reprise fluide",
-				"techno_nb" : "2",
-				"techno" : "code, proprio",
-				"techno_note" : 5,
-				"docs_presence" : "Oui, structurée et à jour",
-				"docs_nb_formats" : "3",
-				"docs_formats" : "docx, mails, tuto",
-				"docs_note" : 10,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 3,
-				"outil_proj_nb" : "1",
-				"outil_proj" : "excel",
-				"outil_proj_note" : 3,
-				"influence_nb" : "1",
-				"influence" : "Orga",
-				"influence_orga_com" : "Structured project management would've helped"
+				"influence_humaine_com" : "Skills",
+				"quali" : 1
 			}
 		},
 		{
@@ -6377,7 +5559,8 @@
 				"influence_budget_com" : "très peu de cout en investissement (brique logicielle déjà acquise), cout important en temps agent",
 				"influence_humaine_com" : "Bonne implication des acteurs, élément essentiel de la réussite.",
 				"influence_orga_com" : "Majorité des acteurs clés sont restés présents et impliqués",
-				"influence_technique_com" : "La bonne visibilité sur les capacités logicielles ont permis de construire un outils en adéquation avec les besoins sans réels freins techniques."
+				"influence_technique_com" : "La bonne visibilité sur les capacités logicielles ont permis de construire un outils en adéquation avec les besoins sans réels freins techniques.",
+				"quali" : 1
 			}
 		},
 		{
@@ -6422,7 +5605,8 @@
 				"influence_nb" : "2",
 				"influence" : "budget, technique",
 				"influence_budget_com" : "Software was funded by other department, solution only cost staff time",
-				"influence_technique_com" : "Solution was simplest to use while still meeting objectives"
+				"influence_technique_com" : "Solution was simplest to use while still meeting objectives",
+				"quali" : 1
 			}
 		},
 		{
@@ -6468,7 +5652,8 @@
 				"influence_nb" : "2",
 				"influence" : "humaine, politique",
 				"influence_humaine_com" : "Lobby de spécilste ( télédetecteur, informaticien) voyant le géomaticient comme empiétant sur son domaine",
-				"influence_politique_com" : "Intérêt ou désintérêt du chef pour la gémotique"
+				"influence_politique_com" : "Intérêt ou désintérêt du chef pour la gémotique",
+				"quali" : 1
 			}
 		},
 		{
@@ -6513,7 +5698,8 @@
 				"influence" : "humaine, budget, technique",
 				"influence_budget_com" : "Couts faibles",
 				"influence_humaine_com" : "Equipe projet sénior / Communication efficiente par la réducation des interactions inutiles (réunions, sur validation, etc)",
-				"influence_technique_com" : "Maitrise complete de la chaine de fabrication"
+				"influence_technique_com" : "Maitrise complete de la chaine de fabrication",
+				"quali" : 1
 			}
 		},
 		{
@@ -6559,45 +5745,8 @@
 				"outil_proj_note" : 5,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Compétences de l'agent initialement sur le poste insuffisante"
-			}
-		},
-		{
-			"type" : "Feature",
-			"geometry" : {
-				"type" : "Point",
-				"coordinates" : [ 3.08956, 50.36921 ]
-			},
-			"properties" : {
-				"id" : 1593,
-				"lang" : "fr",
-				"presentation" : "carto web patrimoine d'un bailleur",
-				"structure" : "Privé (entreprise, bureau d’études)",
-				"issue" : "Succès",
-				"duree" : "1 à 3 ans",
-				"role" : "Chef·fe de projet / coordinateur·rice",
-				"nb_acteurs_differents" : "1 seul",
-				"comprehension_sig_acteurs" : 3,
-				"repartition_roles" : "Une personne clé portait le projet",
-				"copil" : "Non",
-				"alea_reprise" : "Non concerné (même équipe, projet actif)",
-				"techno_nb" : "1",
-				"techno" : "libre",
-				"techno_note" : 10,
-				"docs_presence" : "Non, ou documentation informelle",
-				"docs_nb_formats" : "2",
-				"docs_formats" : "comments, qgz",
-				"docs_note" : 1,
-				"methode_nb" : "0",
-				"methode_proj" : "rien",
-				"methode_note" : 1,
-				"outil_proj_nb" : "0",
-				"outil_proj" : "rien",
-				"outil_proj_note" : 1,
-				"influence_nb" : "2",
-				"influence" : "Orga, budget",
-				"influence_budget_com" : "le coût minime a permis de débuter le projet",
-				"influence_orga_com" : "beaucoup de temps accordé"
+				"influence_humaine_com" : "Compétences de l'agent initialement sur le poste insuffisante",
+				"quali" : 1
 			}
 		},
 		{
@@ -6636,7 +5785,8 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 4,
 				"influence_nb" : "3",
-				"influence" : "Orga, humaine, technique"
+				"influence" : "Orga, humaine, technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -6680,7 +5830,8 @@
 				"outil_proj_note" : 8,
 				"influence_nb" : "1",
 				"influence" : "humaine",
-				"influence_humaine_com" : "Peu de personnes sont resté sur tout le projet "
+				"influence_humaine_com" : "Peu de personnes sont resté sur tout le projet ",
+				"quali" : 1
 			}
 		},
 		{
@@ -6725,7 +5876,8 @@
 				"influence" : "Orga, humaine, technique",
 				"influence_humaine_com" : "Bon relationnel avec le client permettant des échanges fluides et \"détendu\" (communication simplifié)",
 				"influence_orga_com" : "Échanges important entre les membres de l'équipe projet",
-				"influence_technique_com" : "Orientation vers des solutions open sources mieux maîtrisées, plus simple à construire et a déployer du fait de la connaissance technique"
+				"influence_technique_com" : "Orientation vers des solutions open sources mieux maîtrisées, plus simple à construire et a déployer du fait de la connaissance technique",
+				"quali" : 1
 			}
 		},
 		{
@@ -6767,7 +5919,8 @@
 				"outil_proj" : "rien",
 				"outil_proj_note" : 1,
 				"influence_nb" : "2",
-				"influence" : "Orga, humaine"
+				"influence" : "Orga, humaine",
+				"quali" : 1
 			}
 		},
 		{
@@ -6816,7 +5969,46 @@
 				"influence_nb" : "2",
 				"influence" : "politique, technique",
 				"influence_technique_com" : "difficulté pour nous de servir des images sensible haute résolution, on a du passer par un prestataire externe et interrompre le service faute de financements. ",
-				"influence_politique_com" : "Difficulté du contexte israélo palestinien, très dur politiquement de faire des SIG en zone si sensible"
+				"influence_politique_com" : "Difficulté du contexte israélo palestinien, très dur politiquement de faire des SIG en zone si sensible",
+				"quali" : 1
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 2.34764, 48.85335 ]
+			},
+			"properties" : {
+				"id" : 453,
+				"lang" : "fr",
+				"presentation" : "Outil contrôle qualité",
+				"structure" : "Parapublic (syndicat mixte, EPIC…)",
+				"issue" : "Autre",
+				"issue_autre" : "En cours de production",
+				"duree" : "6 mois à 1 an",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "2",
+				"techno" : "code, proprio",
+				"techno_note" : 3,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "comments, docx",
+				"docs_note" : 6,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 5,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 7,
+				"influence_nb" : "0",
+				"influence" : "autre",
+				"quali" : 0
 			}
 		},
 		{
@@ -6852,7 +6044,973 @@
 				"outil_proj" : "excel",
 				"outil_proj_note" : 9,
 				"influence_nb" : "0",
-				"influence" : ""
+				"influence" : "autre",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 2.09043, 7.00447 ]
+			},
+			"properties" : {
+				"id" : 160,
+				"lang" : "fr",
+				"presentation" : "Correction du Plan d'Action de Réinstallation (PAR) dans le cadre d’un projet d’accès l’énergie électrique",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "1 à 6 mois",
+				"role" : "Prestataire externe / consultant·e",
+				"nb_acteurs_differents" : "Plus de 5",
+				"comprehension_sig_acteurs" : 1,
+				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
+				"copil" : "Oui",
+				"alea_reprise" : "Oui, reprise fluide",
+				"techno_nb" : "2",
+				"techno" : "libre, standards",
+				"techno_note" : 9,
+				"docs_presence" : "Oui, mais peu claire ou obsolète",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, mails",
+				"docs_note" : 8,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 8,
+				"outil_proj_nb" : "3",
+				"outil_proj" : "excel, project, autre",
+				"outil_proj_autre" : "Kobocollect/kobotoolbox",
+				"outil_proj_note" : 9,
+				"influence_nb" : "2",
+				"influence" : "humaine, budget",
+				"influence_budget_com" : "Moyen financier intéressant",
+				"influence_humaine_com" : "Personnelle non compétant",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 6.39404, 48.90565 ]
+			},
+			"properties" : {
+				"id" : 171,
+				"lang" : "fr",
+				"presentation" : "Cartographie historique sur la région Lorraine : SIGisbert",
+				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
+				"issue" : "Échec (abandon, gel, oubli)",
+				"duree" : "1 à 3 ans",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 1,
+				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
+				"alea_detail" : "Dispersion des acteurs accaparés par d'autres tâches",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 5,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "4",
+				"docs_formats" : "catalog, qgz, docx, mails",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 1,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 1,
+				"influence_nb" : "2",
+				"influence" : "Orga, humaine",
+				"influence_humaine_com" : "Personnel insuffisant ne permettant pas la suivi de projets pérennes de façon continue",
+				"influence_orga_com" : "Pilotage insuffisant de ma part",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 5.75684, 45.20268 ]
+			},
+			"properties" : {
+				"id" : 187,
+				"lang" : "fr",
+				"presentation" : "Déploiement d'une solution Qfield pour la saisie de terrain",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "6 mois à 1 an",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 2,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "2",
+				"techno" : "libre, code",
+				"techno_note" : 10,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, tuto",
+				"docs_note" : 10,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 5,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 5,
+				"influence_nb" : "2",
+				"influence" : "budget, technique",
+				"influence_budget_com" : "Solution open source = coût limité",
+				"influence_technique_com" : "Avoir les moyens techniques de mettre ne place les solutions informatiques adaptés",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 4.53735, 45.37402 ]
+			},
+			"properties" : {
+				"id" : 253,
+				"lang" : "fr",
+				"presentation" : "Délimitation cadastrale des sites inscrits Auvergne-Rhône-Alpes",
+				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
+				"issue" : "Succès",
+				"duree" : "Plus de 5 ans",
+				"role" : "Prestataire externe / consultant·e",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 4,
+				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 10,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "1",
+				"docs_formats" : "docx",
+				"docs_note" : 10,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 10,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 10,
+				"influence_nb" : "1",
+				"influence" : "technique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 2.60742, 46.15447 ]
+			},
+			"properties" : {
+				"id" : 260,
+				"lang" : "fr",
+				"presentation" : "Cartographie de zones naturelles autour de sites",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "Moins de 1 mois",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 4,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 10,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "qgz, docx",
+				"docs_note" : 8,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 1,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 1,
+				"influence_nb" : "1",
+				"influence" : "technique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 46.72458, 24.71387 ]
+			},
+			"properties" : {
+				"id" : 426,
+				"lang" : "fr",
+				"presentation" : "Projet d'aménagement urbain type MASTER PLAN",
+				"structure" : "Public d’État (ministère, service déconcentré, agence nationale)",
+				"issue" : "Succès",
+				"duree" : "Plus de 5 ans",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "Plus de 5",
+				"comprehension_sig_acteurs" : 2,
+				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "proprio",
+				"techno_note" : 6,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "4",
+				"docs_formats" : "catalog, docx, mails, tuto",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 6,
+				"outil_proj_nb" : "2",
+				"outil_proj" : "excel, autre",
+				"outil_proj_autre" : "REPORTING SIG TYPE AGOL",
+				"outil_proj_note" : 5,
+				"influence_nb" : "4",
+				"influence" : "Orga, humaine, budget, politique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 6.27548, 44.54646 ]
+			},
+			"properties" : {
+				"id" : 486,
+				"lang" : "fr",
+				"presentation" : "Atlas de cartes pour l'aide à la définition des Zones d'Accélération des Energies Renouvelables (ZAER)",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "1 à 3 ans",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"copil" : "Non",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "2",
+				"techno" : "libre, standards",
+				"techno_note" : 10,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, mails",
+				"docs_note" : 6,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 5,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 5,
+				"influence_nb" : "2",
+				"influence" : "humaine, politique",
+				"influence_humaine_com" : "La bonne cohésion de l'équipe nous a permis de bien communiquer et d'avancer sur le projet",
+				"influence_politique_com" : "Mise en place de la loi ZAN (ZAER), il a fallut agir très rapidement et sans consignes claires de l'Etat, donc la mise en place du projet a été compliquée",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 6.1853, 49.68473 ]
+			},
+			"properties" : {
+				"id" : 541,
+				"lang" : "fr",
+				"presentation" : "Plate-forme SIGcom pour les communes du Luxembourg",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "Plus de 5 ans",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "Plus de 5",
+				"comprehension_sig_acteurs" : 4,
+				"repartition_roles" : "Autre",
+				"repartition_roles_autre" : "Equipe de geomaticiens (developpeur, commerciaux, technicien)",
+				"copil" : "Non",
+				"alea_reprise" : "Oui, reprise fluide",
+				"techno_nb" : "1",
+				"techno" : "proprio",
+				"techno_note" : 9,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "7",
+				"docs_formats" : "catalog, comments, qgz, docx, mails, tuto, wiki",
+				"docs_note" : 8,
+				"methode_nb" : "1",
+				"methode_proj" : "autre",
+				"methode_autre" : "SX",
+				"methode_note" : 5,
+				"outil_proj_nb" : "2",
+				"outil_proj" : "excel, jira",
+				"outil_proj_note" : 9,
+				"influence_nb" : "3",
+				"influence" : "humaine, budget, technique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 1.08421, 49.43457 ]
+			},
+			"properties" : {
+				"id" : 599,
+				"lang" : "fr",
+				"presentation" : "Definition et cartographie de l'armature territoriale de Rouen",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "6 mois à 1 an",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 5,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, mails",
+				"docs_note" : 6,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 7,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "trello",
+				"outil_proj_note" : 8,
+				"influence_nb" : "2",
+				"influence" : "humaine, technique",
+				"influence_humaine_com" : "Equipe bienveillante, délais tenus",
+				"influence_technique_com" : "Logiciels libres et connus de tous ",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ -3.97156, 48.21003 ]
+			},
+			"properties" : {
+				"id" : 658,
+				"lang" : "fr",
+				"presentation" : "Mise en place d'un cadastre solaire",
+				"structure" : "Parapublic (syndicat mixte, EPIC…)",
+				"issue" : "Succès",
+				"duree" : "6 mois à 1 an",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 2,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "proprio",
+				"techno_note" : 10,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "4",
+				"docs_formats" : "catalog, docx, mails, tuto",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 5,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 5,
+				"influence_nb" : "2",
+				"influence" : "humaine, technique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 4.48242, 44.3651 ]
+			},
+			"properties" : {
+				"id" : 662,
+				"lang" : "fr",
+				"presentation" : "Analyse de données BD communale / Régionale / EPCI",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "6 mois à 1 an",
+				"role" : "Décideur·se / élu·e / direction",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "2",
+				"techno" : "libre, code",
+				"techno_note" : 10,
+				"docs_presence" : "Je ne sais pas",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "qgz, mails",
+				"docs_note" : 5,
+				"methode_nb" : "1",
+				"methode_proj" : "kamban",
+				"methode_note" : 10,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "jira",
+				"outil_proj_note" : 10,
+				"influence_nb" : "2",
+				"influence" : "humaine, technique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 0.23291, 47.96271 ]
+			},
+			"properties" : {
+				"id" : 684,
+				"lang" : "fr",
+				"presentation" : "web sig départemental",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Échec puis relance",
+				"duree" : "Plus de 5 ans",
+				"role" : "Autre",
+				"role_autre" : "je n'étais pas au début du projet",
+				"nb_acteurs_differents" : "4 – 5",
+				"comprehension_sig_acteurs" : 2,
+				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
+				"copil" : "Oui",
+				"alea_reprise" : "Autre",
+				"alea_reprise_autre" : "avec une nouvelle équipe",
+				"alea_detail" : "départ du projet vers une autre structure",
+				"techno_nb" : "3",
+				"techno" : "code, proprio, standards",
+				"techno_note" : 8,
+				"docs_presence" : "Oui, mais peu claire ou obsolète",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "docx, mails",
+				"docs_note" : 1,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 1,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "autre",
+				"outil_proj_autre" : "je ne sais pas",
+				"outil_proj_note" : 1,
+				"influence_nb" : "4",
+				"influence" : "Orga, humaine, budget, technique",
+				"influence_budget_com" : "pas de réinjection de financement dans le projet",
+				"influence_humaine_com" : "manque de compétence",
+				"influence_orga_com" : "mauvaise gouvernance",
+				"influence_technique_com" : "pas d'évolution logicielle",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ -95.11021, 29.48811 ]
+			},
+			"properties" : {
+				"id" : 719,
+				"lang" : "fr",
+				"presentation" : "Inspection photos par drones d'infrastructures.",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "Plus de 5 ans",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 4,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Oui",
+				"alea_reprise" : "Oui, reprise fluide",
+				"techno_nb" : "2",
+				"techno" : "code, proprio",
+				"techno_note" : 8,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "comments, docx, tuto",
+				"docs_note" : 8,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 8,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 5,
+				"influence_nb" : "3",
+				"influence" : "Orga, humaine, technique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 6.80174, 47.50635 ]
+			},
+			"properties" : {
+				"id" : 748,
+				"lang" : "fr",
+				"presentation" : "Étude sur le potentiel foncier agricole",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "1 à 6 mois",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 6,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "docx, mails",
+				"docs_note" : 6,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 6,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 6,
+				"influence_nb" : "2",
+				"influence" : "Orga, humaine",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 2.35931, 48.85822 ]
+			},
+			"properties" : {
+				"id" : 790,
+				"lang" : "fr",
+				"presentation" : "Projet lié à l'assainissement ",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "1 à 3 ans",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 4,
+				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
+				"copil" : "Oui",
+				"alea_reprise" : "Oui, reprise fluide",
+				"techno_nb" : "1",
+				"techno" : "proprio",
+				"techno_note" : 5,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "4",
+				"docs_formats" : "qgz, docx, mails, tuto",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 5,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 8,
+				"influence_nb" : "1",
+				"influence" : "Orga",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 2.62024, 50.5758 ]
+			},
+			"properties" : {
+				"id" : 1065,
+				"lang" : "en",
+				"presentation" : "Creating GIS layers to manage flood risk",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "1 à 6 mois",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "1 seul",
+				"comprehension_sig_acteurs" : 4,
+				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 9,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "0",
+				"docs_formats" : "rien",
+				"docs_note" : 2,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 2,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 7,
+				"influence_nb" : "1",
+				"influence" : "Orga",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ -89.42871, 33.25584 ]
+			},
+			"properties" : {
+				"id" : 1071,
+				"lang" : "en",
+				"presentation" : "State-scale high-resolution land cover classification",
+				"structure" : "Autre",
+				"structure_autre" : "Public (academic with support form internal university funding)",
+				"issue" : "Succès",
+				"duree" : "1 à 3 ans",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "1 seul",
+				"comprehension_sig_acteurs" : 2,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Oui, reprise fluide",
+				"techno_nb" : "3",
+				"techno" : "libre, code, proprio",
+				"techno_note" : 10,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "comments, qgz, mails",
+				"docs_note" : 6,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 3,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "notion",
+				"outil_proj_note" : 6,
+				"influence_nb" : "1",
+				"influence" : "technique",
+				"influence_technique_com" : "Use of open-source software facilitated easy collaboration with technical stakeholders from various backgrounds (i.e., agriculture, environmental, computer science)",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ -3.52249, 14.07432 ]
+			},
+			"properties" : {
+				"id" : 1115,
+				"lang" : "fr",
+				"presentation" : "cartographie des villages menant des activités maraichères ",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Échec (abandon, gel, oubli)",
+				"duree" : "6 mois à 1 an",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "Plus de 5",
+				"comprehension_sig_acteurs" : 1,
+				"repartition_roles" : "Rôle tournant",
+				"copil" : "Oui",
+				"alea_reprise" : "Non, projet abandonné ou figé après aléas",
+				"alea_detail" : "le projet a été abandonné à cause de l'insécurité dans la zone ",
+				"techno_nb" : "4",
+				"techno" : "libre, code, proprio, standards",
+				"techno_note" : 7,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "1",
+				"docs_formats" : "docx",
+				"docs_note" : 8,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 3,
+				"outil_proj_nb" : "2",
+				"outil_proj" : "excel, project",
+				"outil_proj_note" : 4,
+				"influence_nb" : "3",
+				"influence" : "Orga, humaine, politique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ -75.56883, 6.21232 ]
+			},
+			"properties" : {
+				"id" : 1182,
+				"lang" : "en",
+				"presentation" : "Geo database, metadata and set of maps for environmental impact assessment study",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "1 à 6 mois",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Autre",
+				"alea_reprise_autre" : "No disruption ",
+				"techno_nb" : "1",
+				"techno" : "proprio",
+				"techno_note" : 8,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, mails",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 5,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 10,
+				"influence_nb" : "1",
+				"influence" : "humaine",
+				"influence_humaine_com" : "Unclear communication creates setbacks and need for data corrections",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ -75.56883, 6.21232 ]
+			},
+			"properties" : {
+				"id" : 1185,
+				"lang" : "fr",
+				"presentation" : "Geo database, metadata and set of maps for environmental impact assessment study",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "1 à 6 mois",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Autre",
+				"alea_reprise_autre" : "No disruption ",
+				"techno_nb" : "1",
+				"techno" : "proprio",
+				"techno_note" : 8,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, mails",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 5,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 10,
+				"influence_nb" : "1",
+				"influence" : "humaine",
+				"influence_humaine_com" : "Unclear communication creates setbacks and need for data corrections",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ -74.0118, 40.70446 ]
+			},
+			"properties" : {
+				"id" : 1215,
+				"lang" : "en",
+				"presentation" : "Ongoing micromobility spatial data analysis for Citi Bike and e-scooters",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "3 à 5 ans",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "1 seul",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 8,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, mails",
+				"docs_note" : 5,
+				"methode_nb" : "1",
+				"methode_proj" : "autre",
+				"methode_autre" : "Self management",
+				"methode_note" : 8,
+				"outil_proj_nb" : "2",
+				"outil_proj" : "excel, autre",
+				"outil_proj_autre" : "Microsoft Planner",
+				"outil_proj_note" : 9,
+				"influence_nb" : "1",
+				"influence" : "technique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 7.55859, 46.6092 ]
+			},
+			"properties" : {
+				"id" : 1303,
+				"lang" : "fr",
+				"presentation" : "Identification des zones constructibles  a préserver",
+				"structure" : "Public territorial (collectivité, EPCI, département, région)",
+				"issue" : "Succès",
+				"duree" : "6 mois à 1 an",
+				"role" : "Géomaticien·ne / technicien·ne SIG interne",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 4,
+				"repartition_roles" : "Plusieurs personnes impliquées au début, puis une seule personne maintenait le projet",
+				"copil" : "Oui",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "2",
+				"techno" : "code, proprio",
+				"techno_note" : 5,
+				"docs_presence" : "Oui, mais peu claire ou obsolète",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "qgz, docx, mails",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 5,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 5,
+				"influence_nb" : "5",
+				"influence" : "Orga, humaine, budget, politique, technique",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 5.79075, 45.17994 ]
+			},
+			"properties" : {
+				"id" : 1367,
+				"lang" : "fr",
+				"presentation" : "Cartographie des bâtiments d'une commune en ajoutant l'année de livraison, la source de cette information, la typologie, la hauteur.",
+				"structure" : "Autre",
+				"structure_autre" : "une association",
+				"issue" : "Autre",
+				"issue_autre" : "En cours",
+				"duree" : "1 à 6 mois",
+				"role" : "Autre",
+				"role_autre" : "stagiaire en urbanisme pour une association",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 2,
+				"repartition_roles" : "Autre",
+				"repartition_roles_autre" : "Je suis stagiaire et seul à porter le projet",
+				"copil" : "Je ne sais pas",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 5,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "0",
+				"docs_formats" : "rien",
+				"docs_note" : 5,
+				"methode_nb" : "0",
+				"methode_proj" : "nsp",
+				"methode_note" : 5,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 5,
+				"influence_nb" : "1",
+				"influence" : "autre",
+				"influence_autre_com" : "projet encore en cours",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 85.8609, 20.25002 ]
+			},
+			"properties" : {
+				"id" : 1508,
+				"lang" : "en",
+				"presentation" : "Dashboard for climate risk information dissemination to municipal stakeholders",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "6 mois à 1 an",
+				"role" : "Membre d’une équipe métier (urbanisme, environnement, voirie, etc.)",
+				"nb_acteurs_differents" : "2 – 3",
+				"comprehension_sig_acteurs" : 1,
+				"repartition_roles" : "Plusieurs personnes impliquées durablement",
+				"copil" : "Je ne sais pas",
+				"alea_reprise" : "Oui, reprise fluide",
+				"techno_nb" : "2",
+				"techno" : "code, proprio",
+				"techno_note" : 5,
+				"docs_presence" : "Oui, structurée et à jour",
+				"docs_nb_formats" : "3",
+				"docs_formats" : "docx, mails, tuto",
+				"docs_note" : 10,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 3,
+				"outil_proj_nb" : "1",
+				"outil_proj" : "excel",
+				"outil_proj_note" : 3,
+				"influence_nb" : "1",
+				"influence" : "Orga",
+				"influence_orga_com" : "Structured project management would've helped",
+				"quali" : 0
+			}
+		},
+		{
+			"type" : "Feature",
+			"geometry" : {
+				"type" : "Point",
+				"coordinates" : [ 3.08956, 50.36921 ]
+			},
+			"properties" : {
+				"id" : 1593,
+				"lang" : "fr",
+				"presentation" : "carto web patrimoine d'un bailleur",
+				"structure" : "Privé (entreprise, bureau d’études)",
+				"issue" : "Succès",
+				"duree" : "1 à 3 ans",
+				"role" : "Chef·fe de projet / coordinateur·rice",
+				"nb_acteurs_differents" : "1 seul",
+				"comprehension_sig_acteurs" : 3,
+				"repartition_roles" : "Une personne clé portait le projet",
+				"copil" : "Non",
+				"alea_reprise" : "Non concerné (même équipe, projet actif)",
+				"techno_nb" : "1",
+				"techno" : "libre",
+				"techno_note" : 10,
+				"docs_presence" : "Non, ou documentation informelle",
+				"docs_nb_formats" : "2",
+				"docs_formats" : "comments, qgz",
+				"docs_note" : 1,
+				"methode_nb" : "0",
+				"methode_proj" : "rien",
+				"methode_note" : 1,
+				"outil_proj_nb" : "0",
+				"outil_proj" : "rien",
+				"outil_proj_note" : 1,
+				"influence_nb" : "2",
+				"influence" : "Orga, budget",
+				"influence_budget_com" : "le coût minime a permis de débuter le projet",
+				"influence_orga_com" : "beaucoup de temps accordé",
+				"quali" : 0
 			}
 		}
 	]
