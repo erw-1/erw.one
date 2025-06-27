@@ -1,3 +1,34 @@
+ export const STYLE = {
+   CHART: {
+     PIE: { W: 260, H: 220 },
+     BAR: { W: 260, STEP: 20 },
+     HIST: { W: 260, H: 150 }
+   },
+   MAP: {
+     BASE_RADIUS: 5,
+     MARKER_RADIUS: 6
+   },
+   LEGEND: {
+     MAX_HEIGHT: 200
+   },
+   SLIDER: {
+     STEP: 1
+   },
+   WORDCLOUD: {
+     W: 300,
+     H: 200,
+     MIN_FONT: 10,
+     MAX_FONT: 40
+   }
+ };
+
+ /** PETITE LISTE DE STOPWORDS FRANÇAIS/ANGLAIS */
+ export const STOPWORDS = new Set([
+   'et','le','la','les','de','des','du','un','une','pour','avec','aux',
+   'dans','ce','ces','il','elle','sur','pas','plus','the','of','to',
+   'and','in','a','for','is','on','it','that'
+ ]);
+
 export const CONFIG = {
    fields: {
      // Champs existants
