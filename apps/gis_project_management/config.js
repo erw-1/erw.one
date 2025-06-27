@@ -35,7 +35,11 @@
    '=','j','we','ai','sig','pu','clé','while','été','ayant','ni','mise','si','mis',
    'nous','autre','juste','très','veuille','afin','-','establishing','type','good',
    '/','sa','je','can','très','aussi','faire','ils','cela','tout','donc','ont','gis',
-   'sans','même','où','c','C','-','are','leur','ça','si','do'
+   'sans','même','où','c','C','-','are','leur','ça','si','do', 's°','an','sinon','après',
+   'with','from','use','so','via','was','place','fallut','t','you','part','dès','sujet',
+   'if','too','how','get','all','not','dont','don','one','it\'s','at','ever','moret',
+   'have','got','after','up','our','bau','key','due','incl','e','day','but','not',
+   'this','did'
  ]);
 
 export const CONFIG = {
