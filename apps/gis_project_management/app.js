@@ -1,31 +1,4 @@
  /**
-  * CONSTANTES DE STYLE ET DIMENSIONS
-  */
- const STYLE = {
-   CHART: {
-     PIE: { W: 260, H: 220 },
-     BAR: { W: 260, STEP: 20 },
-     HIST: { W: 260, H: 150 }
-   },
-   MAP: {
-     BASE_RADIUS: 5,
-     MARKER_RADIUS: 6
-   },
-   LEGEND: {
-     MAX_HEIGHT: 200
-   },
-   SLIDER: {
-     STEP: 1
-   },
-   WORDCLOUD: {
-     W: 300,
-     H: 200,
-     MIN_FONT: 10,
-     MAX_FONT: 40
-   }
- };
-
- /**
   * FONCTION GÉNÉRIQUE DE CRÉATION D'ÉLÉMENTS DOM
   */
  function create(tag, { text, className, attrs = {}, children = [] } = {}) {
@@ -43,7 +16,9 @@
  /**
   * CONFIGURATION COMPLÈTE
   */
+ import { STYLE } from './config.js';
  import { CONFIG } from './config.js';
+ import { STOPWORDS } from './config.js';
 
  /** TABLEAUX CALCULÉS */
  const ALL_FIELDS = Object.keys(CONFIG.fields);
@@ -60,13 +35,6 @@
 
  /** RÉFÉRENCES POUR SLIDERS */
  const sliderRefs = {};
-
- /** PETITE LISTE DE STOPWORDS FRANÇAIS/ANGLAIS */
- const STOPWORDS = new Set([
-   'et','le','la','les','de','des','du','un','une','pour','avec','aux',
-   'dans','ce','ces','il','elle','sur','pas','plus','the','of','to',
-   'and','in','a','for','is','on','it','that'
- ]);
 
  /** CLASSE FILTERSTORE */
  class FilterStore {
@@ -714,12 +682,18 @@
    });
  }
 
- /** RENDRE LES WORDCLOUDS POUR “specificite_sig” et “conseil” */
+ /** WORDCLOUDS A REFAIRE ET UTILISER LA CONFIG */ 
  function renderWordClouds(store) {
    // Extraction des textes filtrés
    const texts = {
      specificite_sig: [],
-     conseil: []
+     conseil: [],
+     influence_orga_com: [],
+     influence_budget_com: [],
+     influence_technique_com: [],
+     influence_humaine_com: [],
+     influence_politique_com: [],
+     influence_autre_com: []
    };
 
    store.filtered.forEach(f => {
@@ -727,6 +701,18 @@
      if (t1) texts.specificite_sig.push(t1);
      const t2 = (f.properties.conseil || '').trim();
      if (t2) texts.conseil.push(t2);
+     const t3 = (f.properties.influence_orga_com || '').trim();
+     if (t3) texts.influence_orga_com.push(t3);
+     const t4 = (f.properties.influence_budget_com || '').trim();
+     if (t4) texts.influence_budget_com.push(t4);
+     const t5 = (f.properties.influence_technique_com || '').trim();
+     if (t5) texts.influence_technique_com.push(t5);
+     const t6 = (f.properties.influence_humaine_com || '').trim();
+     if (t6) texts.influence_humaine_com.push(t6);
+     const t7 = (f.properties.influence_politique_com || '').trim();
+     if (t7) texts.influence_politique_com.push(t7);
+     const t8 = (f.properties.influence_autre_com || '').trim();
+     if (t8) texts.influence_autre_com.push(t8);
    });
 
    Object.keys(texts).forEach(field => {
