@@ -196,8 +196,8 @@
       background: none;
   }
   
-  .apply-map-theme {
-      filter: grayscale(1);
+  .apply-map-theme:hover {
+      filter: brightness(1.2);
   }
 
 /* manual patch 3 */
