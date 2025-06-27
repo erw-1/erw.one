@@ -226,3 +226,7 @@ input {
     width: auto;
     max-width: 500px;
 }
+
+#charts .reset-group {
+    display: none;
+}
