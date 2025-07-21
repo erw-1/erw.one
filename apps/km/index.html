@@ -1,17 +1,16 @@
 <!DOCTYPE html>
 <html lang="fr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>km – Static Wiki</title>
-    <!-- 📚 3rd-party libs (CDN) -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/lib/common.min.js"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/highlight.js@11.8.0/styles/github-dark.min.css"
-    />
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>km – Static Wiki</title>
+
+  <!-- ── libs ────────────────────────────────────────────────────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
+  <link  rel="stylesheet"
+         href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
 
     <style>
       /* ─── Generic reset & dark theme similar to Obsidian ────────────────── */
@@ -237,135 +236,118 @@
         background: #666;
       }
     </style>
-  </head>
-  <body>
-    <!-- ───────────────────────────────────────────────── SIDEBAR ────── -->
-    <aside id="sidebar"></aside>
+</head>
 
-    <!-- ─────────────────────────────────────────────────── MAIN ─────── -->
-    <main>
-      <header id="breadcrumb"></header>
+<body>
+  <!-- ────────────────────────── SIDEBAR ─────────────── -->
+  <aside id="sidebar"></aside>
 
-      <section id="utility-bar">
-        <div id="graph-container">
-          <svg id="mini-graph"></svg>
-          <button id="expand-graph" title="Agrandir le graphe" style="position:absolute;top:8px;right:8px">🔍</button>
-        </div>
-        <nav id="toc"></nav>
-      </section>
+  <!-- ─────────────────────────── MAIN ───────────────── -->
+  <main>
+    <header id="breadcrumb"></header>
 
-      <article id="content-wrapper"></article>
-    </main>
+    <section id="utility-bar">
+      <div id="graph-container">
+        <svg id="mini-graph"></svg>
+        <button id="expand-graph" title="Agrandir le graphe"
+                style="position:absolute;top:8px;right:8px">🔍</button>
+      </div>
+      <nav id="toc"></nav>
+    </section>
 
-    <!-- ────────────────────────────────────────────────── MODAL ─────── -->
-    <div id="graph-modal">
-      <span class="close">✕</span>
-      <svg id="full-graph"></svg>
-    </div>
+    <article id="content-wrapper"></article>
+  </main>
 
-    <!-- ─────────────────────────────────────────────────── JS ───────── -->
-    <script>
-      /*
-       * km – open-source, static, recursive Markdown wiki
-       * Features:
-       *  • GitHub repo scanning via REST API
-       *  • Hash-based routing (#folder#sub#file)
-       *  • Breadcrumb w/ dropdown siblings
-       *  • Interactive D3.js graph (mini + modal)
-       *  • GitHub-flavoured Markdown via marked + highlight.js
-       *  • Previous/next navigation
-       */
+  <!-- ─────────────────────────── MODAL ──────────────── -->
+  <div id="graph-modal">
+    <span class="close">✕</span>
+    <svg id="full-graph"></svg>
+  </div>
 
-      const CONFIG = {
-        user: "erw-1",
-        repo: "erw.one",
-        branch: "main",
-        rootPath: "apps/km/content", // path in repo containing markdown folders
-      };
+  <!-- ─────────────────────────── JS ─────────────────── -->
+  <script>
+  const CONFIG = {
+    user   : "erw-1",
+    repo   : "erw.one",
+    branch : "main",
+    rootPath: "apps/km/content"
+  };
 
-      /* ─── Global state ─────────────────────────────────────────────── */
-      let fileTree = null; // lazy-loaded
-      let flatIndex = {};
-      let currentNode = null;
+  let fileTree = null;
+  let currentNode = null;
 
-      /* ─── Helpers ──────────────────────────────────────────────────── */
-      const ghApiBase = `https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/${CONFIG.rootPath}`;
+  /* ── GitHub helpers ────────────────────────────────── */
+  const ghApiBase =
+    `https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/${CONFIG.rootPath}`;
 
-      async function fetchDir(path = "") {
-        const url = `${ghApiBase}/${path}?ref=${CONFIG.branch}`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error("GitHub API error " + res.status);
-        return res.json();
-      }
+  async function fetchDir(path = "") {
+    const clean = path.replace(/^\/+/, "");               // ✱ enlève / au début
+    const url   = `${ghApiBase}/${clean}?ref=${CONFIG.branch}`;
+    const res   = await fetch(url);
+    if (!res.ok) throw new Error("GitHub API error " + res.status);
+    return res.json();
+  }
 
-      async function buildFileTree(path = "", parent = null) {
-        const items = await fetchDir(path);
-        const node = {
-          name: path.split("/").pop() || "home", // root becomes 'home'
-          path,
-          type: "folder",
-          children: [],
-          parent,
+  async function buildFileTree(path = "", parent = null) {
+    const items = await fetchDir(path);
+    const node  = {
+      name  : path.split("/").pop() || "home",
+      path, type : "folder",
+      children: [], parent
+    };
+
+    for (const item of items) {
+      if (item.type === "dir") {
+        const childPath = path ? `${path}/${item.name}` : item.name;  // ✱
+        const child = await buildFileTree(childPath, node);
+        node.children.push(child);
+      } else if (item.name.endsWith(".md")) {
+        const mdNode = {
+          name : item.name.replace(/\.md$/i, ""),
+          path : path ? `${path}/${item.name}` : item.name,
+          type : "file",
+          raw  : item.download_url,
+          parent: node,
+          id: null, title: null
         };
-        for (const item of items) {
-          if (item.type === "dir") {
-            const child = await buildFileTree(`${path}/${item.name}`, node);
-            node.children.push(child);
-          } else if (item.type === "file" && item.name.endsWith(".md")) {
-            const rawUrl = item.download_url;
-            const mdNode = {
-              name: item.name.replace(/\.md$/i, ""),
-              path: `${path}/${item.name}`,
-              type: "file",
-              raw: rawUrl,
-              parent: node,
-              id: null,
-              title: null,
-            };
-            await parseFrontmatter(mdNode);
-            node.children.push(mdNode);
-            flatIndex[mdNode.id || mdNode.name] = mdNode;
-          }
-        }
-        node.children.sort((a, b) => a.name.localeCompare(b.name));
-        return node;
+        await parseFrontmatter(mdNode);
+        node.children.push(mdNode);
       }
+    }
+    node.children.sort((a,b)=>a.name.localeCompare(b.name));
+    return node;
+  }
 
-      async function parseFrontmatter(node) {
-        // only for files
-        try {
-          const text = await fetch(node.raw).then((r) => r.text());
-          const firstLine = text.split("\n")[0];
-          const m = firstLine.match(/<--\s*id:\s*"([^"]+)"\s*title:\s*"([^"]+)"\s*-->/);
-          if (m) {
-            node.id = m[1];
-            node.title = m[2];
-          }
-        } catch (e) {
-          console.error("frontmatter parse error", node.path, e);
-        }
-      }
+  async function parseFrontmatter(node){
+    try {
+      const txt = await fetch(node.raw).then(r=>r.text());
+      const first = txt.split("\n")[0];
+      const m = first.match(/<!--\s*id:\s*"([^"]+)"\s*title:\s*"([^"]+)"\s*-->/);
+      if (m){ node.id = m[1]; node.title = m[2]; }
+    } catch(e){ console.error("frontmatter", node.path, e); }
+  }
 
-      /* ─── Routing helpers ──────────────────────────────────────────── */
-      function hashToPath() {
-        const parts = decodeURIComponent(location.hash.slice(1)).split("#").filter(Boolean);
-        if (parts.length === 0) return { pathArray: [], md: "home" };
-        if (parts[parts.length - 1] === "") parts.pop();
-        return { pathArray: parts };
-      }
+  /* ── Routing ───────────────────────────────────────── */
+  function hashParts(){
+    return decodeURIComponent(location.hash.slice(1))
+           .split("#").filter(Boolean);
+  }
 
-      function findNodeByHash(parts) {
-        if (!fileTree) return null;
-        if (parts.length === 0) return fileTree; // root/home
-        let node = fileTree;
-        for (let i = 0; i < parts.length; i++) {
-          const part = parts[i];
-          const child = node.children.find((c) => (c.id || c.name) === part);
-          if (!child) return null;
-          node = child;
-        }
-        return node;
-      }
+  function findNode(parts){
+    let n = fileTree;
+    for(const p of parts){
+      n = n.children.find(c => (c.id||c.name) === p);
+      if(!n) return null;
+    }
+    return n;
+  }
+
+  function hashFor(node){
+    const parts=[];
+    for(let n=node; n && n.parent; n=n.parent)
+      parts.unshift(n.id||n.name);
+    return parts.join("#");
+  }
 
       /* ─── UI Rendering ─────────────────────────────────────────────── */
       function renderSidebar(node, container) {
@@ -448,23 +430,7 @@
           header.appendChild(wrapper);
         });
       }
-
-      async function renderContent(node) {
-        const contentWrapper = document.getElementById("content-wrapper");
-        if (!node || node.type !== "file") {
-          contentWrapper.innerHTML = "<p>Fichier introuvable.</p>";
-          return;
-        }
-        const raw = await fetch(node.raw).then((r) => r.text());
-        const md = raw.replace(/<--.*-->/, ""); // strip front-matter comment
-        const html = marked.parse(md, { headerIds: true });
-        contentWrapper.innerHTML = html;
-        // highlight code blocks
-        contentWrapper.querySelectorAll("pre code").forEach((el) => hljs.highlightElement(el));
-        renderTOC();
-        renderPrevNext(node);
-      }
-
+      
       function renderTOC() {
         const tocNav = document.getElementById("toc");
         tocNav.innerHTML = "";
@@ -507,121 +473,94 @@
         document.getElementById("content-wrapper").appendChild(nav);
       }
 
-      function hashForNode(node) {
-        const chain = [];
-        let n = node;
-        while (n && n.parent) {
-          chain.unshift(n.id || n.name);
-          n = n.parent;
-        }
-        return chain.join("#");
-      }
+  async function renderContent(node){
+    const wrap = document.getElementById("content-wrapper");
+    if(!node||node.type!=="file"){ wrap.textContent="Fichier introuvable."; return; }
+    const raw = await fetch(node.raw).then(r=>r.text());
+    const clean = raw.replace(/<!--[\s\S]*?-->\s*/, "");      // ✱ retire front‑matter
+    wrap.innerHTML = marked.parse(clean,{headerIds:true});
+    hljs.highlightAll();                                      // ✱ plus simple
+    renderTOC(); renderPrevNext(node);
+  }
 
-      /* ─── D3 Graph ──────────────────────────────────────────────────── */
-      function buildGraphData(root) {
-        const nodes = [];
-        const links = [];
-        let idx = 0;
-        function dfs(n) {
-          n._index = idx++;
-          nodes.push({ id: n._index, label: n.title || n.name, ref: n });
-          if (n.children) {
-            n.children.forEach((c) => {
-              links.push({ source: n._index, target: idx });
-              dfs(c);
-            });
-          }
-        }
-        dfs(root);
-        return { nodes, links };
-      }
+  /* ── Graph (mini + full) ───────────────────────────── */
+  function buildGraphData(root){
+    const nodes=[], links=[];
+    let idx=0;
+    (function dfs(n){
+      n._id=idx++;
+      nodes.push({id:n._id,label:n.title||n.name,ref:n});
+      n.children?.forEach(c=>{
+        dfs(c);                                               // d’abord l’enfant
+        links.push({source:n._id,target:c._id});              // puis le lien ✱
+      });
+    })(root);
+    return {nodes,links};
+  }
 
-      function renderGraph() {
-        const { nodes, links } = buildGraphData(fileTree);
-        const svgMini = d3.select("#mini-graph");
-        const svgFull = d3.select("#full-graph");
-        [svgMini, svgFull].forEach((svg) => {
-          svg.selectAll("*").remove();
-          const width = parseInt(svg.style("width"));
-          const height = parseInt(svg.style("height"));
-          const simulation = d3.forceSimulation(nodes)
-            .force("link", d3.forceLink(links).id((d) => d.id).distance(80))
-            .force("charge", d3.forceManyBody().strength(-300))
-            .force("center", d3.forceCenter(width / 2, height / 2));
+  function renderGraph(){
+    const {nodes,links}=buildGraphData(fileTree);
+    ["mini-graph","full-graph"].forEach(svgId=>{
+      const svg=d3.select("#"+svgId);
+      svg.selectAll("*").remove();
+      const w=parseInt(svg.style("width")),
+            h=parseInt(svg.style("height"));
+      const sim=d3.forceSimulation(nodes)
+        .force("link",d3.forceLink(links).id(d=>d.id).distance(80))
+        .force("charge",d3.forceManyBody().strength(-300))
+        .force("center",d3.forceCenter(w/2,h/2));
 
-          const link = svg.append("g")
-            .attr("stroke", "#555")
-            .attr("stroke-width", 1)
-            .selectAll("line")
-            .data(links)
-            .join("line");
+      const link = svg.append("g")
+        .attr("stroke","#555").attr("stroke-width",1)
+        .selectAll("line").data(links).join("line");
 
-          const node = svg.append("g")
-            .attr("stroke", "#fff")
-            .attr("stroke-width", 0.5)
-            .selectAll("circle")
-            .data(nodes)
-            .join("circle")
-            .attr("r", 6)
-            .attr("fill", (d) => d.ref.type === "folder" ? "#8a8a8a" : "#569cd6")
-            .on("click", (event, d) => navigateTo(d.ref));
+      const node = svg.append("g")
+        .attr("stroke","#fff").attr("stroke-width",.5)
+        .selectAll("circle").data(nodes).join("circle")
+        .attr("r",6)
+        .attr("fill",d=>d.ref.type==="folder"?"#8a8a8a":"#569cd6")
+        .on("click",(e,d)=>navigateTo(d.ref));
 
-          const label = svg.append("g")
-            .selectAll("text")
-            .data(nodes)
-            .join("text")
-            .attr("font-size", 10)
-            .attr("fill", "#aaa")
-            .text((d) => d.label);
+      const label=svg.append("g")
+        .selectAll("text").data(nodes).join("text")
+        .attr("font-size",10).attr("fill","#aaa")
+        .text(d=>d.label);
 
-          simulation.on("tick", () => {
-            link
-              .attr("x1", (d) => d.source.x)
-              .attr("y1", (d) => d.source.y)
-              .attr("x2", (d) => d.target.x)
-              .attr("y2", (d) => d.target.y);
-            node.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
-            label
-              .attr("x", (d) => d.x + 8)
-              .attr("y", (d) => d.y + 3);
-          });
-        });
-      }
+      sim.on("tick",()=>{
+        link .attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
+             .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
+        node .attr("cx",d=>d.x).attr("cy",d=>d.y);
+        label.attr("x",d=>d.x+8).attr("y",d=>d.y+3);
+      });
+    });
+  }
 
-      /* ─── Navigation — main entry point ─────────────────────────────── */
-      function navigateTo(node) {
-        location.hash = hashForNode(node);
-      }
+  /* ── Navigation / router ───────────────────────────── */
+  function navigateTo(n){ location.hash = hashFor(n); }
 
-      async function router() {
-        if (!fileTree) {
-          fileTree = await buildFileTree();
-          renderSidebar(fileTree, document.getElementById("sidebar"));
-          renderGraph();
-        }
-        const { pathArray } = hashToPath();
-        const node = findNodeByHash(pathArray);
-        currentNode = node;
-        renderBreadcrumb(node || fileTree);
-        if (node && node.type === "file") await renderContent(node);
-        else if (node && node.type === "folder") {
-          // default to home.md inside folder
-          const homeChild = node.children.find((c) => c.name === "home" && c.type === "file");
-          if (homeChild) navigateTo(homeChild);
-        }
-      }
+  async function router(){
+    if(!fileTree){
+      fileTree = await buildFileTree();
+      renderSidebar(fileTree, document.getElementById("sidebar"));
+      renderGraph();
+    }
+    const node = findNode(hashParts()) || fileTree;
+    renderBreadcrumb(node);
+    if(node.type==="file") await renderContent(node);
+    else{
+      const home = node.children.find(c=>c.name==="home" && c.type==="file");
+      if(home) navigateTo(home);
+    }
+  }
 
-      /* ─── Graph modal control ──────────────────────────────────────── */
-      document.getElementById("expand-graph").onclick = () => {
-        document.getElementById("graph-modal").classList.add("open");
-      };
-      document.querySelector("#graph-modal .close").onclick = () => {
-        document.getElementById("graph-modal").classList.remove("open");
-      };
+  /* ── init & misc. ──────────────────────────────────── */
+  document.getElementById("expand-graph")
+          .onclick = ()=>document.getElementById("graph-modal").classList.add("open");
+  document.querySelector("#graph-modal .close")
+          .onclick = ()=>document.getElementById("graph-modal").classList.remove("open");
 
-      /* ─── Init ─────────────────────────────────────────────────────── */
-      window.addEventListener("hashchange", router);
-      router();
-    </script>
-  </body>
+  window.addEventListener("hashchange", router);
+  router();
+  </script>
+</body>
 </html>
