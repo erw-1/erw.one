@@ -144,10 +144,16 @@
   let fileTree=null,currentNode=null;
 
   /* GitHub ---------------------------------------------------------------- */
-  const gh=`https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/${CONFIG.rootPath}`;
-  const fetchDir=async(p="")=>{
-    const url=`${gh}/${p.replace(/^\\/+|\\/+$/g,"")}?ref=${CONFIG.branch}`;
-    const r=await fetch(url); if(!r.ok) throw new Error(r.status); return r.json();
+  const gh = `https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/${CONFIG.rootPath}`;
+  
+  const fetchDir = async (p = "") => {
+    // supprime les / de début et fin
+    const clean = p.replace(/^\/+|\/+$/g, "");
+    const url   = `${gh}/${clean}?ref=${CONFIG.branch}`;
+  
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("GitHub API error " + res.status);
+    return res.json();
   };
 
   async function buildTree(path="",parent=null){
