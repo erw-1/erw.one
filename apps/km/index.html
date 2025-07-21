@@ -5,520 +5,314 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>km – Static Wiki</title>
 
-  <!-- ── libs ────────────────────────────────────────────────────────── -->
+  <!-- libs -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
   <link  rel="stylesheet"
          href="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/styles/github-dark.min.css">
   <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/highlight.min.js"></script>
 
-    <style>
-      /* ─── Generic reset & dark theme similar to Obsidian ────────────────── */
-      :root {
-        --bg: #1e1e1e;
-        --bg-alt: #2a2a2a;
-        --fg: #d4d4d4;
-        --accent: #569cd6;
-        --shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
-      }
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        font-family: system-ui, "Segoe UI", Roboto, sans-serif;
-        background: var(--bg);
-        color: var(--fg);
-        display: flex;
-        min-height: 100vh;
-        overflow: hidden;
-      }
+  <style>
+    :root{
+      --bg:#1e1e1e;--bg-alt:#2a2a2a;--fg:#d4d4d4;--accent:#569cd6;
+      --shadow:0 2px 6px rgba(0,0,0,.4);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;font-family:system-ui,"Segoe UI",Roboto,sans-serif;
+      background:var(--bg);color:var(--fg);display:flex;min-height:100vh;overflow:hidden;
+    }
 
-      /* ─── Sidebar (tree) ─────────────────────────────────────────────────── */
-      #sidebar {
-        width: 260px;
-        background: var(--bg-alt);
-        padding: 0.5rem;
-        overflow-y: auto;
-        border-right: 1px solid #444;
-      }
-      #sidebar ul {
-        list-style: none;
-        padding-left: 0.6em;
-      }
-      #sidebar li {
-        margin: 0.15em 0;
-        cursor: pointer;
-      }
-      #sidebar li:hover {
-        color: var(--accent);
-      }
-      .folder > span::before {
-        content: "▸";
-        display: inline-block;
-        margin-right: 4px;
-        transition: transform 0.2s;
-      }
-      .folder.open > span::before {
-        transform: rotate(90deg);
-      }
+    /* ── SIDEBAR ─────────────────────────────── */
+    #sidebar{
+      width:260px;background:var(--bg-alt);padding:.5rem;
+      overflow-y:auto;border-right:1px solid #444;
+    }
+    #sidebar ul{list-style:none;padding-left:.6em;margin:0}
+    #sidebar li{margin:.15em 0;cursor:pointer}
+    #sidebar li:hover{color:var(--accent)}
+    .folder>span::before{content:"▸";display:inline-block;margin-right:4px;transition:.2s}
+    .folder.open>span::before{transform:rotate(90deg)}
+    .folder>ul{display:none}
+    .folder.open>ul{display:block}
 
-      /* ─── Main layout ───────────────────────────────────────────────────── */
-      main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-      }
+    /* ── MAIN LAYOUT ─────────────────────────── */
+    main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+    #content-area{flex:1;display:flex;overflow:hidden}
 
-      /* ─── Header / breadcrumb ───────────────────────────────────────────── */
-      header {
-        background: var(--bg-alt);
-        padding: 0 1rem;
-        display: flex;
-        align-items: center;
-        height: 48px;
-        gap: 0.5rem;
-        box-shadow: var(--shadow);
-        user-select: none;
-      }
-      header a, header span {
-        color: var(--fg);
-        text-decoration: none;
-        display: flex;
-        align-items: center;
-        padding: 4px 8px;
-        border-radius: 6px;
-      }
-      header a:hover {
-        background: #3a3a3a;
-      }
-      header .crumb-current {
-        background: #3a3a3a;
-        cursor: default;
-      }
-      header .separator {
-        margin: 0 0.25rem;
-      }
+    /* ── HEADER / BREADCRUMB ─────────────────── */
+    header{
+      background:var(--bg-alt);padding:0 1rem;height:48px;display:flex;align-items:center;
+      gap:.5rem;box-shadow:var(--shadow);user-select:none
+    }
+    header a,header span{
+      color:var(--fg);text-decoration:none;display:flex;align-items:center;
+      padding:4px 8px;border-radius:6px
+    }
+    header a:hover{background:#3a3a3a}
+    .crumb-current{background:#3a3a3a;cursor:default}
+    .separator{margin:0 .25rem}
 
-      /* Dropdown */
-      .dropdown {
-        position: relative;
-      }
-      .dropdown ul {
-        display: none;
-        position: absolute;
-        top: calc(100% + 6px);
-        left: 0;
-        background: #3a3a3a;
-        border-radius: 4px;
-        padding: 0.25rem 0;
-        list-style: none;
-        min-width: 160px;
-        z-index: 10;
-      }
-      .dropdown ul li {
-        padding: 6px 12px;
-        white-space: nowrap;
-      }
-      .dropdown ul li:hover {
-        background: var(--accent);
-      }
-      .dropdown:hover ul {
-        display: block;
-      }
+    /* Dropdown breadcrumb */
+    .dropdown{position:relative}
+    .dropdown ul{
+      display:none;position:absolute;top:100%;left:0;min-width:160px;
+      background:#3a3a3a;border-radius:4px;padding:.25rem 0;list-style:none;z-index:20
+    }
+    .dropdown ul li{padding:6px 12px;white-space:nowrap}
+    .dropdown ul li:hover{background:var(--accent)}
+    .dropdown:hover>ul,.dropdown:focus-within>ul{display:block}
 
-      /* ─── Utility panes (graph + ToC) ───────────────────────────────────── */
-      #utility-bar {
-        display: flex;
-        gap: 1rem;
-        padding: 0.5rem 1rem;
-        background: var(--bg);
-        border-bottom: 1px solid #444;
-      }
-      #graph-container {
-        flex: 1;
-        min-height: 220px;
-        position: relative;
-        border: 1px solid #333;
-        border-radius: 8px;
-      }
-      #toc {
-        width: 240px;
-        max-height: 220px;
-        overflow: auto;
-        border: 1px solid #333;
-        border-radius: 8px;
-        padding: 0.5rem;
-      }
-      #toc ul {
-        list-style: none;
-        padding-left: 0.6em;
-      }
-      #toc li {
-        margin: 0.2rem 0;
-      }
-      #toc a {
-        color: var(--accent);
-        text-decoration: none;
-      }
+    /* ── UTILITY COLUMN (graph + TOC) ─────────── */
+    #utility-bar{
+      display:flex;flex-direction:column;width:300px;flex-shrink:0;
+      padding:.75rem .5rem;background:var(--bg);border-left:1px solid #444;gap:1rem;
+    }
+    #graph-container{
+      height:240px;position:relative;border:1px solid #333;border-radius:8px;
+    }
+    #graph-container svg{width:100%;height:100%}
+    #toc{
+      flex:1;overflow:auto;border:1px solid #333;border-radius:8px;padding:.5rem
+    }
+    #toc ul{list-style:none;padding-left:.6em;margin:0}
+    #toc a{color:var(--accent);text-decoration:none}
 
-      /* ─── Markdown content ─────────────────────────────────────────────── */
-      #content-wrapper {
-        flex: 1;
-        overflow-y: auto;
-        padding: 1rem 2rem;
-        max-width: 960px;
-        margin: 0 auto;
-      }
-      #content-wrapper h1, h2, h3, h4, h5 {
-        scroll-margin-top: 70px;
-      }
-      #prev-next {
-        display: flex;
-        justify-content: space-between;
-        margin: 2rem 0;
-      }
-      #prev-next a {
-        background: #3a3a3a;
-        padding: 0.6rem 1rem;
-        border-radius: 6px;
-        color: var(--fg);
-        text-decoration: none;
-      }
-      #prev-next a:hover {
-        background: var(--accent);
-      }
+    /* ── ARTICLE ─────────────────────────────── */
+    #content-wrapper{
+      flex:1;overflow-y:auto;padding:1rem 2rem;max-width:960px;margin:0 auto;
+    }
+    #content-wrapper h1,#content-wrapper h2,#content-wrapper h3,
+    #content-wrapper h4,#content-wrapper h5{scroll-margin-top:70px}
 
-      /* ─── Graph modal ──────────────────────────────────────────────────── */
-      #graph-modal {
-        position: fixed;
-        inset: 0;
-        background: rgba(0, 0, 0, 0.85);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        visibility: hidden;
-        opacity: 0;
-        transition: opacity 0.2s;
-        z-index: 20;
-      }
-      #graph-modal.open {
-        visibility: visible;
-        opacity: 1;
-      }
-      #graph-modal .close {
-        position: absolute;
-        top: 1rem;
-        right: 1rem;
-        font-size: 2rem;
-        cursor: pointer;
-        color: #fff;
-      }
-      #graph-modal svg {
-        width: 80vw;
-        height: 80vh;
-      }
+    #prev-next{display:flex;justify-content:space-between;margin:2rem 0}
+    #prev-next a{
+      background:#3a3a3a;padding:.6rem 1rem;border-radius:6px;color:var(--fg);text-decoration:none
+    }
+    #prev-next a:hover{background:var(--accent)}
 
-      /* Scrollbar tweaks */
-      ::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-      }
-      ::-webkit-scrollbar-track {
-        background: var(--bg-alt);
-      }
-      ::-webkit-scrollbar-thumb {
-        background: #555;
-        border-radius: 4px;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: #666;
-      }
-    </style>
+    /* ── GRAPH MODAL ─────────────────────────── */
+    #graph-modal{
+      position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;
+      align-items:center;justify-content:center;visibility:hidden;opacity:0;
+      transition:opacity .2s;z-index:30;
+    }
+    #graph-modal.open{visibility:visible;opacity:1}
+    #graph-modal .close{
+      position:absolute;top:1rem;right:1rem;font-size:2rem;cursor:pointer;color:#fff
+    }
+    #graph-modal svg{width:80vw;height:80vh}
+
+    /* Scrollbar */
+    ::-webkit-scrollbar{width:8px;height:8px}
+    ::-webkit-scrollbar-track{background:var(--bg-alt)}
+    ::-webkit-scrollbar-thumb{background:#555;border-radius:4px}
+    ::-webkit-scrollbar-thumb:hover{background:#666}
+  </style>
 </head>
 
 <body>
-  <!-- ────────────────────────── SIDEBAR ─────────────── -->
   <aside id="sidebar"></aside>
 
-  <!-- ─────────────────────────── MAIN ───────────────── -->
   <main>
     <header id="breadcrumb"></header>
 
-    <section id="utility-bar">
-      <div id="graph-container">
-        <svg id="mini-graph"></svg>
-        <button id="expand-graph" title="Agrandir le graphe"
-                style="position:absolute;top:8px;right:8px">🔍</button>
-      </div>
-      <nav id="toc"></nav>
-    </section>
+    <div id="content-area">
+      <article id="content-wrapper"></article>
 
-    <article id="content-wrapper"></article>
+      <section id="utility-bar">
+        <div id="graph-container">
+          <svg id="mini-graph"></svg>
+          <button id="expand-graph" style="position:absolute;top:8px;right:8px"
+                  title="Agrandir le graphe">🔍</button>
+        </div>
+        <nav id="toc"></nav>
+      </section>
+    </div>
   </main>
 
-  <!-- ─────────────────────────── MODAL ──────────────── -->
+  <!-- Graph full‑screen -->
   <div id="graph-modal">
     <span class="close">✕</span>
     <svg id="full-graph"></svg>
   </div>
 
-  <!-- ─────────────────────────── JS ─────────────────── -->
+  <!-- ── JS ───────────────────────────────────── -->
   <script>
-  const CONFIG = {
-    user   : "erw-1",
-    repo   : "erw.one",
-    branch : "main",
-    rootPath: "apps/km/content"
+  const CONFIG={user:"erw-1",repo:"erw.one",branch:"main",rootPath:"apps/km/content"};
+
+  let fileTree=null,currentNode=null;
+
+  /* GitHub ---------------------------------------------------------------- */
+  const gh=`https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/${CONFIG.rootPath}`;
+  const fetchDir=async(p="")=>{
+    const url=`${gh}/${p.replace(/^\\/+|\\/+$/g,"")}?ref=${CONFIG.branch}`;
+    const r=await fetch(url); if(!r.ok) throw new Error(r.status); return r.json();
   };
 
-  let fileTree = null;
-  let currentNode = null;
-
-  /* ── GitHub helpers ────────────────────────────────── */
-  const ghApiBase =
-    `https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}/contents/${CONFIG.rootPath}`;
-
-  async function fetchDir(path = "") {
-    const clean = path.replace(/^\/+/, "");               // ✱ enlève / au début
-    const url   = `${ghApiBase}/${clean}?ref=${CONFIG.branch}`;
-    const res   = await fetch(url);
-    if (!res.ok) throw new Error("GitHub API error " + res.status);
-    return res.json();
-  }
-
-  async function buildFileTree(path = "", parent = null) {
-    const items = await fetchDir(path);
-    const node  = {
-      name  : path.split("/").pop() || "home",
-      path, type : "folder",
-      children: [], parent
-    };
-
-    for (const item of items) {
-      if (item.type === "dir") {
-        const childPath = path ? `${path}/${item.name}` : item.name;  // ✱
-        const child = await buildFileTree(childPath, node);
+  async function buildTree(path="",parent=null){
+    const items=await fetchDir(path);
+    const node={name:path.split("/").pop()||"home",path,type:"folder",children:[],parent};
+    for(const it of items){
+      if(it.type==="dir"){
+        const child=await buildTree(path?`${path}/${it.name}`:it.name,node);
         node.children.push(child);
-      } else if (item.name.endsWith(".md")) {
-        const mdNode = {
-          name : item.name.replace(/\.md$/i, ""),
-          path : path ? `${path}/${item.name}` : item.name,
-          type : "file",
-          raw  : item.download_url,
-          parent: node,
-          id: null, title: null
-        };
-        await parseFrontmatter(mdNode);
-        node.children.push(mdNode);
+      }else if(it.name.endsWith(".md")){
+        const f={name:it.name.replace(/\\.md$/i,""),path:path?`${path}/${it.name}`:it.name,
+                 type:"file",raw:it.download_url,parent:node,id:null,title:null};
+        await parseFrontmatter(f); node.children.push(f);
       }
     }
-    node.children.sort((a,b)=>a.name.localeCompare(b.name));
-    return node;
+    node.children.sort((a,b)=>a.name.localeCompare(b.name)); return node;
   }
 
-  async function parseFrontmatter(node){
-    try {
-      const txt = await fetch(node.raw).then(r=>r.text());
-      const first = txt.split("\n")[0];
-      const m = first.match(/<!--\s*id:\s*"([^"]+)"\s*title:\s*"([^"]+)"\s*-->/);
-      if (m){ node.id = m[1]; node.title = m[2]; }
-    } catch(e){ console.error("frontmatter", node.path, e); }
+  async function parseFrontmatter(n){
+    try{
+      const t=await fetch(n.raw).then(r=>r.text());
+      const m=t.split("\\n")[0].match(/<!--\\s*id:\\s*"([^"]+)"\\s*title:\\s*"([^"]+)"\\s*-->/);
+      if(m){n.id=m[1];n.title=m[2];}
+    }catch(e){console.error(e);}
   }
 
-  /* ── Routing ───────────────────────────────────────── */
-  function hashParts(){
-    return decodeURIComponent(location.hash.slice(1))
-           .split("#").filter(Boolean);
-  }
-
-  function findNode(parts){
-    let n = fileTree;
-    for(const p of parts){
-      n = n.children.find(c => (c.id||c.name) === p);
-      if(!n) return null;
-    }
+  /* Routing --------------------------------------------------------------- */
+  const parts=()=>decodeURIComponent(location.hash.slice(1)).split("#").filter(Boolean);
+  function findNode(arr){
+    let n=fileTree; for(const p of arr){ n=n.children.find(c=>(c.id||c.name)===p)||null; }
     return n;
   }
+  const hashFor=n=>{
+    const arr=[];for(let x=n;x&&x.parent;x=x.parent) arr.unshift(x.id||x.name);return arr.join("#");
+  };
+  const hashForNode=hashFor; // alias pour prev/next
 
-  function hashFor(node){
-    const parts=[];
-    for(let n=node; n && n.parent; n=n.parent)
-      parts.unshift(n.id||n.name);
-    return parts.join("#");
+  /* Sidebar --------------------------------------------------------------- */
+  function renderSidebar(root){
+    const box=document.getElementById("sidebar"); box.innerHTML="";
+    const ul=document.createElement("ul"); box.appendChild(ul);
+    const rec=(n,pul)=>{
+      n.children.forEach(ch=>{
+        const li=document.createElement("li"); pul.appendChild(li);
+        if(ch.type==="folder"){
+          li.classList.add("folder");
+          const sp=document.createElement("span"); sp.textContent=ch.name; li.appendChild(sp);
+          const inUl=document.createElement("ul"); li.appendChild(inUl);
+          sp.onclick=()=>li.classList.toggle("open");
+          rec(ch,inUl);
+        }else{
+          li.textContent=ch.title||ch.name; li.onclick=()=>navigateTo(ch);
+        }
+      });
+    };
+    rec(root,ul);
   }
 
-      /* ─── UI Rendering ─────────────────────────────────────────────── */
-      function renderSidebar(node, container) {
-        container.innerHTML = "";
-        const ul = document.createElement("ul");
-        container.appendChild(ul);
-        buildSidebarRecursive(node, ul);
-      }
+  /* Breadcrumb ------------------------------------------------------------ */
+  function breadcrumb(n){
+    const h=document.getElementById("breadcrumb"); h.innerHTML="";
+    const home=document.createElement("a"); home.innerHTML="🏠"; home.href="#"; h.appendChild(home);
+    const chain=[]; for(let x=n;x;x=x.parent) chain.unshift(x);
+    chain.shift(); // remove root
+    chain.forEach((c,i)=>{
+      const sep=document.createElement("span"); sep.className="separator"; sep.textContent=">"; h.appendChild(sep);
 
-      function buildSidebarRecursive(node, parentUl) {
-        for (const child of node.children) {
-          const li = document.createElement("li");
-          parentUl.appendChild(li);
-          if (child.type === "folder") {
-            li.classList.add("folder");
-            const span = document.createElement("span");
-            span.textContent = child.name;
-            li.appendChild(span);
-            const innerUl = document.createElement("ul");
-            li.appendChild(innerUl);
-            span.onclick = () => {
-              li.classList.toggle("open");
-            };
-            buildSidebarRecursive(child, innerUl);
-          } else {
-            li.textContent = child.title || child.name;
-            li.onclick = () => {
-              navigateTo(child);
-            };
-          }
-        }
-      }
+      const hasSib=c.parent && c.parent.children.filter(k=>k.type===c.type).length>1;
+      const wrap=document.createElement(hasSib?"div":"a");
+      if(hasSib) wrap.className="dropdown";
 
-      function renderBreadcrumb(node) {
-        const header = document.getElementById("breadcrumb");
-        header.innerHTML = "";
-        const chain = [];
-        let n = node;
-        while (n) {
-          chain.unshift(n);
-          n = n.parent;
-        }
+      const l=document.createElement("a");
+      l.textContent=c.title||c.name;
+      l.className=i===chain.length-1?"crumb-current":""; l.href="#"+hashFor(c);
+      if(!hasSib){h.appendChild(l);return;}
 
-        // Home icon
-        const homeLink = document.createElement("a");
-        homeLink.innerHTML = "🏠";
-        homeLink.href = "#";
-        header.appendChild(homeLink);
+      wrap.appendChild(l);
+      const ul=document.createElement("ul");
+      c.parent.children.filter(k=>k.type===c.type).forEach(s=>{
+        const li=document.createElement("li"); li.textContent=s.title||s.name;
+        li.onclick=()=>navigateTo(s); ul.appendChild(li);
+      });
+      wrap.appendChild(ul); h.appendChild(wrap);
+    });
+  }
 
-        chain.forEach((n, idx) => {
-          if (idx === 0) return; // skip root because home icon
-          const sep = document.createElement("span");
-          sep.className = "separator";
-          sep.textContent = ">";
-          header.appendChild(sep);
+  /* TOC + Prev/Next ------------------------------------------------------- */
+  function renderTOC(){
+    const nav=document.getElementById("toc"); nav.innerHTML="";
+    const heads=document.querySelectorAll("#content-wrapper h1, #content-wrapper h2, #content-wrapper h3");
+    if(!heads.length) return;
+    const ul=document.createElement("ul");
+    heads.forEach(h=>{
+      const li=document.createElement("li");
+      const a=document.createElement("a"); a.href="#"+h.id; a.textContent=h.textContent;
+      li.appendChild(a); ul.appendChild(li);
+    });
+    nav.appendChild(ul);
+  }
 
-          const hasSiblings = n.parent && n.parent.children.filter((c) => c.type === n.type).length > 1;
-          const wrapper = document.createElement(hasSiblings ? "div" : "a");
-          if (hasSiblings) wrapper.className = "dropdown";
+  function renderPrevNext(node){
+    document.getElementById("prev-next")?.remove();
+    const sib=node.parent.children.filter(c=>c.type==="file");
+    if(sib.length<2) return;
+    const nav=document.createElement("div"); nav.id="prev-next";
+    const idx=sib.indexOf(node);
+    if(sib[idx-1]){
+      const a=document.createElement("a");
+      a.href="#"+hashFor(sib[idx-1]); a.textContent="← "+(sib[idx-1].title||sib[idx-1].name);
+      nav.appendChild(a);
+    }else nav.appendChild(document.createElement("span"));
+    if(sib[idx+1]){
+      const a=document.createElement("a");
+      a.href="#"+hashFor(sib[idx+1]); a.textContent=(sib[idx+1].title||sib[idx+1].name)+" →";
+      nav.appendChild(a);
+    }
+    document.getElementById("content-wrapper").appendChild(nav);
+  }
 
-          const link = document.createElement("a");
-          link.textContent = n.title || n.name;
-          link.className = idx === chain.length - 1 ? "crumb-current" : "";
-          link.href = `#${chain.slice(1, idx + 1).map((p) => p.id || p.name).join("#")}`;
-
-          if (!hasSiblings) {
-            header.appendChild(link);
-            return;
-          }
-
-          wrapper.appendChild(link);
-          const ul = document.createElement("ul");
-          for (const sib of n.parent.children.filter((c) => c.type === n.type)) {
-            const li = document.createElement("li");
-            li.textContent = sib.title || sib.name;
-            li.onclick = () => navigateTo(sib);
-            ul.appendChild(li);
-          }
-          wrapper.appendChild(ul);
-          header.appendChild(wrapper);
-        });
-      }
-      
-      function renderTOC() {
-        const tocNav = document.getElementById("toc");
-        tocNav.innerHTML = "";
-        const headings = document.querySelectorAll("#content-wrapper h1, h2, h3");
-        if (headings.length === 0) return;
-        const list = document.createElement("ul");
-        headings.forEach((h) => {
-          const li = document.createElement("li");
-          const a = document.createElement("a");
-          a.href = "#" + h.id;
-          a.textContent = h.textContent;
-          li.appendChild(a);
-          list.appendChild(li);
-        });
-        tocNav.appendChild(list);
-      }
-
-      function renderPrevNext(node) {
-        const container = document.getElementById("prev-next");
-        if (container) container.remove();
-        const siblings = node.parent.children.filter((c) => c.type === "file");
-        if (siblings.length <= 1) return;
-        const idx = siblings.indexOf(node);
-        const nav = document.createElement("div");
-        nav.id = "prev-next";
-        const prev = siblings[idx - 1];
-        const next = siblings[idx + 1];
-        if (prev) {
-          const aPrev = document.createElement("a");
-          aPrev.textContent = "← " + (prev.title || prev.name);
-          aPrev.href = `#${hashForNode(prev)}`;
-          nav.appendChild(aPrev);
-        } else nav.appendChild(document.createElement("span"));
-        if (next) {
-          const aNext = document.createElement("a");
-          aNext.textContent = (next.title || next.name) + " →";
-          aNext.href = `#${hashForNode(next)}`;
-          nav.appendChild(aNext);
-        }
-        document.getElementById("content-wrapper").appendChild(nav);
-      }
-
+  /* Markdown -------------------------------------------------------------- */
   async function renderContent(node){
-    const wrap = document.getElementById("content-wrapper");
-    if(!node||node.type!=="file"){ wrap.textContent="Fichier introuvable."; return; }
-    const raw = await fetch(node.raw).then(r=>r.text());
-    const clean = raw.replace(/<!--[\s\S]*?-->\s*/, "");      // ✱ retire front‑matter
-    wrap.innerHTML = marked.parse(clean,{headerIds:true});
-    hljs.highlightAll();                                      // ✱ plus simple
+    const wrap=document.getElementById("content-wrapper");
+    if(!node||node.type!=="file"){wrap.textContent="Fichier introuvable.";return;}
+    const raw=await fetch(node.raw).then(r=>r.text());
+    const md=raw.replace(/<!--[\\s\\S]*?-->/,"");
+    wrap.innerHTML=marked.parse(md,{headerIds:true});
+    hljs.highlightAll();
     renderTOC(); renderPrevNext(node);
   }
 
-  /* ── Graph (mini + full) ───────────────────────────── */
+  /* Graph ----------------------------------------------------------------- */
   function buildGraphData(root){
-    const nodes=[], links=[];
-    let idx=0;
+    const nodes=[],links=[]; let i=0;
     (function dfs(n){
-      n._id=idx++;
-      nodes.push({id:n._id,label:n.title||n.name,ref:n});
-      n.children?.forEach(c=>{
-        dfs(c);                                               // d’abord l’enfant
-        links.push({source:n._id,target:c._id});              // puis le lien ✱
-      });
-    })(root);
-    return {nodes,links};
+      n._id=i++; nodes.push({id:n._id,label:n.title||n.name,ref:n});
+      n.children.forEach(c=>{ dfs(c); links.push({source:n._id,target:c._id}); });
+    })(root); return {nodes,links};
   }
-
+  function drag(sim){
+    function start(e,d){ if(!e.active) sim.alphaTarget(.3).restart(); d.fx=d.x; d.fy=d.y; }
+    function drg(e,d){ d.fx=e.x; d.fy=e.y; }
+    function end(e,d){ if(!e.active) sim.alphaTarget(0); d.fx=d.fy=null; }
+    return d3.drag().on("start",start).on("drag",drg).on("end",end);
+  }
   function renderGraph(){
     const {nodes,links}=buildGraphData(fileTree);
-    ["mini-graph","full-graph"].forEach(svgId=>{
-      const svg=d3.select("#"+svgId);
-      svg.selectAll("*").remove();
-      const w=parseInt(svg.style("width")),
-            h=parseInt(svg.style("height"));
+    ["mini-graph","full-graph"].forEach(id=>{
+      const svg=d3.select("#"+id); svg.selectAll("*").remove();
+      const w=svg.node().clientWidth||300, h=svg.node().clientHeight||200;
+
       const sim=d3.forceSimulation(nodes)
         .force("link",d3.forceLink(links).id(d=>d.id).distance(80))
         .force("charge",d3.forceManyBody().strength(-300))
         .force("center",d3.forceCenter(w/2,h/2));
 
-      const link = svg.append("g")
+      const link=svg.append("g")
         .attr("stroke","#555").attr("stroke-width",1)
         .selectAll("line").data(links).join("line");
 
-      const node = svg.append("g")
+      const node=svg.append("g")
         .attr("stroke","#fff").attr("stroke-width",.5)
         .selectAll("circle").data(nodes).join("circle")
         .attr("r",6)
         .attr("fill",d=>d.ref.type==="folder"?"#8a8a8a":"#569cd6")
+        .call(drag(sim))
         .on("click",(e,d)=>navigateTo(d.ref));
 
       const label=svg.append("g")
@@ -527,39 +321,39 @@
         .text(d=>d.label);
 
       sim.on("tick",()=>{
-        link .attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
-             .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
-        node .attr("cx",d=>d.x).attr("cy",d=>d.y);
+        link.attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
+            .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
+        node.attr("cx",d=>d.x).attr("cy",d=>d.y);
         label.attr("x",d=>d.x+8).attr("y",d=>d.y+3);
       });
     });
   }
 
-  /* ── Navigation / router ───────────────────────────── */
-  function navigateTo(n){ location.hash = hashFor(n); }
+  /* Navigation ----------------------------------------------------------- */
+  const navigateTo=n=>location.hash="#"+hashFor(n);
 
   async function router(){
     if(!fileTree){
-      fileTree = await buildFileTree();
-      renderSidebar(fileTree, document.getElementById("sidebar"));
+      fileTree=await buildTree();
+      renderSidebar(fileTree);
       renderGraph();
     }
-    const node = findNode(hashParts()) || fileTree;
-    renderBreadcrumb(node);
+    const node=findNode(parts())||fileTree;
+    breadcrumb(node);
     if(node.type==="file") await renderContent(node);
     else{
-      const home = node.children.find(c=>c.name==="home" && c.type==="file");
-      if(home) navigateTo(home);
+      const home=node.children.find(c=>c.name==="home"&&c.type==="file");
+      home && navigateTo(home);
     }
   }
 
-  /* ── init & misc. ──────────────────────────────────── */
+  /* Init ------------------------------------------------------------------ */
   document.getElementById("expand-graph")
-          .onclick = ()=>document.getElementById("graph-modal").classList.add("open");
+          .onclick=()=>document.getElementById("graph-modal").classList.add("open");
   document.querySelector("#graph-modal .close")
-          .onclick = ()=>document.getElementById("graph-modal").classList.remove("open");
+          .onclick=()=>document.getElementById("graph-modal").classList.remove("open");
 
-  window.addEventListener("hashchange", router);
+  window.addEventListener("hashchange",router);
   router();
   </script>
 </body>
