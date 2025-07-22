@@ -190,17 +190,41 @@ function renderContent(page,anchor){
 }
 
 /* === GRAPH =========================================================== */
-function buildGraph(){const nodes=[],links=[];pages.forEach((p,i)=>p._i=i);
-  pages.forEach(p=>{nodes.push({id:p._i,label:p.title,ref:p});
-    links.push({source:p._i,target:p.parent._i,kind:"hier"});});
+/* === GRAPH =========================================================== */
+function buildGraph(){
+  const nodes=[], links=[];
+  pages.forEach((p,i)=>p._i=i);                       // index unique
+
+  pages.forEach(p=>{
+    nodes.push({id:p._i, label:p.title, ref:p});
+
+    /* lien hiérarchique (sauf racine) */
+    if (p.parent) {
+      links.push({source:p._i, target:p.parent._i, kind:"hier"});
+    }
+  });
+
+  /* liens par tags partagés */
   const tagToPages=new Map();
   pages.forEach(p=>p.tagSet.forEach(t=>(tagToPages.get(t)||tagToPages.set(t,[])).push(p)));
+
   tagToPages.forEach(list=>{
-    for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){
-      const a=list[i],b=list[j],ex=links.find(l=>(l.source===a._i&&l.target===b._i)||(l.source===b._i&&l.target===a._i));
-      if(ex)ex.kind="both";else links.push({source:a._i,target:b._i,kind:"tag"});
+    for(let i=0;i<list.length;i++){
+      for(let j=i+1;j<list.length;j++){
+        const a=list[i], b=list[j];
+        const existing = links.find(l =>
+          (l.source===a._i && l.target===b._i) ||
+          (l.source===b._i && l.target===a._i)
+        );
+        if (existing) { existing.kind = "both"; }
+        else { links.push({source:a._i, target:b._i, kind:"tag"}); }
+      }
     }
-  });return{nodes,links};}
+  });
+
+  return {nodes, links};
+}
+
 function drag(sim){return d3.drag().on("start",(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y;})
                            .on("drag",(e,d)=>{d.fx=e.x;d.fy=e.y;})
                            .on("end",(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=d.fy=null;});}
