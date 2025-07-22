@@ -13,38 +13,54 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 
 <style>
-/* ——— même style qu’avant, avec juste un petit retrait visuel du toc ——— */
 :root{--bg:#1e1e1e;--bg-alt:#2a2a2a;--fg:#d4d4d4;--accent:#569cd6;--shadow:0 2px 6px rgba(0,0,0,.4);}
 *{box-sizing:border-box}
-body{margin:0;font-family:system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);display:flex;min-height:100vh;overflow:hidden}
+body{margin:0;font-family:system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);
+     display:flex;min-height:100vh;overflow:hidden}
+
+/* ── SIDEBAR ─────────────────────────────── */
 #sidebar{width:260px;background:var(--bg-alt);padding:.5rem;overflow-y:auto;border-right:1px solid #444}
 #search{width:100%;padding:.4rem .6rem;margin-bottom:.5rem;border:none;border-radius:6px;background:#3a3a3a;color:var(--fg)}
 #sidebar ul{list-style:none;padding-left:.6em;margin:0}
+#sidebar ul ul{padding-left:1.4em;}                          /* indentation claire des niveaux */
 #sidebar li{margin:.15em 0;cursor:pointer}#sidebar li:hover{color:var(--accent)}
 .folder>span::before{content:"▸";display:inline-block;margin-right:4px;transition:.2s}
 .folder>ul{display:none}.folder.open>span::before{transform:rotate(90deg)}.folder.open>ul{display:block}
+
+/* ── MAIN LAYOUT ─────────────────────────── */
 main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 #content-area{flex:1;display:flex;overflow:hidden}
+
+/* ── HEADER / BREADCRUMB ─────────────────── */
 header{background:var(--bg-alt);padding:0 1rem;height:48px;display:flex;align-items:center;gap:.5rem;box-shadow:var(--shadow);user-select:none}
 header a,header span{color:var(--fg);text-decoration:none;display:flex;align-items:center;padding:4px 8px;border-radius:6px}
 header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a;cursor:default}.separator{margin:0 .25rem}
 .dropdown{position:relative}.dropdown ul{display:none;position:absolute;top:100%;left:0;min-width:160px;background:#3a3a3a;border-radius:4px;padding:.25rem 0;list-style:none;z-index:20}
 .dropdown ul li{padding:6px 12px;white-space:nowrap}.dropdown ul li:hover{background:var(--accent)}
 .dropdown:hover>ul,.dropdown:focus-within>ul{display:block}
+
+/* ── UTILITY COLUMN ─────────── */
 #utility-bar{display:flex;flex-direction:column;width:300px;flex-shrink:0;padding:.75rem .5rem;background:var(--bg);border-left:1px solid #444;gap:1rem}
 #graph-container{height:240px;position:relative;border:1px solid #333;border-radius:8px}#graph-container svg{width:100%;height:100%}
 #toc{flex:1;overflow:auto;border:1px solid #333;border-radius:8px;padding:.5rem}
 #toc ul{list-style:none;padding-left:0;margin:0}
-#toc li{margin:.15rem 0}#toc li[data-level="2"]{padding-left:12px}#toc li[data-level="3"]{padding-left:24px} /* indentation visuelle */
+#toc li{margin:.15rem 0}#toc li[data-level="2"]{padding-left:12px}#toc li[data-level="3"]{padding-left:24px}
 #toc a{color:var(--accent);text-decoration:none}
+
+/* ── CONTENT ─────────── */
 #content-wrapper{flex:1;overflow-y:auto;padding:1rem 2rem;max-width:960px;margin:0 auto}
 #content-wrapper h1,#content-wrapper h2,#content-wrapper h3,#content-wrapper h4,#content-wrapper h5{scroll-margin-top:70px}
 #prev-next{display:flex;justify-content:space-between;margin:2rem 0}
 #prev-next a{background:#3a3a3a;padding:.6rem 1rem;border-radius:6px;color:var(--fg);text-decoration:none}#prev-next a:hover{background:var(--accent)}
+
+/* ── MODAL ─────────── */
 #graph-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;visibility:hidden;opacity:0;transition:.2s;z-index:30}
 #graph-modal.open{visibility:visible;opacity:1}#graph-modal .close{position:absolute;top:1rem;right:1rem;font-size:2rem;cursor:pointer;color:#fff}
 #graph-modal svg{width:80vw;height:80vh}
-::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:var(--bg-alt)}::-webkit-scrollbar-thumb{background:#555;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#666}
+
+/* ── SCROLLBAR ─────────── */
+::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:var(--bg-alt)}
+::-webkit-scrollbar-thumb{background:#555;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#666}
 </style>
 </head>
 
@@ -79,39 +95,40 @@ let pages=[],pageById={},root=null;
 
   const re=/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g; let m;
   while((m=re.exec(txt))){
-    const meta={},block=m[1]; block.replace(/(\w+):"([^"]+)"/g,(_,k,v)=>meta[k]=v);
+    const meta={},block=m[1];
+    block.replace(/(\w+):"([^"]+)"/g,(_,k,v)=>meta[k]=v.trim());
     const pg={...meta,content:m[2].trim(),children:[],parent:null};
     pageById[pg.id]=pg; pages.push(pg);
   }
   root=pages.find(p=>p.type==="home")||pages[0];
 
-  /* hiérarchie : parent explicite sinon home */
+  /* hiérarchie : parent explicite sinon home */
   pages.forEach(p=>{
     if(p===root) return;
     p.parent = p.parent ? pageById[p.parent] || root : root;
     p.parent.children.push(p);
   });
 
-  /* tags */
+  /* tags => Set */
   pages.forEach(p=>p.tagSet=new Set((p.tags||"").split(",").map(t=>t.trim()).filter(Boolean)));
 
   buildSidebar(); renderGraph(); router(); window.addEventListener("hashchange",router);
 })();
 
-/* === HELPERS ========================================================= */
-const parts=()=>decodeURIComponent(location.hash.slice(1)).split("#").filter(Boolean);
-function resolve(partsArr){
+/* === UTIL FONCTIONS ================================================== */
+const parts = () => decodeURIComponent(location.hash.slice(1)).split("#").filter(Boolean);
+function resolve(arr){
   let n=root,i=0;
-  while(i<partsArr.length){
-    const child=n.children.find(c=>c.id===partsArr[i]);
-    if(!child) break; n=child; i++;
+  while(i<arr.length){
+    const c=n.children.find(ch=>ch.id===arr[i]);
+    if(!c) break; n=c; i++;
   }
-  return {page:n,anchor:partsArr.slice(i).join("#")};
+  return {page:n,anchor:arr.slice(i).join("#")};
 }
-const hashFor=p=>{const a=[];for(let n=p;n&&n.parent;n=n.parent)a.unshift(n.id);return a.join("#");};
+const hashFor=p=>{const st=[];for(let n=p;n&&n.parent;n=n.parent)st.unshift(n.id);return st.join("#");};
 const navTo=p=>location.hash="#"+hashFor(p);
 
-/* === SIDEBAR + SEARCH =============================================== */
+/* === SIDEBAR + SEARCH ================================================= */
 function buildSidebar(){
   const box=document.getElementById("sidebar"),ul=document.createElement("ul");box.appendChild(ul);
   const rec=(p,c)=>{
@@ -129,7 +146,7 @@ function buildSidebar(){
   };
 }
 
-/* === BREADCRUMB ====================================================== */
+/* === BREADCRUMB ======================================================= */
 function breadcrumb(p){
   const h=document.getElementById("breadcrumb");h.innerHTML="";
   const home=document.createElement("a");home.innerHTML="🏠";home.href="#";h.appendChild(home);
@@ -149,7 +166,7 @@ function breadcrumb(p){
   });
 }
 
-/* === TOC & PrevNext ================================================== */
+/* === TOC + Prev/Next ================================================== */
 function renderTOC(page){
   const nav=document.getElementById("toc");nav.innerHTML="";
   const heads=document.querySelectorAll("#content-wrapper h1,#content-wrapper h2,#content-wrapper h3");
@@ -157,9 +174,10 @@ function renderTOC(page){
   const ul=document.createElement("ul");
   heads.forEach(h=>{
     const li=document.createElement("li");li.dataset.level=h.tagName[1];
-    const a=document.createElement("a");a.href="#"+hashFor(page)+"#"+h.id;a.textContent=h.textContent;
-    li.appendChild(a);ul.appendChild(li);
-  });nav.appendChild(ul);
+    const a=document.createElement("a");a.href="#"+hashFor(page)+"#"+h.id;
+    a.textContent=h.id+"  "+h.textContent; li.appendChild(a); ul.appendChild(li);
+  });
+  nav.appendChild(ul);
 }
 function renderPrevNext(page){
   document.getElementById("prev-next")?.remove();
@@ -171,19 +189,17 @@ function renderPrevNext(page){
   document.getElementById("content-wrapper").appendChild(nav);
 }
 
-/* === MARKDOWN ======================================================== */
+/* === MARKDOWN RENDER ================================================== */
 function numberHeadings(art){
-  const counters=[0,0,0,0,0,0];
+  const c=[0,0,0,0,0,0];
   art.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach(h=>{
-    const lvl=parseInt(h.tagName[1])-1;
-    counters[lvl]++;for(let i=lvl+1;i<6;i++)counters[i]=0;
-    const id=counters.slice(0,lvl+1).filter(Boolean).join("_");
-    h.id=id;
+    const L=+h.tagName[1]-1; c[L]++; for(let i=L+1;i<6;i++) c[i]=0;
+    const id=c.slice(0,L+1).filter(Boolean).join("_"); h.id=id;
   });
 }
 function renderContent(page,anchor){
   const art=document.getElementById("content-wrapper");
-  art.innerHTML=marked.parse(page.content,{headerIds:false});          // on gère nos propres id
+  art.innerHTML=marked.parse(page.content,{headerIds:false});
   numberHeadings(art); hljs.highlightAll(); document.title=page.title+" – km";
   renderTOC(page); renderPrevNext(page);
   if(anchor){const el=document.getElementById(anchor);el&&el.scrollIntoView({behavior:"smooth"});}
@@ -191,47 +207,28 @@ function renderContent(page,anchor){
 
 /* === GRAPH =========================================================== */
 function buildGraph(){
-  const nodes=[], links=[];
-  pages.forEach((p,i)=>p._i=i);                       // index unique
-
+  const nodes=[],links=[]; pages.forEach((p,i)=>p._i=i);
   pages.forEach(p=>{
-    nodes.push({id:p._i, label:p.title, ref:p});
-
-    /* lien hiérarchique (sauf racine) */
-    if (p.parent) {
-      links.push({source:p._i, target:p.parent._i, kind:"hier"});
-    }
+    nodes.push({id:p._i,label:p.title,ref:p});
+    if(p.parent) links.push({source:p._i,target:p.parent._i,kind:"hier"});
   });
-
-/* liens par tags partagés */
-const tagToPages = new Map();
-pages.forEach(p => {
-  p.tagSet.forEach(t => {
-    if (!tagToPages.has(t)) tagToPages.set(t, []);   // ← on crée d’abord le tableau
-    tagToPages.get(t).push(p);                       // puis on le remplit
-  });
-});
-
+  const tagToPages=new Map();
+  pages.forEach(p=>p.tagSet.forEach(t=>{
+    if(!tagToPages.has(t)) tagToPages.set(t,[]);
+    tagToPages.get(t).push(p);
+  }));
   tagToPages.forEach(list=>{
-    for(let i=0;i<list.length;i++){
-      for(let j=i+1;j<list.length;j++){
-        const a=list[i], b=list[j];
-        const existing = links.find(l =>
-          (l.source===a._i && l.target===b._i) ||
-          (l.source===b._i && l.target===a._i)
-        );
-        if (existing) { existing.kind = "both"; }
-        else { links.push({source:a._i, target:b._i, kind:"tag"}); }
-      }
+    for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){
+      const a=list[i],b=list[j],ex=links.find(l=>(l.source===a._i&&l.target===b._i)||(l.source===b._i&&l.target===a._i));
+      if(ex) ex.kind="both"; else links.push({source:a._i,target:b._i,kind:"tag"});
     }
   });
-
-  return {nodes, links};
+  return{nodes,links};
 }
-
-function drag(sim){return d3.drag().on("start",(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y;})
-                           .on("drag",(e,d)=>{d.fx=e.x;d.fy=e.y;})
-                           .on("end",(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=d.fy=null;});}
+function drag(sim){return d3.drag()
+  .on("start",(e,d)=>{if(!e.active)sim.alphaTarget(.3).restart();d.fx=d.x;d.fy=d.y;})
+  .on("drag",(e,d)=>{d.fx=e.x;d.fy=e.y;})
+  .on("end",(e,d)=>{if(!e.active)sim.alphaTarget(0);d.fx=d.fy=null;});}
 function renderGraph(){
   const{nodes,links}=buildGraph(),clr=k=>k==="hier"?"#569cd6":k==="tag"?"#2ecc71":"#00c8c8";
   ["mini-graph","full-graph"].forEach(id=>{
@@ -248,18 +245,25 @@ function renderGraph(){
     sim.on("tick",()=>{
       svg.selectAll("line").attr("x1",d=>d.source.x).attr("y1",d=>d.source.y)
                            .attr("x2",d=>d.target.x).attr("y2",d=>d.target.y);
-      node.attr("cx",d=>d.x).attr("cy",d=>d.y);label.attr("x",d=>d.x+8).attr("y",d=>d.y+3);
+      node.attr("cx",d=>d.x).attr("cy",d=>d.y);
+      label.attr("x",d=>d.x+8).attr("y",d=>d.y+3);
     });
   });
 }
 
 /* === ROUTER ========================================================== */
 function router(){
-  const {page,anchor}=resolve(parts());
+  const segs=parts();
+  const {page,anchor}=resolve(segs);
+
+  /* redirection si hash “court” (type #aim) */
+  if(segs.length===1 && page!==root){
+    navTo(page); return;                        // hash modifié ➜ router rappelé
+  }
   breadcrumb(page); renderContent(page,anchor);
 }
 
-/* === MODAL button ==================================================== */
+/* === MODAL BTN ======================================================= */
 document.getElementById("expand-graph").onclick=()=>document.getElementById("graph-modal").classList.add("open");
 document.querySelector("#graph-modal .close").onclick=()=>document.getElementById("graph-modal").classList.remove("open");
 </script>
