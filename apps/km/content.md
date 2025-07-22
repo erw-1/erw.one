@@ -1,5 +1,4 @@
 <!-- 
-type:"home"
 id:"home"
 title:"Home"
 tags:"home,intro,info"
@@ -33,7 +32,6 @@ function hello() {
 ```
 
 <!-- 
-type:"folder"
 parent:"home"
 id:"mechanics"
 title:"Game Mechanics" 
@@ -52,7 +50,6 @@ Rassembler les règles / formules utilisées dans nos prototypes afin de les ré
 ![Cover](https://placehold.co/600x140/2a2a2a/FFFFFF?text=Mechanics+Banner)
 
 <!-- 
-type:"folder" 
 parent:"mechanics" 
 id:"aim" 
 title:"Aiming in the game" 
@@ -85,7 +82,6 @@ if (triggerPulled)
 
 
 <!-- 
-type:"article" 
 parent:"aim" 
 id:"predicting_movement" 
 title:"Predicting Movement" 
@@ -95,7 +91,6 @@ tags:"strategies, skils, aim"
 
 
 <!-- 
-type:"article" 
 parent:"mechanics" 
 id:"movement" 
 title:"Movement in the game" 
