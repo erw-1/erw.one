@@ -8,8 +8,8 @@
 <!-- libs -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-<link rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+<link  rel="stylesheet"
+       href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 
 <style>
@@ -18,47 +18,54 @@
 body{margin:0;font-family:system-ui,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--fg);
      display:flex;min-height:100vh;overflow:hidden}
 
-/* ── SIDEBAR ─────────────────────────────── */
+/* SIDEBAR */
 #sidebar{width:260px;background:var(--bg-alt);padding:.5rem;overflow-y:auto;border-right:1px solid #444}
 #search{width:100%;padding:.4rem .6rem;margin-bottom:.5rem;border:none;border-radius:6px;background:#3a3a3a;color:var(--fg)}
-#sidebar ul{list-style:none;padding-left:.6em;margin:0}
-#sidebar ul ul{padding-left:1.4em;}                          /* indentation claire des niveaux */
+#sidebar ul{list-style:none;margin:0;padding-left:.6em}
+#sidebar ul ul{padding-left:1.4em}
 #sidebar li{margin:.15em 0;cursor:pointer}#sidebar li:hover{color:var(--accent)}
 .folder>span::before{content:"▸";display:inline-block;margin-right:4px;transition:.2s}
 .folder>ul{display:none}.folder.open>span::before{transform:rotate(90deg)}.folder.open>ul{display:block}
 
-/* ── MAIN LAYOUT ─────────────────────────── */
+/* LAYOUT */
 main{flex:1;display:flex;flex-direction:column;overflow:hidden}
 #content-area{flex:1;display:flex;overflow:hidden}
 
-/* ── HEADER / BREADCRUMB ─────────────────── */
-header{background:var(--bg-alt);padding:0 1rem;height:48px;display:flex;align-items:center;gap:.5rem;box-shadow:var(--shadow);user-select:none}
+/* HEADER / breadcrumb */
+header{background:var(--bg-alt);padding:0 1rem;height:48px;display:flex;align-items:center;gap:.5rem;
+       box-shadow:var(--shadow);user-select:none}
 header a,header span{color:var(--fg);text-decoration:none;display:flex;align-items:center;padding:4px 8px;border-radius:6px}
 header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a;cursor:default}.separator{margin:0 .25rem}
-.dropdown{position:relative}.dropdown ul{display:none;position:absolute;top:100%;left:0;min-width:160px;background:#3a3a3a;border-radius:4px;padding:.25rem 0;list-style:none;z-index:20}
+.dropdown{position:relative}.dropdown ul{display:none;position:absolute;top:100%;left:0;min-width:160px;background:#3a3a3a;
+                                        border-radius:4px;padding:.25rem 0;list-style:none;z-index:20}
 .dropdown ul li{padding:6px 12px;white-space:nowrap}.dropdown ul li:hover{background:var(--accent)}
 .dropdown:hover>ul,.dropdown:focus-within>ul{display:block}
 
-/* ── UTILITY COLUMN ─────────── */
-#utility-bar{display:flex;flex-direction:column;width:300px;flex-shrink:0;padding:.75rem .5rem;background:var(--bg);border-left:1px solid #444;gap:1rem}
-#graph-container{height:240px;position:relative;border:1px solid #333;border-radius:8px}#graph-container svg{width:100%;height:100%}
+/* Utility column (graph + toc) */
+#utility-bar{display:flex;flex-direction:column;width:300px;flex-shrink:0;padding:.75rem .5rem;background:var(--bg);
+             border-left:1px solid #444;gap:1rem}
+#graph-container{height:240px;position:relative;border:1px solid #333;border-radius:8px}
+#graph-container svg{width:100%;height:100%}
 #toc{flex:1;overflow:auto;border:1px solid #333;border-radius:8px;padding:.5rem}
-#toc ul{list-style:none;padding-left:0;margin:0}
-#toc li{margin:.15rem 0}#toc li[data-level="2"]{padding-left:12px}#toc li[data-level="3"]{padding-left:24px}
+#toc ul{list-style:none;margin:0;padding-left:0}
+#toc li{margin:.15rem 0}[data-level="2"]{padding-left:12px}[data-level="3"]{padding-left:24px}
 #toc a{color:var(--accent);text-decoration:none}
 
-/* ── CONTENT ─────────── */
+/* article */
 #content-wrapper{flex:1;overflow-y:auto;padding:1rem 2rem;max-width:960px;margin:0 auto}
 #content-wrapper h1,#content-wrapper h2,#content-wrapper h3,#content-wrapper h4,#content-wrapper h5{scroll-margin-top:70px}
 #prev-next{display:flex;justify-content:space-between;margin:2rem 0}
-#prev-next a{background:#3a3a3a;padding:.6rem 1rem;border-radius:6px;color:var(--fg);text-decoration:none}#prev-next a:hover{background:var(--accent)}
+#prev-next a{background:#3a3a3a;padding:.6rem 1rem;border-radius:6px;color:var(--fg);text-decoration:none}
+#prev-next a:hover{background:var(--accent)}
 
-/* ── MODAL ─────────── */
-#graph-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;visibility:hidden;opacity:0;transition:.2s;z-index:30}
-#graph-modal.open{visibility:visible;opacity:1}#graph-modal .close{position:absolute;top:1rem;right:1rem;font-size:2rem;cursor:pointer;color:#fff}
+/* modal graph */
+#graph-modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;
+             visibility:hidden;opacity:0;transition:.2s;z-index:30}
+#graph-modal.open{visibility:visible;opacity:1}
+#graph-modal .close{position:absolute;top:1rem;right:1rem;font-size:2rem;cursor:pointer;color:#fff}
 #graph-modal svg{width:80vw;height:80vh}
 
-/* ── SCROLLBAR ─────────── */
+/* scrollbar */
 ::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-track{background:var(--bg-alt)}
 ::-webkit-scrollbar-thumb{background:#555;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#666}
 </style>
@@ -73,7 +80,7 @@ header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a;cursor:defau
     <article id="content-wrapper"></article>
     <section id="utility-bar">
       <div id="graph-container"><svg id="mini-graph"></svg>
-        <button id="expand-graph" style="position:absolute;top:8px;right:8px">🔍</button>
+        <button id="expand-graph" style="position:absolute;top:8px;right:8px" title="Agrandir le graphe">🔍</button>
       </div><nav id="toc"></nav>
     </section>
   </div>
@@ -82,117 +89,115 @@ header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a;cursor:defau
 <div id="graph-modal"><span class="close">✕</span><svg id="full-graph"></svg></div>
 
 <script defer>
-/* === CONFIG ========================================================== */
 const CONFIG={user:"erw-1",repo:"erw.one",branch:"main",contentFile:"apps/km/content.md"};
 
-/* === STATE =========================================================== */
 let pages=[],pageById={},root=null;
 
-/* === LOAD & PARSE ==================================================== */
+/* ── Fetch + parse unique Markdown ─────────────────────────────────── */
 (async()=>{
-  const raw=`https://raw.githubusercontent.com/${CONFIG.user}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.contentFile}`;
-  const txt=await fetch(raw).then(r=>r.text());
+  const src=`https://raw.githubusercontent.com/${CONFIG.user}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.contentFile}`;
+  const txt=await fetch(src).then(r=>r.text());
 
   const re=/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g; let m;
   while((m=re.exec(txt))){
-    const meta={},block=m[1];
-    block.replace(/(\w+):"([^"]+)"/g,(_,k,v)=>meta[k]=v.trim());
+    const meta={},b=m[1]; b.replace(/(\w+):"([^"]+)"/g,(_,k,v)=>meta[k]=v.trim());
     const pg={...meta,content:m[2].trim(),children:[],parent:null};
     pageById[pg.id]=pg; pages.push(pg);
   }
-  root=pages.find(p=>p.type==="home")||pages[0];
+  root=pageById["home"]||pages[0];
 
-  /* hiérarchie : parent explicite sinon home */
+  /* hiérarchie (parent => folder) */
   pages.forEach(p=>{
     if(p===root) return;
-    p.parent = p.parent ? pageById[p.parent] || root : root;
-    p.parent.children.push(p);
+    const par=pageById[p.parent]||root;
+    p.parent=par; par.children.push(p);
   });
 
-  /* tags => Set */
   pages.forEach(p=>p.tagSet=new Set((p.tags||"").split(",").map(t=>t.trim()).filter(Boolean)));
 
-  buildSidebar(); renderGraph(); router(); window.addEventListener("hashchange",router);
+  buildSidebar(); renderGraph(); router(); addEventListener("hashchange",router);
 })();
 
-/* === UTIL FONCTIONS ================================================== */
-const parts = () => decodeURIComponent(location.hash.slice(1)).split("#").filter(Boolean);
+/* ── Helpers ───────────────────────────────────────────────────────── */
+const splitHash = ()=>decodeURIComponent(location.hash.slice(1)).split("#").filter(Boolean);
 function resolve(arr){
-  let n=root,i=0;
-  while(i<arr.length){
-    const c=n.children.find(ch=>ch.id===arr[i]);
-    if(!c) break; n=c; i++;
+  let n=root, i=0;
+  while(i<arr.length && n.children.length){
+    const kid=n.children.find(c=>c.id===arr[i]);
+    if(!kid) break; n=kid; i++;
   }
   return {page:n,anchor:arr.slice(i).join("#")};
 }
-const hashFor=p=>{const st=[];for(let n=p;n&&n.parent;n=n.parent)st.unshift(n.id);return st.join("#");};
-const navTo=p=>location.hash="#"+hashFor(p);
+const hashFor=p=>{const a=[];for(let n=p;n&&n.parent;n=n.parent)a.unshift(n.id);return a.join("#");};
+const navTo = p => location.hash="#"+hashFor(p);
 
-/* === SIDEBAR + SEARCH ================================================= */
+/* ── Sidebar + search ─────────────────────────────────────────────── */
 function buildSidebar(){
-  const box=document.getElementById("sidebar"),ul=document.createElement("ul");box.appendChild(ul);
+  const side=document.getElementById("sidebar"), ul=document.createElement("ul"); side.appendChild(ul);
   const rec=(p,c)=>{
-    const li=document.createElement("li");c.appendChild(li);li.dataset.title=p.title.toLowerCase();
+    const li=document.createElement("li"); c.appendChild(li); li.dataset.title=p.title.toLowerCase();
     if(p.children.length){
-      li.className="folder";const s=document.createElement("span");s.textContent=p.title;li.appendChild(s);
-      const sub=document.createElement("ul");li.appendChild(sub);s.onclick=()=>li.classList.toggle("open");
+      li.className="folder"; const sp=document.createElement("span"); sp.textContent=p.title; li.appendChild(sp);
+      const sub=document.createElement("ul"); li.appendChild(sub); sp.onclick=()=>li.classList.toggle("open");
       p.children.forEach(ch=>rec(ch,sub));
-    }else{li.textContent=p.title;li.onclick=()=>navTo(p);}
+    }else{ li.textContent=p.title; li.onclick=()=>navTo(p); }
   };
   root.children.forEach(ch=>rec(ch,ul));
   document.getElementById("search").oninput=e=>{
     const q=e.target.value.toLowerCase();
-    box.querySelectorAll("li").forEach(li=>li.style.display=li.dataset.title.includes(q)?"":"none");
+    side.querySelectorAll("li").forEach(li=>li.style.display=li.dataset.title.includes(q)?"":"none");
   };
 }
 
-/* === BREADCRUMB ======================================================= */
+/* ── Breadcrumb ───────────────────────────────────────────────────── */
 function breadcrumb(p){
-  const h=document.getElementById("breadcrumb");h.innerHTML="";
-  const home=document.createElement("a");home.innerHTML="🏠";home.href="#";h.appendChild(home);
-  const chain=[];for(let n=p;n;n=n.parent)chain.unshift(n);chain.shift();
+  const h=document.getElementById("breadcrumb"); h.innerHTML="";
+  const home=document.createElement("a"); home.innerHTML="🏠"; home.href="#"; h.appendChild(home);
+  const chain=[]; for(let n=p;n;n=n.parent) chain.unshift(n); chain.shift();
   chain.forEach((c,i)=>{
-    const sep=document.createElement("span");sep.className="separator";sep.textContent=">";h.appendChild(sep);
-    const sib=c.parent.children,length=sib.length;
-    const wrap=document.createElement(length>1?"div":"a");if(length>1)wrap.className="dropdown";
-    const link=document.createElement("a");link.textContent=c.title;link.href="#"+hashFor(c);
-    link.className=i===chain.length-1?"crumb-current":"";wrap.appendChild(link);
-    if(length>1){
+    const sep=document.createElement("span"); sep.className="separator"; sep.textContent=">"; h.appendChild(sep);
+    const sibs=c.parent.children;
+    const wrapper=document.createElement(sibs.length>1?"div":"a"); if(sibs.length>1) wrapper.className="dropdown";
+    const link=document.createElement("a"); link.textContent=c.title; link.href="#"+hashFor(c);
+    link.className=i===chain.length-1?"crumb-current":""; wrapper.appendChild(link);
+    if(sibs.length>1){
       const ul=document.createElement("ul");
-      sib.forEach(s=>{const li=document.createElement("li");li.textContent=s.title;li.onclick=()=>navTo(s);ul.appendChild(li);});
-      wrap.appendChild(ul);
+      sibs.forEach(s=>{const li=document.createElement("li"); li.textContent=s.title; li.onclick=()=>navTo(s); ul.appendChild(li);});
+      wrapper.appendChild(ul);
     }
-    h.appendChild(wrap);
+    h.appendChild(wrapper);
   });
 }
 
-/* === TOC + Prev/Next ================================================== */
+/* ── TOC + Prev/Next ──────────────────────────────────────────────── */
 function renderTOC(page){
-  const nav=document.getElementById("toc");nav.innerHTML="";
+  const nav=document.getElementById("toc"); nav.innerHTML="";
   const heads=document.querySelectorAll("#content-wrapper h1,#content-wrapper h2,#content-wrapper h3");
   if(!heads.length) return;
   const ul=document.createElement("ul");
   heads.forEach(h=>{
-    const li=document.createElement("li");li.dataset.level=h.tagName[1];
-    const a=document.createElement("a");a.href="#"+hashFor(page)+"#"+h.id;
-    a.textContent=h.id+"  "+h.textContent; li.appendChild(a); ul.appendChild(li);
+    const li=document.createElement("li"); li.dataset.level=h.tagName[1];
+    const a=document.createElement("a"); a.href="#"+hashFor(page)+"#"+h.id; a.textContent=h.id+"  "+h.textContent;
+    li.appendChild(a); ul.appendChild(li);
   });
   nav.appendChild(ul);
 }
 function renderPrevNext(page){
   document.getElementById("prev-next")?.remove();
-  const sib=page.parent.children;if(sib.length<2)return;
-  const idx=sib.indexOf(page),nav=document.createElement("div");nav.id="prev-next";
-  if(sib[idx-1]){const a=document.createElement("a");a.href="#"+hashFor(sib[idx-1]);a.textContent="← "+sib[idx-1].title;nav.appendChild(a);}
+  if(!page.parent) return;
+  const sib=page.parent.children;
+  if(sib.length<2) return;
+  const idx=sib.indexOf(page), nav=document.createElement("div"); nav.id="prev-next";
+  if(sib[idx-1]){const a=document.createElement("a"); a.href="#"+hashFor(sib[idx-1]); a.textContent="← "+sib[idx-1].title; nav.appendChild(a);}
   else nav.appendChild(document.createElement("span"));
-  if(sib[idx+1]){const a=document.createElement("a");a.href="#"+hashFor(sib[idx+1]);a.textContent=sib[idx+1].title+" →";nav.appendChild(a);}
+  if(sib[idx+1]){const a=document.createElement("a"); a.href="#"+hashFor(sib[idx+1]); a.textContent=sib[idx+1].title+" →"; nav.appendChild(a);}
   document.getElementById("content-wrapper").appendChild(nav);
 }
 
-/* === MARKDOWN RENDER ================================================== */
-function numberHeadings(art){
+/* ── Markdown render ──────────────────────────────────────────────── */
+function numberHeadings(root){
   const c=[0,0,0,0,0,0];
-  art.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach(h=>{
+  root.querySelectorAll("h1,h2,h3,h4,h5,h6").forEach(h=>{
     const L=+h.tagName[1]-1; c[L]++; for(let i=L+1;i<6;i++) c[i]=0;
     const id=c.slice(0,L+1).filter(Boolean).join("_"); h.id=id;
   });
@@ -200,27 +205,29 @@ function numberHeadings(art){
 function renderContent(page,anchor){
   const art=document.getElementById("content-wrapper");
   art.innerHTML=marked.parse(page.content,{headerIds:false});
-  numberHeadings(art); hljs.highlightAll(); document.title=page.title+" – km";
+  numberHeadings(art); hljs.highlightAll();
+  document.title=page.title+" – km";
   renderTOC(page); renderPrevNext(page);
-  if(anchor){const el=document.getElementById(anchor);el&&el.scrollIntoView({behavior:"smooth"});}
+  if(anchor){ document.getElementById(anchor)?.scrollIntoView({behavior:"smooth"}); }
 }
 
-/* === GRAPH =========================================================== */
+/* ── Graph ───────────────────────────────────────────────────────── */
 function buildGraph(){
-  const nodes=[],links=[]; pages.forEach((p,i)=>p._i=i);
+  const nodes=[], links=[];
+  pages.forEach((p,i)=>p._i=i);
   pages.forEach(p=>{
     nodes.push({id:p._i,label:p.title,ref:p});
     if(p.parent) links.push({source:p._i,target:p.parent._i,kind:"hier"});
   });
-  const tagToPages=new Map();
+  const tagMap=new Map();
   pages.forEach(p=>p.tagSet.forEach(t=>{
-    if(!tagToPages.has(t)) tagToPages.set(t,[]);
-    tagToPages.get(t).push(p);
+    if(!tagMap.has(t)) tagMap.set(t,[]);
+    tagMap.get(t).push(p);
   }));
-  tagToPages.forEach(list=>{
+  tagMap.forEach(list=>{
     for(let i=0;i<list.length;i++)for(let j=i+1;j<list.length;j++){
-      const a=list[i],b=list[j],ex=links.find(l=>(l.source===a._i&&l.target===b._i)||(l.source===b._i&&l.target===a._i));
-      if(ex) ex.kind="both"; else links.push({source:a._i,target:b._i,kind:"tag"});
+      const a=list[i],b=list[j],hit=links.find(l=>(l.source===a._i&&l.target===b._i)||(l.source===b._i&&l.target===a._i));
+      if(hit) hit.kind="both"; else links.push({source:a._i,target:b._i,kind:"tag"});
     }
   });
   return{nodes,links};
@@ -232,13 +239,14 @@ function drag(sim){return d3.drag()
 function renderGraph(){
   const{nodes,links}=buildGraph(),clr=k=>k==="hier"?"#569cd6":k==="tag"?"#2ecc71":"#00c8c8";
   ["mini-graph","full-graph"].forEach(id=>{
-    const svg=d3.select("#"+id);svg.selectAll("*").remove();
+    const svg=d3.select("#"+id); svg.selectAll("*").remove();
     const w=svg.node().clientWidth||300,h=svg.node().clientHeight||200;
     const sim=d3.forceSimulation(nodes).force("link",d3.forceLink(links).id(d=>d.id).distance(80))
-                .force("charge",d3.forceManyBody().strength(-250)).force("center",d3.forceCenter(w/2,h/2));
+                .force("charge",d3.forceManyBody().strength(-250))
+                .force("center",d3.forceCenter(w/2,h/2));
     svg.append("g").selectAll("line").data(links).join("line").attr("stroke",d=>clr(d.kind)).attr("stroke-width",1);
     const node=svg.append("g").selectAll("circle").data(nodes).join("circle")
-      .attr("r",6).attr("fill",d=>d.ref.type.match(/folder/i)?"#8a8a8a":"#569cd6")
+      .attr("r",6).attr("fill",d=>d.ref.children.length?"#8a8a8a":"#569cd6")
       .call(drag(sim)).on("click",(e,d)=>navTo(d.ref));
     const label=svg.append("g").selectAll("text").data(nodes).join("text")
       .attr("font-size",10).attr("fill","#aaa").text(d=>d.label);
@@ -251,19 +259,15 @@ function renderGraph(){
   });
 }
 
-/* === ROUTER ========================================================== */
+/* ── Router ───────────────────────────────────────────────────────── */
 function router(){
-  const segs=parts();
+  const segs=splitHash();
   const {page,anchor}=resolve(segs);
-
-  /* redirection si hash “court” (type #aim) */
-  if(segs.length===1 && page!==root){
-    navTo(page); return;                        // hash modifié ➜ router rappelé
-  }
+  if(segs.length===1 && page!==root){ navTo(page); return; }
   breadcrumb(page); renderContent(page,anchor);
 }
 
-/* === MODAL BTN ======================================================= */
+/* ── Graph modal btn ─────────────────────────────────────────────── */
 document.getElementById("expand-graph").onclick=()=>document.getElementById("graph-modal").classList.add("open");
 document.querySelector("#graph-modal .close").onclick=()=>document.getElementById("graph-modal").classList.remove("open");
 </script>
