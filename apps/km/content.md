@@ -52,7 +52,7 @@ Rassembler les règles / formules utilisées dans nos prototypes afin de les ré
 ![Cover](https://placehold.co/600x140/2a2a2a/FFFFFF?text=Mechanics+Banner)
 
 <!-- 
-type:"subfolder" 
+type:"folder" 
 parent:"mechanics" 
 id:"aim" 
 title:"Aiming in the game" 
