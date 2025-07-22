@@ -34,6 +34,7 @@ function hello() {
 
 <!-- 
 type:"folder"
+parent:"home"
 id:"mechanics"
 title:"Game Mechanics" 
 tags:"mechanics, technical" 
