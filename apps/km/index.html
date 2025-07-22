@@ -190,7 +190,6 @@ function renderContent(page,anchor){
 }
 
 /* === GRAPH =========================================================== */
-/* === GRAPH =========================================================== */
 function buildGraph(){
   const nodes=[], links=[];
   pages.forEach((p,i)=>p._i=i);                       // index unique
@@ -204,9 +203,14 @@ function buildGraph(){
     }
   });
 
-  /* liens par tags partagés */
-  const tagToPages=new Map();
-  pages.forEach(p=>p.tagSet.forEach(t=>(tagToPages.get(t)||tagToPages.set(t,[])).push(p)));
+/* liens par tags partagés */
+const tagToPages = new Map();
+pages.forEach(p => {
+  p.tagSet.forEach(t => {
+    if (!tagToPages.has(t)) tagToPages.set(t, []);   // ← on crée d’abord le tableau
+    tagToPages.get(t).push(p);                       // puis on le remplit
+  });
+});
 
   tagToPages.forEach(list=>{
     for(let i=0;i<list.length;i++){
