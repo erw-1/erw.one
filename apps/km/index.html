@@ -270,40 +270,42 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 5 • Breadcrumb, sibling drop‑downs, child shortcuts
+     SECTION 5 • Breadcrumb, sibling drop‑downs, child shortcuts
      ---------------------------------------------------- */
   function breadcrumb(p) {
     const h = $('#crumb');
     h.innerHTML = '';
-
-    // Home icon
+  
+    /* ---------- Home icon ---------- */
     h.innerHTML =
       `<a href="#" title="Home">
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-             viewBox="0 0 24 24" fill="grey">
-          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-        </svg>
-      </a>`;
-
-    // Walk up the tree to collect ancestors
+         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+              viewBox="0 0 24 24" fill="grey">
+           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+         </svg>
+       </a>`;
+  
+    /* ---------- Ancestors & sibling drop‑downs ---------- */
     const chain = [];
     for (let n = p; n; n = n.parent) chain.unshift(n);
-    chain.shift(); // drop root (already represented by house icon)
-
-    chain.forEach((n, i) => {
+    chain.shift();                   // root already shown by the house icon
+  
+    chain.forEach(n => {
+      /* separator “>” */
       h.insertAdjacentHTML('beforeend', '<span class="separator">></span>');
-
-      // Each breadcrumb gets a sibling drop‑down
+  
+      /* wrapper <span> that will hold the link + its sibling list */
       const sibWrap = document.createElement('span');
       sibWrap.className = 'dropdown';
-
+  
+      /* link to the ancestor itself */
       const a = document.createElement('a');
       a.textContent = n.title;
       a.href        = '#' + hashOf(n);
-      if (i === chain.length - 1) a.className = 'crumb-current';
+      if (n === p) a.className = 'crumb-current';   // highlight current page
       sibWrap.appendChild(a);
-
-      // Sibling list (if >1)
+  
+      /* sibling list (only if there is more than one sibling) */
       const sib = n.parent.children;
       if (sib.length > 1) {
         const ul = document.createElement('ul');
@@ -316,27 +318,27 @@
         sibWrap.appendChild(ul);
       }
       h.appendChild(sibWrap);
-
-      // Child quick‑access box for *current* page
-     if (p === root && root.children.length) {
-       const box = document.createElement('span');
-       box.className = 'childbox';
-       box.innerHTML = '<span class="toggle">▾</span><ul></ul>';
-   
-       const ul = box.querySelector('ul');
-       root.children
-           .sort((a, b) => a.title.localeCompare(b.title))
-           .forEach(ch => {
-             const li = document.createElement('li');
-             li.textContent = ch.title;
-             li.onclick     = () => nav(ch);
-             ul.appendChild(li);
-           });
-   
-       /* on l’ajoute juste après l’icône “Home” */
-       h.appendChild(box);
-     }
-   });
+    });
+  
+    /* ---------- Child quick‑access box for the *current* page
+                     (works for root and non‑root alike) ---------- */
+    if (p.children.length) {
+      const box = document.createElement('span');
+      box.className = 'childbox';
+      box.innerHTML = '<span class="toggle">▾</span><ul></ul>';
+  
+      const ul = box.querySelector('ul');
+      p.children
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .forEach(ch => {
+          const li = document.createElement('li');
+          li.textContent = ch.title;
+          li.onclick     = () => nav(ch);
+          ul.appendChild(li);
+        });
+  
+      h.appendChild(box);
+    }
   }
 
   /* -------------------------------------------------------
