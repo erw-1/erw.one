@@ -134,6 +134,7 @@ tags:"test"
 
 > **Goal** – Put the renderer, sanitizer and UI through their paces.
 
+epic line
 ---
 
 ## 1. Headings (all levels)
@@ -166,12 +167,6 @@ tags:"test"
 1. Alpha  
    1. Beta  
       1. Gamma
-
-### 4.3 Task List
-
-- [x] **Render** ticked items  
-- [ ] Highlight unticked items  
-- [ ] Persist status? 🤔
 
 ## 5. Tables
 
