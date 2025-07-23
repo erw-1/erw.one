@@ -425,18 +425,18 @@ Aliquam lobortis urna at lorem porttitor commodo. Curabitur ac velit cursus, luc
 function fib(n) {
   return n < 2 ? n : fib(n-1) + fib(n-2);
 }
-````
+`` `
 
 ```python
 # Python
 def fib(n): 
     return n if n < 2 else fib(n-1) + fib(n-2)
-```
+`` `
 
 ```bash
 # Shell
 curl -s https://api.example.com/ping
-```
+`` `
 
 </details>
 
