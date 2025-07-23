@@ -177,7 +177,7 @@
     addEventListener('hashchange', route);
 
     // Modal toggling
-    $('#expand').onclick       = () => $('#modal').classList.add('open');
+    $('#expand').onclick       = () => { $('#modal').classList.add('open'); buildGraph(); }; 
     $('#modal .close').onclick = () => $('#modal').classList.remove('open');
 
     // Debounced live‑search (150 ms)
@@ -352,21 +352,25 @@
     });
   }
 
-  // Build table of contents (left column)
+  // Build table of contents (right column)
   function toc(pg) {
     const nav = $('#toc');
     nav.innerHTML = '';
-
+  
     const hd = $$('#content h1,#content h2,#content h3');
     if (!hd.length) return;
-
+  
     const ul = document.createElement('ul');
     hd.forEach(h => {
       const li = document.createElement('li');
       li.dataset.level = h.tagName[1];
+  
       const a  = document.createElement('a');
-      a.href   = '#' + hashOf(pg) + '#' + h.id;
+      // 👉  make sure we don’t end up with “##id” when pg is root
+      const base = hashOf(pg);
+      a.href = '#' + (base ? base + '#' : '') + h.id;
       a.textContent = h.textContent;
+  
       li.appendChild(a);
       ul.appendChild(li);
     });
