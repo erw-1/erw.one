@@ -221,3 +221,144 @@ tags:"mouse, sensitivity, aim"
 ## Navigation
 - ⇠ [Aim](#mechanics#aim)  
 - ⇡ [Back to Mechanics](#mechanics)
+
+<!--
+parent:"home"
+id:"stresstest"
+title:"KM Stress Testing"
+tags:"test"
+-->
+
+# KM Stress Testing 🚀
+
+> **Goal** – Put the renderer, sanitizer and UI through their paces.
+
+---
+
+## 1. Headings (all levels)
+
+### 1.1 Second‑level  
+#### 1.1.1 Third‑level  
+##### 1.1.1.1 Fourth‑level  
+###### 1.1.1.1.1 Fifth‑level
+
+## 2. Emphasis
+
+*Italic* **Bold** ***Bold‑Italic*** ~~Strikethrough~~
+
+## 3. Links
+
+* External: <https://example.com>  
+* Internal (sidebar route): [`Game Mechanics`](#home#Game%20Mechanics)  
+* Anchor in this page: [Jump to tables](#5-tables)
+
+## 4. Lists
+
+### 4.1 Nested Unordered
+
+* Level 1  
+  * Level 2  
+    * Level 3
+
+### 4.2 Nested Ordered
+
+1. Alpha  
+   1. Beta  
+      1. Gamma
+
+### 4.3 Task List
+
+- [x] **Render** ticked items  
+- [ ] Highlight unticked items  
+- [ ] Persist status? 🤔
+
+## 5. Tables
+
+| Feature | Supported? | Notes |
+|:------- |:---------: |------ |
+| Alignment | ✅ | `:---`, `---:` and `:---:` |
+| Inline `code` | ✅ | Looks like `this` |
+| Emoji | ✅ | 🎉 |
+
+## 6. Code Blocks
+
+<details>
+<summary><strong>Click to expand code samples</strong></summary>
+
+```js
+// JavaScript
+function fib(n) {
+  return n < 2 ? n : fib(n-1) + fib(n-2);
+}
+````
+
+```python
+# Python
+def fib(n): 
+    return n if n < 2 else fib(n-1) + fib(n-2)
+```
+
+```bash
+# Shell
+curl -s https://api.example.com/ping
+```
+
+</details>
+
+## 7. Math
+
+Inline: $e^{i\\pi} + 1 = 0$
+
+Block:
+
+$$
+\\frac{d}{dx} \\left( \\int_{a}^{x} f(t)\\,dt \\right) = f(x)
+$$
+
+## 8. Blockquote with nested list
+
+> “We choose to go to the Moon…”
+>
+> * Items to remember
+>
+>   * Courage
+>   * Innovation
+
+## 9. Images
+
+![PNG example](https://via.placeholder.com/120x80.png?text=PNG)
+![JPG example](https://via.placeholder.com/120x80.jpg?text=JPG)
+
+## 10. Raw HTML (sanitizer test)
+
+<div style="padding:8px;border:1px dashed var(--accent)">
+  This div should survive because inline styles are removed, but
+  harmless <strong>markup</strong> remains.
+</div>
+
+## 11. Details/Summary
+
+<details>
+<summary>Click to toggle hidden insights 🧐</summary>
+
+*Hidden text appears here…*
+
+</details>
+
+## 12. Embedded iframe (YouTube)
+
+<iframe width="360" height="203"
+        src="https://www.youtube.com/embed/dQw4w9WgXcQ"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen
+        title="RickRoll"></iframe>
+
+## 13. Footnotes
+
+Here is a statement that needs a citation[^fn].
+
+[^fn]: A handy little footnote.
+
+---
+
+### Stress‑test complete ✅
