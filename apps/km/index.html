@@ -19,20 +19,18 @@
 body{height:100vh;display:flex;background:var(--bg);color:var(--fg);
      font-family:system-ui,Segoe UI,Roboto,sans-serif;overflow:hidden}
 
-/* ── sidebar ─────────────────────────────────────────────────────── */
-#sidebar{width:260px;background:var(--bg-alt);padding:.6rem .5rem;border-right:1px solid #444;overflow-y:auto}
-#search{width:100%;padding:.35rem .6rem;margin-bottom:.5rem;border:none;border-radius:6px;background:#3a3a3a;color:var(--fg)}
+#sidebar{width:260px;background:var(--bg-alt);padding:.6rem .5rem;
+         border-right:1px solid #444;overflow-y:auto}
+#search{width:100%;padding:.35rem .6rem;margin-bottom:.5rem;border:none;
+        border-radius:6px;background:#3a3a3a;color:var(--fg)}
 #sidebar ul{list-style:none;margin:0}
 #sidebar li{margin:.15rem 0;cursor:pointer}
 #sidebar li:hover{color:var(--accent)}
-/* caret */
 .caret{display:inline-block;width:14px;margin-right:2px;cursor:pointer;transition:.2s}
 .caret::before{content:"▸"}
 .folder.open>.caret{transform:rotate(90deg)}
-/* tree indent */
 #sidebar ul ul{padding-left:1.1em}
 
-/* ── layout (identique) ─────────────────────────────────────────── */
 main{flex:1;display:flex;flex-direction:column}
 header{height:48px;background:var(--bg-alt);display:flex;align-items:center;gap:.5rem;padding:0 1rem}
 header a{color:var(--fg);text-decoration:none;padding:4px 8px;border-radius:6px}
@@ -47,7 +45,6 @@ header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a}
 #content-area{flex:1;display:flex;overflow:hidden}
 #content{flex:1;overflow-y:auto;padding:1rem 2rem;max-width:960px;margin:0 auto}
 #content h1,#content h2,#content h3{scroll-margin-top:70px}
-
 #prev-next{display:flex;justify-content:space-between;margin:2rem 0}
 #prev-next a{background:#3a3a3a;color:var(--fg);padding:.6rem 1rem;border-radius:6px;text-decoration:none}
 #prev-next a:hover{background:var(--accent)}
@@ -89,7 +86,7 @@ header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a}
 <div id="modal"><span class="close">✕</span><svg id="full"></svg></div>
 
 <script>
-/* ───────────────────────── 1. Loader / store ───────────────────────── */
+/* ---------- loader ------------------------------------------------- */
 const MD_PATH='content.md';
 const pages=[], byId=new Map(); let root=null;
 
@@ -101,7 +98,7 @@ fetch(MD_PATH).then(r=>r.text()).then(src=>{
   pages.forEach(p=>byId.set(p.id,p));
   root=byId.get('home')||pages[0];
   pages.forEach(p=>{
-    if(p===root) return;
+    if(p===root)return;
     const par=byId.get(p.parent)||root;
     p.parent=par; par.children.push(p);
   });
@@ -116,23 +113,17 @@ const hashOf=p=>{const a=[];for(let n=p;n&&n.parent;n=n.parent)a.unshift(n.id);r
 const find=path=>{let n=root;for(const id of path){const c=n.children.find(k=>k.id===id);if(!c)break;n=c;}return n;};
 const navigate=p=>location.hash='#'+hashOf(p);
 
-/* ───────────────────────── 2. UI ───────────────────────────────────── */
 const $=(s,sc=document)=>sc.querySelector(s), $$=(s,sc=document)=>[...sc.querySelectorAll(s)];
 
-function initUI(){
-  buildTree(); renderGraph(); route();
+/* ---------- UI ----------------------------------------------------- */
+function initUI(){ buildTree(); renderGraph(); route();
   addEventListener('hashchange',route);
   $('#expand').onclick=()=>$('#modal').classList.add('open');
   $('#modal .close').onclick=()=>$('#modal').classList.remove('open');
-
-  let timer=0;
-  $('#search').oninput=e=>{
-    clearTimeout(timer);
-    timer=setTimeout(()=>search(e.target.value.trim().toLowerCase()),150);
-  };
+  let t=0; $('#search').oninput=e=>{clearTimeout(t);t=setTimeout(()=>search(e.target.value.toLowerCase()),150);};
 }
 
-/* ---- sidebar : tree & search ------------------------------------- */
+/* --- tree with working caret -------------------------------------- */
 function buildTree(){
   $('#tree').innerHTML='';
   const rec=(list,ul)=>{
@@ -142,10 +133,15 @@ function buildTree(){
       if(p.children.length){
         li.className='folder open';
         li.innerHTML=`<span class="caret"></span><span class="lbl">${p.title}</span><ul></ul>`;
-        const caret=li.querySelector('.caret'), lbl=li.querySelector('.lbl');
-        caret.onclick=e=>{e.stopPropagation();li.classList.toggle('open');};
-        lbl.onclick=e=>{e.stopPropagation();navigate(p);};
-        rec(p.children, li.lastChild);
+        const caret=li.querySelector('.caret'), lbl=li.querySelector('.lbl'), sub=li.querySelector('ul');
+        sub.style.display='block';                     // ouvert par défaut
+        caret.onclick=e=>{
+          e.stopPropagation();
+          const open=li.classList.toggle('open');
+          sub.style.display=open?'block':'none';
+        };
+        lbl.onclick=()=>navigate(p);
+        rec(p.children,sub);
       }else{
         li.className='article'; li.textContent=p.title; li.onclick=()=>navigate(p);
       }
@@ -155,20 +151,19 @@ function buildTree(){
   rec(root.children,$('#tree'));
 }
 
+/* --- search -------------------------------------------------------- */
 function search(q){
   const tree=$('#tree'), res=$('#results');
-  if(!q){ res.style.display='none'; tree.style.display=''; return; }
-
+  if(!q){res.style.display='none';tree.style.display='';return;}
   res.innerHTML=''; res.style.display=''; tree.style.display='none';
   pages.filter(p=>p.searchText.includes(q)).forEach(p=>{
     const li=document.createElement('li'); li.className='article';
-    li.textContent=p.title; li.onclick=()=>navigate(p);
-    res.appendChild(li);
+    li.textContent=p.title; li.onclick=()=>navigate(p); res.appendChild(li);
   });
-  if(!res.children.length) res.innerHTML='<li style="opacity:.6">No result</li>';
+  if(!res.children.length)res.innerHTML='<li style="opacity:.6">No result</li>';
 }
 
-/* ---- breadcrumb --------------------------------------------------- */
+/* --- breadcrumb (unchanged) --------------------------------------- */
 function breadcrumb(p){
   const h=$('#crumb'); h.innerHTML='<a href="#">🏠</a>';
   const chain=[]; for(let n=p;n;n=n.parent) chain.unshift(n); chain.shift();
@@ -189,7 +184,7 @@ function breadcrumb(p){
   });
 }
 
-/* ---- markdown + toc ---------------------------------------------- */
+/* --- markdown & toc ----------------------------------------------- */
 function numberHeads(el){
   const c=[0,0,0,0,0,0];
   $$('h1,h2,h3,h4,h5',el).forEach(h=>{
@@ -200,7 +195,7 @@ function numberHeads(el){
 function buildTOC(page){
   const nav=$('#toc'); nav.innerHTML='';
   const heads=$$('#content h1,#content h2,#content h3');
-  if(!heads.length) return;
+  if(!heads.length)return;
   const ul=document.createElement('ul');
   heads.forEach(h=>{
     const li=document.createElement('li'); li.dataset.level=h.tagName[1];
@@ -210,21 +205,21 @@ function buildTOC(page){
 }
 function prevNext(page){
   $('#prev-next')?.remove();
-  if(!page.parent) return;
-  const sib=page.parent.children;if(sib.length<2) return;
+  if(!page.parent)return;
+  const sib=page.parent.children;if(sib.length<2)return;
   const idx=sib.indexOf(page), nav=document.createElement('div'); nav.id='prev-next';
-  if(idx>0) nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[idx-1]),textContent:'← '+sib[idx-1].title}));
-  if(idx<sib.length-1) nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[idx+1]),textContent:sib[idx+1].title+' →'}));
+  if(idx>0)nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[idx-1]),textContent:'← '+sib[idx-1].title}));
+  if(idx<sib.length-1)nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[idx+1]),textContent:sib[idx+1].title+' →'}));
   $('#content').appendChild(nav);
 }
 function renderPage(page,anchor){
   $('#content').innerHTML=DOMPurify.sanitize(marked.parse(page.content,{headerIds:false}));
   numberHeads($('#content')); hljs.highlightAll();
   buildTOC(page); prevNext(page);
-  if(anchor) document.getElementById(anchor)?.scrollIntoView({behavior:'smooth'});
+  if(anchor)document.getElementById(anchor)?.scrollIntoView({behavior:'smooth'});
 }
 
-/* ---- graph -------------------------------------------------------- */
+/* --- graph --------------------------------------------------------- */
 function renderGraph(){
   const nodes=[],links=[]; pages.forEach((p,i)=>p._i=i);
   pages.forEach(p=>{nodes.push({id:p._i,label:p.title,ref:p}); p.parent&&links.push({source:p._i,target:p.parent._i});});
@@ -253,11 +248,11 @@ function renderGraph(){
   });
 }
 
-/* ---- router ------------------------------------------------------- */
+/* --- router -------------------------------------------------------- */
 function route(){
-  const segs=location.hash.slice(1).split('#').filter(Boolean);
-  const page=find(segs);
-  const anc=segs.slice(hashOf(page).split('#').length).join('#');
+  const seg=location.hash.slice(1).split('#').filter(Boolean);
+  const page=find(seg);
+  const anc=seg.slice(hashOf(page).split('#').length).join('#');
   breadcrumb(page); renderPage(page,anc);
 }
 </script>
