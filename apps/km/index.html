@@ -299,58 +299,60 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 5 • Breadcrumb, sibling drop‑downs, child shortcuts
-     ---------------------------------------------------- */
+     SECTION 5 • breadcrumb …     (entire function patched)
+  ---------------------------------------------------- */
   function breadcrumb(p) {
     const h = $('#crumb');
-    h.innerHTML = '';
+  
+    /* keep burger buttons before we wipe the header */
+    const left  = $('#burger‑sidebar');
+    const right = $('#burger‑util');
+  
+    h.innerHTML = '';                // clear dynamic crumbs
+  
+    if (left)  h.appendChild(left);  // put ☰ back on the far left
   
     /* ---------- Home icon ---------- */
-    h.innerHTML =
+    h.insertAdjacentHTML('beforeend',
       `<a href="#" title="Home">
          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
               viewBox="0 0 24 24" fill="grey">
            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
          </svg>
-       </a>`;
+       </a>`);
   
     /* ---------- Ancestors & sibling drop‑downs ---------- */
     const chain = [];
     for (let n = p; n; n = n.parent) chain.unshift(n);
-    chain.shift();                   // root already shown by the house icon
+    chain.shift();                                  // root shown by house
   
     chain.forEach(n => {
-      /* separator “>” */
       h.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
   
-      /* wrapper <span> that will hold the link + its sibling list */
-      const sibWrap = document.createElement('span');
-      sibWrap.className = 'dropdown';
+      const wrap = document.createElement('span');
+      wrap.className = 'dropdown';
   
-      /* link to the ancestor itself */
       const a = document.createElement('a');
       a.textContent = n.title;
-      a.href        = '#' + hashOf(n);
-      if (n === p) a.className = 'crumb-current';   // highlight current page
-      sibWrap.appendChild(a);
+      a.href = '#' + hashOf(n);
+      if (n === p) a.className = 'crumb-current';
+      wrap.appendChild(a);
   
-      /* sibling list (only if there is more than one sibling) */
       const sib = n.parent.children;
       if (sib.length > 1) {
         const ul = document.createElement('ul');
         sib.forEach(s => {
           const li = document.createElement('li');
           li.textContent = s.title;
-          li.onclick     = () => nav(s);
+          li.onclick = () => nav(s);
           ul.appendChild(li);
         });
-        sibWrap.appendChild(ul);
+        wrap.appendChild(ul);
       }
-      h.appendChild(sibWrap);
+      h.appendChild(wrap);
     });
   
-    /* ---------- Child quick‑access box for the *current* page
-                     (works for root and non‑root alike) ---------- */
+    /* ---------- Child drop‑down of current page ---------- */
     if (p.children.length) {
       const box = document.createElement('span');
       box.className = 'childbox';
@@ -362,12 +364,15 @@
         .forEach(ch => {
           const li = document.createElement('li');
           li.textContent = ch.title;
-          li.onclick     = () => nav(ch);
+          li.onclick = () => nav(ch);
           ul.appendChild(li);
         });
   
       h.appendChild(box);
     }
+  
+    /* put the ⋯ burger at the far right */
+    if (right) h.appendChild(right);
   }
  
   /* -------------------------------------------------------
