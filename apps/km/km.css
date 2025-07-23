@@ -401,16 +401,17 @@ a.watermark:hover {
   #util {
     display: none;
   }
-
   /* take full viewport when opened via JS */
   #sidebar.open,
   #util.open {
-    display: flex;
-    position: fixed;
-    inset: 0;                      /* full‑screen overlay        */
-    z-index: var(--z-modal);       /* above everything           */
-    background: var(--clr-bg-alt); /* re‑use token               */
-    flex-direction: column;
+        padding-top: 48px;
+        display: flex;
+        position: fixed;
+        inset: 0;
+        z-index: var(--z-modal);
+        background: var(--clr-bg-alt);
+        flex-direction: column;
+        width: 100dvw;
   }
 
   /* ensure content area stretches full width without util column */
