@@ -435,9 +435,9 @@
         },{
           name:'footnote_def',
           level:'block',
-          start(src){ return src.match(/^\\[\\^.+?\\]:/m)?.index },
+          start(src){ return src.match(/^\[\^[^\]]+]:/m)?.index },
           tokenizer(src){
-            const m = /^\\[\\^([^\]]+)\\]:\\s+([\\s\\S]+?)(?:\\n{2,}|$)/.exec(src);
+            const m = /^\[\^([^\]]+)\]:\s+([\s\S]+?)(?:\n{2,}|$)/.exec(src);
             if (m) return {
               type:'foot_def', raw:m[0], id:m[1],
               text:marked.parseInline(m[2].trim())
