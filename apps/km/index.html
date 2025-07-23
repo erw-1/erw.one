@@ -133,7 +133,18 @@
     if(i>0)nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[i-1]),textContent:'← '+sib[i-1].title}));
     if(i<sib.length-1)nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[i+1]),textContent:sib[i+1].title+' →'}));
     $('#content').appendChild(nav);}
-  function render(pg,anc){$('#content').innerHTML=DOMPurify.sanitize(marked.parse(pg.content,{headerIds:false}));
+  const cleanHTML = DOMPurify.sanitize(
+  marked.parse(pg.content,{headerIds:false}),
+  {
+    ADD_TAGS: ['iframe'],
+    ADD_ATTR: [
+      'allow', 'allowfullscreen', 'frameborder', 'scrolling',
+      'width','height','src','title'
+    ],
+    ALLOWED_URI_REGEXP: /^(?:https?:)?\/\/(?:www\.)?youtube\.com\/embed\//
+  }
+  );
+  function render(pg,anc){$('#content').innerHTML = cleanHTML;
     numHead($('#content'));hljs.highlightAll();toc(pg);prevNext(pg);if(anc)document.getElementById(anc)?.scrollIntoView({behavior:'smooth'});}
   
   /* ---------------- graph ------------------------------------------- */
