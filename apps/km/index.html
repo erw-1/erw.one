@@ -611,14 +611,16 @@
    // location.hash = "#a#b#c#optional‑anchor"
    const seg = location.hash.slice(1).split('#').filter(Boolean);
    
-   /* block any native scroll jump that may have just occurred */
-   document.documentElement.scrollTop = 0;   // html element
-   document.body.scrollTop            = 0;   // Safari fallback 
+
 
     // 1‑n segments describe the page path,
     // the remainder (if any) is a heading anchor.
     const pg  = find(seg);
     const anc = seg.slice(hashOf(pg).split('#').length).join('#');
+
+    /* block any native scroll jump that may have just occurred */
+    document.documentElement.scrollTop = 0;   // html element
+    document.body.scrollTop            = 0;   // Safari fallback 
 
     breadcrumb(pg);
     render(pg, anc);
