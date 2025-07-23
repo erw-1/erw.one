@@ -185,7 +185,7 @@ header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a}
   function numHead(el){const c=[0,0,0,0,0,0];$$('h1,h2,h3,h4,h5',el).forEach(h=>{const l=+h.tagName[1]-1;c[l]++;for(let i=l+1;i<6;i++)c[i]=0;h.id=c.slice(0,l+1).filter(Boolean).join('_');});}
   function toc(pg){const nav=$('#toc');nav.innerHTML='';const hd=$$('#content h1,#content h2,#content h3');if(!hd.length)return;
     const ul=document.createElement('ul');hd.forEach(h=>{const li=document.createElement('li');li.dataset.level=h.tagName[1];
-      const a=document.createElement('a');a.href='#'+hashOf(pg)+'#'+h.id;a.textContent=h.id+'  '+h.textContent;li.appendChild(a);ul.appendChild(li);});
+      const a=document.createElement('a');a.href='#'+hashOf(pg)+'#'+h.id;a.textContent=h.textContent;li.appendChild(a);ul.appendChild(li);});
     nav.appendChild(ul);}
   function prevNext(pg){$('#prev-next')?.remove();if(!pg.parent)return;const sib=pg.parent.children;if(sib.length<2)return;
     const i=sib.indexOf(pg),nav=document.createElement('div');nav.id='prev-next';
