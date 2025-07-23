@@ -390,6 +390,12 @@ a.watermark:hover {
 }
 .burger:hover { color: var(--clr-accent); }
 
+@media (min-width: 1000px) {
+    .panel‑close {
+        display: none;
+    }
+}
+
 /* --- portrait rules: ≤700 px OR phone portrait ---------------- */
 @media (max-width: 1000px), (orientation: portrait) {
 
