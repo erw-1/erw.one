@@ -49,7 +49,18 @@
 <!-- ─────────────  Main panel  ───────────── -->
 <main>
   <!-- Breadcrumb + sibling/child drop‑downs -->
-  <header id="crumb"></header>
+  <header id="crumb">
+    <button id="burger‑sidebar" class="burger"  aria-label="Open sidebar">
+      <!-- classic ☰ icon -->
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </button>
+    <button id="burger‑util" class="burger" aria-label="Open utility panel">
+      <!-- three‑dot icon -->
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
+      </svg>
+    </button>
+  </header>
 
   <div id="content-area">
     <!-- Rendered Markdown goes here -->
@@ -173,7 +184,7 @@
   /* -------------------------------------------------------
      SECTION 2 • UI boot‑strap
      ---------------------------------------------------- */
-  function initUI() {
+  function initUI() {https://github.com/erw-1/erw.one/blob/main/apps/km/index.html
     buildTree();      // sidebar outline
     buildGraph();     // mini & full graph
     route();          // initial render based on URL
@@ -191,6 +202,18 @@
       clearTimeout(t);
       t = setTimeout(() => search(e.target.value.toLowerCase()), 150);
     };
+
+    /* --- portrait burgers -------------------------------- */
+    $('#burger‑sidebar').onclick = () => $('#sidebar').classList.toggle('open');
+    $('#burger‑util').onclick    = () => $('#util').classList.toggle('open');
+    
+    /* Close an open panel if window resized back to landscape */
+    addEventListener('resize', () => {
+      if (matchMedia('(min-width: 701px)').matches){
+        $('#sidebar').classList.remove('open');
+        $('#util').classList.remove('open');
+      }
+    });
   }
 
   /* -------------------------------------------------------
