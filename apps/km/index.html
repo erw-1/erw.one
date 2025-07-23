@@ -45,6 +45,11 @@ header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a}
 
 /* ── LAYOUT / CONTENT / GRAPH ─────────────────────────────────────── */
 #content-area{flex:1;display:flex;overflow:hidden}
+#content .page{
+  max-width:960px;
+  margin:0 auto;              /* centre dans la zone #content   */
+  width:100%;                 /* évite la marge vide à gauche   */
+}      
 #content{flex:1;overflow-y:auto;padding:1rem 2rem}              /* max‑width retiré */
 #content h1,#content h2,#content h3{scroll-margin-top:70px}
 #prev-next{display:flex;justify-content:space-between;margin:2rem 0}
@@ -181,8 +186,16 @@ function prevNext(pg){$('#prev-next')?.remove();if(!pg.parent)return;const sib=p
   if(i>0)nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[i-1]),textContent:'← '+sib[i-1].title}));
   if(i<sib.length-1)nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[i+1]),textContent:sib[i+1].title+' →'}));
   $('#content').appendChild(nav);}
-function render(pg,anc){$('#content').innerHTML=DOMPurify.sanitize(marked.parse(pg.content,{headerIds:false}));
-  numHead($('#content'));hljs.highlightAll();toc(pg);prevNext(pg);if(anc)document.getElementById(anc)?.scrollIntoView({behavior:'smooth'});}
+function render(pg,anc){
+  const html = DOMPurify.sanitize(marked.parse(pg.content,{headerIds:false}));
+  $('#content').innerHTML = `<div class="page">${html}</div>`;   // ← wrapper
+  const pageNode = $('#content .page');
+  numberHeads(pageNode);
+  hljs.highlightAll();
+  buildTOC(pg);
+  prevNext(pg);
+  if(anc) document.getElementById(anc)?.scrollIntoView({behavior:'smooth'});
+}
 
 /* --- graph (inchangé) -------------------------------------------- */
 function graph(){const n=[],l=[];pages.forEach((p,i)=>p._i=i);
