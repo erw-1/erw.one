@@ -153,9 +153,10 @@ Bienvenue sur **km**, un wiki 100 % statique propulsé par Markdown !
 | Graph | Vue réseau interactive (D3) |
 | Prev / Next | Parcours linéaire des fichiers d’un dossier |
 
+epic line
+
 ---
 
-epic line
 
 ## 1. Headings (all levels)
 
@@ -184,9 +185,15 @@ epic line
 
 ### 4.2 Nested Ordered
 
-1. Alpha  
-   1. Beta  
+1. Alpha
+2. Alpha bis
+3. Alpha bis bis    
+   1. Beta
+   2. Beta bis
+   3. Beta bis bis
       1. Gamma
+      2. Gamma bis
+      3. Gamma bis bis
 
 ## 5. Tables
 
@@ -415,9 +422,16 @@ epic line
 
 ### 4.2 Nested Ordered
 
-1. Alpha  
-   1. Beta  
+1. Alpha
+2. Alpha bis
+3. Alpha bis bis    
+   1. Beta
+   2. Beta bis
+   3. Beta bis bis
       1. Gamma
+      2. Gamma bis
+      3. Gamma bis bis
+
 
 ## 5. Tables
 
