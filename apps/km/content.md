@@ -198,8 +198,7 @@ epic line
 ## 5. Tables
 
 | Feature | Supported? | Notes |
-|:------- |:---------: |------ |
-| Alignment | ✅ | `:---`, `---:` and `:---:` |
+|-------- |----------- |------ |
 | Inline `code` | ✅ | Looks like `this` |
 | Emoji | ✅ | 🎉 |
 
