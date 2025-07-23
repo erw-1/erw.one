@@ -607,12 +607,13 @@
      SECTION 8 • Client‑side routing
      ---------------------------------------------------- */
   function route() {
+   
+   // location.hash = "#a#b#c#optional‑anchor"
+   const seg = location.hash.slice(1).split('#').filter(Boolean);
+   
    /* block any native scroll jump that may have just occurred */
    document.documentElement.scrollTop = 0;   // html element
    document.body.scrollTop            = 0;   // Safari fallback 
-   
-   // location.hash = "#a#b#c#optional‑anchor"
-    const seg = location.hash.slice(1).split('#').filter(Boolean);
 
     // 1‑n segments describe the page path,
     // the remainder (if any) is a heading anchor.
