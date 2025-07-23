@@ -22,11 +22,15 @@
 <!-- DOMPurify   : sanitises the generated HTML        -->
 <!-- highlight.js: syntax highlighting                 -->
 <!-- d3          : force‑directed graph                -->
+<!-- KaTeX -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js"></script>
 
 <!-- ─────────────  Local style  ───────────── -->
 <!-- All custom CSS should live in km.css.     -->
@@ -413,28 +417,82 @@
 
   // Main renderer
   function render(pg, anc) {
-    // Markdown → HTML + sanitise (allow only safe embeds)
+    /* 1. Footnote extension — runs once on first call  */
+    if (!marked.__footnotes) {
+      marked.use({
+        extensions: [{
+          name: 'footnote',
+          level: 'inline',
+          start(src) { return src.match(/\[\^/)?.index },   // quick seek
+          tokenizer(src) {
+            const m = /^\[\^([^\]]+)\]/.exec(src);
+            if (m) return { type:'foot_ref', raw:m[0], text:m[1] };
+          },
+          renderer(tok) {
+            const id = tok.text.replace(/\\s+/g,'-');
+            return `<sup id="fnref:${id}"><a href="#fn:${id}">[${tok.text}]</a></sup>`;
+          }
+        },{
+          name:'footnote_def',
+          level:'block',
+          start(src){ return src.match(/^\\[\\^.+?\\]:/m)?.index },
+          tokenizer(src){
+            const m = /^\\[\\^([^\]]+)\\]:\\s+([\\s\\S]+?)(?:\\n{2,}|$)/.exec(src);
+            if (m) return {
+              type:'foot_def', raw:m[0], id:m[1],
+              text:marked.parseInline(m[2].trim())
+            };
+          },
+          renderer(tok){
+            return `<li id="fn:${tok.id}">${tok.text} <a href="#fnref:${tok.id}" title="Back">↩</a></li>`;
+          }
+        }],
+        renderer: {
+          foot_def(body) { return body }   // silence unknown tokens
+        }
+      });
+      marked.__footnotes = true;
+    }
+  
+    /* 2. Parse markdown as usual */
+    const html = marked.parse(pg.content, { headerIds:false });
+  
+    /* 3. Split main body & collected footnotes */
+    const footnotes = [];
+    const body = html.replace(/<li id=\"fn:.*?<\/li>/gs, m => {
+      footnotes.push(m);
+      return '';
+    });
+  
+    /* 4. Sanitize & inject */
     $('#content').innerHTML = DOMPurify.sanitize(
-      marked.parse(pg.content, { headerIds: false }),
+      body + (footnotes.length
+              ? `<section class="footnotes"><hr><ol>${footnotes.join('')}</ol></section>`
+              : ''),
       {
-        ADD_TAGS : ['iframe'],
-        ADD_ATTR : [
-          'allow', 'allowfullscreen', 'frameborder', 'scrolling',
-          'width', 'height', 'src', 'title'
-        ],
-        ALLOWED_URI_REGEXP:
-          /^(?:https?:|mailto:|tel:|#).*$/i
+        ADD_TAGS : ['iframe','sup','section'],
+        ADD_ATTR : ['id','href','title','allow','allowfullscreen',
+                    'frameborder','scrolling','width','height','src'],
+        ALLOWED_URI_REGEXP:/^(?:https?:|mailto:|tel:|#).*$/i
       }
     );
-
-    numHead($('#content')); // heading anchors
-    hljs.highlightAll();    // code highlight
-    toc(pg);                // ToC
-    prevNext(pg);           // prev/next nav
-
-    // Jump to subsection anchor if provided
-    if (anc)
-      document.getElementById(anc)?.scrollIntoView({ behavior: 'smooth' });
+  
+    /* 5. Syntax highlight + ToC etc.  */
+    numHead($('#content')); hljs.highlightAll(); toc(pg); prevNext(pg);
+  
+    /* 6. Render maths (KaTeX auto‑render) */
+    renderMathInElement(document.getElementById('content'), {
+      delimiters:[
+        {left:'$$',right:'$$',display:true},
+        {left:'\\[',right:'\\]',display:true},
+        {left:'$', right:'$', display:false},
+        {left:'\\(',right:'\\)',display:false}
+      ],
+      throwOnError:false
+    });
+  
+    /* 7. Anchor jump */
+    if (anc) document.getElementById(anc)?.scrollIntoView({behavior:'smooth'});
   }
 
   /* -------------------------------------------------------
