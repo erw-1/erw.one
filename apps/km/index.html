@@ -344,11 +344,11 @@
       h.appendChild(box);
     }
   }
-
+ 
   /* -------------------------------------------------------
-     SECTION 6 • Markdown rendering, ToC, prev‑next links
-     ---------------------------------------------------- */
-  // Number headings to create stable anchor ids (h1‑h5)
+   SECTION 6 • Markdown rendering, ToC, prev‑next links
+   ---------------------------------------------------- */
+  /* ---- 6‑a • heading numbering (h1‑h5) ------------------ */
   function numHead(el) {
     const c = [0, 0, 0, 0, 0, 0];
     $$('h1,h2,h3,h4,h5', el).forEach(h => {
@@ -358,8 +358,8 @@
       h.id = c.slice(0, l + 1).filter(Boolean).join('_');
     });
   }
-
-  // Build table of contents (right column)
+  
+  /* ---- 6‑b • table of contents (right column) ----------- */
   function toc(pg) {
     const nav = $('#toc');
     nav.innerHTML = '';
@@ -373,8 +373,7 @@
       li.dataset.level = h.tagName[1];
   
       const a  = document.createElement('a');
-      // 👉  make sure we don’t end up with “##id” when pg is root
-      const base = hashOf(pg);
+      const base = hashOf(pg);                  // avoid “##id” when on root
       a.href = '#' + (base ? base + '#' : '') + h.id;
       a.textContent = h.textContent;
   
@@ -383,19 +382,19 @@
     });
     nav.appendChild(ul);
   }
-
-  // Previous / next article controls
+  
+  /* ---- 6‑c • prev / next navigation --------------------- */
   function prevNext(pg) {
     $('#prev-next')?.remove();
     if (!pg.parent) return;
-
+  
     const sib = pg.parent.children;
     if (sib.length < 2) return;
-
+  
     const i   = sib.indexOf(pg);
     const nav = document.createElement('div');
     nav.id    = 'prev-next';
-
+  
     if (i > 0)
       nav.appendChild(
         Object.assign(document.createElement('a'), {
@@ -403,7 +402,7 @@
           textContent: '← ' + sib[i - 1].title
         })
       );
-
+  
     if (i < sib.length - 1)
       nav.appendChild(
         Object.assign(document.createElement('a'), {
@@ -411,90 +410,50 @@
           textContent: sib[i + 1].title + ' →'
         })
       );
-
+  
     $('#content').appendChild(nav);
   }
-
-  // Main renderer
+  
+  /* ---- 6‑d • main renderer (Markdown → HTML) ------------ */
   function render(pg, anc) {
-    /* 1. Footnote extension — runs once on first call  */
-    if (!marked.__footnotes) {
-      marked.use({
-        extensions: [{
-          name: 'footnote',
-          level: 'inline',
-          start(src) { return src.match(/\[\^/)?.index },   // quick seek
-          tokenizer(src) {
-            const m = /^\[\^([^\]]+)\]/.exec(src);
-            if (m) return { type:'foot_ref', raw:m[0], text:m[1] };
-          },
-          renderer(tok) {
-            const id = tok.text.replace(/\\s+/g,'-');
-            return `<sup id="fnref:${id}"><a href="#fn:${id}">[${tok.text}]</a></sup>`;
-          }
-        },{
-          name:'footnote_def',
-          level:'block',
-          start(src){ return src.match(/^\[\^[^\]]+]:/m)?.index },
-          tokenizer(src){
-            const m = /^\[\^([^\]]+)\]:\s+([\s\S]+?)(?:\n{2,}|$)/.exec(src);
-            if (m) return {
-              type:'foot_def', raw:m[0], id:m[1],
-              text:marked.parseInline(m[2].trim())
-            };
-          },
-          renderer(tok){
-            return `<li id="fn:${tok.id}">${tok.text} <a href="#fnref:${tok.id}" title="Back">↩</a></li>`;
-          }
-        }],
-        renderer: {
-          foot_def(body) { return body }   // silence unknown tokens
-        }
-      });
-      marked.__footnotes = true;
-    }
+    /* 1. Parse Markdown (no footnote extensions) */
+    const html = marked.parse(pg.content, { headerIds: false });
   
-    /* 2. Parse markdown as usual */
-    const html = marked.parse(pg.content, { headerIds:false });
-  
-    /* 3. Split main body & collected footnotes */
-    const footnotes = [];
-    const body = html.replace(/<li id=\"fn:.*?<\/li>/gs, m => {
-      footnotes.push(m);
-      return '';
-    });
-  
-    /* 4. Sanitize & inject */
+    /* 2. Sanitize & inject */
     $('#content').innerHTML = DOMPurify.sanitize(
-      body + (footnotes.length
-              ? `<section class="footnotes"><hr><ol>${footnotes.join('')}</ol></section>`
-              : ''),
+      html,
       {
-        ADD_TAGS : ['iframe','sup','section'],
-        ADD_ATTR : ['id','href','title','allow','allowfullscreen',
-                    'frameborder','scrolling','width','height','src'],
+        ADD_TAGS : ['iframe'],
+        ADD_ATTR : [
+          'allow', 'allowfullscreen', 'frameborder', 'scrolling',
+          'width', 'height', 'src', 'title'
+        ],
         ALLOWED_URI_REGEXP:/^(?:https?:|mailto:|tel:|#).*$/i
       }
     );
   
-    /* 5. Syntax highlight + ToC etc.  */
-    numHead($('#content')); hljs.highlightAll(); toc(pg); prevNext(pg);
+    /* 3. Post‑processing: anchors, syntax highlight, ToC, prev/next */
+    numHead($('#content'));
+    hljs.highlightAll();
+    toc(pg);
+    prevNext(pg);
   
-    /* 6. Render maths (KaTeX auto‑render) */
+    /* 4. Render maths with KaTeX */
     renderMathInElement(document.getElementById('content'), {
       delimiters:[
-        {left:'$$',right:'$$',display:true},
-        {left:'\\[',right:'\\]',display:true},
-        {left:'$', right:'$', display:false},
-        {left:'\\(',right:'\\)',display:false}
+        {left:'$$', right:'$$', display:true},
+        {left:'\\[', right:'\\]', display:true},
+        {left:'$',  right:'$',  display:false},
+        {left:'\\(', right:'\\)', display:false}
       ],
       throwOnError:false
     });
   
-    /* 7. Anchor jump */
-    if (anc) document.getElementById(anc)?.scrollIntoView({behavior:'smooth'});
+    /* 5. Optional anchor jump */
+    if (anc) document.getElementById(anc)?.scrollIntoView({ behavior:'smooth' });
   }
 
+ 
   /* -------------------------------------------------------
      SECTION 7 • Graph (mini + modal)
      ---------------------------------------------------- */
