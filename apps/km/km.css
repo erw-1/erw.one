@@ -1,1 +1,363 @@
-
+/* ==================================================================== km.css — Refactored & documented (23 Jul 2025) -------------------------------------------------------------------- • Added missing design‑tokens (CSS custom properties) • Replaced hard‑coded colours with variables • Grouped shared selectors & removed tiny duplications • No visual change;
+ behaviour remains identical ==================================================================== */
+/* -------------------------------------------------------------------- 1. TOKENS — colours, spacing, radii, z‑layers, layout constants -------------------------------------------------------------------- */
+ @layer tokens {
+     :root {
+        /* ── Colours – theme neutral ─────────────────────────────────── */
+         --clr-bg: #1e1e1e;
+         --clr-bg-alt: #2a2a2a;
+         --clr-bg-mid: #3a3a3a;
+        /* medium panel background */
+         --clr-bg-dark: #222;
+        /* dropdown backdrop */
+         --clr-fg: #d4d4d4;
+         --clr-accent: #569cd6;
+         --clr-border: #444;
+         --clr-border-light: #333;
+        /* New tokens (removed hard‑coded literals) */
+         --clr-hover: #333;
+        /* hover on dropdown items */
+         --clr-muted: rgb(153,153,153);
+        /* subtle icon / text colour */
+         --clr-scroll-track: #00000001;
+        /* scrollbar track bg */
+         --clr-modal-backdrop:rgba(0,0,0,.85);
+        /* modal overlay backdrop */
+        /* ── Dimensions & radii ───────────────────────────────────────── */
+         --radius-sm: 6px;
+         --radius-md: 8px;
+         --space-xs: .25rem;
+         --space-sm: .5rem;
+         --space-md: .75rem;
+         --space-lg: 1rem;
+        /* ── Layout ───────────────────────────────────────────────────── */
+         --sidebar-w: 260px;
+         --util-w: 300px;
+         --header-h: 48px;
+         --scroll-offset: 70px;
+        /* heading offset */
+        /* ── Z‑indices ───────────────────────────────────────────────── */
+         --z-menu: 1000;
+         --z-modal: 9999;
+    }
+}
+/* -------------------------------------------------------------------- 2. RESET – only what we actually rely on -------------------------------------------------------------------- */
+ @layer reset {
+     *,*::before,*::after {
+         box-sizing: border-box;
+    }
+     html {
+        position: fixed;
+         width: 100%
+    }
+     body {
+         margin: 0;
+         font-family: system-ui, Segoe UI, Roboto, sans-serif;
+         color: var(--clr-fg);
+         background: var(--clr-bg);
+         overflow: hidden;
+        /* prevent double scrollbars */
+        /* Primary layout: sidebar | main column */
+         height: 100dvh;
+         display: flex;
+    }
+     #sidebar ul, #toc ul {
+         padding-left: 0;
+    }
+}
+/* -------------------------------------------------------------------- 3. LAYOUT: sidebar, main, header, util -------------------------------------------------------------------- */
+ @layer layout {
+    /* ----- Sidebar -------------------------------------------------- */
+     #sidebar {
+         width: var(--sidebar-w);
+         background: var(--clr-bg-alt);
+         border-right: 1px solid var(--clr-border-light);
+         padding: calc(var(--space-sm) + .1rem) var(--space-sm);
+         overflow-y: auto;
+    }
+     #search {
+         width: 100%;
+         padding: .35rem var(--space-sm);
+         margin-bottom: var(--space-sm);
+         border: 1px solid var(--clr-border);
+         border-radius: var(--radius-sm);
+         background: var(--clr-bg-mid);
+         color: var(--clr-fg);
+    }
+     #sidebar ul {
+         list-style: none;
+         margin: 0;
+    }
+     #sidebar li {
+         margin: .15rem 0;
+         cursor: pointer;
+    }
+     #sidebar .article:hover, #sidebar span:hover {
+         color: var(--clr-accent);
+    }
+    /* Nested list “tree‑trunk” -------------------------------------- */
+     #sidebar ul ul, blockquote {
+         padding-left: 1.1em;
+         position: relative;
+    }
+     #sidebar ul ul::before, blockquote::before {
+         content: "";
+         position: absolute;
+         top: 0;
+         bottom: 0;
+         left: 5px;
+         width: 3px;
+         background: var(--clr-border);
+         opacity: .6;
+         border-radius: var(--radius-sm);
+    }
+     .caret {
+         display: inline-block;
+         width: 14px;
+         margin-right: 2px;
+         cursor: pointer;
+         transition: .2s;
+    }
+     .caret::before {
+         content: "▸";
+    }
+     .folder.open>.caret {
+         transform: rotate(90deg);
+    }
+    /* ----- Main column --------------------------------------------- */
+     main {
+         flex: 1;
+         display: flex;
+         flex-direction: column;
+    }
+    /* ----- Header / breadcrumb ------------------------------------- */
+     header {
+         height: var(--header-h);
+         background: var(--clr-bg-alt);
+         display: flex;
+         align-items: center;
+         gap: var(--space-sm);
+         padding: 0 var(--space-lg);
+    }
+     header a {
+         color: var(--clr-fg);
+         text-decoration: none;
+         padding: 4px 8px;
+         border-radius: var(--radius-sm);
+    }
+     header a:hover {
+         background: var(--clr-bg-mid);
+    }
+     .crumb-current {
+         background: var(--clr-bg-mid);
+    }
+     .separator {
+         margin: 0 .25rem;
+    }
+    /* ----- Content split (article + util column) ------------------- */
+     #content-area {
+         flex: 1;
+         display: flex;
+         overflow: hidden;
+    }
+     #content {
+         flex: 1;
+         overflow-y: auto;
+         padding: var(--space-lg) calc(var(--space-lg) * 2);
+    }
+     #content h1, #content h2, #content h3 {
+         scroll-margin-top: var(--scroll-offset);
+    }
+     #util {
+         width: var(--util-w);
+         background: var(--clr-bg);
+         padding: var(--space-md) var(--space-sm);
+         padding-left: 0;
+         display: flex;
+         flex-direction: column;
+         gap: var(--space-md);
+    }
+     #content a {
+         color: var(--clr-accent);
+    }
+     #content a:hover {
+         color: var(--clr-fg);
+    }
+    /* Tables --------------------------------------------------------- */
+     table {
+         background-color: var(--clr-bg-alt);
+         border: 1px solid var(--clr-border-light);
+         border-radius: var(--radius-md);
+    }
+     table th, table td {
+         padding: var(--space-sm);
+    }
+     table td {
+         background-color: var(--clr-bg);
+    }
+}
+/* -------------------------------------------------------------------- 4. COMPONENTS – graph boxes, ToC, prev‑next pager, dropdown menus -------------------------------------------------------------------- */
+ @layer components {
+    /* ----- Prev/Next pager ------------------------------------------ */
+     #prev-next {
+         display: flex;
+         justify-content: space-between;
+         margin: calc(var(--space-lg) * 2) 0;
+    }
+     #prev-next a {
+         background: var(--clr-bg-mid);
+         color: var(--clr-fg);
+         padding: .6rem 1rem;
+         border-radius: var(--radius-sm);
+         text-decoration: none;
+    }
+     #prev-next a:hover {
+         background: var(--clr-accent);
+    }
+    /* ----- Graph (mini) -------------------------------------------- */
+     #graph-box {
+         height: 240px;
+         background-color: var(--clr-bg-alt);
+         border: 1px solid var(--clr-border-light);
+         border-radius: var(--radius-md);
+         position: relative;
+    }
+     #graph-box svg {
+         width: 100%;
+         height: 100%;
+    }
+    /* ----- Table of Contents --------------------------------------- */
+     #toc {
+         flex: 1;
+         background-color: var(--clr-bg-alt);
+         border: 1px solid var(--clr-border-light);
+         border-radius: var(--radius-md);
+         padding: var(--space-sm);
+         overflow: auto;
+    }
+     #toc li[data-level="2"]{
+         padding-left: 14px;
+    }
+     #toc li[data-level="3"]{
+         padding-left: 28px;
+    }
+    /* --- Links colours (override base) -------------------------------- */
+     #toc a {
+         color: var(--clr-fg);
+         text-decoration: none;
+    }
+     #toc a:hover {
+         color: var(--clr-accent);
+    }
+    /* ----- Generic dropdown menu (sibling & child) ----------------- */
+     #crumb .dropdown ul, #crumb .childbox ul {
+         display: none;
+         position: absolute;
+         left: 0;
+         top: 100%;
+         margin: 0;
+         padding: var(--space-xs) 0;
+         list-style: none;
+         background: var(--clr-bg-dark);
+         border: 1px solid var(--clr-border);
+         border-radius: var(--radius-sm);
+         z-index: var(--z-menu);
+    }
+    /* keep open while hovering either trigger or list */
+     #crumb .dropdown:hover ul, #crumb .dropdown ul:hover, #crumb .childbox:hover ul, #crumb .childbox ul:hover {
+         display: block;
+    }
+     #crumb .dropdown ul li, #crumb .childbox ul li {
+         padding: 2px 12px;
+         white-space: nowrap;
+         cursor: pointer;
+    }
+     #crumb .dropdown ul li:hover, #crumb .childbox ul li:hover {
+         background: var(--clr-hover);
+    }
+    /* Sibling menu trigger wrapper */
+     .dropdown {
+         position: relative;
+    }
+    /* Child menu trigger (▾) */
+     .childbox {
+         position: relative;
+         cursor: pointer;
+    }
+     .childbox .toggle {
+         padding: 4px;
+         margin-left: 2px;
+    }
+     .childbox .toggle:hover {
+         color: var(--clr-accent);
+    }
+}
+/* -------------------------------------------------------------------- 5. MODALS & OVERLAYS -------------------------------------------------------------------- */
+ @layer overlay {
+     #modal {
+         position: fixed;
+         inset: 0;
+         background: var(--clr-modal-backdrop);
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         opacity: 0;
+         visibility: hidden;
+         transition: .2s;
+         z-index: var(--z-modal);
+    }
+     #modal.open {
+         opacity: 1;
+         visibility: visible;
+    }
+     #modal .close {
+         position: absolute;
+         top: var(--space-lg);
+         right: var(--space-lg);
+         font-size: 2rem;
+         color: var(--clr-muted);
+         cursor: pointer;
+    }
+     #modal svg {
+         width: 80vw;
+         height: 80vh;
+    }
+}
+/* -------------------------------------------------------------------- 6. MISC (scrollbars, code blocks, links…) -------------------------------------------------------------------- */
+/* --- Scrollbars (WebKit) ------------------------------------------- */
+ ::-webkit-scrollbar {
+     width: 12px;
+     background: var(--clr-scroll-track) !important;
+}
+ ::-webkit-scrollbar-corner {
+     background-color: transparent !important;
+}
+ ::-webkit-scrollbar-thumb {
+     background-color: var(--clr-bg-mid);
+     border-radius: 10px;
+     border: 4px solid rgba(0,0,0,0);
+     background-clip: padding-box;
+}
+ ::-webkit-scrollbar-thumb:hover {
+     background-color: var(--clr-border);
+}
+/* --- Blockquote & code styles ------------------------------------- */
+ blockquote {
+     color: var(--clr-muted);
+}
+ pre, .katex-display {
+     max-width: 60dvw;
+}
+ code {
+     background-color: var(--clr-bg-alt) !important;
+     padding: 0 var(--space-xs);
+     border-radius: var(--radius-sm);
+     max-width: max-content;
+}
+ .katex-display .katex-html {
+     text-align: left;
+     padding: var(--space-lg);
+     background-color: var(--clr-bg-alt) !important;
+     border-radius: var(--radius-sm);
+     max-width: max-content;
+}
