@@ -30,6 +30,8 @@ function hello() {
   console.log("Hello km!");
 }
 ```
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/IVdyt2pNxn8/0.jpg)](https://www.youtube.com/watch?v=IVdyt2pNxn8)
+
 
 <!-- 
 parent:"home"
