@@ -19,30 +19,29 @@
 body{height:100vh;display:flex;background:var(--bg);color:var(--fg);
      font-family:system-ui,Segoe UI,Roboto,sans-serif;overflow:hidden}
 
-/* ── sidebar ─────────────────────────────── */
-#sidebar{width:260px;background:var(--bg-alt);padding:.6rem .5rem;
-         border-right:1px solid #444;overflow-y:auto}
-#search{width:100%;padding:.35rem .6rem;margin-bottom:.5rem;border:none;
-        border-radius:6px;background:#3a3a3a;color:var(--fg)}
-ul{list-style:none;margin:0}
+/* ── sidebar ─────────────────────────────────────────────────────── */
+#sidebar{width:260px;background:var(--bg-alt);padding:.6rem .5rem;border-right:1px solid #444;overflow-y:auto}
+#search{width:100%;padding:.35rem .6rem;margin-bottom:.5rem;border:none;border-radius:6px;background:#3a3a3a;color:var(--fg)}
+#sidebar ul{list-style:none;margin:0}
 #sidebar li{margin:.15rem 0;cursor:pointer}
 #sidebar li:hover{color:var(--accent)}
-.folder>span::before{content:"▸";display:inline-block;margin-right:4px;transition:.2s}
-.folder>ul{display:none}.folder.open>ul{display:block}
-.folder.open>span::before{transform:rotate(90deg)}
+/* caret */
+.caret{display:inline-block;width:14px;margin-right:2px;cursor:pointer;transition:.2s}
+.caret::before{content:"▸"}
+.folder.open>.caret{transform:rotate(90deg)}
+/* tree indent */
 #sidebar ul ul{padding-left:1.1em}
-.article::before{content:"📄 ";opacity:.7}
 
-/* ── layout ─────────────────────────────── */
+/* ── layout (identique) ─────────────────────────────────────────── */
 main{flex:1;display:flex;flex-direction:column}
-header{height:48px;background:var(--bg-alt);display:flex;align-items:center;
-       gap:.5rem;padding:0 1rem}
+header{height:48px;background:var(--bg-alt);display:flex;align-items:center;gap:.5rem;padding:0 1rem}
 header a{color:var(--fg);text-decoration:none;padding:4px 8px;border-radius:6px}
 header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a}
 .separator{margin:0 .25rem}
-.dropdown{position:relative}.dropdown ul{display:none;position:absolute;top:100%;left:0;
-                                        background:#3a3a3a;border-radius:4px;padding:.25rem 0}
-.dropdown:hover ul{display:block}.dropdown li{white-space:nowrap;padding:6px 12px}
+.dropdown{position:relative}
+.dropdown ul{display:none;position:absolute;top:100%;left:0;background:#3a3a3a;border-radius:4px;padding:.25rem 0}
+.dropdown:hover ul{display:block}
+.dropdown li{white-space:nowrap;padding:6px 12px}
 .dropdown li:hover{background:var(--accent)}
 
 #content-area{flex:1;display:flex;overflow:hidden}
@@ -53,16 +52,14 @@ header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a}
 #prev-next a{background:#3a3a3a;color:var(--fg);padding:.6rem 1rem;border-radius:6px;text-decoration:none}
 #prev-next a:hover{background:var(--accent)}
 
-#util{width:300px;background:var(--bg);padding:.75rem .5rem;border-left:1px solid #444;
-      display:flex;flex-direction:column;gap:1rem}
+#util{width:300px;background:var(--bg);padding:.75rem .5rem;border-left:1px solid #444;display:flex;flex-direction:column;gap:1rem}
 #graph-box{height:240px;border:1px solid #333;border-radius:8px;position:relative}
 #graph-box svg{width:100%;height:100%}
 #toc{flex:1;border:1px solid #333;border-radius:8px;padding:.5rem;overflow:auto}
 #toc li[data-level="2"]{padding-left:14px}#toc li[data-level="3"]{padding-left:28px}
 #toc a{color:var(--accent);text-decoration:none}
 
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;
-       justify-content:center;opacity:0;visibility:hidden;transition:.2s}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.85);display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:.2s}
 #modal.open{opacity:1;visibility:visible}
 #modal .close{position:absolute;top:1rem;right:1rem;font-size:2rem;color:#fff;cursor:pointer}
 #modal svg{width:80vw;height:80vh}
@@ -92,9 +89,7 @@ header a:hover{background:#3a3a3a}.crumb-current{background:#3a3a3a}
 <div id="modal"><span class="close">✕</span><svg id="full"></svg></div>
 
 <script>
-/* =========================================================================
-   1.  Loader + store  (aucune dépendance DOM)
-   ========================================================================= */
+/* ───────────────────────── 1. Loader / store ───────────────────────── */
 const MD_PATH='content.md';
 const pages=[], byId=new Map(); let root=null;
 
@@ -117,49 +112,42 @@ fetch(MD_PATH).then(r=>r.text()).then(src=>{
   initUI();
 });
 
-/* hiérarchie helpers -------------------------------------------------- */
 const hashOf=p=>{const a=[];for(let n=p;n&&n.parent;n=n.parent)a.unshift(n.id);return a.join('#');};
-const find=(path)=>{let n=root;for(const id of path){const c=n.children.find(k=>k.id===id);if(!c)break;n=c;}return n;};
+const find=path=>{let n=root;for(const id of path){const c=n.children.find(k=>k.id===id);if(!c)break;n=c;}return n;};
+const navigate=p=>location.hash='#'+hashOf(p);
 
-/* =========================================================================
-   2.  UI  (tout en un)
-   ========================================================================= */
-const $=(s,sc=document)=>sc.querySelector(s);
-const $a=(s,sc=document)=>[...sc.querySelectorAll(s)];
+/* ───────────────────────── 2. UI ───────────────────────────────────── */
+const $=(s,sc=document)=>sc.querySelector(s), $$=(s,sc=document)=>[...sc.querySelectorAll(s)];
 
 function initUI(){
-  buildTree();
-  renderGraph();
-  route(); addEventListener('hashchange',route);
-
+  buildTree(); renderGraph(); route();
+  addEventListener('hashchange',route);
   $('#expand').onclick=()=>$('#modal').classList.add('open');
   $('#modal .close').onclick=()=>$('#modal').classList.remove('open');
 
-  /* recherche debounce ------------------------------------------------ */
   let timer=0;
   $('#search').oninput=e=>{
     clearTimeout(timer);
-    timer=setTimeout(()=>doSearch(e.target.value.trim().toLowerCase()),150);
+    timer=setTimeout(()=>search(e.target.value.trim().toLowerCase()),150);
   };
 }
 
-/* -- sidebar : tree & search ----------------------------------------- */
+/* ---- sidebar : tree & search ------------------------------------- */
 function buildTree(){
   $('#tree').innerHTML='';
   const rec=(list,ul)=>{
     list.sort((a,b)=>a.title.localeCompare(b.title));
     list.forEach(p=>{
       const li=document.createElement('li');
-      li.dataset.title=p.title.toLowerCase();
       if(p.children.length){
-        li.className='folder open';        // ouvert par défaut
-        li.innerHTML=`<span>${p.title}</span><ul></ul>`;
-        li.firstChild.onclick=()=>li.classList.toggle('open');
+        li.className='folder open';
+        li.innerHTML=`<span class="caret"></span><span class="lbl">${p.title}</span><ul></ul>`;
+        const caret=li.querySelector('.caret'), lbl=li.querySelector('.lbl');
+        caret.onclick=e=>{e.stopPropagation();li.classList.toggle('open');};
+        lbl.onclick=e=>{e.stopPropagation();navigate(p);};
         rec(p.children, li.lastChild);
       }else{
-        li.className='article';
-        li.textContent=p.title;
-        li.onclick=()=>navigate(p);
+        li.className='article'; li.textContent=p.title; li.onclick=()=>navigate(p);
       }
       ul.appendChild(li);
     });
@@ -167,26 +155,20 @@ function buildTree(){
   rec(root.children,$('#tree'));
 }
 
-function navigate(p){ location.hash='#'+hashOf(p); }
+function search(q){
+  const tree=$('#tree'), res=$('#results');
+  if(!q){ res.style.display='none'; tree.style.display=''; return; }
 
-/* –– recherche ------------------------------------------------------- */
-function doSearch(q){
-  const tree=$('#tree'), resUL=$('#results');
-  if(!q){ resUL.style.display='none'; tree.style.display=''; return; }
-
-  // construire résultats
-  resUL.innerHTML=''; resUL.style.display=''; tree.style.display='none';
+  res.innerHTML=''; res.style.display=''; tree.style.display='none';
   pages.filter(p=>p.searchText.includes(q)).forEach(p=>{
     const li=document.createElement('li'); li.className='article';
     li.textContent=p.title; li.onclick=()=>navigate(p);
-    resUL.appendChild(li);
+    res.appendChild(li);
   });
-  if(!resUL.children.length){
-    resUL.innerHTML='<li style="opacity:.6">Aucun résultat</li>';
-  }
+  if(!res.children.length) res.innerHTML='<li style="opacity:.6">No result</li>';
 }
 
-/* -- breadcrumb ------------------------------------------------------ */
+/* ---- breadcrumb --------------------------------------------------- */
 function breadcrumb(p){
   const h=$('#crumb'); h.innerHTML='<a href="#">🏠</a>';
   const chain=[]; for(let n=p;n;n=n.parent) chain.unshift(n); chain.shift();
@@ -196,10 +178,9 @@ function breadcrumb(p){
     if(sib.length>1){
       const wrap=document.createElement('div'); wrap.className='dropdown';
       const a=document.createElement('a'); a.textContent=n.title; a.href='#'+hashOf(n);
-      if(i===chain.length-1) a.className='crumb-current';
+      if(i===chain.length-1)a.className='crumb-current';
       const ul=document.createElement('ul');
-      sib.forEach(s=>{
-        const li=document.createElement('li'); li.textContent=s.title; li.onclick=()=>navigate(s); ul.appendChild(li);});
+      sib.forEach(s=>{const li=document.createElement('li'); li.textContent=s.title; li.onclick=()=>navigate(s); ul.appendChild(li);});
       wrap.appendChild(a); wrap.appendChild(ul); h.appendChild(wrap);
     }else{
       const a=document.createElement('a'); a.textContent=n.title; a.href='#'+hashOf(n);
@@ -208,17 +189,17 @@ function breadcrumb(p){
   });
 }
 
-/* -- markdown render + toc ------------------------------------------- */
+/* ---- markdown + toc ---------------------------------------------- */
 function numberHeads(el){
   const c=[0,0,0,0,0,0];
-  $a('h1,h2,h3,h4,h5',el).forEach(h=>{
+  $$('h1,h2,h3,h4,h5',el).forEach(h=>{
     const l=+h.tagName[1]-1;c[l]++;for(let i=l+1;i<6;i++)c[i]=0;
     h.id=c.slice(0,l+1).filter(Boolean).join('_');
   });
 }
 function buildTOC(page){
   const nav=$('#toc'); nav.innerHTML='';
-  const heads=$a('#content h1,#content h2,#content h3');
+  const heads=$$('#content h1,#content h2,#content h3');
   if(!heads.length) return;
   const ul=document.createElement('ul');
   heads.forEach(h=>{
@@ -231,9 +212,9 @@ function prevNext(page){
   $('#prev-next')?.remove();
   if(!page.parent) return;
   const sib=page.parent.children;if(sib.length<2) return;
-  const idx=sib.indexOf(page); const nav=document.createElement('div'); nav.id='prev-next';
-  if(idx>0)nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[idx-1]),textContent:'← '+sib[idx-1].title}));
-  if(idx<sib.length-1)nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[idx+1]),textContent:sib[idx+1].title+' →'}));
+  const idx=sib.indexOf(page), nav=document.createElement('div'); nav.id='prev-next';
+  if(idx>0) nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[idx-1]),textContent:'← '+sib[idx-1].title}));
+  if(idx<sib.length-1) nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[idx+1]),textContent:sib[idx+1].title+' →'}));
   $('#content').appendChild(nav);
 }
 function renderPage(page,anchor){
@@ -243,11 +224,10 @@ function renderPage(page,anchor){
   if(anchor) document.getElementById(anchor)?.scrollIntoView({behavior:'smooth'});
 }
 
-/* -- graph ----------------------------------------------------------- */
+/* ---- graph -------------------------------------------------------- */
 function renderGraph(){
   const nodes=[],links=[]; pages.forEach((p,i)=>p._i=i);
-  pages.forEach(p=>{nodes.push({id:p._i,label:p.title,ref:p});
-                    p.parent&&links.push({source:p._i,target:p.parent._i});});
+  pages.forEach(p=>{nodes.push({id:p._i,label:p.title,ref:p}); p.parent&&links.push({source:p._i,target:p.parent._i});});
   ['mini','full'].forEach(id=>{
     const svg=d3.select('#'+id); svg.selectAll('*').remove();
     const w=svg.node().clientWidth||300,h=svg.node().clientHeight||200;
@@ -273,10 +253,11 @@ function renderGraph(){
   });
 }
 
-/* -- router ---------------------------------------------------------- */
+/* ---- router ------------------------------------------------------- */
 function route(){
   const segs=location.hash.slice(1).split('#').filter(Boolean);
-  const page=find(segs); const anc=segs.slice(hashOf(page).split('#').length).join('#');
+  const page=find(segs);
+  const anc=segs.slice(hashOf(page).split('#').length).join('#');
   breadcrumb(page); renderPage(page,anc);
 }
 </script>
