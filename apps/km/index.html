@@ -203,13 +203,27 @@
       t = setTimeout(() => search(e.target.value.toLowerCase()), 150);
     };
 
-    /* --- portrait burgers -------------------------------- */
-    $('#burger‑sidebar').onclick = () => $('#sidebar').classList.toggle('open');
-    $('#burger‑util').onclick    = () => $('#util').classList.toggle('open');
+    /* ---------- portrait burgers & close buttons ---------------- */
+    const togglePanel = (panel) => {
+      const el = $(panel);
+      const isOpen = el.classList.toggle('open');
+    
+      /* create close button on first open */
+      if (isOpen && !el.querySelector('.panel‑close')) {
+        const btn = document.createElement('button');
+        btn.className = 'panel‑close';
+        btn.innerHTML = '✕';
+        btn.onclick = () => el.classList.remove('open');
+        el.appendChild(btn);
+      }
+    };
+    
+    $('#burger‑sidebar').onclick = () => togglePanel('#sidebar');
+    $('#burger‑util').onclick    = () => togglePanel('#util');
     
     /* Close an open panel if window resized back to landscape */
     addEventListener('resize', () => {
-      if (matchMedia('(min-width: 701px)').matches){
+      if (matchMedia('(min-width: 1001px)').matches || matchMedia('(orientation: portrait)').matches) {
         $('#sidebar').classList.remove('open');
         $('#util').classList.remove('open');
       }
