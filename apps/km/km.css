@@ -374,3 +374,45 @@ a.watermark {
 a.watermark:hover {
     color: var(--clr-muted);
 }
+
+/* --------------------------------------------------------------
+   7. RESPONSIVE – burgers & overlays for portrait mode
+   -------------------------------------------------------------- */
+
+/* --- burger buttons (hidden on wide viewports) ---------------- */
+.burger {
+  display: none;                   /* default: invisible         */
+  border: none;
+  background: none;
+  color: var(--clr-fg);
+  cursor: pointer;
+  padding: 4px;
+}
+.burger:hover { color: var(--clr-accent); }
+
+/* --- portrait rules: ≤700 px OR phone portrait ---------------- */
+@media (max-width: 700px), (orientation: portrait) {
+
+  /* show burgers */
+  .burger { display: inline-flex; align-items: center; }
+
+  /* collapse panels by default */
+  #sidebar,
+  #util {
+    display: none;
+  }
+
+  /* take full viewport when opened via JS */
+  #sidebar.open,
+  #util.open {
+    display: flex;
+    position: fixed;
+    inset: 0;                      /* full‑screen overlay        */
+    z-index: var(--z-modal);       /* above everything           */
+    background: var(--clr-bg-alt); /* re‑use token               */
+    flex-direction: column;
+  }
+
+  /* ensure content area stretches full width without util column */
+  #content-area { flex-direction: column; }
+}
