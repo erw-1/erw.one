@@ -195,6 +195,9 @@
      table td {
          background-color: var(--clr-bg);
     }
+     img {
+    max-width: 30dvw;
+   }
 }
 /* -------------------------------------------------------------------- 4. COMPONENTS – graph boxes, ToC, prev‑next pager, dropdown menus -------------------------------------------------------------------- */
  @layer components {
