@@ -196,7 +196,7 @@
          background-color: var(--clr-bg);
     }
      img {
-    max-width: 30dvw;
+    max-width: 90dvw;
    }
 }
 /* -------------------------------------------------------------------- 4. COMPONENTS – graph boxes, ToC, prev‑next pager, dropdown menus -------------------------------------------------------------------- */
@@ -349,7 +349,7 @@
      color: var(--clr-muted);
 }
  pre, .katex-display {
-     max-width: 60dvw;
+     max-width: 90dvw;
 }
  code {
      background-color: var(--clr-bg-alt) !important;
