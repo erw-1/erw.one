@@ -325,6 +325,7 @@
     h.innerHTML = '';                // clear dynamic crumbs
   
     if (left)  h.appendChild(left);  // put ☰ back on the far left
+    if (right) h.appendChild(right); /* put the ⋯ burger on the right (place at the end of breadcrumb if you want it at the far-right */
   
     /* ---------- Home icon ---------- */
     h.insertAdjacentHTML('beforeend',
@@ -384,9 +385,6 @@
   
       h.appendChild(box);
     }
-  
-    /* put the ⋯ burger at the far right */
-    if (right) h.appendChild(right);
   }
  
   /* -------------------------------------------------------
