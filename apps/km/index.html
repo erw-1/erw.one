@@ -318,23 +318,25 @@
       h.appendChild(sibWrap);
 
       // Child quick‑access box for *current* page
-      if (i === chain.length - 1 && n.children.length) {
-        const box = document.createElement('span');
-        box.className = 'childbox';
-        box.innerHTML = '<span class="toggle">▾</span><ul></ul>';
-
-        const ul = box.querySelector('ul');
-        n.children
-          .sort((a, b) => a.title.localeCompare(b.title))
-          .forEach(ch => {
-            const li = document.createElement('li');
-            li.textContent = ch.title;
-            li.onclick     = () => nav(ch);
-            ul.appendChild(li);
-          });
-        h.appendChild(box);
-      }
-    });
+     if (p === root && root.children.length) {
+       const box = document.createElement('span');
+       box.className = 'childbox';
+       box.innerHTML = '<span class="toggle">▾</span><ul></ul>';
+   
+       const ul = box.querySelector('ul');
+       root.children
+           .sort((a, b) => a.title.localeCompare(b.title))
+           .forEach(ch => {
+             const li = document.createElement('li');
+             li.textContent = ch.title;
+             li.onclick     = () => nav(ch);
+             ul.appendChild(li);
+           });
+   
+       /* on l’ajoute juste après l’icône “Home” */
+       h.appendChild(box);
+     }
+   });
   }
 
   /* -------------------------------------------------------
