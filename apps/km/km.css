@@ -88,6 +88,8 @@
     padding: calc(var(--g-sm) + .1rem) var(--g-sm);
     overflow-y: auto;
   }
+   
+  #wiki-title { margin-top: 0; }
 
   /* Search input */
   #search {
