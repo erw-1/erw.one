@@ -1,5 +1,6 @@
-/* Theme override exameple: light mode */
+/* Optional theme override example: light mode */
 
+/*
 :root {
     --clr-bg: #ffffff;
     --clr-surface: #f1f1f1;
@@ -7,3 +8,4 @@
     --clr-accent: #0e78cf;
     --clr-border: #cdcdcd;
 }
+*/
