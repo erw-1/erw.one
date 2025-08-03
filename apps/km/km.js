@@ -201,6 +201,11 @@ KM.nav = nav; // expose for dev‑tools
 /* *********************************************************************
    SECTION 6 • UI BOOTSTRAP (called once Markdown is ready)
 ************************************************************************ */
+function closePanels () {
+  $('#sidebar').classList.remove('open');
+  $('#util'   ).classList.remove('open');
+};
+
 function initUI () {
   // --- 6‑A  Static header tweaks -------------------------------------------
   $('#wiki-title').textContent = TITLE;
@@ -241,28 +246,23 @@ function initUI () {
     search('');
     searchInput.focus();
   };
-  
-   /* Close sidebar & util panels */
-   function closePanels () {
-     $('#sidebar').classList.remove('open');
-     $('#util'   ).classList.remove('open');
-   }
 
-   /* --- 6-G  Burger toggles (mobile / portrait UI) ------------------------------------- */
-   const togglePanel = sel => {
-     const el     = $(sel);
-       if (!el.querySelector('.panel-close')) {
-         const btn = document.createElement('button');
-         btn.className = 'panel-close';
-         btn.textContent = '✕';
-         btn.onclick = closePanels;
-         el.appendChild(btn);
-       }
-     }
-   };
-   
-   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
-   $('#burger-util'   ).onclick = () => togglePanel('#util');
+  // --- 6‑G  Burger toggles (mobile / portrait UI) -------------------------------------
+  const togglePanel = sel => {
+    const el      = $(sel);
+      // add the ✕ button in panels
+      if (!el.querySelector('.panel-close')) {
+        const btn = document.createElement('button');
+        btn.className = 'panel-close';
+        btn.textContent = '✕';
+        btn.onclick = closePanels;
+        el.appendChild(btn);
+      }
+    }
+  };
+
+  $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
+  $('#burger-util').onclick    = () => togglePanel('#util');
 
   // Auto‑close panels when resizing back to desktop -------------------------
   addEventListener('resize', () => {
@@ -274,6 +274,7 @@ function initUI () {
 
   // In‑app routing ----------------------------------------------------------
   addEventListener('hashchange', route);
+}
 
 /* *********************************************************************
    SECTION 7 • SIDEBAR TREE
@@ -647,7 +648,7 @@ function buildGraph () {
    SECTION 12 • CLIENT‑SIDE ROUTER
 ************************************************************************ */
 function route () {
-  closePanels();  
+  closePanels();
   const seg     = location.hash.slice(1).split('#').filter(Boolean);
   const page    = find(seg);
   const anchor  = seg.slice(hashOf(page).split('#').length).join('#');
