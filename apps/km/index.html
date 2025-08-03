@@ -39,7 +39,9 @@
 <body>
 <!-- ─────────────  Sidebar (tree + search)  ───────────── -->
 <aside id="sidebar" role="navigation" aria-label="Site">
-  <h1 id="wiki-title" tabindex="0"></h1>
+  <a href="#" title="Home">
+   <h1 id="wiki-title" tabindex="0"></h1>
+  </a>
 
   <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search">
 
@@ -109,12 +111,11 @@
   /* -------------------------------------------------------
      Pull essentials from config.js
   ---------------------------------------------------- */
-  const { TITLE, FAVICON, MD_LINK } = window.CONFIG;
+  const { TITLE, FAVICON, MD } = window.CONFIG;
 
   /* -------------------------------------------------------
      SECTION 1 • Data ingestion & page model
   ---------------------------------------------------- */
-  const MD    = MD_LINK;                  // Markdown “database”
   const pages = [];                       // Flat page list
   const byId  = new Map();                // id → page
   let   root  = null;                     // Home node
@@ -149,7 +150,6 @@
         p.searchText = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content)
                        .toLowerCase();
       });
-
       initUI();                // Ready – fire up the interface
     });
 
@@ -179,10 +179,6 @@
   function initUI() {
     /*  Hydrate title & favicon ----------------------------------------- */
     $('#wiki-title').textContent = TITLE;
-    $('#wiki-title').onclick     = () => nav(root);
-    $('#wiki-title').addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') nav(root);
-    });
     document.title = TITLE;
     $('#favicon-el').href = FAVICON;
 
@@ -287,7 +283,7 @@
       r.appendChild(li);
     });
     if (!r.children.length)
-      r.innerHTML = '<li style="opacity:.6">No result</li>';
+      r.innerHTML = '<li id="no_result">No result</li>';
   }
 
   /* -------------------------------------------------------
