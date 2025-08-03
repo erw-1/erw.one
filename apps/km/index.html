@@ -2,10 +2,9 @@
 <!--
  ┌─────────────────────────────────────────────────────────────┐
  │  km – Static Wiki                                           │
- │  Zero-backend personal wiki:                                │
- │    • Single Markdown bundle parsed to an in-memory tree     │
+ │  Zero-backend personal wiki                                 │
+ │    • Single Markdown bundle → in-memory tree                │
  │    • Vanilla JS handles routing, search, breadcrumb, graph  │
- │  All comments that follow are descriptive only.             │
  └─────────────────────────────────────────────────────────────┘
 -->
 <html lang="fr">
@@ -19,42 +18,55 @@
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-  <link   rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"/>
-  <link   rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css">
+  <link  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"/>
+
+  <!-- KaTeX (blocking so renderMathInElement is ready) -->
+  <link  rel="stylesheet"
+         href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css">
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js"></script>
 
-  <!-- ─────────────  Stylesheet (yours) ───────────── -->
+  <!-- Your stylesheet -->
   <link rel="stylesheet" href="km.css"/>
 
-  <!-- ─────────────  Config (must precede main JS) ─── -->
+  <!-- Config (title, favicon, Markdown source) -->
   <script src="config.js"></script>
 
-  <!-- Placeholder for favicon set by JS -->
+  <!-- Favicon populated by JS -->
   <link id="favicon-el" rel="icon" href="">
 </head>
 
 <body>
 <!-- ─────────────  Sidebar (tree + search)  ───────────── -->
 <aside id="sidebar" role="navigation" aria-label="Site">
-  <!-- Clickable wiki title -->
   <h1 id="wiki-title" tabindex="0"></h1>
 
   <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search">
+
   <ul id="tree"></ul>
-  <!-- Live-search results list (hidden until query) -->
-  <ul id="results" style="display:none"></ul>
+  <ul id="results"></ul>
 </aside>
 
 <!-- ─────────────  Main panel  ───────────── -->
 <main>
-  <!-- Breadcrumb + sibling/child drop-downs -->
   <header id="crumb">
-    <button id="burger-sidebar" class="burger"  aria-label="Open sidebar">
+    <button id="burger-sidebar" class="burger" aria-label="Open sidebar">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
         <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/>
       </svg>
     </button>
+
+    <!-- Static home button always visible -->
+    <a id="home-link" href="#" title="Home">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="grey"
+           xmlns="http://www.w3.org/2000/svg">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      </svg>
+    </a>
+
+    <!-- Dynamic crumbs go here -->
+    <span id="crumb-dyn"></span>
+
     <button id="burger-util" class="burger" aria-label="Open utility panel">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
         <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
@@ -69,8 +81,9 @@
     <section id="util">
       <div id="graph-box">
         <svg id="mini"></svg>
-        <button id="expand"
-                style="position:absolute;top:8px;right:8px;background:none;border:none;cursor:pointer">
+
+        <!-- Magnifier opens the full graph -->
+        <button id="expand" aria-label="Open full graph">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="grey">
             <path d="M10 2a8 8 0 105.29 14.29l4.7 4.7 1.42-1.42-4.7-4.7A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z"/>
           </svg>
@@ -280,29 +293,27 @@
   /* -------------------------------------------------------
      SECTION 5 • Breadcrumb (unchanged except burgers kept)
   ---------------------------------------------------- */
-  function breadcrumb(p) {
-    const h   = $('#crumb');
-    const left  = $('#burger-sidebar');
-    const right = $('#burger-util');
-    h.innerHTML = '';
-    if (left)  h.appendChild(left);
-    if (right) h.appendChild(right);
-    h.insertAdjacentHTML('beforeend',
-      `<a href="#" title="Home">
-         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-              viewBox="0 0 24 24" fill="grey">
-           <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-         </svg>
-       </a>`);
-    const chain = []; for (let n = p; n; n = n.parent) chain.unshift(n);
+function breadcrumb(p) {
+    const dyn = $('#crumb-dyn');
+    dyn.innerHTML = '';                          // wipe dynamic part only
+
+    /* Build ancestor trail (skip root, shown by home icon) */
+    const chain = [];
+    for (let n = p; n; n = n.parent) chain.unshift(n);
     chain.shift();
+
     chain.forEach(n => {
-      h.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
-      const wrap = document.createElement('span'); wrap.className = 'dropdown';
+      dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
+
+      const wrap = document.createElement('span');
+      wrap.className = 'dropdown';
+
       const a = document.createElement('a');
-      a.textContent = n.title; a.href = '#' + hashOf(n);
+      a.textContent = n.title;
+      a.href = '#' + hashOf(n);
       if (n === p) a.className = 'crumb-current';
       wrap.appendChild(a);
+
       const sib = n.parent.children;
       if (sib.length > 1) {
         const ul = document.createElement('ul');
@@ -314,17 +325,26 @@
         });
         wrap.appendChild(ul);
       }
-      h.appendChild(wrap);
+      dyn.appendChild(wrap);
     });
+
+    /* Child drop-down of current page */
     if (p.children.length) {
-      const box = document.createElement('span'); box.className = 'childbox';
+      const box = document.createElement('span');
+      box.className = 'childbox';
       box.innerHTML = '<span class="toggle">▾</span><ul></ul>';
+
       const ul = box.querySelector('ul');
-      p.children.sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch=>{
-        const li=document.createElement('li');
-        li.textContent=ch.title; li.onclick=()=>nav(ch); ul.appendChild(li);
-      });
-      h.appendChild(box);
+      p.children
+        .sort((a, b) => a.title.localeCompare(b.title))
+        .forEach(ch => {
+          const li = document.createElement('li');
+          li.textContent = ch.title;
+          li.onclick = () => nav(ch);
+          ul.appendChild(li);
+        });
+
+      dyn.appendChild(box);
     }
   }
 
