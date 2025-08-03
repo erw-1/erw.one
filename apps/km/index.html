@@ -477,55 +477,71 @@
   }
 
   // 🔄 Single simulation cached across mini/full draws
-  let cachedLayout = null;
-  function buildGraph() {
-    if(!cachedLayout) cachedLayout = buildGraphData();
-    const { nodes, links, adj } = cachedLayout;
-
-    const draw = (id) => {
-      const svg=d3.select('#'+id);
-      svg.selectAll('*').remove();
-      const full=(id==='full');
-      const w=svg.node().clientWidth || 300;
-      const h=svg.node().clientHeight|| 200;
-
-      const sim=d3.forceSimulation(nodes).stop();
-      if(!nodes[0].x){
-        sim.force('link',d3.forceLink(links).id(d=>d.id).distance(80))
-          .force('charge',d3.forceManyBody().strength(-240))
-          .force('center',d3.forceCenter(w/2,h/2))
-          .tick(300); // settle once
-      }
-
-      const link=svg.append('g').selectAll('line').data(links).join('line')
-        .attr('stroke',d=>d.kind==='tag'? '#444':'#555').attr('stroke-width',1);
-
-      const node=svg.append('g').selectAll('circle').data(nodes).join('circle')
-        .attr('r',6).attr('fill',d=>d.ref.children.length?'#8a8a8a':'#569cd6')
-        .style('cursor','pointer')
-        .on('click',(e,d)=>{nav(d.ref); if(full) $('#modal').classList.remove('open');})
-        .on('mouseover',(e,d)=>highlight(d.id,0.15))
-        .on('mouseout',()=>highlight(null,1));
-
-      const label=svg.append('g').selectAll('text').data(nodes).join('text')
-        .attr('fill','#aaa').attr('font-size',10).text(d=>d.label);
-
-      function highlight(id,fade){
-        node.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
-        link.style('opacity',l=>id==null||l.source.id===id||l.target.id===id?1:fade);
-        label.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
-      }
-
-      // initial draw
-      link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
-          .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
-      node.attr('cx',d=>d.x).attr('cy',d=>d.y);
-      label.attr('x',d=>d.x+8).attr('y',d=>d.y+3);
-    };
-
-    draw('mini');
-    draw('full');
-  }
+/* -------------------------------------------------------
+   SECTION 7 • Graph (mini & modal)
+---------------------------------------------------- */
+ function buildGraph() {
+   const { nodes, links, adj } = buildGraphData();
+ 
+   // Loop over mini + full, build an independent sim for each
+   ['mini', 'full'].forEach(id => {
+     const svg = d3.select('#' + id);
+     svg.selectAll('*').remove();
+ 
+     const full = id === 'full';
+     const w = svg.node().clientWidth  || 300;
+     const h = svg.node().clientHeight || 200;
+ 
+     const sim = d3.forceSimulation(nodes.map(d => ({ ...d }))) // clone nodes
+       .force('link', d3.forceLink(links).id(d => d.id).distance(80))
+       .force('charge', d3.forceManyBody().strength(-240))
+       .force('center', d3.forceCenter(w / 2, h / 2));
+ 
+     const link = svg.append('g')
+       .selectAll('line')
+       .data(links)
+       .join('line')
+       .attr('stroke', d => d.kind === 'tag' ? '#444' : '#555')
+       .attr('stroke-width', 1);
+ 
+     const node = svg.append('g')
+       .selectAll('circle')
+       .data(sim.nodes())
+       .join('circle')
+       .attr('r', 6)
+       .attr('fill', d => d.ref.children.length ? '#8a8a8a' : '#569cd6')
+       .style('cursor', 'pointer')
+       .on('click', (e, d) => { nav(d.ref); if (full) $('#modal').classList.remove('open'); })
+       .on('mouseover', (e, d) => highlight(d.id, 0.15))
+       .on('mouseout', () => highlight(null, 1))
+       .call(d3.drag()
+         .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
+         .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
+         .on('end',  (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
+ 
+     const label = svg.append('g')
+       .selectAll('text')
+       .data(sim.nodes())
+       .join('text')
+       .attr('fill', '#aaa')
+       .attr('font-size', 10)
+       .text(d => d.label);
+ 
+     function highlight(id, fade) {
+       node.style('opacity', o => id == null || adj.get(id)?.has(o.id) || o.id === id ? 1 : fade);
+       link.style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : fade);
+       label.style('opacity', o => id == null || adj.get(id)?.has(o.id) || o.id === id ? 1 : fade);
+     }
+ 
+     sim.on('tick', () => {
+       link
+         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+       node.attr('cx', d => d.x).attr('cy', d => d.y);
+       label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
+     });
+   });
+ }
 
   /* -------------------------------------------------------
      SECTION 8 • Client‑side routing
