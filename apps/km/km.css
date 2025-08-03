@@ -213,7 +213,7 @@
     width: var(--w-util);
     background: var(--clr-bg);
 
-    padding: var(--g-sm);
+    padding: var(--g-sm) var(--g-sm) var(--g-sm) 0;
     display: flex;
     flex-direction: column;
     gap: var(--g-xs);
@@ -228,7 +228,7 @@
   }
   th,
   td { padding: var(--g-sm); }
-  th { background: var(--clr-surface); border-bottom: solid 2px var(--clr-surface-light); }
+  th { background: var(--clr-surface); }
   td { background: var(--clr-bg); }
 
   img { max-width: 90dvw; }
@@ -433,13 +433,13 @@
 
   /* Custom scrollbars (WebKit only) */
   ::-webkit-scrollbar {
-    width: 28px;
+    width: 22px;
     background: transparent !important; 
   }
   ::-webkit-scrollbar-thumb {
     background: var(--clr-surface-light);
     border-radius: 999px;
-    border: 12px solid transparent; 
+    border: 9px solid transparent; 
     background-clip: padding-box !important;
   }
   ::-webkit-scrollbar-thumb:hover {
