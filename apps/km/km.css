@@ -213,7 +213,7 @@
     width: var(--w-util);
     background: var(--clr-bg);
 
-    padding: var(--g-md) var(--g-sm) 0 0;
+    padding: var(--g-sm);
     display: flex;
     flex-direction: column;
     gap: var(--g-xs);
