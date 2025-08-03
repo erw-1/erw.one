@@ -248,9 +248,16 @@ function initUI () {
   };
 
   // --- 6‑G  Burger toggles (mobile / portrait UI) -------------------------------------
-  const togglePanel = sel => {{
+  const togglePanel = sel => {
     const el      = $(sel);
-      // add the ✕ button in panels
+    const wasOpen = el.classList.contains('open');
+
+    closePanels();                       // always start closed
+
+    if (!wasOpen) {                      // reopen only if it wasn’t open
+      el.classList.add('open');
+
+      // add the ✕ button once per panel
       if (!el.querySelector('.panel-close')) {
         const btn = document.createElement('button');
         btn.className = 'panel-close';
