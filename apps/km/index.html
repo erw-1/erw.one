@@ -1,6 +1,12 @@
 <!DOCTYPE html>
 <!--
- km – Static Wiki
+ km – Static Wiki (refactored 2025‑08‑03)
+   • Duplicate functions removed
+   • Highlight.js & KaTeX lazy‑loaded
+   • Word‑based search index
+   • Keyboard‑ & ARIA‑friendly sidebar
+   • Breadcrumb landmark added
+   • Helper utilities hoisted
 -->
 <html lang="fr">
 <head>
@@ -28,7 +34,7 @@
 <!-- ─────────────  Sidebar (tree + search)  ───────────── -->
 <aside id="sidebar" role="navigation" aria-label="Site">
   <a href="#" title="Home"><h1 id="wiki-title" tabindex="0"></h1></a>
-  <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search" role="combobox">
+  <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search">
   <ul id="tree"></ul>
   <ul id="results"></ul>
 </aside>
@@ -154,9 +160,6 @@
       });
 
       initUI();                    // Ready — fire up the interface
-    }).catch(err => {
-      document.body.innerHTML = '<p style="color:red;text-align:center;margin-top:2rem">Failed to load content. Please refresh or check your connection.</p>';
-      console.error(err);
     });
 
   /*  URL helpers ---------------------------------------------------- */
@@ -284,7 +287,7 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 4 • Search (token‑set intersect, prefix‑aware)
+     SECTION 4 • Search (token‑set intersect)
   ---------------------------------------------------- */
   function search(q) {
     const qUl = $('#results');
@@ -294,10 +297,7 @@
     const tokens = q.match(/\p{L}+/gu) || [];
     qUl.innerHTML = ''; qUl.style.display = ''; tUl.style.display = 'none';
 
-    pages.filter(p => tokens.every(tok => {
-      for (const w of p.wordSet) if (w.startsWith(tok)) return true; // prefix match
-      return false;
-    })).forEach(p => {
+    pages.filter(p => tokens.every(tok => p.wordSet.has(tok))).forEach(p => {
       const li = document.createElement('li');
       li.setAttribute('role', 'option');
       li.textContent = p.title;
@@ -363,10 +363,8 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 6 • Markdown render + ToC + prev/next (race‑safe)
+     SECTION 6 • Markdown render + ToC + prev/next
   ---------------------------------------------------- */
-  let currentRender = 0;  // 🔒 guard against outdated renders
-
   function numHead(el) {
     const c = [0,0,0,0,0,0];
     $$('h1,h2,h3,h4,h5', el).forEach(h => {
@@ -404,8 +402,6 @@
   }
 
   async function render(pg, anc) {
-    const myRender = ++currentRender;   // snapshot
-
     const html = marked.parse(pg.content, { headerIds:false });
     $('#content').innerHTML = DOMPurify.sanitize(html, {
       ADD_TAGS:['iframe'],
@@ -416,12 +412,10 @@
     numHead($('#content'));
 
     await ensureHighlight();
-    if (myRender !== currentRender) return; // outdated
     hljs.highlightAll();
 
-    if (/$[^$]+$|\\\(|\\\[/.test(pg.content)) {
+    if (/\$[^$]+\$|\\\(|\\\[/.test(pg.content)) {
       await ensureKatex();
-      if (myRender !== currentRender) return;
       window.renderMathInElement($('#content'), {
         delimiters:[
           {left:'$$',right:'$$',display:true},
@@ -437,7 +431,7 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 7 • Graph (mini & modal) — single force layout
+     SECTION 7 • Graph (mini & modal)  — single implementation
   ---------------------------------------------------- */
   function buildGraphData() {
     const nodes=[], links=[], adj=new Map();
@@ -476,72 +470,51 @@
     return {nodes,links,adj};
   }
 
-  // 🔄 Single simulation cached across mini/full draws
-/* -------------------------------------------------------
-   SECTION 7 • Graph (mini & modal)
----------------------------------------------------- */
- function buildGraph() {
-   const { nodes, links, adj } = buildGraphData();
- 
-   // Loop over mini + full, build an independent sim for each
-   ['mini', 'full'].forEach(id => {
-     const svg = d3.select('#' + id);
-     svg.selectAll('*').remove();
- 
-     const full = id === 'full';
-     const w = svg.node().clientWidth  || 300;
-     const h = svg.node().clientHeight || 200;
- 
-     const sim = d3.forceSimulation(nodes.map(d => ({ ...d }))) // clone nodes
-       .force('link', d3.forceLink(links).id(d => d.id).distance(80))
-       .force('charge', d3.forceManyBody().strength(-240))
-       .force('center', d3.forceCenter(w / 2, h / 2));
- 
-     const link = svg.append('g')
-       .selectAll('line')
-       .data(links)
-       .join('line')
-       .attr('stroke', d => d.kind === 'tag' ? '#444' : '#555')
-       .attr('stroke-width', 1);
- 
-     const node = svg.append('g')
-       .selectAll('circle')
-       .data(sim.nodes())
-       .join('circle')
-       .attr('r', 6)
-       .attr('fill', d => d.ref.children.length ? '#8a8a8a' : '#569cd6')
-       .style('cursor', 'pointer')
-       .on('click', (e, d) => { nav(d.ref); if (full) $('#modal').classList.remove('open'); })
-       .on('mouseover', (e, d) => highlight(d.id, 0.15))
-       .on('mouseout', () => highlight(null, 1))
-       .call(d3.drag()
-         .on('start', (e, d) => { if (!e.active) sim.alphaTarget(0.3).restart(); d.fx = d.x; d.fy = d.y; })
-         .on('drag', (e, d) => { d.fx = e.x; d.fy = e.y; })
-         .on('end',  (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
- 
-     const label = svg.append('g')
-       .selectAll('text')
-       .data(sim.nodes())
-       .join('text')
-       .attr('fill', '#aaa')
-       .attr('font-size', 10)
-       .text(d => d.label);
- 
-     function highlight(id, fade) {
-       node.style('opacity', o => id == null || adj.get(id)?.has(o.id) || o.id === id ? 1 : fade);
-       link.style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : fade);
-       label.style('opacity', o => id == null || adj.get(id)?.has(o.id) || o.id === id ? 1 : fade);
-     }
- 
-     sim.on('tick', () => {
-       link
-         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-       node.attr('cx', d => d.x).attr('cy', d => d.y);
-       label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
-     });
-   });
- }
+  function buildGraph() {
+    const { nodes, links, adj } = buildGraphData();
+    ['mini','full'].forEach(id => {
+      const svg=d3.select('#'+id);
+      svg.selectAll('*').remove();
+      const full=(id==='full');
+      const w=svg.node().clientWidth || 300;
+      const h=svg.node().clientHeight|| 200;
+
+      const sim=d3.forceSimulation(nodes)
+        .force('link',d3.forceLink(links).id(d=>d.id).distance(80))
+        .force('charge',d3.forceManyBody().strength(-240))
+        .force('center',d3.forceCenter(w/2,h/2));
+
+      const link=svg.append('g').selectAll('line').data(links).join('line')
+        .attr('stroke',d=>d.kind==='tag'? '#444':'#555').attr('stroke-width',1);
+
+      const node=svg.append('g').selectAll('circle').data(nodes).join('circle')
+        .attr('r',6).attr('fill',d=>d.ref.children.length?'#8a8a8a':'#569cd6')
+        .style('cursor','pointer')
+        .on('click',(e,d)=>{nav(d.ref); if(full) $('#modal').classList.remove('open');})
+        .on('mouseover',(e,d)=>highlight(d.id,0.15))
+        .on('mouseout',()=>highlight(null,1))
+        .call(d3.drag()
+          .on('start',(e,d)=>{if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y;})
+          .on('drag',(e,d)=>{d.fx=e.x; d.fy=e.y;})
+          .on('end',(e,d)=>{if(!e.active) sim.alphaTarget(0); d.fx=d.fy=null;}));
+
+      const label=svg.append('g').selectAll('text').data(nodes).join('text')
+        .attr('fill','#aaa').attr('font-size',10).text(d=>d.label);
+
+      function highlight(id,fade){
+        node.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
+        link.style('opacity',l=>id==null||l.source.id===id||l.target.id===id?1:fade);
+        label.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
+      }
+
+      sim.on('tick',()=>{
+        link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+            .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+        node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+        label.attr('x',d=>d.x+8).attr('y',d=>d.y+3);
+      });
+    });
+  }
 
   /* -------------------------------------------------------
      SECTION 8 • Client‑side routing
