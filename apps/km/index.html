@@ -38,8 +38,12 @@
     import hljs   from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm';
     import js     from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/javascript/+esm';
     import bash   from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/bash/+esm';
+    import md     from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/md/+esm';
+    import python from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/python/+esm';
     hljs.registerLanguage('javascript', js);
     hljs.registerLanguage('bash',       bash);
+    hljs.registerLanguage('javascript', md);
+    hljs.registerLanguage('bash',       python);
     window.hljs = hljs;          // keep existing API unchanged
   </script>
 </head>
