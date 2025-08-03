@@ -7,4 +7,13 @@ window.CONFIG = {
 
   // Raw Markdown bundle (one file, many pages)
   MD : 'https://hackmd.io/@h-s-n/doc_test/download'
+
+  // List every Highlight.js language you want available
+  LANGS  : [
+    'javascript',
+    'bash',
+    'markdown',
+    'python',
+    // add or remove freely …
+  ]
 };
