@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  km – Static Wiki  •  Slim-runtime version (August 2025)
+  km – Static Wiki  •  Slim-runtime FIXED (Aug 2025)
 -->
 <html lang="fr">
 <head>
@@ -8,48 +8,40 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>km – Static Wiki</title>
 
-  <!-- ─────────────  3ʳᵈ-party CSS (zero JS parse cost)  ───────────── -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
-  <link rel="stylesheet" href="km.css"/>
+  <!-- ─────────────  3ʳ-party CSS  ───────────── -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+  <link rel="stylesheet" href="km.css">
 
-  <!--  Site config (title, favicon, md bundle path)  -->
+  <!--  Config (title, favicon, md bundle path)  -->
   <script src="config.js"></script>
-
   <link id="favicon-el" rel="icon" href="">
 
-  <!-- ─────────────  Runtime-loader: only the bits we use ───────────── -->
+  <!-- ─────────────  Runtime-loader  ───────────── -->
   <script type="module">
-    /* ---------- 1. Tiny D3 subset (≈23 kB) ---------- */
-    import { select, selectAll }
-      from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
+    /* ---- 1. Tiny D3 subset ---- */
+    import { select, selectAll }                      from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
     import { forceSimulation, forceLink,
-             forceManyBody, forceCenter }
-      from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
-    import { drag }
-      from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
-    window.d3 = {
-      select, selectAll,
-      forceSimulation, forceLink, forceManyBody, forceCenter,
-      drag,
-    };
+             forceManyBody, forceCenter }             from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
+    import { drag }                                   from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
+    window.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
 
-    /* ---------- 2. highlight.js core + 2 languages (≈7 kB) ---------- */
-    import hljs   from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm';
-    import js     from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/javascript/+esm';
-    import bash   from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/bash/+esm';
-    import markdown     from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/markdown/+esm';
-    import python from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/python/+esm';
+    /* ---- 2. highlight.js core + chosen languages ---- */
+    import hljs      from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm';
+    import js        from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/javascript/+esm';
+    import bash      from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/bash/+esm';
+    import markdown  from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/markdown/+esm';
+    import python    from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/python/+esm';
     hljs.registerLanguage('javascript', js);
     hljs.registerLanguage('bash',       bash);
     hljs.registerLanguage('markdown',   markdown);
     hljs.registerLanguage('python',     python);
-    window.hljs = hljs;          // keep existing API unchanged
+    window.hljs = hljs;
   </script>
 </head>
 
 <body>
-<!-- ─────────────  Sidebar (tree + search)  ───────────── -->
+<!-- ─────────────  Sidebar  ───────────── -->
 <aside id="sidebar" role="navigation" aria-label="Site">
   <a href="#" title="Home"><h1 id="wiki-title" tabindex="0"></h1></a>
   <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search">
@@ -64,12 +56,10 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
     </button>
 
-    <!-- Static home button always visible -->
     <a id="home-link" href="#" title="Home">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="grey" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="grey"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
 
-    <!-- Dynamic crumbs go here -->
     <span id="crumb-dyn"></span>
 
     <button id="burger-util" class="burger" aria-label="Open utility panel">
@@ -80,11 +70,9 @@
   <div id="content-area">
     <article id="content"></article>
 
-    <!-- Utility column: mini-graph + ToC -->
     <section id="util">
       <div id="graph-box">
         <svg id="mini"></svg>
-        <!-- Magnifier opens the full graph -->
         <button id="expand" aria-label="Open full graph">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="grey"><path d="M10 2a8 8 0 105.29 14.29l4.7 4.7 1.42-1.42-4.7-4.7A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z"/></svg>
         </button>
@@ -102,173 +90,102 @@
   <svg id="full"></svg>
 </div>
 
-<!-- ──────────────────────────────────────────────────────
-     JavaScript — lives entirely here
-     ────────────────────────────────────────────────────── -->
-<script>
-  /* -------------------------------------------------------
-     Global helpers (hoisted early so they’re always defined)
-  ---------------------------------------------------- */
-  const $  = (sel, sc = document) => (sc || document).querySelector(sel);
-  const $$ = (sel, sc = document) => [...(sc || document).querySelectorAll(sel)];
+<!-- ────────────────────────────────────────────────
+     Main application script ― now a MODULE
+──────────────────────────────────────────────── -->
+<script type="module">
+  /* ---------- helpers ---------- */
+  const $  =(s,c=document)=>(c||document).querySelector(s);
+  const $$ =(s,c=document)=>[...(c||document).querySelectorAll(s)];
 
-  /* -------------------------------------------------------
-     Dynamic-import poly-fills for heavy libs
-       – All “big” bundles were removed from <head>
-  ---------------------------------------------------- */
-  let mdReady = null;
-  let kxReady = null;
+  /* ---------- dynamic-imports ---------- */
+  let mdReady=null, kxReady=null;
 
-  /* Markdown + DOMPurify (≈16 kB total, lazy-loaded) */
-  function ensureMarkdown() {
-    if (!mdReady) {
-      mdReady = Promise.all([
+  function ensureMarkdown(){
+    if(!mdReady){
+      mdReady=Promise.all([
         import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
-        import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm'),
-      ]).then(([markedMod, DOMPurify]) => ({
-        parse   : markedMod.marked.parse,
-        sanitize: html => DOMPurify.default.sanitize(html, {
+        import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')
+      ]).then(([m,dp])=>({
+        parse   :(src,opt)=>m.marked.parse(src,{...opt,mangle:false}),
+        sanitize:html=>dp.default.sanitize(html,{
           ADD_TAGS:['iframe'],
           ADD_ATTR:['allow','allowfullscreen','frameborder','scrolling',
                     'width','height','src','title'],
           ALLOWED_URI_REGEXP:/^(?:https?:|mailto:|tel:|#).*$/i,
-        }),
+        })
       }));
     }
     return mdReady;
   }
 
-  /* highlight.js already loaded by runtime-loader */
-  function ensureHighlight() { return Promise.resolve(); }
+  function ensureHighlight(){ return Promise.resolve(); }
 
-  /* KaTeX (kept as-is; loads auto-render dynamically) */
-  function ensureKatex() {
-    if (!kxReady) {
-      kxReady = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.mjs')
-        .then(() => import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs'));
+  function ensureKatex(){
+    if(!kxReady){
+      kxReady=import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs')
+        .then(mod=>{ window.renderMathInElement = mod.default; });
     }
     return kxReady;
   }
 
-  /* -------------------------------------------------------
-     Pull essentials from config.js
-  ---------------------------------------------------- */
+  /* ---------- config ---------- */
   const { TITLE, FAVICON, MD } = window.CONFIG;
 
-  /* -------------------------------------------------------
-     SECTION 1 • Data ingestion & page model
-  ---------------------------------------------------- */
-  const pages = [];               // Flat page list
-  const byId  = new Map();        // id → page
-  let   root  = null;             // Home node
+  /* ---------- page model ---------- */
+  const pages=[], byId=new Map(); let root=null;
 
-  fetch(MD, { cache: 'force-cache' })
-    .then(r => r.text())
-    .then(txt => {
-      /*  Split Markdown bundle into page objects ------------------------ */
-      for (const [, hdr, body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
-        const meta = {};
-        hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
-        pages.push({ ...meta, content: body.trim(), children: [] });
-      }
-
-      /*  Build indices and hierarchy ------------------------------------ */
-      pages.forEach(p => byId.set(p.id, p));
-      root = byId.get('home') || pages[0];
-
-      pages.forEach(p => {
-        if (p !== root) {
-          const par = byId.get(p.parent) || root;
-          p.parent  = par;
-          par.children.push(p);
-        }
-      });
-
-      /*  Pre-compute helpers for search (word-set, not full text) -------- */
-      const wordRE = /\p{L}+/gu;
-      pages.forEach(p => {
-        p.tagsSet = new Set((p.tags || '').split(',').filter(Boolean));
-        p.wordSet = new Set((
-          p.title + ' ' +
-          [...p.tagsSet].join(' ') + ' ' +
-          p.content
-        ).toLowerCase().match(wordRE) || []);
-      });
-
-      initUI();                    // Ready — fire up the interface
-    });
-
-  /*  URL helpers ---------------------------------------------------- */
-  const hashOf = p => {
-    const a = [];
-    for (let n = p; n && n.parent; n = n.parent) a.unshift(n.id);
-    return a.join('#');
-  };
-  const find = segs => {
-    let n = root;
-    for (const id of segs) {
-      const c = n.children.find(k => k.id === id);
-      if (!c) break;
-      n = c;
+  fetch(MD,{cache:'force-cache'}).then(r=>r.text()).then(txt=>{
+    for(const[,hdr,body]of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)){
+      const meta={}; hdr.replace(/(\w+):"([^"]+)"/g,(_,k,v)=>(meta[k]=v.trim()));
+      pages.push({...meta,content:body.trim(),children:[]});
     }
-    return n;
-  };
-  const nav = p => (location.hash = '#' + hashOf(p));
-
-  /* -------------------------------------------------------
-     SECTION 2 • UI boot-strap
-  ---------------------------------------------------- */
-  function initUI() {
-    $('#wiki-title').textContent = TITLE;
-    document.title = TITLE;
-    $('#favicon-el').href = FAVICON;
-
-    buildTree();   // sidebar outline
-    route();       // initial render
-
-    /*  Lazy-init graph when mini-map enters viewport ------------------- */
-    const mini = $('#mini');
-    new IntersectionObserver((entries, obs) => {
-      if (entries[0].isIntersecting) {
-        buildGraph();
-        obs.disconnect();
-      }
-    }).observe(mini);
-
-    /*  Routing & modal toggling ---------------------------------------- */
-    addEventListener('hashchange', route);
-    $('#expand').onclick       = () => { $('#modal').classList.add('open'); buildGraph(); };
-    $('#modal .close').onclick = () => $('#modal').classList.remove('open');
-
-    /*  Debounced live-search ------------------------------------------ */
-    let t = 0;
-    $('#search').oninput = e => {
-      clearTimeout(t);
-      t = setTimeout(() => search(e.target.value.toLowerCase()), 150);
-    };
-
-    /*  Burgers in portrait -------------------------------------------- */
-    const togglePanel = sel => {
-      const el = $(sel);
-      const o  = el.classList.toggle('open');
-      if (o && !el.querySelector('.panel-close')) {
-        const btn = document.createElement('button');
-        btn.className   = 'panel-close';
-        btn.textContent = '✕';
-        btn.onclick     = () => el.classList.remove('open');
-        el.appendChild(btn);
-      }
-    };
-    $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
-    $('#burger-util').onclick    = () => togglePanel('#util');
-    addEventListener('resize', () => {
-      if (matchMedia('(min-width:1001px)').matches) {
-        $('#sidebar').classList.remove('open');
-        $('#util').classList.remove('open');
+    pages.forEach(p=>byId.set(p.id,p));
+    root=byId.get('home')||pages[0];
+    pages.forEach(p=>{
+      if(p!==root){
+        const par=byId.get(p.parent)||root;
+        p.parent=par; par.children.push(p);
       }
     });
-  }
+    const wordRE=/\p{L}+/gu;
+    pages.forEach(p=>{
+      p.tagsSet=new Set((p.tags||'').split(',').filter(Boolean));
+      p.wordSet=new Set((p.title+' '+[...p.tagsSet].join(' ')+' '+p.content)
+                        .toLowerCase().match(wordRE)||[]);
+    });
+    initUI();
+  });
 
+  /* ---------- url helpers ---------- */
+  const hashOf=p=>{const a=[];for(let n=p;n&&n.parent;n=n.parent)a.unshift(n.id);return a.join('#');};
+  const find=segs=>{let n=root;for(const id of segs){const c=n.children.find(k=>k.id===id);if(!c)break;n=c;}return n;};
+  const nav =p=>(location.hash='#'+hashOf(p));
+
+  /* ---------- UI boot-strap ---------- */
+  function initUI(){
+    $('#wiki-title').textContent=TITLE; document.title=TITLE; $('#favicon-el').href=FAVICON;
+
+    buildTree(); route();
+
+    new IntersectionObserver((e,o)=>{if(e[0].isIntersecting){buildGraph();o.disconnect();}})
+      .observe($('#mini'));
+
+    addEventListener('hashchange',route);
+    $('#expand').onclick=()=>{$('#modal').classList.add('open');buildGraph();};
+    $('#modal .close').onclick=()=>$('#modal').classList.remove('open');
+
+    let t=0; $('#search').oninput=e=>{clearTimeout(t);t=setTimeout(()=>search(e.target.value.toLowerCase()),150);};
+
+    const toggle=sel=>{const el=$(sel);const o=el.classList.toggle('open');
+      if(o&&!el.querySelector('.panel-close')){
+        const btn=document.createElement('button');btn.className='panel-close';btn.textContent='✕';
+        btn.onclick=()=>el.classList.remove('open');el.appendChild(btn);}
+    };
+    $('#burger-sidebar').onclick=()=>toggle('#sidebar');
+    $('#burger-util').onclick   =()=>toggle('#util');
+    addEventListener('resize',()=>{if(matchMedia('(min-width:1001px)').matches){$('#sidebar').classList.remove('open');$('#util').classList.remove('open');}});
+  }
   /* -------------------------------------------------------
      SECTION 3 • Sidebar tree build (keyboard- & aria-friendly)
   ---------------------------------------------------- */
