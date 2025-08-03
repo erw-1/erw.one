@@ -1,13 +1,13 @@
 /* *********************************************************************
    SECTION 0 • MICRO‑NAMESPACE SETUP
    All library shims, DOM helpers and constants live inside one global
-   object **KM** so we never collide with other scripts/extensions.
+   object KM so we never collide with other scripts/extensions.
 ************************************************************************ */
 
 /**
- * Global namespace – everything attaches here so dev‑tools autocompletion
+ * Global namespace: everything attaches here so dev‑tools autocompletion
  * can reveal the entire public API in one go. Feel free to browse it via
- * `console.dir(window.KM)`.
+ * console.dir(window.KM).
  *
  * @namespace KM
  * @property {Object}  d3              Selected D3 sub‑modules re‑exported
@@ -27,7 +27,7 @@ Object.assign(KM, { $, $$ });
 /* *********************************************************************
    SECTION 1 • D3 MICRO‑BUNDLE + HIGHLIGHT.JS LOADER
 ************************************************************************ */
-// --- 1‑A  D3 — cherry‑picked to 6 KB instead of 200 KB full build -------
+// --- 1‑A  D3: cherry‑picked to 6 KB instead of 200 KB full build -------
 import {
   select, selectAll                    // DOM selections
 } from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
@@ -40,8 +40,8 @@ KM.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCen
 
 // --- 1‑B  highlight.js on‑demand --------------------------------------
 /**
- * Loads highlight.js *once* and registers only the languages requested in
- * `CONFIG.LANGS` (see **config.js**).
+ * Loads highlight.js once and registers only the languages requested in
+ * `CONFIG.LANGS` (see config.js).
  *
  * @returns {Promise<void>} Resolves when `window.hljs` is ready
  */
@@ -78,7 +78,7 @@ const { TITLE, FAVICON, MD, GRAPH_COLORS } = window.CONFIG;
 let mdReady = null; // will hold the Promise so we don’t import twice
 
 /**
- * Ensures *marked* and *DOMPurify* are available, combined into a tiny API.
+ * Ensures marked and DOMPurify are available, combined into a tiny API.
  * @returns {Promise<{parse:Function,sanitize:Function}>}
  */
 KM.ensureMarkdown = () => {
@@ -242,7 +242,7 @@ function initUI () {
     searchInput.focus();
   };
 
-  // --- 6‑G  Burger toggles (mobile UI) -------------------------------------
+  // --- 6‑G  Burger toggles (mobile / portrait UI) -------------------------------------
   const toggle = sel => {
     const el   = $(sel);
     const open = el.classList.toggle('open');
