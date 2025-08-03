@@ -248,7 +248,7 @@ function initUI () {
   };
 
   // --- 6‑G  Burger toggles (mobile / portrait UI) -------------------------------------
-  const togglePanel = sel => {
+  const togglePanel = sel => {{
     const el      = $(sel);
       // add the ✕ button in panels
       if (!el.querySelector('.panel-close')) {
@@ -274,6 +274,7 @@ function initUI () {
 
   // In‑app routing ----------------------------------------------------------
   addEventListener('hashchange', route);
+}
 
 /* *********************************************************************
    SECTION 7 • SIDEBAR TREE
