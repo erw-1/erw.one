@@ -11,7 +11,6 @@
   <!-- ─────────────  3ʳᵈ‑party libs (loaded upfront)  ───────────── -->
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
 
   <!--  Stylesheets that don’t cost JS parse time  -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"/>
@@ -81,7 +80,22 @@
 <!-- ──────────────────────────────────────────────────────
      JavaScript — lives entirely here
      ────────────────────────────────────────────────────── -->
-<script>
+ <!-- 6 KB selection  • 13 KB force  • 4 KB drag  -->
+ <script type="module">
+   import {select, selectAll}                 from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
+   import {forceSimulation, forceLink,
+           forceManyBody, forceCenter}        from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
+   import {drag}                              from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
+ 
+   /* Expose exactly what your script needs */
+   window.d3 = {
+     select, selectAll,
+     forceSimulation, forceLink, forceManyBody, forceCenter,
+     drag,
+   };
+ </script>
+
+ <script>
   /* -------------------------------------------------------
      Global helpers (hoisted early so they’re always defined)
   ---------------------------------------------------- */
