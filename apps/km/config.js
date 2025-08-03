@@ -15,5 +15,19 @@ window.CONFIG = {
     'markdown',
     'python'
     // add or remove freely …
-  ]
+  ],
+
+  /* graph palette  */
+  GRAPH_COLORS: {
+    // node fills
+    parent : '#8a8a8a',   // pages that have children
+    leaf   : '#569cd6',   // pages with no children
+
+    // links
+    hier   : '#555555',   // hierarchy lines
+    tag    : '#444444',   // same-tag cross-links
+
+    // text & extras
+    label  : '#aaaaaa',   // node labels
+  }
 };
