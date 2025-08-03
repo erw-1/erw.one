@@ -264,12 +264,6 @@ function initUI () {
    $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
    $('#burger-util'   ).onclick = () => togglePanel('#util');
 
-  /* Close sidebar & util (used on every navigation) --------------------- */
-  function closePanels () {
-    $('#sidebar').classList.remove('open');
-    $('#util'   ).classList.remove('open');
-  }
-
   // Auto‑close panels when resizing back to desktop -------------------------
   addEventListener('resize', () => {
     if (matchMedia('(min-width:1001px)').matches) {
