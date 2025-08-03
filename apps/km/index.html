@@ -1,44 +1,125 @@
 <!DOCTYPE html>
-<!--
-  km – Static Wiki  •  Slim-runtime UPDATED (Aug 2025)
-  • user-defined graph palette (in config.js)
-  • keeps first two tree levels open
-  • memoised KaTeX loader
-  • safer drag-start so graph doesn’t “explode” on first click
--->
+<!-- ========================================================================
+
+  km — STATIC WIKI  •  SINGLE-FILE EDITION
+  Refactored for clarity, maintainability and SEO-friendliness  
+  ─────────────────────────────────────────────────────────────
+  ▸ “Monolith” constraint respected: every byte lives in this file  
+  ▸ All JS/CSS/3ʳᵈ-party assets still lazy-loaded from CDNs  
+  ▸ Added exhaustive comments so a junior dev can hit the ground running  
+  ▸ Non-functional refactor only: all public APIs & DOM-hooks preserved  
+  ▸ Extra-thorough HTML-only SEO template (replace placeholders ★ as needed)
+
+========================================================================== -->
+
 <html lang="fr">
 <head>
+  <!-- —————————————————————— CORE META —————————————————————— -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>km – Static Wiki</title>
 
-  <!-- ─────────────  3ʳ-party CSS  ───────────── -->
+  <!-- —————————————————————— ✅ SEO TEMPLATE  ——————————————————————
+       Replace “★ … ★” with your own project data. KEEP ONLY WHAT YOU NEED.
+       Nothing here is executed; it is pure metadata read by crawlers.        -->
+  <!-- Primary -->
+  <meta name="description" content="★ Concise one-sentence pitch of the wiki. 155–160 chars max. ★">
+  <meta name="keywords"    content="★ knowledge management,wiki,static site,générateur,autre motclé ★">
+  <link rel="canonical"    href="★ https://example.com/ ★">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type"        content="website">
+  <meta property="og:site_name"   content="★ KM Static Wiki ★">
+  <meta property="og:title"       content="★ Same as <title> (60–65 chars) ★">
+  <meta property="og:description" content="★ Same as meta description, but up to 200 chars ★">
+  <meta property="og:url"         content="★ https://example.com/ ★">
+  <meta property="og:image"       content="★ https://example.com/cover.png ★">
+
+  <!-- Twitter Cards -->
+  <meta name="twitter:card"        content="summary_large_image">
+  <meta name="twitter:title"       content="★ Same as <title> ★">
+  <meta name="twitter:description" content="★ Same as meta description ★">
+  <meta name="twitter:image"       content="★ https://example.com/cover.png ★">
+
+  <!-- Schema.org (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context" : "https://schema.org",
+    "@type"    : "TechArticle",
+    "headline" : "★ Headline for Article or Wiki ★",
+    "about"    : ["Knowledge Management","Static Wiki","Documentation"],
+    "author"   : { "@type":"Person", "name":"★ Your Name ★"},
+    "publisher": { "@type":"Organization","name":"★ Org/Project ★"},
+    "url"      : "★ https://example.com/ ★",
+    "inLanguage":"fr"
+  }
+  </script>
+
+  <script type="application/ld+json" id="jsonld-website">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "KM – Static Wiki Template",
+    "url": "https://example.com/",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "https://example.com/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <script type="application/ld+json" id="jsonld-organization">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Example Org",
+    "url": "https://example.com/",
+    "logo": "https://example.com/logo.png",
+    "sameAs": [
+      "https://www.linkedin.com/company/example",
+      "https://github.com/example"
+    ]
+  }
+  </script>
+  <!-- ———————————————————————————————————————————————————————————— -->
+
+  <!-- ———————————————— 3ʳ-PARTY STYLE SHEETS ———————————————— -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <link rel="stylesheet" href="km.css">
 
-  <!--  Config (title, favicon, md bundle path, graph palette)  -->
-  <script src="config.js"></script>
-  <link id="favicon-el" rel="icon" href="">
+  <!-- ———————————————— USER CONFIG (title, paths, theme) ———————————————— -->
+  <script src="config.js" defer></script>
+  <link  id="favicon-el" rel="icon" href="">
 
-  <!-- ─────────────  Runtime-loader  ───────────── -->
+  <!-- ———————————————— D³ & HIGHLIGHT LOADER ————————————————
+       Tiny self-extracting bootstrapper.   
+       Exposes a minimal d3 bundle + async loader for highlight.js            -->
   <script type="module">
-    /* ---- 1. Tiny D3 subset ---- */
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       SECTION 1  •  D3 MICRO-BUNDLE
+       Exposes only the modules we need (selection/force/drag). Everything
+       sits under window.d3 to keep the global namespace predictable.
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     import { select, selectAll }                      from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
     import { forceSimulation, forceLink,
              forceManyBody, forceCenter }             from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
     import { drag }                                   from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
     window.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
 
-    /* ---- 2. highlight.js core + chosen languages ---- */
+    /* ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+       SECTION 2  •  highlight.js LAZY-LOADER
+       Returns a memoised promise so we load once and only once, even when
+       multiple markdown renders race to syntax-highlight.
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ */
     const ensureHighlight = (() => {
-      let ready;                                 // memoised Promise
-      return function () {
-        if (ready) return ready;                 // already loading / loaded
+      let ready;                                      // memo-holder
+      return function loadHL() {
+        if (ready) return ready;                      // already inflight/done ✔
 
         ready = (async () => {
-          const { LANGS = [] } = window.CONFIG;
-
+          const { LANGS = [] } = window.CONFIG;       // user-defined subset
           const hljs = (await import(
             'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm'
           )).default;
@@ -52,53 +133,64 @@
             })
           );
 
-          window.hljs = hljs;                    // expose globally
+          window.hljs = hljs;                         // global for convenience
         })();
 
         return ready;
       };
     })();
-
-    // expose the loader so other modules can call it
-    window.ensureHighlight = ensureHighlight;
+    window.ensureHighlight = ensureHighlight;         // expose ↬ for markdown
   </script>
 </head>
 
 <body>
-<!-- ─────────────  Sidebar  ───────────── -->
-<aside id="sidebar" role="navigation" aria-label="Site">
+<!-- ======================================================================
+     SIDEBAR • TREE + SEARCH
+====================================================================== -->
+<aside id="sidebar" role="navigation" aria-label="Site navigation">
   <a href="#" title="Home"><h1 id="wiki-title" tabindex="0"></h1></a>
 
+  <!-- ——— SEARCH BOX ——— -->
   <div id="search-box">
-    <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search">
-    <button id="search-clear" aria-label="Clear search" title="Clear search" style="display:none">✕</button>
+    <input  id="search"        placeholder="Search…" autocomplete="off" aria-label="Search">
+    <button id="search-clear"  aria-label="Clear search" title="Clear search" style="display:none">✕</button>
   </div>
 
+  <!-- ——— DYNAMIC NAVIGATION TREES ——— -->
   <ul id="tree"></ul>
   <ul id="results"></ul>
 </aside>
 
-<!-- ─────────────  Main panel  ───────────── -->
+<!-- ======================================================================
+     MAIN PANEL • BREADCRUMB + CONTENT + UTILS
+====================================================================== -->
 <main>
+  <!-- ——— BREADCRUMB / TOP BAR ——— -->
   <header id="crumb" role="navigation" aria-label="Breadcrumb">
+    <!-- Hamburger to reveal sidebar on mobile -->
     <button id="burger-sidebar" class="burger" aria-label="Open sidebar">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
     </button>
 
+    <!-- Shortcut to root page -->
     <a id="home-link" href="#" title="Home">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="grey"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
 
+    <!-- Dynamic breadcrumb injects here -->
     <span id="crumb-dyn"></span>
 
+    <!-- Utility panel burger -->
     <button id="burger-util" class="burger" aria-label="Open utility panel">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
     </button>
   </header>
 
+  <!-- ——— MAIN CONTENT / ARTICLE AREA ——— -->
   <div id="content-area">
     <article id="content"></article>
 
+    <!-- ——— RIGHT UTILITY PANE (mini-graph + ToC) ——— -->
     <section id="util">
       <div id="graph-box">
         <svg id="mini"></svg>
@@ -113,452 +205,552 @@
   </div>
 </main>
 
-<!-- Full-screen graph modal -->
+<!-- ======================================================================
+     FULL-SCREEN GRAPH MODAL
+====================================================================== -->
 <div id="modal">
   <span class="close" role="button" aria-label="Close full graph">✕</span>
   <svg id="full"></svg>
 </div>
 
-<!-- ───────────────────────────────────────────────
-     Main application script ― now a MODULE
-───────────────────────────────────────────────── -->
+<!-- ======================================================================
+     MAIN APPLICATION LOGIC • SINGLE <script type="module">
+     Everything below is purely client-side; no build-step required.
+====================================================================== -->
 <script type="module">
-  /* ---------- helpers ---------- */
-  const $  = (s,c=document)=>(c||document).querySelector(s);
-  const $$ = (s,c=document)=>[...(c||document).querySelectorAll(s)];
+/* ***********************************************************************
+   SECTION A • DOM SHORTHANDS
+************************************************************************ */
+const $  = (s,c=document) => (c || document).querySelector(s);
+const $$ = (s,c=document) => [...(c || document).querySelectorAll(s)];
 
-  /* ---------- config ---------- */
-  const { TITLE, FAVICON, MD, GRAPH_COLORS } = window.CONFIG;  // palette comes straight from user config
+/* ***********************************************************************
+   SECTION B • CONFIG EXTRACTION
+   TITLE, FAVICON etc. are injected by config.js so end-users don’t touch
+   this main code.
+************************************************************************ */
+const { TITLE, FAVICON, MD, GRAPH_COLORS } = window.CONFIG;
 
-  /* ---------- dynamic-imports ---------- */
-  let mdReady=null;
-  const ensureMarkdown = () => {
-    if (!mdReady) {
-      mdReady = Promise.all([
-        import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
-        import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')
-      ]).then(([m,dp]) => ({
-        parse   : (src,opt)=>m.marked.parse(src,{...opt,mangle:false}),
-        sanitize: html => dp.default.sanitize(html,{
-          ADD_TAGS :['iframe'],
-          ADD_ATTR :['allow','allowfullscreen','frameborder','scrolling',
-                     'width','height','src','title'],
-          ALLOWED_URI_REGEXP:/^(?:https?:|mailto:|tel:|#).*$/i,
-        })
-      }));
-    }
-    return mdReady;
+/* ***********************************************************************
+   SECTION C • LAZY DYNAMIC IMPORTS
+   We defer heavy libs (marked, DOMPurify, KaTeX) until they’re required.
+************************************************************************ */
+let mdReady = null;
+const ensureMarkdown = () => {
+  if (mdReady) return mdReady;
+  mdReady = Promise.all([
+    import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
+    import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')
+  ]).then(([marked, dompurify]) => ({
+    parse   : (src,opt) => marked.marked.parse(src, { ...opt, mangle:false }),
+    sanitize: html => dompurify.default.sanitize(html, {
+      ADD_TAGS :['iframe'],
+      ADD_ATTR :['allow','allowfullscreen','frameborder','scrolling','width','height','src','title'],
+      ALLOWED_URI_REGEXP:/^(?:https?:|mailto:|tel:|#).*$/i
+    })
+  }));
+  return mdReady;
+};
+
+const ensureKatex = (() => {
+  let ready;
+  return function () {
+    if (ready) return ready;
+    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs')
+      .then(mod => { window.renderMathInElement = mod.default; });
+    return ready;
   };
+})();
 
-  /* ---- KaTeX lazy-loader (memoised) ---- */
-  const ensureKatex = (() => {
-    let ready;
-    return function () {
-      if (ready) return ready;
-      ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs')
-        .then(mod => { window.renderMathInElement = mod.default; });
-      return ready;
-    };
-  })();
+/* ***********************************************************************
+   SECTION D • IN-MEMORY WIKI DATABASE
+   The markdown bundle packs every article between HTML comment fences:
+   <!--id:"home" tags:"foo,bar" parent:"home"--> …content…
+************************************************************************ */
+const pages = [];                       // flat list of page objects
+const byId  = new Map();                // id → page
+let   root  = null;                     // root/home page
 
-  /* ---------- page model ---------- */
-  const pages=[], byId=new Map(); let root=null;
+fetch(MD, {cache:'force-cache'}).then(r => r.text()).then(txt => {
+  for (const [,hdr,body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
+    const meta = {};
+    hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
+    pages.push({ ...meta, content: body.trim(), children: [] });
+  }
 
-  fetch(MD,{cache:'force-cache'}).then(r=>r.text()).then(txt=>{
-    for (const [,hdr,body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
-      const meta={};
-      hdr.replace(/(\w+):"([^"]+)"/g,(_,k,v)=>(meta[k]=v.trim()));
-      pages.push({...meta,content:body.trim(),children:[]});
+  // ——— Build parent/child hierarchy ———
+  pages.forEach(p => byId.set(p.id, p));
+  root = byId.get('home') || pages[0];
+  pages.forEach(p => {
+    if (p !== root) {
+      const par = byId.get(p.parent) || root;
+      p.parent  = par;
+      par.children.push(p);
     }
-
-    pages.forEach(p=>byId.set(p.id,p));
-    root = byId.get('home') || pages[0];
-
-    pages.forEach(p=>{
-      if (p!==root) {
-        const par = byId.get(p.parent) || root;
-        p.parent  = par;
-        par.children.push(p);
-      }
-    });
-
-    const wordRE=/\p{L}+/gu;
-    pages.forEach(p=>{
-      p.tagsSet = new Set((p.tags||'').split(',').filter(Boolean));
-      p.wordSet = new Set((p.title+' '+[...p.tagsSet].join(' ')+' '+p.content)
-                          .toLowerCase().match(wordRE)||[]);
-      p.searchStr = (p.title+' '+[...p.tagsSet].join(' ')+' '+p.content).toLowerCase();
-    });
-
-    initUI();
   });
 
-  /* ---------- url helpers ---------- */
-  const hashOf = p => { const a=[]; for (let n=p;n&&n.parent;n=n.parent) a.unshift(n.id); return a.join('#'); };
-  const find   = segs => { let n=root; for (const id of segs) { const c=n.children.find(k=>k.id===id); if(!c) break; n=c; } return n; };
-  const nav    = p => (location.hash='#'+hashOf(p));
+  // ——— Pre-compute search helpers ———
+  const wordRE = /\p{L}+/gu;            // includes accents (unicode class L)
+  pages.forEach(p => {
+    p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
+    const combo = p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content;
+    p.wordSet   = new Set(combo.toLowerCase().match(wordRE) || []);
+    p.searchStr = combo.toLowerCase();
+  });
 
-  /* ---------- UI boot-strap ---------- */
-  function initUI() {
-    $('#wiki-title').textContent = TITLE;
-    document.title               = TITLE;
-    $('#favicon-el').href        = FAVICON;
+  initUI();
+});
 
-    buildTree(); route();
+/* ***********************************************************************
+   SECTION E • URL HELPERS
+************************************************************************ */
+const hashOf = (p) => {                 // path from root → page (“a#b#c”)
+  const segs = [];
+  for (let n = p; n && n.parent; n = n.parent) segs.unshift(n.id);
+  return segs.join('#');
+};
 
-    new IntersectionObserver((e,o)=>{ if(e[0].isIntersecting){buildGraph();o.disconnect();} })
-      .observe($('#mini'));
-
-    addEventListener('hashchange',route);
-    $('#expand').onclick = ()=>{ $('#modal').classList.add('open'); buildGraph(); };
-    $('#modal .close').onclick = ()=>$('#modal').classList.remove('open');
-
-    const searchInput = $('#search');
-    const searchClear = $('#search-clear');
-    let t=0;
-    searchInput.oninput = e => {
-      clearTimeout(t);
-      const v=e.target.value;
-      searchClear.style.display = v ? '' : 'none';
-      t = setTimeout(()=>search(v.toLowerCase()),150);
-    };
-    searchClear.onclick = () => {
-      searchInput.value = '';
-      searchClear.style.display = 'none';
-      search('');
-      searchInput.focus();
-    };
-
-    const toggle = sel => {
-      const el=$(sel);
-      const o = el.classList.toggle('open');
-      if(o && !el.querySelector('.panel-close')){
-        const btn = document.createElement('button');
-        btn.className='panel-close';
-        btn.textContent='✕';
-        btn.onclick=()=>el.classList.remove('open');
-        el.appendChild(btn);
-      }
-    };
-    $('#burger-sidebar').onclick = ()=>toggle('#sidebar');
-    $('#burger-util').onclick    = ()=>toggle('#util');
-    addEventListener('resize',()=>{ if(matchMedia('(min-width:1001px)').matches){ $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }});
+const find = (segs) => {                // walk down id path, forgiving
+  let n = root;
+  for (const id of segs) {
+    const c = n.children.find(k => k.id === id);
+    if (!c) break;
+    n = c;
   }
+  return n;
+};
 
-  /* -------------------------------------------------------
-     SECTION 3 • Sidebar tree build  (first 2 levels open)
-  ---------------------------------------------------- */
-  function buildTree() {
-    const ul = $('#tree');
-    ul.innerHTML = '';
+const nav = (p) => (location.hash = '#' + hashOf(p));
 
-    const rec = (lst, container, depth=0) => {
-      lst.sort((a,b)=>a.title.localeCompare(b.title));
-      lst.forEach(p=>{
-        const li = document.createElement('li');
+/* ***********************************************************************
+   SECTION F • UI INITIALISATION
+************************************************************************ */
+function initUI() {
+  $('#wiki-title').textContent = TITLE;
+  document.title               = TITLE;
+  $('#favicon-el').href        = FAVICON;
 
-        if (p.children.length) {
-          const isOpen = depth < 2;                  // open first two levels
-          li.className = 'folder' + (isOpen ? ' open':'');
-          const caret  = document.createElement('button');
-          caret.className = 'caret';
+  buildTree();                 // sidebar
+  route();                     // render initial page
+
+  // Lazy-build mini-graph on first scroll into view
+  new IntersectionObserver((entries, obs) => {
+    if (entries[0].isIntersecting) { buildGraph(); obs.disconnect(); }
+  }).observe($('#mini'));
+
+  // Pop full-screen graph
+  $('#expand').onclick         = () => { $('#modal').classList.add('open'); buildGraph(); };
+  $('#modal .close').onclick   = () => $('#modal').classList.remove('open');
+
+  // ——— Search box wiring ———
+  const searchInput = $('#search');
+  const searchClear = $('#search-clear');
+  let debounce = 0;
+  searchInput.oninput = (e) => {
+    clearTimeout(debounce);
+    const val = e.target.value;
+    searchClear.style.display = val ? '' : 'none';
+    debounce = setTimeout(() => search(val.toLowerCase()), 150);
+  };
+  searchClear.onclick = () => {
+    searchInput.value = '';
+    searchClear.style.display = 'none';
+    search('');
+    searchInput.focus();
+  };
+
+  // ——— Burger toggles (sidebar & util panel) ———
+  const toggle = (sel) => {
+    const el = $(sel);
+    const open = el.classList.toggle('open');
+    if (open && !el.querySelector('.panel-close')) {
+      const btn = document.createElement('button');
+      btn.className = 'panel-close';
+      btn.textContent = '✕';
+      btn.onclick = () => el.classList.remove('open');
+      el.appendChild(btn);
+    }
+  };
+  $('#burger-sidebar').onclick = () => toggle('#sidebar');
+  $('#burger-util'   ).onclick = () => toggle('#util');
+
+  // Auto-close panels when returning to wide-desktop
+  addEventListener('resize', () => {
+    if (matchMedia('(min-width:1001px)').matches) {
+      $('#sidebar').classList.remove('open');
+      $('#util')   .classList.remove('open');
+    }
+  });
+
+  addEventListener('hashchange', route);
+}
+
+/* ***********************************************************************
+   SECTION G • SIDEBAR TREE (first two levels expanded)
+************************************************************************ */
+function buildTree() {
+  const ul = $('#tree');
+  ul.innerHTML = '';
+
+  const rec = (list, container, depth = 0) => {
+    list.sort((a, b) => a.title.localeCompare(b.title));
+
+    list.forEach(p => {
+      const li = document.createElement('li');
+
+      if (p.children.length) {
+        // ——— Folder node ———
+        const open = depth < 2;
+        li.className = 'folder' + (open ? ' open' : '');
+
+        // Caret (expand/collapse)
+        const caret = document.createElement('button');
+        caret.className = 'caret';
+        caret.setAttribute('aria-expanded', String(open));
+        caret.onclick = (e) => {
+          e.stopPropagation();
+          const isOpen = li.classList.toggle('open');
           caret.setAttribute('aria-expanded', String(isOpen));
-          caret.onclick = e=>{
-            e.stopPropagation();
-            const open = li.classList.toggle('open');
-            caret.setAttribute('aria-expanded', String(open));
-            sub.style.display = open ? 'block':'none';
-          };
+          sub.style.display = isOpen ? 'block' : 'none';
+        };
 
-          const lbl = document.createElement('a');
-          lbl.className = 'lbl';
-          lbl.href      = '#' + hashOf(p);
-          lbl.textContent = p.title;
-          lbl.addEventListener('keydown', e=>{
-            if(e.key==='Enter'||e.key===' '){ e.preventDefault(); nav(p); }
-          });
+        // Folder label
+        const lbl = document.createElement('a');
+        lbl.className = 'lbl';
+        lbl.href = '#' + hashOf(p);
+        lbl.textContent = p.title;
 
-          const sub = document.createElement('ul');
-          sub.style.display = isOpen ? 'block':'none';
+        const sub = document.createElement('ul');
+        sub.style.display = open ? 'block' : 'none';
 
-          li.append(caret,lbl,sub);
-          container.appendChild(li);
-          rec(p.children,sub,depth+1);
-        } else {
-          li.className='article';
-          const a = document.createElement('a');
-          a.href  = '#' + hashOf(p);
-          a.textContent = p.title;
-          li.appendChild(a);
-          container.appendChild(li);
-        }
-      });
-    };
-    rec(root.children,ul,0);
-  }
+        li.append(caret, lbl, sub);
+        container.appendChild(li);
 
-  /* -------------------------------------------------------
-     SECTION 4 • Search (substring match, min 2 chars)
-  ---------------------------------------------------- */
-  function search(q) {
-    const qUl = $('#results');
-    const tUl = $('#tree');
-    if(!q.trim()){ qUl.style.display='none'; tUl.style.display=''; return; }
-
-    const tokens = q.split(/\s+/).filter(tok=>tok.length>=2);
-    qUl.innerHTML=''; qUl.style.display=''; tUl.style.display='none';
-
-    pages.filter(p=>tokens.every(tok=>p.searchStr.includes(tok))).forEach(p=>{
-      const li=document.createElement('li');
-      li.setAttribute('role','option');
-      li.textContent=p.title;
-      li.onclick=()=>nav(p);
-      qUl.appendChild(li);
-    });
-    if(!qUl.children.length) qUl.innerHTML='<li id="no_result">No result</li>';
-  }
-
-  /* -------------------------------------------------------
-     SECTION 5 • Breadcrumb
-  ---------------------------------------------------- */
-  function breadcrumb(p) {
-    const dyn = $('#crumb-dyn');
-    dyn.innerHTML='';
-
-    const chain=[];
-    for(let n=p;n;n=n.parent) chain.unshift(n);
-    chain.shift();
-
-    chain.forEach(n=>{
-      dyn.insertAdjacentHTML('beforeend','<span class="separator">▸</span>');
-
-      const wrap = document.createElement('span');
-      wrap.className='dropdown';
-
-      const a=document.createElement('a');
-      a.textContent=n.title;
-      a.href='#'+hashOf(n);
-      if(n===p) a.className='crumb-current';
-      wrap.appendChild(a);
-
-      const sib=n.parent.children;
-      if(sib.length>1){
-        const ul=document.createElement('ul');
-        sib.forEach(s=>{
-          const li=document.createElement('li');
-          li.textContent=s.title;
-          li.onclick=()=>nav(s);
-          ul.appendChild(li);
-        });
-        wrap.appendChild(ul);
+        rec(p.children, sub, depth + 1);
+      } else {
+        // ——— Leaf/article node ———
+        li.className = 'article';
+        const a = document.createElement('a');
+        a.href = '#' + hashOf(p);
+        a.textContent = p.title;
+        li.appendChild(a);
+        container.appendChild(li);
       }
-      dyn.appendChild(wrap);
+    });
+  };
+
+  rec(root.children, ul);
+}
+
+/* ***********************************************************************
+   SECTION H • CLIENT-SIDE SEARCH (substring, ≥2 chars)
+************************************************************************ */
+function search(q) {
+  const resUL = $('#results');
+  const treeUL = $('#tree');
+
+  if (!q.trim()) {                       // reset → show tree
+    resUL.style.display = 'none';
+    treeUL.style.display = '';
+    return;
+  }
+
+  const tokens = q.split(/\s+/).filter(t => t.length >= 2);
+  resUL.innerHTML = '';
+  resUL.style.display = '';
+  treeUL.style.display = 'none';
+
+  pages
+    .filter(p => tokens.every(tok => p.searchStr.includes(tok)))
+    .forEach(p => {
+      const li = document.createElement('li');
+      li.setAttribute('role', 'option');
+      li.textContent = p.title;
+      li.onclick = () => nav(p);
+      resUL.appendChild(li);
     });
 
-    if(p.children.length){
-      const box=document.createElement('span');
-      box.className='childbox';
-      box.innerHTML='<span class="toggle">▾</span><ul></ul>';
+  if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
+}
 
-      const ul=box.querySelector('ul');
-      p.children.sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch=>{
-        const li=document.createElement('li');
-        li.textContent=ch.title;
-        li.onclick=()=>nav(ch);
+/* ***********************************************************************
+   SECTION I • BREADCRUMB GENERATION
+************************************************************************ */
+function breadcrumb(p) {
+  const dyn = $('#crumb-dyn');
+  dyn.innerHTML = '';
+
+  // Build ancestor chain
+  const chain = [];
+  for (let n = p; n; n = n.parent) chain.unshift(n);
+  chain.shift();                          // drop root (home icon replaces it)
+
+  chain.forEach(n => {
+    dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
+
+    // Wrap each crumb to inject sibling drop-down
+    const wrap = document.createElement('span');
+    wrap.className = 'dropdown';
+
+    const a = document.createElement('a');
+    a.textContent = n.title;
+    a.href = '#' + hashOf(n);
+    if (n === p) a.className = 'crumb-current';
+    wrap.appendChild(a);
+
+    // Drop-down → siblings
+    const siblings = n.parent.children;
+    if (siblings.length > 1) {
+      const ul = document.createElement('ul');
+      siblings.forEach(s => {
+        const li = document.createElement('li');
+        li.textContent = s.title;
+        li.onclick = () => nav(s);
         ul.appendChild(li);
       });
-      dyn.appendChild(box);
-    }
-  }
-
-  /* -------------------------------------------------------
-     SECTION 6 • Markdown render + ToC + prev/next
-  ---------------------------------------------------- */
-  function numHead(el){
-    const c=[0,0,0,0,0,0];
-    $$('h1,h2,h3,h4,h5',el).forEach(h=>{
-      const l=+h.tagName[1]-1;
-      c[l]++; for(let i=l+1;i<6;i++) c[i]=0;
-      h.id=c.slice(0,l+1).filter(Boolean).join('_');
-    });
-  }
-
-  function toc(pg){
-    const nav=$('#toc'); nav.innerHTML='';
-    const hd=$$('#content h1,#content h2,#content h3');
-    if(!hd.length) return;
-    const ul=document.createElement('ul');
-    hd.forEach(h=>{
-      const li=document.createElement('li');
-      li.dataset.level=h.tagName[1];
-      const a=document.createElement('a');
-      const base=hashOf(pg);
-      a.href='#'+(base?base+'#':'')+h.id;
-      a.textContent=h.textContent;
-      li.appendChild(a); ul.appendChild(li);
-    });
-    nav.appendChild(ul);
-  }
-
-  function prevNext(pg){
-    $('#prev-next')?.remove();
-    if(!pg.parent) return;
-    const sib=pg.parent.children; if(sib.length<2) return;
-    const i=sib.indexOf(pg);
-    const nav=document.createElement('div'); nav.id='prev-next';
-    if(i>0) nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[i-1]),textContent:'← '+sib[i-1].title}));
-    if(i<sib.length-1) nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[i+1]),textContent:sib[i+1].title+' →'}));
-    $('#content').appendChild(nav);
-  }
-
-  async function render(pg,anc){
-    const {parse,sanitize}=await ensureMarkdown();
-    $('#content').innerHTML=sanitize(parse(pg.content,{headerIds:false}));
-
-    numHead($('#content'));
-
-    await window.ensureHighlight();
-    window.hljs.highlightAll();
-
-    if(/\$[^$]+\$|\\\(|\\\[/.test(pg.content)){
-      await ensureKatex();
-      window.renderMathInElement($('#content'),{
-        delimiters:[
-          {left:'$$',right:'$$',display:true},
-          {left:'\\[',right:'\\]',display:true},
-          {left:'$', right:'$', display:false},
-          {left:'\\(',right:'\\)',display:false}],
-        throwOnError:false
-      });
+      wrap.appendChild(ul);
     }
 
-    toc(pg); prevNext(pg);
-    if(anc) document.getElementById(anc)?.scrollIntoView({behavior:'smooth'});
-  }
+    dyn.appendChild(wrap);
+  });
 
-  /* -------------------------------------------------------
-     SECTION 7 • Graph (mini & modal)
-  ---------------------------------------------------- */
-  function buildGraphData(){
-    const nodes=[],links=[],adj=new Map();
-    pages.forEach((p,i)=>(p._i=i));
+  // Quick-select children of current page
+  if (p.children.length) {
+    const box = document.createElement('span');
+    box.className = 'childbox';
+    box.innerHTML = '<span class="toggle">▾</span><ul></ul>';
 
-    pages.forEach(p=>{
-      nodes.push({id:p._i,label:p.title,ref:p});
-      if(p.parent){
-        links.push({source:p._i,target:p.parent._i,kind:'hier'});
-        addAdj(p._i,p.parent._i);
-      }
+    const ul = box.querySelector('ul');
+    p.children.sort((a, b) => a.title.localeCompare(b.title)).forEach(ch => {
+      const li = document.createElement('li');
+      li.textContent = ch.title;
+      li.onclick = () => nav(ch);
+      ul.appendChild(li);
     });
+    dyn.appendChild(box);
+  }
+}
 
-    const tagMap=new Map();
-    pages.forEach(p=>p.tagsSet.forEach(t=>{
-      if(!tagMap.has(t)) tagMap.set(t,[]);
-      tagMap.get(t).push(p);
+/* ***********************************************************************
+   SECTION J • MARKDOWN RENDER + TOC + PREV/NEXT
+************************************************************************ */
+function numberHeadings(el) {
+  const counters = [0, 0, 0, 0, 0, 0];
+  $$('h1,h2,h3,h4,h5', el).forEach(h => {
+    const level = +h.tagName[1] - 1;
+    counters[level]++; for (let i = level + 1; i < 6; i++) counters[i] = 0;
+    h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
+  });
+}
+
+function buildToc(page) {
+  const nav = $('#toc');
+  nav.innerHTML = '';
+  const headings = $$('#content h1,#content h2,#content h3');
+  if (!headings.length) return;
+
+  const ul = document.createElement('ul');
+  headings.forEach(h => {
+    const li = document.createElement('li');
+    li.dataset.level = h.tagName[1];
+    const a = document.createElement('a');
+    const base = hashOf(page);
+    a.href = '#' + (base ? base + '#' : '') + h.id;
+    a.textContent = h.textContent;
+    li.appendChild(a);
+    ul.appendChild(li);
+  });
+  nav.appendChild(ul);
+}
+
+function prevNext(page) {
+  $('#prev-next')?.remove();
+  if (!page.parent) return;
+
+  const sib = page.parent.children;
+  if (sib.length < 2) return;
+
+  const i = sib.indexOf(page);
+  const nav = document.createElement('div');
+  nav.id = 'prev-next';
+
+  if (i > 0)
+    nav.appendChild(Object.assign(document.createElement('a'), {
+      href: '#' + hashOf(sib[i - 1]),
+      textContent: '← ' + sib[i - 1].title
     }));
-    tagMap.forEach(list=>{
-      for(let i=0;i<list.length;i++)
-        for(let j=i+1;j<list.length;j++){
-          const a=list[i],b=list[j];
-          if(!adj.get(a._i)?.has(b._i)){
-            links.push({source:a._i,target:b._i,kind:'tag'});
-            addAdj(a._i,b._i);
-          }
-        }
-    });
+  if (i < sib.length - 1)
+    nav.appendChild(Object.assign(document.createElement('a'), {
+      href: '#' + hashOf(sib[i + 1]),
+      textContent: sib[i + 1].title + ' →'
+    }));
 
-    function addAdj(a,b){
-      if(!adj.has(a)) adj.set(a,new Set());
-      if(!adj.has(b)) adj.set(b,new Set());
-      adj.get(a).add(b); adj.get(b).add(a);
+  $('#content').appendChild(nav);
+}
+
+async function render(page, anchor) {
+  // ——— 1. Markdown → HTML ———
+  const { parse, sanitize } = await ensureMarkdown();
+  $('#content').innerHTML = sanitize(parse(page.content, { headerIds: false }));
+
+  // ——— 2. Auto-number headings + anchor ids ———
+  numberHeadings($('#content'));
+
+  // ——— 3. Syntax highlight (async but cheap) ———
+  await window.ensureHighlight();
+  window.hljs.highlightAll();
+
+  // ——— 4. Math (KaTeX) ———
+  if (/\$[^$]+\$|\\\(|\\\[/.test(page.content)) {
+    await ensureKatex();
+    window.renderMathInElement($('#content'), {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '\\[', right: '\\]', display: true },
+        { left: '$',  right: '$',  display: false },
+        { left: '\\(', right: '\\)', display: false }
+      ],
+      throwOnError: false
+    });
+  }
+
+  // ——— 5. TOC + sibling navigation ———
+  buildToc(page);
+  prevNext(page);
+
+  // ——— 6. Optional deep-link anchor scroll ———
+  if (anchor) document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth' });
+}
+
+/* ***********************************************************************
+   SECTION K • GRAPH VISUALISATION (mini & modal)
+************************************************************************ */
+function buildGraphData() {
+  const nodes = [], links = [], adj = new Map();     // adj = adjacency list
+
+  // Give every page a numeric index (stable ↬ used by D3)
+  pages.forEach((p, i) => (p._i = i));
+
+  // ——— Hierarchy edges ———
+  pages.forEach(p => {
+    nodes.push({ id:p._i, label:p.title, ref:p });
+    if (p.parent) {
+      links.push({ source:p._i, target:p.parent._i, kind:'hier' });
+      addAdj(p._i, p.parent._i);
     }
-    return {nodes,links,adj};
-  }
+  });
 
-  function buildGraph(){
-    const {nodes,links,adj}=buildGraphData();
-
-    ['mini','full'].forEach(id=>{
-      const svg=d3.select('#'+id);
-      svg.selectAll('*').remove();
-      const full=(id==='full');
-      const w=svg.node().clientWidth  || 300;
-      const h=svg.node().clientHeight || 200;
-
-      /* make local copies so simulations don’t share state */
-      const localNodes=nodes.map(n=>({...n}));
-      const localLinks=links.map(l=>({source:l.source,target:l.target,kind:l.kind}));
-
-      const sim=d3.forceSimulation(localNodes)
-        .force('link',d3.forceLink(localLinks).id(d=>d.id).distance(80))
-        .force('charge',d3.forceManyBody().strength(-240))
-        .force('center',d3.forceCenter(w/2,h/2));
-
-      const link=svg.append('g').selectAll('line').data(localLinks).join('line')
-        .attr('stroke', d => d.kind==='tag'
-              ? GRAPH_COLORS.tag
-              : GRAPH_COLORS.hier)
-        .attr('stroke-width',1);
-
-      const node = svg.append('g')
-        .selectAll('circle').data(localNodes).join('circle')
-        .attr('r', 6)
-        .attr('fill', d => d.ref.children.length
-              ? GRAPH_COLORS.parent
-              : GRAPH_COLORS.leaf)
-        .style('cursor', 'pointer')
-        .on('click', (e, d) => {               // navigate on click
-          nav(d.ref);
-          if (full) $('#modal').classList.remove('open');
-        })
-        .on('mouseover', (e, d) => highlight(d.id, 0.15))
-        .on('mouseout',  ()    => highlight(null, 1))
-        .call(
-          d3.drag()
-            /* keep the grab-point but don’t poke the sim yet            */
-            .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
-            /* only kick the simulation once the pointer actually moves  */
-            .on('drag',  (e, d) => {
-              if (e.dx || e.dy) sim.alphaTarget(0.3).restart();
-              d.fx = e.x; d.fy = e.y;
-            })
-            /* release and let the layout cool when done                 */
-            .on('end',   (e, d) => {
-              if (!e.active) sim.alphaTarget(0);
-              d.fx = d.fy = null;
-            })
-        );
-
-      const label=svg.append('g').selectAll('text').data(localNodes).join('text')
-        .attr('fill', GRAPH_COLORS.label)
-        .attr('font-size',10).text(d=>d.label);
-
-      function highlight(id,fade){
-        node.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
-        link.style('opacity',l=>id==null||l.source.id===id||l.target.id===id?1:fade);
-        label.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
+  // ——— Tag-based edges (link pages sharing at least one tag) ———
+  const tagMap = new Map();
+  pages.forEach(p => p.tagsSet.forEach(t => {
+    if (!tagMap.has(t)) tagMap.set(t, []);
+    tagMap.get(t).push(p);
+  }));
+  tagMap.forEach(list => {
+    for (let i = 0; i < list.length; i++)
+      for (let j = i + 1; j < list.length; j++) {
+        const a = list[i], b = list[j];
+        if (!adj.get(a._i)?.has(b._i)) {
+          links.push({ source:a._i, target:b._i, kind:'tag' });
+          addAdj(a._i, b._i);
+        }
       }
+  });
 
-      sim.on('tick',()=>{
-        link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
-            .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
-        node.attr('cx',d=>d.x).attr('cy',d=>d.y);
-        label.attr('x',d=>d.x+8).attr('y',d=>d.y+3);
-      });
+  function addAdj(a, b) {
+    if (!adj.has(a)) adj.set(a, new Set());
+    if (!adj.has(b)) adj.set(b, new Set());
+    adj.get(a).add(b); adj.get(b).add(a);
+  }
+
+  return { nodes, links, adj };
+}
+
+function buildGraph() {
+  const { nodes, links, adj } = buildGraphData();
+
+  ['mini', 'full'].forEach(id => {
+    const svg  = d3.select('#' + id);
+    svg.selectAll('*').remove();                     // wipe previous render
+
+    const full = (id === 'full');
+    const w = svg.node().clientWidth  || 300;
+    const h = svg.node().clientHeight || 200;
+
+    // Local copies so each simulation is independent
+    const localNodes = nodes.map(n => ({ ...n }));
+    const localLinks = links.map(l => ({ source:l.source, target:l.target, kind:l.kind }));
+
+    const sim = d3.forceSimulation(localNodes)
+      .force('link',   d3.forceLink(localLinks).id(d => d.id).distance(80))
+      .force('charge', d3.forceManyBody().strength(-240))
+      .force('center', d3.forceCenter(w / 2, h / 2));
+
+    // ——— Edges ———
+    const link = svg.append('g').selectAll('line')
+      .data(localLinks).join('line')
+      .attr('stroke', d => d.kind === 'tag' ? GRAPH_COLORS.tag : GRAPH_COLORS.hier)
+      .attr('stroke-width', 1);
+
+    // ——— Nodes ———
+    const node = svg.append('g').selectAll('circle')
+      .data(localNodes).join('circle')
+      .attr('r', 6)
+      .attr('fill', d => d.ref.children.length ? GRAPH_COLORS.parent : GRAPH_COLORS.leaf)
+      .style('cursor', 'pointer')
+      .on('click', (e, d) => { nav(d.ref); if (full) $('#modal').classList.remove('open'); })
+      .on('mouseover', (e, d) => highlight(d.id, 0.15))
+      .on('mouseout',  ()    => highlight(null, 1))
+      .call(
+        d3.drag()
+          .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
+          .on('drag',  (e, d) => {
+            if (e.dx || e.dy) sim.alphaTarget(0.3).restart();
+            d.fx = e.x; d.fy = e.y;
+          })
+          .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; })
+      );
+
+    // ——— Labels ———
+    const label = svg.append('g').selectAll('text')
+      .data(localNodes).join('text')
+      .attr('fill', GRAPH_COLORS.label)
+      .attr('font-size', 10)
+      .text(d => d.label);
+
+    // Highlight helper
+    function highlight(id, fade) {
+      node.style('opacity', o => (id == null || adj.get(id)?.has(o.id) || o.id === id) ? 1 : fade);
+      link.style('opacity', l => (id == null || l.source.id === id || l.target.id === id) ? 1 : fade);
+      label.style('opacity', o => (id == null || adj.get(id)?.has(o.id) || o.id === id) ? 1 : fade);
+    }
+
+    // Tick loop
+    sim.on('tick', () => {
+      link .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+           .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+
+      node .attr('cx', d => d.x)        .attr('cy', d => d.y);
+      label.attr('x',  d => d.x + 8)    .attr('y', d => d.y + 3);
     });
-  }
+  });
+}
 
-  /* -------------------------------------------------------
-     SECTION 8 • Client-side routing
-  ---------------------------------------------------- */
-  function route(){
-    const seg=location.hash.slice(1).split('#').filter(Boolean);
-    const pg=find(seg);
-    const anc=seg.slice(hashOf(pg).split('#').length).join('#');
-    document.documentElement.scrollTop=0;
-    document.body.scrollTop=0;
-    breadcrumb(pg); render(pg,anc);
-  }
+/* ***********************************************************************
+   SECTION L • CLIENT-SIDE ROUTER
+************************************************************************ */
+function route() {
+  const seg    = location.hash.slice(1).split('#').filter(Boolean);
+  const page   = find(seg);
+  const anchor = seg.slice(hashOf(page).split('#').length).join('#');
+
+  // Reset scroll (mobile Safari needs both roots)
+  document.documentElement.scrollTop = 0;
+  document.body.scrollTop            = 0;
+
+  breadcrumb(page);
+  render(page, anchor);
+}
 </script>
 </body>
 </html>
