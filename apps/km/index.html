@@ -25,35 +25,40 @@
              forceManyBody, forceCenter }             from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
     import { drag }                                   from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
     window.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
-
+  
     /* ---- 2. highlight.js core + chosen languages ---- */
     const ensureHighlight = (() => {
-      let ready;                         // memoised Promise
+      let ready;                    // memoised Promise
       return function () {
-        if (ready) return ready;         // already loading / loaded
-    
+        if (ready) return ready;    // already loading / loaded
+  
         ready = (async () => {
           const { LANGS = [] } = window.CONFIG;
-    
+  
           // core
           const hljs = (await import(
             'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm'
           )).default;
-    
-          // languages listed in config.js
-          await Promise.all(LANGS.map(async (lang) => {
-            const mod = await import(
-              `https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/${lang}/+esm`
-            );
-            hljs.registerLanguage(lang, mod.default);
-          }));
-    
-          window.hljs = hljs;            // expose globally (keeps rest of code unchanged)
+  
+          // languages defined in config.js
+          await Promise.all(
+            LANGS.map(async (lang) => {
+              const mod = await import(
+                `https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/${lang}/+esm`
+              );
+              hljs.registerLanguage(lang, mod.default);
+            })
+          );
+  
+          window.hljs = hljs;       // expose globally
         })();
-    
+  
         return ready;
       };
     })();
+  
+    // expose the loader so other modules can call it
+    window.ensureHighlight = ensureHighlight;
   </script>
 </head>
 
@@ -135,8 +140,6 @@
     }
     return mdReady;
   }
-
-  function ensureHighlight(){ return Promise.resolve(); }
 
   function ensureKatex(){
     if(!kxReady){
@@ -378,8 +381,8 @@
 
     numHead($('#content'));
 
-    await ensureHighlight();
-    hljs.highlightAll();
+    await window.ensureHighlight();   // load core + languages once
+    window.hljs.highlightAll();       // then highlight
 
     if (/\$[^$]+\$|\\\(|\\\[/.test(pg.content)) {
       await ensureKatex();
