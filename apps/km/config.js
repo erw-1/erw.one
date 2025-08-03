@@ -1,6 +1,6 @@
 window.CONFIG = {
   // Appears above the search box and in the <title>
-  TITLE   : '⟪ Title of your wiki ⟫',
+  TITLE   : 'Title of your wiki',
 
   // Any png / ico / svg file you like
   FAVICON : 'https://raw.githubusercontent.com/erw-1/erw.one/refs/heads/main/files/img/preview.png',
@@ -20,12 +20,12 @@ window.CONFIG = {
   /* graph palette  */
   GRAPH_COLORS: {
     // node fills
-    parent : '#8a8a8a',   // pages that have children
-    leaf   : '#569cd6',   // pages with no children
+    parent : '#555555',   // pages that have children
+    leaf   : '#444444',   // pages with no children
 
     // links
     hier   : '#555555',   // hierarchy lines
-    tag    : '#444444',   // same-tag cross-links
+    tag    : '#4e606e',   // same-tag cross-links
 
     // text & extras
     label  : '#aaaaaa',   // node labels
