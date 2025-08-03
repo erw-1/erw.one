@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- km – Static Wiki
+  km – Static Wiki  •  Slim-runtime version (August 2025)
 -->
 <html lang="fr">
 <head>
@@ -8,19 +8,40 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>km – Static Wiki</title>
 
-  <!-- ─────────────  3ʳᵈ‑party libs (loaded upfront)  ───────────── -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer></script>
-
-  <!--  Stylesheets that don’t cost JS parse time  -->
+  <!-- ─────────────  3ʳᵈ-party CSS (zero JS parse cost)  ───────────── -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"/>
   <link rel="stylesheet" href="km.css"/>
 
   <!--  Site config (title, favicon, md bundle path)  -->
   <script src="config.js"></script>
 
   <link id="favicon-el" rel="icon" href="">
+
+  <!-- ─────────────  Runtime-loader: only the bits we use ───────────── -->
+  <script type="module">
+    /* ---------- 1. Tiny D3 subset (≈23 kB) ---------- */
+    import { select, selectAll }
+      from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
+    import { forceSimulation, forceLink,
+             forceManyBody, forceCenter }
+      from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
+    import { drag }
+      from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
+    window.d3 = {
+      select, selectAll,
+      forceSimulation, forceLink, forceManyBody, forceCenter,
+      drag,
+    };
+
+    /* ---------- 2. highlight.js core + 2 languages (≈7 kB) ---------- */
+    import hljs   from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm';
+    import js     from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/javascript/+esm';
+    import bash   from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/bash/+esm';
+    hljs.registerLanguage('javascript', js);
+    hljs.registerLanguage('bash',       bash);
+    window.hljs = hljs;          // keep existing API unchanged
+  </script>
 </head>
 
 <body>
@@ -71,7 +92,7 @@
   </div>
 </main>
 
-<!-- Full‑screen graph modal -->
+<!-- Full-screen graph modal -->
 <div id="modal">
   <span class="close" role="button" aria-label="Close full graph">✕</span>
   <svg id="full"></svg>
@@ -80,22 +101,7 @@
 <!-- ──────────────────────────────────────────────────────
      JavaScript — lives entirely here
      ────────────────────────────────────────────────────── -->
- <!-- 6 KB selection  • 13 KB force  • 4 KB drag  -->
- <script type="module">
-   import {select, selectAll}                 from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
-   import {forceSimulation, forceLink,
-           forceManyBody, forceCenter}        from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
-   import {drag}                              from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
- 
-   /* Expose exactly what your script needs */
-   window.d3 = {
-     select, selectAll,
-     forceSimulation, forceLink, forceManyBody, forceCenter,
-     drag,
-   };
- </script>
-
- <script>
+<script>
   /* -------------------------------------------------------
      Global helpers (hoisted early so they’re always defined)
   ---------------------------------------------------- */
@@ -103,25 +109,39 @@
   const $$ = (sel, sc = document) => [...(sc || document).querySelectorAll(sel)];
 
   /* -------------------------------------------------------
-     Dynamic‑import poly‑fills for heavy libs
+     Dynamic-import poly-fills for heavy libs
+       – All “big” bundles were removed from <head>
   ---------------------------------------------------- */
-  let hlReady  = null;
-  let kxReady  = null;
+  let mdReady = null;
+  let kxReady = null;
 
-  function ensureHighlight() {
-    if (!hlReady) {
-      hlReady = import('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js')
-        .then(mod => {
-          window.hljs = mod.default;
-        });
+  /* Markdown + DOMPurify (≈16 kB total, lazy-loaded) */
+  function ensureMarkdown() {
+    if (!mdReady) {
+      mdReady = Promise.all([
+        import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
+        import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm'),
+      ]).then(([markedMod, DOMPurify]) => ({
+        parse   : markedMod.marked.parse,
+        sanitize: html => DOMPurify.default.sanitize(html, {
+          ADD_TAGS:['iframe'],
+          ADD_ATTR:['allow','allowfullscreen','frameborder','scrolling',
+                    'width','height','src','title'],
+          ALLOWED_URI_REGEXP:/^(?:https?:|mailto:|tel:|#).*$/i,
+        }),
+      }));
     }
-    return hlReady;
+    return mdReady;
   }
 
+  /* highlight.js already loaded by runtime-loader */
+  function ensureHighlight() { return Promise.resolve(); }
+
+  /* KaTeX (kept as-is; loads auto-render dynamically) */
   function ensureKatex() {
     if (!kxReady) {
-      kxReady = import('https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js')
-        .then(() => import('https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js'));
+      kxReady = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.mjs')
+        .then(() => import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs'));
     }
     return kxReady;
   }
@@ -160,11 +180,15 @@
         }
       });
 
-      /*  Pre‑compute helpers for search (word‑set, not full text) -------- */
+      /*  Pre-compute helpers for search (word-set, not full text) -------- */
       const wordRE = /\p{L}+/gu;
       pages.forEach(p => {
         p.tagsSet = new Set((p.tags || '').split(',').filter(Boolean));
-        p.wordSet = new Set((p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase().match(wordRE) || []);
+        p.wordSet = new Set((
+          p.title + ' ' +
+          [...p.tagsSet].join(' ') + ' ' +
+          p.content
+        ).toLowerCase().match(wordRE) || []);
       });
 
       initUI();                    // Ready — fire up the interface
@@ -188,7 +212,7 @@
   const nav = p => (location.hash = '#' + hashOf(p));
 
   /* -------------------------------------------------------
-     SECTION 2 • UI boot‑strap
+     SECTION 2 • UI boot-strap
   ---------------------------------------------------- */
   function initUI() {
     $('#wiki-title').textContent = TITLE;
@@ -198,7 +222,7 @@
     buildTree();   // sidebar outline
     route();       // initial render
 
-    /*  Lazy‑init graph when mini-map enters viewport ------------------- */
+    /*  Lazy-init graph when mini-map enters viewport ------------------- */
     const mini = $('#mini');
     new IntersectionObserver((entries, obs) => {
       if (entries[0].isIntersecting) {
@@ -212,7 +236,7 @@
     $('#expand').onclick       = () => { $('#modal').classList.add('open'); buildGraph(); };
     $('#modal .close').onclick = () => $('#modal').classList.remove('open');
 
-    /*  Debounced live‑search ------------------------------------------ */
+    /*  Debounced live-search ------------------------------------------ */
     let t = 0;
     $('#search').oninput = e => {
       clearTimeout(t);
@@ -242,7 +266,7 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 3 • Sidebar tree build (keyboard‑ & aria‑friendly)
+     SECTION 3 • Sidebar tree build (keyboard- & aria-friendly)
   ---------------------------------------------------- */
   function buildTree() {
     const ul = $('#tree');
@@ -295,7 +319,7 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 4 • Search (token‑set intersect)
+     SECTION 4 • Search (token-set intersect)
   ---------------------------------------------------- */
   function search(q) {
     const qUl = $('#results');
@@ -353,7 +377,7 @@
       dyn.appendChild(wrap);
     });
 
-    /* Child drop‑down */
+    /* Child drop-down */
     if (p.children.length) {
       const box = document.createElement('span');
       box.className = 'childbox';
@@ -410,12 +434,9 @@
   }
 
   async function render(pg, anc) {
-    const html = marked.parse(pg.content, { headerIds:false });
-    $('#content').innerHTML = DOMPurify.sanitize(html, {
-      ADD_TAGS:['iframe'],
-      ADD_ATTR:['allow','allowfullscreen','frameborder','scrolling','width','height','src','title'],
-      ALLOWED_URI_REGEXP:/^(?:https?:|mailto:|tel:|#).*$/i
-    });
+    const { parse, sanitize } = await ensureMarkdown();
+    const html = parse(pg.content, { headerIds:false });
+    $('#content').innerHTML = sanitize(html);
 
     numHead($('#content'));
 
@@ -454,7 +475,7 @@
       }
     });
 
-    // Tag‑based links (unique only)
+    // Tag-based links (unique only)
     const tagMap=new Map();
     pages.forEach(p=>p.tagsSet.forEach(t=>{
       if(!tagMap.has(t)) tagMap.set(t,[]);
@@ -525,7 +546,7 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 8 • Client‑side routing
+     SECTION 8 • Client-side routing
   ---------------------------------------------------- */
   function route() {
     const seg=location.hash.slice(1).split('#').filter(Boolean);
