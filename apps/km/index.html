@@ -1,14 +1,12 @@
 <!DOCTYPE html>
 <!-- =====================================================================
-  km — STATIC WIKI  •  SINGLE‑FILE EDITION
-  The goal of this monolithic file is to let anyone host a fully‑featured,   
-  self‑contained wiki (Markdown + graph view + search) on any static host.  
+  km — STATIC WIKI
+  The goal of this file is to let anyone host a self‑contained wiki (Markdown + graph view + search) on any static host.  
   ──────────────────────────────────────────────────────────────────────────
+
   • Drop the file anywhere (GitHub Pages, Netlify Drop, S3, …) and you’re live.
-  • **config.js** and **km.css** keep all user‑tweakable bits out of the core.
+  • config.js and km.css keep all user‑tweakable bits out of the core.
   • Third‑party libs come straight from CDNs – no build‑step required.
-  • Extra‑thorough comments provide both a high‑level roadmap **and** line‑level
-    hand‑holding, so total beginners can learn while pro devs can skim.
 ======================================================================== -->
 
 <html lang="fr">
@@ -18,46 +16,62 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>km – Static Wiki</title>
 
-  <!-- —————————————————————— ✅ SEO TEMPLATE  ——————————————————————
-       ▸ Replace every ★…★ placeholder with project‑specific data.
-       ▸ Delete the lines you don’t need – less is more.
-       ▸ Keep this comment block: beginners quickly see what’s editable.      -->
-  <!-- Primary -->
-  <meta name="description" content="★ Concise one‑sentence pitch of the wiki (max 160 chars). ★">
-  <meta name="keywords"    content="★ knowledge management,wiki,static site,générateur,autre motclé ★">
-  <link rel="canonical"    href="★ https://example.com/ ★">
-  <meta name="author"      content="★ Your Name / Organisation ★">
-  <meta name="robots"      content="index,follow"> <!-- Remove if staging → noindex -->
+  <!-- —————————————————————— COMPLETE SEO BLOCK ——————————————————————
+       Swap the ★ placeholders, delete what you don’t need, and you’re done.
 
-  <!-- Open Graph (FB / LinkedIn / Slack → rich embed) -->
+  <!-- ——— Primary meta ——— -->
+  <meta name="description" content="★ Concise one-sentence pitch (≤160 chars) ★">
+  <meta name="keywords"    content="★ knowledge management,wiki,static site,… ★">
+  <meta name="author"      content="★ Your Name / Organisation ★">
+  <meta name="robots"      content="index,follow"><!-- staging? set to noindex -->
+  <link rel="canonical"    href="★ https://example.com/ ★">
+
+  <!-- ——— Performance / UX ——— -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net">
+  <!-- <link rel="preconnect" href="https://unpkg.com">       another CDN sample -->
+  <meta name="theme-color" content="#ffffff">
+
+  <!-- ——— Internationalisation (uncomment if multi-lingual) ——— -->
+  <!-- <link rel="alternate" hreflang="en" href="https://example.com/en/"> -->
+  <!-- <link rel="alternate" hreflang="fr" href="https://example.com/fr/"> -->
+  <!-- <meta property="og:locale"           content="en_US"> -->
+  <!-- <meta property="og:locale:alternate" content="fr_FR"> -->
+
+  <!-- ——— Ownership / verification (optional) ——— -->
+  <!-- <meta name="google-site-verification" content="★ token ★"> -->
+  <!-- <meta name="msvalidate.01"            content="★ token ★"> -->
+
+  <!-- ——— Open Graph (FB / LinkedIn / Slack embeds) ——— -->
   <meta property="og:type"        content="website">
   <meta property="og:site_name"   content="★ KM Static Wiki ★">
-  <meta property="og:title"       content="★ Same as <title> (60–65 chars) ★">
-  <meta property="og:description" content="★ Same as meta description (up to 200 chars) ★">
+  <meta property="og:title"       content="★ Same as <title> (60–65 chars) ★">
+  <meta property="og:description" content="★ Same as meta description (≤200 chars) ★">
   <meta property="og:url"         content="★ https://example.com/ ★">
   <meta property="og:image"       content="★ https://example.com/cover.png ★">
+  <meta property="og:image:alt"   content="★ Alt text for the social image ★">
 
-  <!-- Twitter Cards -->
+  <!-- ——— Twitter Card ——— -->
   <meta name="twitter:card"        content="summary_large_image">
-  <meta name="twitter:title"       content="★ Same as <title> ★">
-  <meta name="twitter:description" content="★ Same as meta description ★">
+  <meta name="twitter:title"       content="★ Same as <title> ★">
+  <meta name="twitter:description" content="★ Same as meta description ★">
   <meta name="twitter:image"       content="★ https://example.com/cover.png ★">
 
-  <!-- Schema.org (JSON‑LD) | You can remove, tweak or duplicate as needed. -->
+  <!-- ——— JSON-LD: TechArticle (fits knowledge-base pages) ——— -->
   <script type="application/ld+json">
   {
     "@context" : "https://schema.org",
     "@type"    : "TechArticle",
     "headline" : "★ Headline for Article or Wiki ★",
     "about"    : ["Knowledge Management","Static Wiki","Documentation"],
-    "author"   : { "@type":"Person", "name":"★ Your Name ★"},
-    "publisher": { "@type":"Organization","name":"★ Org/Project ★"},
+    "author"   : { "@type":"Person", "name":"★ Your Name ★" },
+    "publisher": { "@type":"Organization","name":"★ Org / Project ★" },
     "url"      : "★ https://example.com/ ★",
     "inLanguage":"fr"
   }
   </script>
 
-  <script type="application/ld+json" id="jsonld-website">
+  <!-- ——— JSON-LD: WebSite (+ built-in search box) ——— -->
+  <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -71,7 +85,8 @@
   }
   </script>
 
-  <script type="application/ld+json" id="jsonld-organization">
+  <!-- ——— JSON-LD: Organization ——— -->
+  <script type="application/ld+json">
   {
     "@context": "https://schema.org",
     "@type": "Organization",
@@ -84,7 +99,44 @@
     ]
   }
   </script>
-  <!-- ———————————————————————————————————————————————————————————— -->
+
+  <!-- ——— JSON-LD: BreadcrumbList (static example; can also be injected at runtime) ——— -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [{
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://example.com/"
+    },{
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Section",
+      "item": "https://example.com/section"
+    }]
+  }
+  </script>
+
+  <!-- ——— JSON-LD: ImageObject (high-res social / Discover support) ——— -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "ImageObject",
+    "contentUrl": "https://example.com/cover.png",
+    "license": "https://example.com/licence",
+    "creator": { "@type":"Organization","name":"Example Org" },
+    "creditText": "© Example Org"
+  }
+  </script>
+
+  <!-- ——— Optional: FAQPage / HowTo ———
+       Add per-page blocks where relevant to earn rich-result accordions.
+       See https://developers.google.com/search/docs/appearance/structured-data
+  -->
+
+  <!-- ———————————————————————————— END OF SEO BLOCK ———————————————————————————————— -->
 
   <!-- ———————————————— 3ʳ‑PARTY STYLE SHEETS ———————————————— -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css">
