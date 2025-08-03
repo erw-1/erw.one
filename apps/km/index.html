@@ -27,16 +27,33 @@
     window.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
 
     /* ---- 2. highlight.js core + chosen languages ---- */
-    import hljs      from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm';
-    import js        from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/javascript/+esm';
-    import bash      from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/bash/+esm';
-    import markdown  from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/markdown/+esm';
-    import python    from 'https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/python/+esm';
-    hljs.registerLanguage('javascript', js);
-    hljs.registerLanguage('bash',       bash);
-    hljs.registerLanguage('markdown',   markdown);
-    hljs.registerLanguage('python',     python);
-    window.hljs = hljs;
+    const ensureHighlight = (() => {
+      let ready;                         // memoised Promise
+      return function () {
+        if (ready) return ready;         // already loading / loaded
+    
+        ready = (async () => {
+          const { LANGS = [] } = window.CONFIG;
+    
+          // core
+          const hljs = (await import(
+            'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm'
+          )).default;
+    
+          // languages listed in config.js
+          await Promise.all(LANGS.map(async (lang) => {
+            const mod = await import(
+              `https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/${lang}/+esm`
+            );
+            hljs.registerLanguage(lang, mod.default);
+          }));
+    
+          window.hljs = hljs;            // expose globally (keeps rest of code unchanged)
+        })();
+    
+        return ready;
+      };
+    })();
   </script>
 </head>
 
