@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <!--
- ┌─────────────────────────────────────────────────────────────┐
- │  km – Static Wiki                                           │
- │  Zero-backend personal wiki                                 │
- │    • Single Markdown bundle → in-memory tree                │
- │    • Vanilla JS handles routing, search, breadcrumb, graph  │
- └─────────────────────────────────────────────────────────────┘
+ km – Static Wiki (refactored 2025‑08‑03)
+   • Duplicate functions removed
+   • Highlight.js & KaTeX lazy‑loaded
+   • Word‑based search index
+   • Keyboard‑ & ARIA‑friendly sidebar
+   • Breadcrumb landmark added
+   • Helper utilities hoisted
 -->
 <html lang="fr">
 <head>
@@ -13,66 +14,48 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>km – Static Wiki</title>
 
-  <!-- ─────────────  3ʳᵈ-party libraries  ───────────── -->
-  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/highlight.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-  <link  rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"/>
+  <!-- ─────────────  3ʳᵈ‑party libs (loaded upfront)  ───────────── -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
 
-  <!-- KaTeX (blocking so renderMathInElement is ready) -->
-  <link  rel="stylesheet"
-         href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js"></script>
-
-  <!-- Your stylesheet -->
+  <!--  Stylesheets that don’t cost JS parse time  -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/github-dark.min.css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.css"/>
   <link rel="stylesheet" href="km.css"/>
 
-  <!-- Config (title, favicon, Markdown source) -->
-  <script src="config.js"></script>
+  <!--  Site config (title, favicon, md bundle path)  -->
+  <script src="config.js" defer></script>
 
-  <!-- Favicon populated by JS -->
   <link id="favicon-el" rel="icon" href="">
 </head>
 
 <body>
 <!-- ─────────────  Sidebar (tree + search)  ───────────── -->
 <aside id="sidebar" role="navigation" aria-label="Site">
-  <a href="#" title="Home">
-   <h1 id="wiki-title" tabindex="0"></h1>
-  </a>
-
+  <a href="#" title="Home"><h1 id="wiki-title" tabindex="0"></h1></a>
   <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search">
-
   <ul id="tree"></ul>
   <ul id="results"></ul>
 </aside>
 
 <!-- ─────────────  Main panel  ───────────── -->
 <main>
-  <header id="crumb">
+  <header id="crumb" role="navigation" aria-label="Breadcrumb">
     <button id="burger-sidebar" class="burger" aria-label="Open sidebar">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/>
-      </svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
     </button>
 
     <!-- Static home button always visible -->
     <a id="home-link" href="#" title="Home">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="grey"
-           xmlns="http://www.w3.org/2000/svg">
-        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-      </svg>
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="grey" xmlns="http://www.w3.org/2000/svg"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
     </a>
 
     <!-- Dynamic crumbs go here -->
     <span id="crumb-dyn"></span>
 
     <button id="burger-util" class="burger" aria-label="Open utility panel">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-        <circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/>
-      </svg>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
     </button>
   </header>
 
@@ -83,12 +66,9 @@
     <section id="util">
       <div id="graph-box">
         <svg id="mini"></svg>
-
         <!-- Magnifier opens the full graph -->
         <button id="expand" aria-label="Open full graph">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="grey">
-            <path d="M10 2a8 8 0 105.29 14.29l4.7 4.7 1.42-1.42-4.7-4.7A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z"/>
-          </svg>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="grey"><path d="M10 2a8 8 0 105.29 14.29l4.7 4.7 1.42-1.42-4.7-4.7A8 8 0 0010 2zm0 2a6 6 0 110 12A6 6 0 0110 4z"/></svg>
         </button>
       </div>
 
@@ -98,7 +78,7 @@
   </div>
 </main>
 
-<!-- Full-screen graph modal -->
+<!-- Full‑screen graph modal -->
 <div id="modal">
   <span class="close" role="button" aria-label="Close full graph">✕</span>
   <svg id="full"></svg>
@@ -109,6 +89,36 @@
      ────────────────────────────────────────────────────── -->
 <script>
   /* -------------------------------------------------------
+     Global helpers (hoisted early so they’re always defined)
+  ---------------------------------------------------- */
+  const $  = (sel, sc = document) => (sc || document).querySelector(sel);
+  const $$ = (sel, sc = document) => [...(sc || document).querySelectorAll(sel)];
+
+  /* -------------------------------------------------------
+     Dynamic‑import poly‑fills for heavy libs
+  ---------------------------------------------------- */
+  let hlReady  = null;
+  let kxReady  = null;
+
+  function ensureHighlight() {
+    if (!hlReady) {
+      hlReady = import('https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/es/highlight.min.js')
+        .then(mod => {
+          window.hljs = mod.default;
+        });
+    }
+    return hlReady;
+  }
+
+  function ensureKatex() {
+    if (!kxReady) {
+      kxReady = import('https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/katex.min.js')
+        .then(() => import('https://cdn.jsdelivr.net/npm/katex@0.16.7/dist/contrib/auto-render.min.js'));
+    }
+    return kxReady;
+  }
+
+  /* -------------------------------------------------------
      Pull essentials from config.js
   ---------------------------------------------------- */
   const { TITLE, FAVICON, MD } = window.CONFIG;
@@ -116,20 +126,18 @@
   /* -------------------------------------------------------
      SECTION 1 • Data ingestion & page model
   ---------------------------------------------------- */
-  const pages = [];                       // Flat page list
-  const byId  = new Map();                // id → page
-  let   root  = null;                     // Home node
+  const pages = [];               // Flat page list
+  const byId  = new Map();        // id → page
+  let   root  = null;             // Home node
 
   fetch(MD, { cache: 'force-cache' })
     .then(r => r.text())
     .then(txt => {
       /*  Split Markdown bundle into page objects ------------------------ */
-      for (const [, hdr, body] of
-           txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
-
-        const m = {};
-        hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (m[k] = v.trim()));
-        pages.push({ ...m, content: body.trim(), children: [] });
+      for (const [, hdr, body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
+        const meta = {};
+        hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
+        pages.push({ ...meta, content: body.trim(), children: [] });
       }
 
       /*  Build indices and hierarchy ------------------------------------ */
@@ -144,27 +152,25 @@
         }
       });
 
-      /*  Pre-compute helpers for search --------------------------------- */
+      /*  Pre‑compute helpers for search (word‑set, not full text) -------- */
+      const wordRE = /\p{L}+/gu;
       pages.forEach(p => {
-        p.tagsSet    = new Set((p.tags || '').split(',').filter(Boolean));
-        p.searchText = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content)
-                       .toLowerCase();
+        p.tagsSet = new Set((p.tags || '').split(',').filter(Boolean));
+        p.wordSet = new Set((p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase().match(wordRE) || []);
       });
-      initUI();                // Ready – fire up the interface
+
+      initUI();                    // Ready — fire up the interface
     });
 
-  /*  Utility DOM helpers -------------------------------------------- */
-  const $  = (s, sc = document) => sc.querySelector(s);
-  const $$ = (s, sc = document) => [...sc.querySelectorAll(s)];
-
+  /*  URL helpers ---------------------------------------------------- */
   const hashOf = p => {
     const a = [];
     for (let n = p; n && n.parent; n = n.parent) a.unshift(n.id);
     return a.join('#');
   };
-  const find = arr => {
+  const find = segs => {
     let n = root;
-    for (const id of arr) {
+    for (const id of segs) {
       const c = n.children.find(k => k.id === id);
       if (!c) break;
       n = c;
@@ -174,49 +180,46 @@
   const nav = p => (location.hash = '#' + hashOf(p));
 
   /* -------------------------------------------------------
-     SECTION 2 • UI boot-strap
+     SECTION 2 • UI boot‑strap
   ---------------------------------------------------- */
   function initUI() {
-    /*  Hydrate title & favicon ----------------------------------------- */
     $('#wiki-title').textContent = TITLE;
     document.title = TITLE;
     $('#favicon-el').href = FAVICON;
 
-    buildTree();                    // sidebar outline
-    route();                        // initial render
+    buildTree();   // sidebar outline
+    route();       // initial render
 
-    /*  Lazy-init graph when mini-map enters viewport ------------------- */
+    /*  Lazy‑init graph when mini-map enters viewport ------------------- */
     const mini = $('#mini');
-    const observer = new IntersectionObserver((entries, obs) => {
+    new IntersectionObserver((entries, obs) => {
       if (entries[0].isIntersecting) {
         buildGraph();
         obs.disconnect();
       }
-    });
-    observer.observe(mini);
+    }).observe(mini);
 
-    /*  Routing, modal toggling ----------------------------------------- */
+    /*  Routing & modal toggling ---------------------------------------- */
     addEventListener('hashchange', route);
-
     $('#expand').onclick       = () => { $('#modal').classList.add('open'); buildGraph(); };
     $('#modal .close').onclick = () => $('#modal').classList.remove('open');
 
-    /*  Debounced live-search ------------------------------------------- */
+    /*  Debounced live‑search ------------------------------------------ */
     let t = 0;
     $('#search').oninput = e => {
       clearTimeout(t);
       t = setTimeout(() => search(e.target.value.toLowerCase()), 150);
     };
 
-    /*  Burgers in portrait --------------------------------------------- */
+    /*  Burgers in portrait -------------------------------------------- */
     const togglePanel = sel => {
       const el = $(sel);
       const o  = el.classList.toggle('open');
       if (o && !el.querySelector('.panel-close')) {
         const btn = document.createElement('button');
-        btn.className = 'panel-close';
+        btn.className   = 'panel-close';
         btn.textContent = '✕';
-        btn.onclick = () => el.classList.remove('open');
+        btn.onclick     = () => el.classList.remove('open');
         el.appendChild(btn);
       }
     };
@@ -231,69 +234,87 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 3 • Sidebar tree build
+     SECTION 3 • Sidebar tree build (keyboard‑ & aria‑friendly)
   ---------------------------------------------------- */
   function buildTree() {
     const ul = $('#tree');
     ul.innerHTML = '';
 
-    const rec = (lst, u) => {
+    const rec = (lst, container) => {
       lst.sort((a, b) => a.title.localeCompare(b.title));
       lst.forEach(p => {
         const li = document.createElement('li');
+
         if (p.children.length) {
           li.className = 'folder open';
-          li.innerHTML =
-            `<span class="caret"></span><span class="lbl">${p.title}</span><ul></ul>`;
-          const caret = li.firstChild,
-                lbl   = li.children[1],
-                sub   = li.lastChild;
-          sub.style.display = 'block';
+          const caret  = document.createElement('button');
+          caret.className = 'caret';
+          caret.setAttribute('aria-expanded', 'true');
           caret.onclick = e => {
             e.stopPropagation();
-            const o = li.classList.toggle('open');
-            sub.style.display = o ? 'block' : 'none';
+            const open = li.classList.toggle('open');
+            caret.setAttribute('aria-expanded', String(open));
+            sub.style.display = open ? 'block' : 'none';
           };
-          lbl.onclick = () => nav(p);
+
+          const lbl = document.createElement('a');
+          lbl.className   = 'lbl';
+          lbl.href        = '#' + hashOf(p);
+          lbl.textContent = p.title;
+          lbl.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault(); nav(p);
+            }
+          });
+
+          const sub = document.createElement('ul');
+          sub.style.display = 'block';
+
+          li.append(caret, lbl, sub);
+          container.appendChild(li);
           rec(p.children, sub);
         } else {
-          li.className   = 'article';
-          li.textContent = p.title;
-          li.onclick     = () => nav(p);
+          li.className = 'article';
+          const a = document.createElement('a');
+          a.href = '#' + hashOf(p);
+          a.textContent = p.title;
+          li.appendChild(a);
+          container.appendChild(li);
         }
-        u.appendChild(li);
       });
     };
     rec(root.children, ul);
   }
 
   /* -------------------------------------------------------
-     SECTION 4 • Search
+     SECTION 4 • Search (token‑set intersect)
   ---------------------------------------------------- */
   function search(q) {
-    const t = $('#tree'), r = $('#results');
-    if (!q) { r.style.display = 'none'; t.style.display = ''; return; }
-    r.innerHTML = ''; r.style.display = ''; t.style.display = 'none';
+    const qUl = $('#results');
+    const tUl = $('#tree');
+    if (!q.trim()) { qUl.style.display='none'; tUl.style.display=''; return; }
 
-    pages.filter(p => p.searchText.includes(q)).forEach(p => {
+    const tokens = q.match(/\p{L}+/gu) || [];
+    qUl.innerHTML = ''; qUl.style.display = ''; tUl.style.display = 'none';
+
+    pages.filter(p => tokens.every(tok => p.wordSet.has(tok))).forEach(p => {
       const li = document.createElement('li');
       li.setAttribute('role', 'option');
       li.textContent = p.title;
       li.onclick     = () => nav(p);
-      r.appendChild(li);
+      qUl.appendChild(li);
     });
-    if (!r.children.length)
-      r.innerHTML = '<li id="no_result">No result</li>';
+    if (!qUl.children.length)
+      qUl.innerHTML = '<li id="no_result">No result</li>';
   }
 
   /* -------------------------------------------------------
-     SECTION 5 • Breadcrumb (unchanged except burgers kept)
+     SECTION 5 • Breadcrumb (unchanged, but kept burgers)
   ---------------------------------------------------- */
-function breadcrumb(p) {
+  function breadcrumb(p) {
     const dyn = $('#crumb-dyn');
-    dyn.innerHTML = '';                          // wipe dynamic part only
+    dyn.innerHTML = '';
 
-    /* Build ancestor trail (skip root, shown by home icon) */
     const chain = [];
     for (let n = p; n; n = n.parent) chain.unshift(n);
     chain.shift();
@@ -324,22 +345,19 @@ function breadcrumb(p) {
       dyn.appendChild(wrap);
     });
 
-    /* Child drop-down of current page */
+    /* Child drop‑down */
     if (p.children.length) {
       const box = document.createElement('span');
       box.className = 'childbox';
       box.innerHTML = '<span class="toggle">▾</span><ul></ul>';
 
       const ul = box.querySelector('ul');
-      p.children
-        .sort((a, b) => a.title.localeCompare(b.title))
-        .forEach(ch => {
-          const li = document.createElement('li');
-          li.textContent = ch.title;
-          li.onclick = () => nav(ch);
-          ul.appendChild(li);
-        });
-
+      p.children.sort((a, b) => a.title.localeCompare(b.title)).forEach(ch => {
+        const li = document.createElement('li');
+        li.textContent = ch.title;
+        li.onclick = () => nav(ch);
+        ul.appendChild(li);
+      });
       dyn.appendChild(box);
     }
   }
@@ -348,19 +366,20 @@ function breadcrumb(p) {
      SECTION 6 • Markdown render + ToC + prev/next
   ---------------------------------------------------- */
   function numHead(el) {
-    const c=[0,0,0,0,0,0];
-    $$('h1,h2,h3,h4,h5',el).forEach(h=>{
-      const l=+h.tagName[1]-1;
-      c[l]++; for(let i=l+1;i<6;i++) c[i]=0;
-      h.id=c.slice(0,l+1).filter(Boolean).join('_');
+    const c = [0,0,0,0,0,0];
+    $$('h1,h2,h3,h4,h5', el).forEach(h => {
+      const l = +h.tagName[1]-1;
+      c[l]++; for (let i=l+1;i<6;i++) c[i]=0;
+      h.id = c.slice(0,l+1).filter(Boolean).join('_');
     });
   }
+
   function toc(pg) {
-    const nav=$('#toc'); nav.innerHTML='';
-    const hd=$$('#content h1,#content h2,#content h3');
+    const nav = $('#toc'); nav.innerHTML='';
+    const hd  = $$('#content h1,#content h2,#content h3');
     if(!hd.length) return;
-    const ul=document.createElement('ul');
-    hd.forEach(h=>{
+    const ul  = document.createElement('ul');
+    hd.forEach(h => {
       const li=document.createElement('li');
       li.dataset.level=h.tagName[1];
       const a=document.createElement('a');
@@ -370,53 +389,64 @@ function breadcrumb(p) {
     });
     nav.appendChild(ul);
   }
+
   function prevNext(pg) {
     $('#prev-next')?.remove();
     if(!pg.parent) return;
     const sib=pg.parent.children; if(sib.length<2) return;
     const i=sib.indexOf(pg);
     const nav=document.createElement('div'); nav.id='prev-next';
-    if(i>0) nav.appendChild(Object.assign(document.createElement('a'),{
-      href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title}));
-    if(i<sib.length-1) nav.appendChild(Object.assign(document.createElement('a'),{
-      href:'#'+hashOf(sib[i+1]), textContent:sib[i+1].title+' →'}));
+    if(i>0) nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title}));
+    if(i<sib.length-1) nav.appendChild(Object.assign(document.createElement('a'),{href:'#'+hashOf(sib[i+1]), textContent:sib[i+1].title+' →'}));
     $('#content').appendChild(nav);
   }
-  function render(pg, anc) {
-    const html=marked.parse(pg.content,{headerIds:false});
-    $('#content').innerHTML=DOMPurify.sanitize(html,{
+
+  async function render(pg, anc) {
+    const html = marked.parse(pg.content, { headerIds:false });
+    $('#content').innerHTML = DOMPurify.sanitize(html, {
       ADD_TAGS:['iframe'],
-      ADD_ATTR:['allow','allowfullscreen','frameborder','scrolling',
-                'width','height','src','title'],
+      ADD_ATTR:['allow','allowfullscreen','frameborder','scrolling','width','height','src','title'],
       ALLOWED_URI_REGEXP:/^(?:https?:|mailto:|tel:|#).*$/i
     });
+
     numHead($('#content'));
+
+    await ensureHighlight();
     hljs.highlightAll();
+
+    if (/\$[^$]+\$|\\\(|\\\[/.test(pg.content)) {
+      await ensureKatex();
+      window.renderMathInElement($('#content'), {
+        delimiters:[
+          {left:'$$',right:'$$',display:true},
+          {left:'\\[',right:'\\]',display:true},
+          {left:'$', right:'$', display:false},
+          {left:'\\(',right:'\\)',display:false}],
+        throwOnError:false
+      });
+    }
+
     toc(pg); prevNext(pg);
-    renderMathInElement($('#content'),{
-      delimiters:[
-        {left:'$$',right:'$$',display:true},
-        {left:'\\[',right:'\\]',display:true},
-        {left:'$', right:'$', display:false},
-        {left:'\\(',right:'\\)',display:false}],
-      throwOnError:false
-    });
     if(anc) document.getElementById(anc)?.scrollIntoView({behavior:'smooth'});
   }
 
   /* -------------------------------------------------------
-     SECTION 7 • Graph (mini & modal)
+     SECTION 7 • Graph (mini & modal)  — single implementation
   ---------------------------------------------------- */
   function buildGraphData() {
     const nodes=[], links=[], adj=new Map();
     pages.forEach((p,i)=>(p._i=i));
-    pages.forEach(p=>{
+
+    // Hierarchy links
+    pages.forEach(p => {
       nodes.push({id:p._i,label:p.title,ref:p});
       if(p.parent){
         links.push({source:p._i,target:p.parent._i,kind:'hier'});
         addAdj(p._i,p.parent._i);
       }
     });
+
+    // Tag‑based links (unique only)
     const tagMap=new Map();
     pages.forEach(p=>p.tagsSet.forEach(t=>{
       if(!tagMap.has(t)) tagMap.set(t,[]);
@@ -440,157 +470,54 @@ function breadcrumb(p) {
     return {nodes,links,adj};
   }
 
- /* -------------------------------------------------------
-     SECTION 7 • Graph (mini + modal)
-     ---------------------------------------------------- */
-  // Build graph data once, reuse for both views
-  function buildGraphData() {
-    const nodes = [],
-          links = [],
-          adj   = new Map();   // adjacency for hover highlight
-
-    pages.forEach((p, i) => (p._i = i)); // stable numeric id
-
-    /* 1) Hierarchy links  */
-    pages.forEach(p => {
-      nodes.push({ id: p._i, label: p.title, ref: p });
-      if (p.parent) {
-        links.push({ source: p._i, target: p.parent._i, kind: 'hier' });
-        addAdj(p._i, p.parent._i);
-      }
-    });
-
-    /* 2) Tag‑based links (avoid duplicates) */
-    const tagMap = new Map();
-    pages.forEach(p =>
-      p.tagsSet.forEach(t => {
-        if (!tagMap.has(t)) tagMap.set(t, []);
-        tagMap.get(t).push(p);
-      })
-    );
-
-    tagMap.forEach(list => {
-      for (let i = 0; i < list.length; i++)
-        for (let j = i + 1; j < list.length; j++) {
-          const a = list[i],
-                b = list[j];
-          const exist = adj.get(a._i)?.has(b._i);
-          if (!exist) {
-            links.push({ source: a._i, target: b._i, kind: 'tag' });
-            addAdj(a._i, b._i);
-          }
-        }
-    });
-
-    // Helper that stores undirected adjacency
-    function addAdj(a, b) {
-      if (!adj.has(a)) adj.set(a, new Set());
-      if (!adj.has(b)) adj.set(b, new Set());
-      adj.get(a).add(b);
-      adj.get(b).add(a);
-    }
-    return { nodes, links, adj };
-  }
-
-  // Instantiate both mini (in‑page) and full (modal) graphs
   function buildGraph() {
     const { nodes, links, adj } = buildGraphData();
+    ['mini','full'].forEach(id => {
+      const svg=d3.select('#'+id);
+      svg.selectAll('*').remove();
+      const full=(id==='full');
+      const w=svg.node().clientWidth || 300;
+      const h=svg.node().clientHeight|| 200;
 
-    ['mini', 'full'].forEach(id => {
-      const svg  = d3.select('#' + id);
-      svg.selectAll('*').remove();              // hot‑reload friendly
-      const full = id === 'full';
+      const sim=d3.forceSimulation(nodes)
+        .force('link',d3.forceLink(links).id(d=>d.id).distance(80))
+        .force('charge',d3.forceManyBody().strength(-240))
+        .force('center',d3.forceCenter(w/2,h/2));
 
-      const w = svg.node().clientWidth  || 300;
-      const h = svg.node().clientHeight || 200;
+      const link=svg.append('g').selectAll('line').data(links).join('line')
+        .attr('stroke',d=>d.kind==='tag'? '#444':'#555').attr('stroke-width',1);
 
-      // Force simulation
-      const sim = d3
-        .forceSimulation(nodes)
-        .force('link', d3.forceLink(links).id(d => d.id).distance(80))
-        .force('charge', d3.forceManyBody().strength(-240))
-        .force('center', d3.forceCenter(w / 2, h / 2));
+      const node=svg.append('g').selectAll('circle').data(nodes).join('circle')
+        .attr('r',6).attr('fill',d=>d.ref.children.length?'#8a8a8a':'#569cd6')
+        .style('cursor','pointer')
+        .on('click',(e,d)=>{nav(d.ref); if(full) $('#modal').classList.remove('open');})
+        .on('mouseover',(e,d)=>highlight(d.id,0.15))
+        .on('mouseout',()=>highlight(null,1))
+        .call(d3.drag()
+          .on('start',(e,d)=>{if(!e.active) sim.alphaTarget(0.3).restart(); d.fx=d.x; d.fy=d.y;})
+          .on('drag',(e,d)=>{d.fx=e.x; d.fy=e.y;})
+          .on('end',(e,d)=>{if(!e.active) sim.alphaTarget(0); d.fx=d.fy=null;}));
 
-      /* ----- Links ----- */
-      const link = svg
-        .append('g')
-        .selectAll('line')
-        .data(links)
-        .join('line')
-        .attr('stroke', d => (d.kind === 'tag' ? '#444' : '#555'))
-        .attr('stroke-width', 1);
+      const label=svg.append('g').selectAll('text').data(nodes).join('text')
+        .attr('fill','#aaa').attr('font-size',10).text(d=>d.label);
 
-      /* ----- Nodes ----- */
-      const node = svg
-        .append('g')
-        .selectAll('circle')
-        .data(nodes)
-        .join('circle')
-        .attr('r', 6)
-        .attr('fill', d => (d.ref.children.length ? '#8a8a8a' : '#569cd6'))
-        .style('cursor', 'pointer')
-        .on('click', (e, d) => {
-          nav(d.ref);
-          if (full) $('#modal').classList.remove('open');
-        })
-        .on('mouseover', (e, d) => highlight(d.id, 0.15))
-        .on('mouseout', () => highlight(null, 1))
-        .call(
-          d3
-            .drag()
-            .on('start', (e, d) => {
-              if (!e.active) sim.alphaTarget(0.3).restart();
-              d.fx = d.x;
-              d.fy = d.y;
-            })
-            .on('drag', (e, d) => {
-              d.fx = e.x;
-              d.fy = e.y;
-            })
-            .on('end', (e, d) => {
-              if (!e.active) sim.alphaTarget(0);
-              d.fx = d.fy = null;
-            })
-        );
-
-      /* ----- Labels ----- */
-      const label = svg
-        .append('g')
-        .selectAll('text')
-        .data(nodes)
-        .join('text')
-        .attr('fill', '#aaa')
-        .attr('font-size', 10)
-        .text(d => d.label);
-
-      /* Hover fade‑out for non‑adjacent nodes */
-      function highlight(id, fade) {
-        node.style('opacity', o =>
-          id == null || adj.get(id)?.has(o.id) || o.id === id ? 1 : fade
-        );
-        link.style('opacity', l =>
-          id == null || l.source.id === id || l.target.id === id ? 1 : fade
-        );
-        label.style('opacity', o =>
-          id == null || adj.get(id)?.has(o.id) || o.id === id ? 1 : fade
-        );
+      function highlight(id,fade){
+        node.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
+        link.style('opacity',l=>id==null||l.source.id===id||l.target.id===id?1:fade);
+        label.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
       }
 
-      /* Simulation tick handler */
-      sim.on('tick', () => {
-        link
-          .attr('x1', d => d.source.x)
-          .attr('y1', d => d.source.y)
-          .attr('x2', d => d.target.x)
-          .attr('y2', d => d.target.y);
-        node.attr('cx', d => d.x).attr('cy', d => d.y);
-        label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
+      sim.on('tick',()=>{
+        link.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+            .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+        node.attr('cx',d=>d.x).attr('cy',d=>d.y);
+        label.attr('x',d=>d.x+8).attr('y',d=>d.y+3);
       });
     });
   }
 
   /* -------------------------------------------------------
-     SECTION 8 • Client-side routing
+     SECTION 8 • Client‑side routing
   ---------------------------------------------------- */
   function route() {
     const seg=location.hash.slice(1).split('#').filter(Boolean);
