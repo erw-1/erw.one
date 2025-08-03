@@ -6,5 +6,5 @@ window.CONFIG = {
   FAVICON : 'icons/wiki32.png',
 
   // Raw Markdown bundle (one file, many pages)
-  MD_LINK : 'https://hackmd.io/@h-s-n/doc_test/download'
+  MD : 'https://hackmd.io/@h-s-n/doc_test/download'
 };
