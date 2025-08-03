@@ -1,11 +1,3 @@
-/* ==========================================================================
-   km.css — streamlined & human-readable  (03 Aug 2025)
-   ───────────────────────────────────────────────────────────────────────────
-   • Restored “classic” table & breadcrumb styling the user preferred
-   • Kept colour palette lean: 6 core hues, the rest via color-mix()
-   • One-property-per-line layout for quick scanning & easy diffing
-   ========================================================================== */
-
 /* -------------------------------------------------------------------------
    1. TOKENS – single source of truth
    ---------------------------------------------------------------------- */
