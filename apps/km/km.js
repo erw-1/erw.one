@@ -274,7 +274,6 @@ function initUI () {
 
   // In‑app routing ----------------------------------------------------------
   addEventListener('hashchange', route);
-}
 
 /* *********************************************************************
    SECTION 7 • SIDEBAR TREE
