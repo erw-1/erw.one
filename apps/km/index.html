@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  km – Static Wiki  •  Slim-runtime FIXED (Aug 2025)
+  km – Static Wiki  •  Slim-runtime FIXED (Aug 2025) • updated per user feedback
 -->
 <html lang="fr">
 <head>
@@ -17,7 +17,7 @@
   <script src="config.js"></script>
   <link id="favicon-el" rel="icon" href="">
 
-  <!-- ─────────────  Runtime-loader  ───────────── -->
+  <!-- ─────────────  Runtime‑loader  ───────────── -->
   <script type="module">
     /* ---- 1. Tiny D3 subset ---- */
     import { select, selectAll }                      from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
@@ -25,21 +25,21 @@
              forceManyBody, forceCenter }             from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
     import { drag }                                   from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
     window.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
-  
+
     /* ---- 2. highlight.js core + chosen languages ---- */
     const ensureHighlight = (() => {
       let ready;                    // memoised Promise
       return function () {
         if (ready) return ready;    // already loading / loaded
-  
+
         ready = (async () => {
           const { LANGS = [] } = window.CONFIG;
-  
+
           // core
           const hljs = (await import(
             'https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm'
           )).default;
-  
+
           // languages defined in config.js
           await Promise.all(
             LANGS.map(async (lang) => {
@@ -49,14 +49,14 @@
               hljs.registerLanguage(lang, mod.default);
             })
           );
-  
+
           window.hljs = hljs;       // expose globally
         })();
-  
+
         return ready;
       };
     })();
-  
+
     // expose the loader so other modules can call it
     window.ensureHighlight = ensureHighlight;
   </script>
@@ -66,7 +66,10 @@
 <!-- ─────────────  Sidebar  ───────────── -->
 <aside id="sidebar" role="navigation" aria-label="Site">
   <a href="#" title="Home"><h1 id="wiki-title" tabindex="0"></h1></a>
-  <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search">
+  <div id="search-box">
+    <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search" />
+    <button id="search-clear" aria-label="Clear search" title="Clear search" style="display:none">✕</button>
+  </div>
   <ul id="tree"></ul>
   <ul id="results"></ul>
 </aside>
@@ -100,7 +103,7 @@
         </button>
       </div>
 
-      <a class="watermark" href="https://github.com/erw-1/km">Powered by KM</a>
+      <a class="watermark" href="https://github.com/erw-1/km" rel="noopener noreferrer">Powered by KM</a>
       <nav id="toc" aria-label="Table of contents"></nav>
     </section>
   </div>
@@ -121,9 +124,8 @@
   const $$ =(s,c=document)=>[...(c||document).querySelectorAll(s)];
 
   /* ---------- dynamic-imports ---------- */
-  let mdReady=null, kxReady=null;
-
-  function ensureMarkdown(){
+  let mdReady=null;
+  const ensureMarkdown = () => {
     if(!mdReady){
       mdReady=Promise.all([
         import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
@@ -139,15 +141,18 @@
       }));
     }
     return mdReady;
-  }
+  };
 
-  function ensureKatex(){
-    if(!kxReady){
-      kxReady=import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs')
+  /* ---- Katex lazy‑loader (now memoised like highlight) ---- */
+  const ensureKatex = (()=>{
+    let ready;
+    return function(){
+      if(ready) return ready;
+      ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs')
         .then(mod=>{ window.renderMathInElement = mod.default; });
-    }
-    return kxReady;
-  }
+      return ready;
+    };
+  })();
 
   /* ---------- config ---------- */
   const { TITLE, FAVICON, MD } = window.CONFIG;
@@ -173,6 +178,7 @@
       p.tagsSet=new Set((p.tags||'').split(',').filter(Boolean));
       p.wordSet=new Set((p.title+' '+[...p.tagsSet].join(' ')+' '+p.content)
                         .toLowerCase().match(wordRE)||[]);
+      p.searchStr=(p.title+' '+[...p.tagsSet].join(' ')+' '+p.content).toLowerCase();
     });
     initUI();
   });
@@ -182,7 +188,7 @@
   const find=segs=>{let n=root;for(const id of segs){const c=n.children.find(k=>k.id===id);if(!c)break;n=c;}return n;};
   const nav =p=>(location.hash='#'+hashOf(p));
 
-  /* ---------- UI boot-strap ---------- */
+  /* ---------- UI boot‑strap ---------- */
   function initUI(){
     $('#wiki-title').textContent=TITLE; document.title=TITLE; $('#favicon-el').href=FAVICON;
 
@@ -195,19 +201,33 @@
     $('#expand').onclick=()=>{$('#modal').classList.add('open');buildGraph();};
     $('#modal .close').onclick=()=>$('#modal').classList.remove('open');
 
-    let t=0; $('#search').oninput=e=>{clearTimeout(t);t=setTimeout(()=>search(e.target.value.toLowerCase()),150);};
+    const searchInput=$('#search');
+    const searchClear=$('#search-clear');
+    let t=0;
+    const handleInput=e=>{
+      clearTimeout(t);
+      const v=e.target.value;
+      searchClear.style.display=v?'' : 'none';
+      t=setTimeout(()=>search(v.toLowerCase()),150);
+    };
+    searchInput.oninput=handleInput;
+    searchClear.onclick=()=>{
+      searchInput.value='';
+      searchClear.style.display='none';
+      search('');
+      searchInput.focus();
+    };
 
     const toggle=sel=>{const el=$(sel);const o=el.classList.toggle('open');
       if(o&&!el.querySelector('.panel-close')){
         const btn=document.createElement('button');btn.className='panel-close';btn.textContent='✕';
-        btn.onclick=()=>el.classList.remove('open');el.appendChild(btn);}
-    };
+        btn.onclick=()=>el.classList.remove('open');el.appendChild(btn);} };
     $('#burger-sidebar').onclick=()=>toggle('#sidebar');
     $('#burger-util').onclick   =()=>toggle('#util');
     addEventListener('resize',()=>{if(matchMedia('(min-width:1001px)').matches){$('#sidebar').classList.remove('open');$('#util').classList.remove('open');}});
   }
   /* -------------------------------------------------------
-     SECTION 3 • Sidebar tree build (keyboard- & aria-friendly)
+     SECTION 3 • Sidebar tree build (keyboard‑ & aria‑friendly)
   ---------------------------------------------------- */
   function buildTree() {
     const ul = $('#tree');
@@ -219,10 +239,10 @@
         const li = document.createElement('li');
 
         if (p.children.length) {
-          li.className = 'folder open';
+          li.className = 'folder';            // start COLLAPSED
           const caret  = document.createElement('button');
           caret.className = 'caret';
-          caret.setAttribute('aria-expanded', 'true');
+          caret.setAttribute('aria-expanded', 'false');
           caret.onclick = e => {
             e.stopPropagation();
             const open = li.classList.toggle('open');
@@ -241,7 +261,7 @@
           });
 
           const sub = document.createElement('ul');
-          sub.style.display = 'block';
+          sub.style.display = 'none';
 
           li.append(caret, lbl, sub);
           container.appendChild(li);
@@ -260,17 +280,17 @@
   }
 
   /* -------------------------------------------------------
-     SECTION 4 • Search (token-set intersect)
+     SECTION 4 • Search (substring match, min 2 chars)
   ---------------------------------------------------- */
   function search(q) {
     const qUl = $('#results');
     const tUl = $('#tree');
     if (!q.trim()) { qUl.style.display='none'; tUl.style.display=''; return; }
 
-    const tokens = q.match(/\p{L}+/gu) || [];
+    const tokens = q.split(/\s+/).filter(tok=>tok.length>=2);
     qUl.innerHTML = ''; qUl.style.display = ''; tUl.style.display = 'none';
 
-    pages.filter(p => tokens.every(tok => p.wordSet.has(tok))).forEach(p => {
+    pages.filter(p => tokens.every(tok => p.searchStr.includes(tok))).forEach(p => {
       const li = document.createElement('li');
       li.setAttribute('role', 'option');
       li.textContent = p.title;
@@ -318,7 +338,7 @@
       dyn.appendChild(wrap);
     });
 
-    /* Child drop-down */
+    /* Child drop‑down */
     if (p.children.length) {
       const box = document.createElement('span');
       box.className = 'childbox';
