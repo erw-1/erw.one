@@ -3,7 +3,7 @@ window.CONFIG = {
   TITLE   : '⟪ Title of your wiki ⟫',
 
   // Any png / ico / svg file you like
-  FAVICON : 'icons/wiki32.png',
+  FAVICON : 'https://raw.githubusercontent.com/erw-1/erw.one/refs/heads/main/files/img/preview.png',
 
   // Raw Markdown bundle (one file, many pages)
   MD : 'https://hackmd.io/@h-s-n/doc_test/download',
