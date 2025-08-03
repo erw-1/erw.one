@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <!--
   km – Static Wiki  •  Slim-runtime UPDATED (Aug 2025)
+  • user-defined graph palette (in config.js)
   • keeps first two tree levels open
   • memoised KaTeX loader
   • safer drag-start so graph doesn’t “explode” on first click
@@ -16,7 +17,7 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <link rel="stylesheet" href="km.css">
 
-  <!--  Config (title, favicon, md bundle path)  -->
+  <!--  Config (title, favicon, md bundle path, graph palette)  -->
   <script src="config.js"></script>
   <link id="favicon-el" rel="icon" href="">
 
@@ -126,6 +127,9 @@
   const $  = (s,c=document)=>(c||document).querySelector(s);
   const $$ = (s,c=document)=>[...(c||document).querySelectorAll(s)];
 
+  /* ---------- config ---------- */
+  const { TITLE, FAVICON, MD, GRAPH_COLORS } = window.CONFIG;  // palette comes straight from user config
+
   /* ---------- dynamic-imports ---------- */
   let mdReady=null;
   const ensureMarkdown = () => {
@@ -156,9 +160,6 @@
       return ready;
     };
   })();
-
-  /* ---------- config ---------- */
-  const { TITLE, FAVICON, MD } = window.CONFIG;
 
   /* ---------- page model ---------- */
   const pages=[], byId=new Map(); let root=null;
@@ -494,12 +495,17 @@
         .force('center',d3.forceCenter(w/2,h/2));
 
       const link=svg.append('g').selectAll('line').data(localLinks).join('line')
-        .attr('stroke',d=>d.kind==='tag'?'#444':'#555').attr('stroke-width',1);
+        .attr('stroke', d => d.kind==='tag'
+              ? GRAPH_COLORS.tag
+              : GRAPH_COLORS.hier)
+        .attr('stroke-width',1);
 
       const node = svg.append('g')
         .selectAll('circle').data(localNodes).join('circle')
         .attr('r', 6)
-        .attr('fill', d => d.ref.children.length ? '#8a8a8a' : '#569cd6')
+        .attr('fill', d => d.ref.children.length
+              ? GRAPH_COLORS.parent
+              : GRAPH_COLORS.leaf)
         .style('cursor', 'pointer')
         .on('click', (e, d) => {               // navigate on click
           nav(d.ref);
@@ -524,7 +530,8 @@
         );
 
       const label=svg.append('g').selectAll('text').data(localNodes).join('text')
-        .attr('fill','#aaa').attr('font-size',10).text(d=>d.label);
+        .attr('fill', GRAPH_COLORS.label)
+        .attr('font-size',10).text(d=>d.label);
 
       function highlight(id,fade){
         node.style('opacity',o=>id==null||adj.get(id)?.has(o.id)||o.id===id?1:fade);
