@@ -79,7 +79,7 @@ let mdReady = null; // will hold the Promise so we don’t import twice
 
 /**
  * Ensures marked and DOMPurify are available, combined into a tiny API.
- * @returns {Promise<{parse:Function,sanitize:Function}>}
+ * @returns {Promise<{parse:Function}>}
  */
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
