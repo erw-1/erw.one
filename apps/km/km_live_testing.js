@@ -98,7 +98,7 @@ KM.ensureMarkdown = () => {
     return {
       parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
       sanitize: html => DOMPurify.default.sanitize(html, {
-        ADD_TAGS: ['iframe']
+        ADD_TAGS: ['iframe'],
         ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#).*$/i
       })
     };
