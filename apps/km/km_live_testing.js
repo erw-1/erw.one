@@ -86,25 +86,26 @@ KM.ensureMarkdown = () => {
 
   mdReady = Promise.all([
     import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
-    import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')
-  ]).then(([marked, DOMPurify]) => {
-    /* 🔸 Force every <input> to be a disabled checkbox */
+    import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')   // ⇠ exports createDOMPurify
+  ]).then(([marked, createDOMPurify]) => {
+    const DOMPurify = createDOMPurify(window);                // ⇠ get the instance
+
+    /* Force every <input> coming from Markdown to be a disabled checkbox */
     DOMPurify.addHook('afterSanitizeElements', node => {
       if (node.nodeName === 'INPUT') {
-        node.setAttribute('type', 'checkbox');   // always a checkbox
-        node.setAttribute('disabled', '');       // keep it inert
-        /*  value, checked, etc. are left as-is */
+        node.setAttribute('type', 'checkbox');
+        node.setAttribute('disabled', '');
       }
     });
 
     return {
       parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
-      sanitize: html => DOMPurify.default.sanitize(html, {
-        ADD_TAGS: ['iframe', 'input'],           // <input> explicitly allowed
+      sanitize: html => DOMPurify.sanitize(html, {
+        ADD_TAGS: ['iframe', 'input'],    // <input> must be here, not in ADD_ATTR
         ADD_ATTR: [
           'allow','allowfullscreen','frameborder','scrolling',
           'width','height','src','title','style',
-          'type','checked','disabled'            // task-list attrs
+          'type','checked','disabled'      // keep task-list attrs
         ],
         ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#).*$/i
       })
