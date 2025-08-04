@@ -499,8 +499,8 @@ function prevNext (page) {
  */
 async function render (page, anchor) {
   // 1. Markdown → raw HTML ---------------------------------------------------
-  const { parse, sanitize } = await KM.ensureMarkdown();
-  $('#content').innerHTML = sanitize(parse(page.content, { headerIds: false }));
+  const { parse } = await KM.ensureMarkdown();
+  $('#content').innerHTML = parse(page.content, { headerIds: false });
 
   // 2. Number headings so «h2 1.2.3» deep‑links remain stable -------------
   numberHeadings($('#content'));
