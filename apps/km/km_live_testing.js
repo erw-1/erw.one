@@ -86,9 +86,10 @@ KM.ensureMarkdown = () => {
 
   mdReady = Promise.all([
     import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.min.js'),
-    import('https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js')
+    import('https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert/dist/index.umd.min.js'), 
   ]).then(([marked, footnote]) => {
-    const md = new marked.Marked().use(footnote.default());
+    const md = new marked.Marked().use(markedFootnote()).use(markedAlert());
     return {
       parse: (src, opt) => md.parse(src, { ...opt, mangle: false })
     };
