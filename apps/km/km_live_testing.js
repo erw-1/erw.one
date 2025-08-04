@@ -495,6 +495,27 @@ function prevNext (page) {
 }
 
 /**
+ * Prefixes every in-page foot-note link (<a href="#footnote-…">, #fn-…,
+ * #fnref-…) with the current page-hash so that, e.g.
+ *   #footnote-1            →  #mechanics#tech#footnote-1
+ *   #fn-a                  →  #stresstest#fn-a
+ *
+ * Only the HREF is changed; the <li id="footnote-1"> etc. stay as-is so
+ * `route()` still scrolls to plain “footnote-1”.
+ */
+function fixFootnoteLinks (page) {
+  const base = hashOf(page);              // e.g. "mechanics#tech"
+  if (!base) return;                      // root page ⇒ nothing to do
+
+  $$('#content a[href^="#"]').forEach(a => {
+    const href = a.getAttribute('href');  // "#footnote-1"
+    if (/^#(?:fn|footnote)/.test(href) && !href.includes(base)) {
+      a.setAttribute('href', `#${base}${href}`);   // "#mechanics#tech#footnote-1"
+    }
+  });
+}
+
+/**
  * High‑level page renderer orchestrating Markdown → HTML, syntax highlight,
  * math typesetting, ToC generation and deep‑link scrolling.
  *
@@ -505,6 +526,8 @@ async function render (page, anchor) {
   // 1. Markdown → raw HTML ---------------------------------------------------
   const { parse } = await KM.ensureMarkdown();
   $('#content').innerHTML = parse(page.content, { headerIds: false });
+  // make foot-note anchors hash-aware
+  fixFootnoteLinks(page);
 
   // 2. Number headings so «h2 1.2.3» deep‑links remain stable -------------
   numberHeadings($('#content'));
