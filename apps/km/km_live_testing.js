@@ -86,27 +86,10 @@ KM.ensureMarkdown = () => {
 
   mdReady = Promise.all([
     import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
-    import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')           // ← instance
-  ]).then(([marked, DOMPurify]) => {
-    /* Force every <input> coming from Markdown to be a disabled checkbox */
-    DOMPurify.addHook('afterSanitizeElements', node => {
-      if (node.nodeName === 'INPUT') {
-        node.setAttribute('type', 'checkbox');
-        node.setAttribute('disabled', '');
-      }
-    });
+  ]).then(([marked]) => {
 
     return {
       parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
-      sanitize: html => DOMPurify.sanitize(html, {
-        ADD_TAGS: ['iframe', 'input'],               // allow <input>
-        ADD_ATTR: [
-          'allow','allowfullscreen','frameborder','scrolling',
-          'width','height','src','title','style',
-          'type','checked','disabled'                // task-list attrs
-        ],
-        ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#).*$/i
-      })
     };
   });
 
