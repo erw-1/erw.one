@@ -88,17 +88,24 @@ KM.ensureMarkdown = () => {
     import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
     import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')
   ]).then(([marked, DOMPurify]) => {
+    /* 🔸 Force every <input> to be a disabled checkbox */
     DOMPurify.addHook('afterSanitizeElements', node => {
       if (node.nodeName === 'INPUT') {
         node.setAttribute('type', 'checkbox');   // always a checkbox
-        node.setAttribute('disabled', '');
+        node.setAttribute('disabled', '');       // keep it inert
+        /*  value, checked, etc. are left as-is */
       }
     });
-     
+
     return {
       parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
       sanitize: html => DOMPurify.default.sanitize(html, {
-        ADD_TAGS: ['iframe'],
+        ADD_TAGS: ['iframe', 'input'],           // <input> explicitly allowed
+        ADD_ATTR: [
+          'allow','allowfullscreen','frameborder','scrolling',
+          'width','height','src','title','style',
+          'type','checked','disabled'            // task-list attrs
+        ],
         ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#).*$/i
       })
     };
@@ -106,6 +113,7 @@ KM.ensureMarkdown = () => {
 
   return mdReady;
 };
+
 
 /**
  * Loads KaTeX auto‑render bundle if needed (detected per page).
