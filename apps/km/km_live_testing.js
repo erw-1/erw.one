@@ -87,18 +87,22 @@ KM.ensureMarkdown = () => {
   mdReady = Promise.all([
     import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
     import('https://cdn.jsdelivr.net/npm/dompurify@3/+esm')
-  ]).then(([marked, DOMPurify]) => ({
-    parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
-    sanitize: html => DOMPurify.default.sanitize(html, {
-      ADD_TAGS: ['iframe', 'input', 'td', 'th'],
-      ADD_ATTR: [
-        'allow', 'allowfullscreen', 'frameborder', 'scrolling',
-        'width', 'height', 'src', 'title', 'style', 'type',
-        'input', 'checked', 'disabled'
-      ],
-      ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#).*$/i
-    })
-  }));
+  ]).then(([marked, DOMPurify]) => {
+    DOMPurify.addHook('afterSanitizeElements', node => {
+      if (node.nodeName === 'INPUT') {
+        node.setAttribute('type', 'checkbox');   // always a checkbox
+        node.setAttribute('disabled', '');
+      }
+    });
+     
+    return {
+      parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
+      sanitize: html => DOMPurify.default.sanitize(html, {
+        ADD_TAGS: ['iframe']
+        ALLOWED_URI_REGEXP: /^(?:https?:|mailto:|tel:|#).*$/i
+      })
+    };
+  });
 
   return mdReady;
 };
