@@ -86,15 +86,18 @@ KM.ensureMarkdown = () => {
 
   mdReady = Promise.all([
     import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.js'),
-  ]).then(([marked]) => {
-
+    import('https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js')
+  ]).then(([marked, footnote]) => {
+    const md = new marked.Marked().use(footnote.default());
     return {
-      parse: (src, opt) => marked.marked.parse(src, { ...opt, mangle: false }),
+      parse: (src, opt) => md.parse(src, { ...opt, mangle: false })
     };
   });
 
   return mdReady;
 };
+
+
 
 /**
  * Loads KaTeX auto‑render bundle if needed (detected per page).
@@ -104,7 +107,7 @@ KM.ensureKatex = (() => {
   let ready;
   return function ensureKatex () {
     if (ready) return ready;
-    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.mjs')
+    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.mjs')
       .then(mod => { window.renderMathInElement = mod.default; });
     return ready;
   };
