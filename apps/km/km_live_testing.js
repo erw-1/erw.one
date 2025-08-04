@@ -12,7 +12,7 @@
  * @namespace KM
  * @property {Object}  d3              Selected D3 sub‑modules re‑exported
  * @property {Function}ensureHighlight Lazy loader for highlight.js subset
- * @property {Function}ensureMarkdown  Lazy loader for marked + DOMPurify
+ * @property {Function}ensureMarkdown  Lazy loader for marked + alert & footnotes extensions
  * @property {Function}ensureKatex     Lazy loader for KaTeX auto‑render
  */
 window.KM = {};
