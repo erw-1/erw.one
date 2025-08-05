@@ -1,7 +1,7 @@
 /* *********************************************************************
    SECTION 0 • MICRO‑NAMESPACE SETUP
    All library shims, DOM helpers and constants live inside one global
-   object KM so we never collide with other scripts/extensions. 
+   object KM so we never collide with other scripts/extensions.
 ************************************************************************ */
 
 /**
@@ -41,9 +41,9 @@ KM.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCen
 // --- 1‑B  highlight.js on‑demand --------------------------------------
 /**
  * Loads highlight.js once and registers only the languages requested in
- * CONFIG.LANGS (see config.js).
+ * `CONFIG.LANGS` (see config.js).
  *
- * @returns {Promise<void>} Resolves when window.hljs is ready
+ * @returns {Promise<void>} Resolves when `window.hljs` is ready
  */
 KM.ensureHighlight = (() => {
   let ready; // memoised singleton Promise
@@ -56,7 +56,7 @@ KM.ensureHighlight = (() => {
       const hljs = core.default;
       await Promise.all(
         LANGS.map(async lang => {
-          const mod = await import(https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/${lang}/+esm);
+          const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/${lang}/+esm`);
           hljs.registerLanguage(lang, mod.default);
         })
       );
@@ -126,12 +126,12 @@ fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
   .then(initUI)
-  .then(route);
+  .then(highlightCurrent);
 
 /**
  * Parses the special comment‑delimited Markdown bundle produced by the build
  * script. Each article is fenced by an HTML comment containing its metadata,
- * e.g. <!--id:"home" tags:"foo" parent:"home"-->.
+ * e.g. `<!--id:"home" tags:"foo" parent:"home"-->`.
  *
  * @param {string} txt Raw Markdown bundle
  */
@@ -157,7 +157,7 @@ function parseMarkdownBundle (txt) {
   const wordRE = /\p{L}+/gu; // Unicode letter class
   pages.forEach(p => {
     p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
-    const combo = ${p.title} ${[...p.tagsSet].join(' ')} ${p.content};
+    const combo = `${p.title} ${[...p.tagsSet].join(' ')} ${p.content}`;
     p.wordSet   = new Set(combo.toLowerCase().match(wordRE) || []);
     p.searchStr = combo.toLowerCase();
   });
@@ -167,7 +167,7 @@ function parseMarkdownBundle (txt) {
    SECTION 5 • URL HELPERS & ROUTING UTILITIES
 ************************************************************************ */
 /**
- * Transforms a page object into its URL hash, e.g. a#b#c.
+ * Transforms a page object into its URL hash, e.g. `a#b#c`.
  * @param   {Object} page
  * @returns {string}
  */
@@ -193,7 +193,7 @@ const find = segs => {
   return n;
 };
 
-/** Navigates to a page by mutating location.hash. */
+/** Navigates to a page by mutating `location.hash`. */
 const nav = page => (location.hash = '#' + hashOf(page));
 KM.nav = nav; // expose for dev‑tools
 
@@ -214,7 +214,10 @@ function initUI () {
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
 
-  // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
+  // --- 6‑C  Initial route --------------------------------------------------
+  route(); // handles #hash & renders page
+
+  // --- 6‑D  Mini‑graph – lazy‑initialised when scrolled into view ----------
   new IntersectionObserver((entries, obs) => {
     if (entries[0].isIntersecting) {
       buildGraph();
@@ -222,11 +225,11 @@ function initUI () {
     }
   }).observe($('#mini'));
 
-  // --- 6‑D  Full‑screen graph  ----------------------------------------
+  // --- 6‑E  Full‑screen graph  ----------------------------------------
   const mini = $('#mini');
   $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); };
 
-  // --- 6‑E  Search box -----------------------------------------------------
+  // --- 6‑F  Search box -----------------------------------------------------
   const searchInput = $('#search');
   const searchClear = $('#search-clear');
   let debounce = 0;
@@ -243,7 +246,7 @@ function initUI () {
     searchInput.focus();
   };
 
-  // --- 6‑F  Burger toggles (mobile / portrait UI) -------------------------------------
+  // --- 6‑G  Burger toggles (mobile / portrait UI) -------------------------------------
   const togglePanel = sel => {
     const el      = $(sel);
     const wasOpen = el.classList.contains('open');
@@ -499,7 +502,7 @@ function prevNext (page) {
  *   #fn-a                  →  #stresstest#fn-a
  *
  * Only the HREF is changed; the <li id="footnote-1"> etc. stay as-is so
- * route() still scrolls to plain “footnote-1”.
+ * `route()` still scrolls to plain “footnote-1”.
  */
 function fixFootnoteLinks (page) {
   const base = hashOf(page);              // e.g. "mechanics#tech"
@@ -508,7 +511,7 @@ function fixFootnoteLinks (page) {
   $$('#content a[href^="#"]').forEach(a => {
     const href = a.getAttribute('href');  // "#footnote-1"
     if (/^#(?:fn|footnote)/.test(href) && !href.includes(base)) {
-      a.setAttribute('href', #${base}${href});   // "#mechanics#tech#footnote-1"
+      a.setAttribute('href', `#${base}${href}`);   // "#mechanics#tech#footnote-1"
     }
   });
 }
@@ -580,7 +583,7 @@ let   CURRENT  = -1;
    Build once – mini only
    ────────────────────────────────────────────────────────────────── */
 function buildGraph () {
-  if (graphs.mini) return;                     
+  if (graphs.mini) return;                     // already built ✔️
 
   const { nodes, links, adj } = buildGraphData();
   const svg  = KM.d3.select('#mini');
@@ -648,6 +651,8 @@ function buildGraph () {
 
   /* Store handles */
   graphs.mini = { node, label, sim, view, adj, w:W, h:H };
+
+  highlightCurrent();                 // first emphasise
   observeMiniResize();                // start resize watcher
 }
 
@@ -675,7 +680,7 @@ function highlightCurrent () {
   g.node.filter(d => d.id === id).each(d => {
     const dx = cx - d.x;
     const dy = cy - d.y;
-    g.view.attr('transform', translate(${dx},${dy}));
+    g.view.attr('transform', `translate(${dx},${dy})`);
 
     /* Keep the existing nudge so the node eases back to the centre */
     const k = 0.35;
@@ -742,5 +747,5 @@ function route () {
 
   breadcrumb(page);
   render(page, anchor);
-  highlightCurrent();
+  highlightCurrent(); 
 }
