@@ -623,7 +623,10 @@ function buildGraph (currentPage) {
     const svg = KM.d3.select('#'+id).attr('class','km-graph');
     svg.selectAll('*').remove();
 
-    /* … unchanged simulation boilerplate … */
+    const sim = KM.d3.forceSimulation(localNodes)
+      .force('link',   KM.d3.forceLink(localLinks).id(d => d.id).distance(80))
+      .force('charge', KM.d3.forceManyBody().strength(-240))
+      .force('center', KM.d3.forceCenter(w / 2, h / 2));
 
     /* —— links —— */
     const link = svg.append('g')
@@ -646,7 +649,6 @@ function buildGraph (currentPage) {
                                      IDS.leaf)
       .style('cursor','pointer')
       .on('click', (e,d) => { nav(d.ref); if(id==='full') $('#modal').classList.remove('open'); })
-      /* drag behaviour unchanged */
     ;
 
     /* —— labels —— */
