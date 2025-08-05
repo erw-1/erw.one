@@ -126,6 +126,7 @@ fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
   .then(initUI)
+  .then(console.log("ok") 
   // ── 200 ms pause ─────────────────────────────
   .then(() => new Promise(resolve => setTimeout(resolve, 1000)))
   .then(highlightCurrent);
@@ -607,7 +608,7 @@ let   CURRENT  = -1;
    Build once – mini only
    ────────────────────────────────────────────────────────────────── */
 function buildGraph () {
-  if (graphs.mini) return;                     // already built ✔️
+  if (graphs.mini) return;                    
 
   const { nodes, links, adj } = buildGraphData();
   const svg  = KM.d3.select('#mini');
@@ -713,6 +714,7 @@ function highlightCurrent () {
 
   g.sim.alphaTarget(0.7).restart();
   setTimeout(() => g.sim.alphaTarget(0), 400);
+  console.log("highlighted");
 
   CURRENT = id;
 }
