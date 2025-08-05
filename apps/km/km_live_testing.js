@@ -128,7 +128,7 @@ fetch(MD, { cache: 'reload' })
   .then(initUI)
   // ── 200 ms pause ─────────────────────────────
   .then(() => new Promise(resolve => setTimeout(resolve, 200)))
-  .then(route);
+  .then(highlightCurrent);
 
 /**
  * Parses the special comment‑delimited Markdown bundle produced by the build
@@ -214,7 +214,8 @@ function initUI () {
 
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
-
+  route(); 
+   
   // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
   new IntersectionObserver((entries, obs) => {
     if (entries[0].isIntersecting) {
@@ -675,7 +676,6 @@ function buildGraph () {
   /* Store handles */
   graphs.mini = { node, label, sim, view, adj, w:W, h:H };
 
-  highlightCurrent();                 // first emphasise
   observeMiniResize();                // start resize watcher
 }
 
