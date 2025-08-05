@@ -279,6 +279,7 @@ function initUI () {
 
   // In‑app routing ----------------------------------------------------------
   addEventListener('hashchange', route);
+  highlightCurrent();   
 }
 
 /* *********************************************************************
@@ -650,12 +651,6 @@ function buildGraph () {
 
   /* Store handles */
   graphs.mini = { node, label, sim, view, adj, w:W, h:H };
-
-  // Centre after the initial layout has stabilised
-  g.sim.on('end.once', () => {
-    highlightCurrent();               // final d.x/d.y
-    g.sim.on('end.once', null);       // self-remove
-  });
   observeMiniResize();                // start resize watcher
 }
 
