@@ -224,9 +224,9 @@ function initUI () {
     }
   }).observe($('#mini'));
 
-  // --- 6‑E  Full‑screen graph modal ----------------------------------------
-  $('#expand').onclick       = () => { $('#modal').classList.add('open'); buildGraph(); };
-  $('#modal .close').onclick = () => $('#modal').classList.remove('open');
+  // --- 6‑E  Full‑screen graph  ----------------------------------------
+  const mini = $('#mini');
+  $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); };
 
   // --- 6‑F  Search box -----------------------------------------------------
   const searchInput = $('#search');
@@ -559,181 +559,168 @@ async function render (page, anchor) {
 }
 
 /* *********************************************************************
-   SECTION 11 • GRAPH VISUALISATION (Mini-map & Full-screen)
+   SECTION 11 • GRAPH VISUALISATION (single SVG that can go full-screen)
 ************************************************************************ */
 
 /* ─── CSS hooks ─── */
 const IDS = {
-  // node fills
   current : 'node_current',
   parent  : 'node_parent',
   leaf    : 'node_leaf',
-
-  // links
   hier : 'link_hier',
   tag1 : 'link_tag1',
   tag2 : 'link_tag2',
   tag3 : 'link_tag3',
-
-  // text
-  label : 'graph_text'
+  label: 'graph_text'
 };
 
-/* Keep handles so we can update the graph without rebuilding it. */
-const graphs = {};   // { mini:{ node,label,sim,w,h }, full:{…} }
-let   CURRENT_ID = -1;
+/* Single-SVG bookkeeping */
+const graphs   = {};      // { mini:{ node,label,sim,w,h,adj } }
+let   CURRENT  = -1;
 
-/* ──────────────────────────────────────────────────────────────────────
-   1 • Build once
-   ──────────────────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────────────────
+   Build once – mini only
+   ────────────────────────────────────────────────────────────────── */
 function buildGraph () {
-  const { nodes, links, adj } = buildGraphData();   // helper below
+  if (graphs.mini) return;                     // already built ✔️
 
-  ['mini', 'full'].forEach(id => {
-    const svg  = KM.d3.select('#' + id);
-    const full = id === 'full';
-    const w    = svg.node().clientWidth  || 300;
-    const h    = svg.node().clientHeight || 200;
+  const { nodes, links, adj } = buildGraphData();
+  const svg  = KM.d3.select('#mini');
+  const box  = svg.node().getBoundingClientRect();
+  const W    = box.width  || 300;
+  const H    = box.height || 200;
 
-    const localNodes = nodes.map(n => ({ ...n }));
-    const localLinks = links.map(l => ({ ...l }));
+  const localN = nodes.map(n => ({ ...n }));
+  const localL = links.map(l => ({ ...l }));
 
-    const sim = KM.d3
-      .forceSimulation(localNodes)
-      .force('link',   KM.d3.forceLink(localLinks).id(d => d.id).distance(80))
-      .force('charge', KM.d3.forceManyBody().strength(-240))
-      .force('center', KM.d3.forceCenter(w / 2, h / 2));
+  const sim = KM.d3
+    .forceSimulation(localN)
+    .force('link',   KM.d3.forceLink(localL).id(d => d.id).distance(80))
+    .force('charge', KM.d3.forceManyBody().strength(-240))
+    .force('center', KM.d3.forceCenter(W / 2, H / 2));
 
-    /* ── Edges ───────────────────────────────────────────────────────── */
-    svg.append('g').selectAll('line')
-      .data(localLinks).join('line')
-      .attr('id', d => {
-        if (d.kind === 'hier')   return IDS.hier;
-        if (d.shared === 1)      return IDS.tag1;
-        if (d.shared === 2)      return IDS.tag2;
-                                  return IDS.tag3;       // ≥3 tags
-      });
+  /* Edges */
+  svg.append('g').selectAll('line')
+    .data(localL).join('line')
+    .attr('id', d => d.kind === 'hier'
+        ? IDS.hier
+        : d.shared === 1 ? IDS.tag1
+        : d.shared === 2 ? IDS.tag2
+                         : IDS.tag3);
 
-    /* ── Nodes ───────────────────────────────────────────────────────── */
-    const node = svg.append('g').selectAll('circle')
-      .data(localNodes).join('circle')
-      .attr('r',  6)
-      .attr('id', d => (d.ref.children.length ? IDS.parent : IDS.leaf))
-      .style('cursor', 'pointer')
-      .on('click', (e, d) => { nav(d.ref); if (full) $('#modal').classList.remove('open'); })
-      .on('mouseover', (e, d) => highlight(d.id, 0.15))
-      .on('mouseout',  ()    => highlight(null, 1))
-      .call(KM.d3.drag()
-        .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
-        .on('drag',  (e, d) => { if (e.dx || e.dy) sim.alphaTarget(0.3).restart();
-                                 d.fx = e.x; d.fy = e.y; })
-        .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; })
-      );
+  /* Nodes */
+  const node = svg.append('g').selectAll('circle')
+    .data(localN).join('circle')
+    .attr('r', 6)
+    .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
+    .style('cursor','pointer')
+    .on('click', (e,d) => KM.nav(d.ref))
+    .on('mouseover', (e,d) => fade(d.id,0.15))
+    .on('mouseout',  ()   => fade(null,1))
+    .call(KM.d3.drag()
+      .on('start', (e,d) => { d.fx=d.x; d.fy=d.y; })
+      .on('drag',  (e,d) => { sim.alphaTarget(0.3).restart(); d.fx=e.x; d.fy=e.y; })
+      .on('end',   (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=d.fy=null; }));
 
-    /* ── Labels ──────────────────────────────────────────────────────── */
-    const label = svg.append('g').selectAll('text')
-      .data(localNodes).join('text')
-      .attr('id', IDS.label)
-      .attr('font-size', 10)
-      .text(d => d.label);
+  /* Labels */
+  const label = svg.append('g').selectAll('text')
+    .data(localN).join('text')
+    .attr('id', IDS.label)
+    .attr('font-size',10)
+    .text(d => d.label);
 
-    /* ── Hover helper ───────────────────────────────────────────────── */
-    function highlight (id, fade) {
-      node .style('opacity', o => (id == null || adj.get(id)?.has(o.id) || o.id === id) ? 1 : fade);
-      label.style('opacity', o => (id == null || adj.get(id)?.has(o.id) || o.id === id) ? 1 : fade);
-    }
+  /* Hover helper */
+  function fade (id, o) {
+    node .style('opacity',d=>(id==null||adj.get(id)?.has(d.id)||d.id===id)?1:o);
+    label.style('opacity',d=>(id==null||adj.get(id)?.has(d.id)||d.id===id)?1:o);
+  }
 
-    /* ── Simulation loop ───────────────────────────────────────────── */
-    sim.on('tick', () => {
-      svg.selectAll('line')
-         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-
-      node .attr('cx', d => d.x)          .attr('cy', d => d.y);
-      label.attr('x',  d => d.x + 8)      .attr('y', d => d.y + 3);
-    });
-
-    /* Stash handles for later re-styling & nudging. */
-    graphs[id] = { node, label, sim, w, h };
+  /* Tick */
+  sim.on('tick', () => {
+    svg.selectAll('line')
+      .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    node .attr('cx',d=>d.x)           .attr('cy',d=>d.y);
+    label.attr('x', d=>d.x+8)         .attr('y', d=>d.y+3);
   });
 
-  /* Initial highlight (the page that loaded first). */
-  highlightCurrent();
+  /* Store handles */
+  graphs.mini = { node, label, sim, adj, w:W, h:H };
+
+  highlightCurrent();                 // first emphasise
+  observeMiniResize();                // start resize watcher
 }
 
-/* ──────────────────────────────────────────────────────────────────────
-   2 • Re-skin on every route()
-   ──────────────────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────────────────
+   Re-skin current node (called from route())
+   ────────────────────────────────────────────────────────────────── */
 function highlightCurrent () {
-  /* Figure out which page is currently on screen. */
-  const seg       = location.hash.slice(1).split('#').filter(Boolean);
-  const page      = find(seg);
-  const newID     = page?._i ?? -1;
-  if (newID === CURRENT_ID) return;      // nothing changed
+  const seg  = location.hash.slice(1).split('#').filter(Boolean);
+  const pg   = find(seg);
+  const id   = pg?._i ?? -1;
+  if (id === CURRENT) return;
 
-  Object.values(graphs).forEach(g => {
-    /* Update node IDs and radii. */
-    g.node
-      .attr('id', d => {
-        if (d.id === newID)               return IDS.current;
-        if (d.ref.children.length)        return IDS.parent;
-                                           return IDS.leaf;
-      })
-      .attr('r',  d => d.id === newID ? 8 : 6);
+  const g = graphs.mini;
+  g.node
+    .attr('id', d=> d.id===id ? IDS.current
+            : d.ref.children.length ? IDS.parent
+                                    : IDS.leaf )
+    .attr('r',  d=> d.id===id ? 8 : 6);
+  g.label.classed('current', d=> d.id===id);
 
-    /* Update label emphasis. */
-    g.label.classed('current', d => d.id === newID);
-
-    /* ── Real D3 “nudge” toward centre ─────────────────────────────── */
-    const centreX = g.w / 2, centreY = g.h / 2;
-    g.node.filter(d => d.id === newID).each(d => {
-      /* Add a short-lived, node-specific force. */
-      const strength = 0.3;
-      d.vx += (centreX - d.x) * strength;
-      d.vy += (centreY - d.y) * strength;
-    });
-    g.sim.alphaTarget(0.7).restart();
-    setTimeout(() => g.sim.alphaTarget(0), 400);   // cool back down
+  /* D3 shove toward centre */
+  const cx = g.w/2, cy = g.h/2;
+  g.node.filter(d=>d.id===id).each(d=>{
+    const k = 0.35;
+    d.vx += (cx-d.x)*k;
+    d.vy += (cy-d.y)*k;
   });
+  g.sim.alphaTarget(0.7).restart();
+  setTimeout(()=>g.sim.alphaTarget(0),400);
 
-  CURRENT_ID = newID;
+  CURRENT = id;
 }
 
-/* ──────────────────────────────────────────────────────────────────────
-   3 • Data helpers
-   ──────────────────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────────────────
+   Keep sim centred when #mini resizes
+   ────────────────────────────────────────────────────────────────── */
+function observeMiniResize () {
+  new ResizeObserver(entries=>{
+    const g = graphs.mini;
+    if (!g) return;
+    const { width:w, height:h } = entries[0].contentRect;
+    g.w=w; g.h=h;
+    g.sim.force('center', KM.d3.forceCenter(w/2,h/2));
+    g.sim.alpha(0.3).restart();
+  }).observe(document.getElementById('mini'));
+}
+
+/* ────────────────────────────────────────────────────────────────────
+   Data helpers (unchanged)
+   ────────────────────────────────────────────────────────────────── */
 function buildGraphData () {
-  const nodes = [], links = [], adj = new Map();
+  const N=[], L=[], A=new Map();
+  const touch = (a,b)=>{ (A.get(a)||A.set(a,new Set()).get(a)).add(b);
+                         (A.get(b)||A.set(b,new Set()).get(b)).add(a); };
+  const overlap = (A,B)=>{let n=0;for(const x of A)if(B.has(x))n++;return n;};
 
-  /* helper: set-like intersection size */
-  function overlap (A, B) { let n = 0; for (const x of A) if (B.has(x)) n++; return n; }
-  function addAdj (a, b) { (adj.get(a) || adj.set(a,new Set()).get(a)).add(b);
-                           (adj.get(b) || adj.set(b,new Set()).get(b)).add(a); }
+  pages.forEach((p,i)=>{ p._i=i; p.tagsSet=p.tagsSet||new Set(p.tags); });
 
-  pages.forEach((p, i) => { p._i = i; p.tagsSet = p.tagsSet || new Set(p.tags); });
-
-  /* hierarchy links */
-  pages.forEach(p => {
-    nodes.push({ id: p._i, label: p.title, ref: p });
-    if (p.parent) { links.push({ source:p._i, target:p.parent._i, shared:0, kind:'hier' });
-                    addAdj(p._i, p.parent._i); }
+  pages.forEach(p=>{
+    N.push({id:p._i,label:p.title,ref:p});
+    if(p.parent){ L.push({source:p._i,target:p.parent._i,shared:0,kind:'hier'}); touch(p._i,p.parent._i);}
   });
 
-  /* tag-overlap links */
-  pages.forEach((a,i) => {
-    for (let j=i+1;j<pages.length;j++) {
-      const b = pages[j], n = overlap(a.tagsSet,b.tagsSet);
-      if (n) { links.push({ source:a._i, target:b._i, shared:n, kind:'tag' });
-               addAdj(a._i, b._i); }
-    }
-  });
+  pages.forEach((a,i)=>{ for(let j=i+1;j<pages.length;j++){
+    const b=pages[j], n=overlap(a.tagsSet,b.tagsSet);
+    if(n){ L.push({source:a._i,target:b._i,shared:n,kind:'tag'}); touch(a._i,b._i);} } });
 
-  return { nodes, links, adj };
+  return { nodes:N, links:L, adj:A };
 }
 
-/* ──────────────────────────────────────────────────────────────────────
-   4 • Kick-off once, then rely on route()
-   ──────────────────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────────────────
+   Kick-off
+   ────────────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', buildGraph);
 
 
