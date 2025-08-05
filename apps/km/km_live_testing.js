@@ -622,7 +622,7 @@ function buildGraphData () {
 }
 
 /** Renders both the “mini” and “full” SVG graphs. */
-function buildGraph (currentPage) {
+function buildGraph (currentPage = root) {
   const { nodes, links, adj } = buildGraphData();
 
   ['mini', 'full'].forEach(view => {
