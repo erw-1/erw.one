@@ -126,7 +126,6 @@ fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
   .then(initUI)
-  .then(() => new Promise(resolve => setTimeout(resolve, 100)))
   .then(highlightCurrent);
 
 /**
