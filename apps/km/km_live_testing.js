@@ -579,66 +579,18 @@ const IDS = {
   label : 'graph_text'
 };
 
-/** Builds node/edge arrays from the wiki dataset + tag overlap. */
-function buildGraphData () {
-  const nodes = [], links = [], adj = new Map();
+/* Keep handles so we can update the graph without rebuilding it. */
+const graphs = {};   // { mini:{ node,label,sim,w,h }, full:{…} }
+let   CURRENT_ID = -1;
 
-  /* Helper functions -------------------------------------------------- */
-  function intersectionSize (A, B) {
-    let n = 0;
-    for (const x of A) if (B.has(x)) n++;
-    return n;
-  }
-  function addAdj (a, b) {
-    if (!adj.has(a)) adj.set(a, new Set());
-    if (!adj.has(b)) adj.set(b, new Set());
-    adj.get(a).add(b); adj.get(b).add(a);
-  }
-
-  /* Give every page a stable numeric index and a Set of its tags. */
-  pages.forEach((p, i) => {
-    p._i      = i;
-    p.tagsSet = p.tagsSet || new Set(p.tags);
-  });
-
-  /* ── 1 • Hierarchical edges ───────────────────────────────────────── */
-  pages.forEach(p => {
-    nodes.push({ id: p._i, label: p.title, ref: p });
-
-    if (p.parent) {
-      links.push({ source: p._i, target: p.parent._i, shared: 0, kind: 'hier' });
-      addAdj(p._i, p.parent._i);
-    }
-  });
-
-  /* ── 2 • Tag-overlap edges (1 / 2 / 3+ shared tags) ───────────────── */
-  pages.forEach((a, i) => {
-    for (let j = i + 1; j < pages.length; j++) {
-      const b       = pages[j];
-      const overlap = intersectionSize(a.tagsSet, b.tagsSet);
-      if (overlap) {
-        links.push({ source: a._i, target: b._i, shared: overlap, kind: 'tag' });
-        addAdj(a._i, b._i);
-      }
-    }
-  });
-
-  return { nodes, links, adj };
-}
-
-/** Renders both the «mini» and «full» SVG graphs. */
+/* ──────────────────────────────────────────────────────────────────────
+   1 • Build once
+   ──────────────────────────────────────────────────────────────────── */
 function buildGraph () {
-  const { nodes, links, adj } = buildGraphData();
-
-  /* Resolve the currently viewed page to highlight its node. */
-  const seg         = location.hash.slice(1).split('#').filter(Boolean);
-  const currentPage = find(seg);
-  const currentID   = currentPage?._i ?? -1;
+  const { nodes, links, adj } = buildGraphData();   // helper below
 
   ['mini', 'full'].forEach(id => {
     const svg  = KM.d3.select('#' + id);
-    svg.selectAll('*').remove();                   // wipe previous render
-
     const full = id === 'full';
     const w    = svg.node().clientWidth  || 300;
     const h    = svg.node().clientHeight || 200;
@@ -653,24 +605,20 @@ function buildGraph () {
       .force('center', KM.d3.forceCenter(w / 2, h / 2));
 
     /* ── Edges ───────────────────────────────────────────────────────── */
-    const link = svg.append('g').selectAll('line')
+    svg.append('g').selectAll('line')
       .data(localLinks).join('line')
       .attr('id', d => {
         if (d.kind === 'hier')   return IDS.hier;
         if (d.shared === 1)      return IDS.tag1;
         if (d.shared === 2)      return IDS.tag2;
-        /* shared ≥ 3 */         return IDS.tag3;
+                                  return IDS.tag3;       // ≥3 tags
       });
 
     /* ── Nodes ───────────────────────────────────────────────────────── */
     const node = svg.append('g').selectAll('circle')
       .data(localNodes).join('circle')
-      .attr('r',  d => d.id === currentID ? 8 : 6)
-      .attr('id', d =>
-        d.id === currentID
-          ? IDS.current
-          : (d.ref.children.length ? IDS.parent : IDS.leaf)
-      )
+      .attr('r',  6)
+      .attr('id', d => (d.ref.children.length ? IDS.parent : IDS.leaf))
       .style('cursor', 'pointer')
       .on('click', (e, d) => { nav(d.ref); if (full) $('#modal').classList.remove('open'); })
       .on('mouseover', (e, d) => highlight(d.id, 0.15))
@@ -686,30 +634,108 @@ function buildGraph () {
     const label = svg.append('g').selectAll('text')
       .data(localNodes).join('text')
       .attr('id', IDS.label)
-      .classed('current', d => d.id === currentID)
       .attr('font-size', 10)
       .text(d => d.label);
 
     /* ── Hover helper ───────────────────────────────────────────────── */
     function highlight (id, fade) {
       node .style('opacity', o => (id == null || adj.get(id)?.has(o.id) || o.id === id) ? 1 : fade);
-      link .style('opacity', l => (id == null || l.source.id === id || l.target.id === id) ? 1 : fade);
       label.style('opacity', o => (id == null || adj.get(id)?.has(o.id) || o.id === id) ? 1 : fade);
     }
 
     /* ── Simulation loop ───────────────────────────────────────────── */
     sim.on('tick', () => {
-      link .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-           .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+      svg.selectAll('line')
+         .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
 
       node .attr('cx', d => d.x)          .attr('cy', d => d.y);
       label.attr('x',  d => d.x + 8)      .attr('y', d => d.y + 3);
     });
+
+    /* Stash handles for later re-styling & nudging. */
+    graphs[id] = { node, label, sim, w, h };
   });
+
+  /* Initial highlight (the page that loaded first). */
+  highlightCurrent();
 }
 
-/* Keep the highlight in sync when navigating between pages. */
-addEventListener('hashchange', buildGraph);
+/* ──────────────────────────────────────────────────────────────────────
+   2 • Re-skin on every route()
+   ──────────────────────────────────────────────────────────────────── */
+function highlightCurrent () {
+  /* Figure out which page is currently on screen. */
+  const seg       = location.hash.slice(1).split('#').filter(Boolean);
+  const page      = find(seg);
+  const newID     = page?._i ?? -1;
+  if (newID === CURRENT_ID) return;      // nothing changed
+
+  Object.values(graphs).forEach(g => {
+    /* Update node IDs and radii. */
+    g.node
+      .attr('id', d => {
+        if (d.id === newID)               return IDS.current;
+        if (d.ref.children.length)        return IDS.parent;
+                                           return IDS.leaf;
+      })
+      .attr('r',  d => d.id === newID ? 8 : 6);
+
+    /* Update label emphasis. */
+    g.label.classed('current', d => d.id === newID);
+
+    /* ── Real D3 “nudge” toward centre ─────────────────────────────── */
+    const centreX = g.w / 2, centreY = g.h / 2;
+    g.node.filter(d => d.id === newID).each(d => {
+      /* Add a short-lived, node-specific force. */
+      const strength = 0.3;
+      d.vx += (centreX - d.x) * strength;
+      d.vy += (centreY - d.y) * strength;
+    });
+    g.sim.alphaTarget(0.7).restart();
+    setTimeout(() => g.sim.alphaTarget(0), 400);   // cool back down
+  });
+
+  CURRENT_ID = newID;
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   3 • Data helpers
+   ──────────────────────────────────────────────────────────────────── */
+function buildGraphData () {
+  const nodes = [], links = [], adj = new Map();
+
+  /* helper: set-like intersection size */
+  function overlap (A, B) { let n = 0; for (const x of A) if (B.has(x)) n++; return n; }
+  function addAdj (a, b) { (adj.get(a) || adj.set(a,new Set()).get(a)).add(b);
+                           (adj.get(b) || adj.set(b,new Set()).get(b)).add(a); }
+
+  pages.forEach((p, i) => { p._i = i; p.tagsSet = p.tagsSet || new Set(p.tags); });
+
+  /* hierarchy links */
+  pages.forEach(p => {
+    nodes.push({ id: p._i, label: p.title, ref: p });
+    if (p.parent) { links.push({ source:p._i, target:p.parent._i, shared:0, kind:'hier' });
+                    addAdj(p._i, p.parent._i); }
+  });
+
+  /* tag-overlap links */
+  pages.forEach((a,i) => {
+    for (let j=i+1;j<pages.length;j++) {
+      const b = pages[j], n = overlap(a.tagsSet,b.tagsSet);
+      if (n) { links.push({ source:a._i, target:b._i, shared:n, kind:'tag' });
+               addAdj(a._i, b._i); }
+    }
+  });
+
+  return { nodes, links, adj };
+}
+
+/* ──────────────────────────────────────────────────────────────────────
+   4 • Kick-off once, then rely on route()
+   ──────────────────────────────────────────────────────────────────── */
+document.addEventListener('DOMContentLoaded', buildGraph);
+
 
 /* *********************************************************************
    SECTION 12 • CLIENT‑SIDE ROUTER
@@ -725,6 +751,7 @@ function route () {
   document.body.scrollTop            = 0;
 
   breadcrumb(page);
+  highlightCurrent();
   render(page, anchor);
 }
 
