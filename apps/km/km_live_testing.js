@@ -207,9 +207,15 @@ function closePanels () {
 
 function initUI () {
   // --- 6‑A  Static header tweaks -------------------------------------------
-  $('#wiki-title').textContent = TITLE;
-  document.title               = TITLE;
-  $('#favicon-el').href        = FAVICON;
+  $('#wiki-favicon').src      = FAVICON;
+  $('#wiki-favicon').width    = 16;   // or style in CSS
+  $('#wiki-favicon').height   = 16;
+
+  $('#wiki-title-text').textContent = TITLE;
+
+  // Browser-tab title + <link rel="icon">
+  document.title  = TITLE;
+  $('#favicon-el').href = FAVICON;
 
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
