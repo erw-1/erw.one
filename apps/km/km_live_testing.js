@@ -70,7 +70,7 @@ KM.ensureHighlight = (() => {
 /* *********************************************************************
    SECTION 2 • CONFIG EXTRACTION
 ************************************************************************ */
-const { TITLE, FAVICON, MD, GRAPH_COLORS } = window.CONFIG;
+const { TITLE, FAVICON, MD } = window.CONFIG;
 
 /* *********************************************************************
    SECTION 3 • MARKDOWN / KaTeX LAZY‑LOADERS
