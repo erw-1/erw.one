@@ -1,7 +1,7 @@
 /* *********************************************************************
    SECTION 0 • MICRO‑NAMESPACE SETUP
    All library shims, DOM helpers and constants live inside one global
-   object KM so we never collide with other scripts/extensions.
+   object KM so we never collide with other scripts/extensions. 
 ************************************************************************ */
 
 /**
