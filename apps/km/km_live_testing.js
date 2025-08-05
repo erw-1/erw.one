@@ -636,6 +636,7 @@ function buildGraph () {
   function fade (id, o) {
     node .style('opacity',d=>(id==null||adj.get(id)?.has(d.id)||d.id===id)?1:o);
     label.style('opacity',d=>(id==null||adj.get(id)?.has(d.id)||d.id===id)?1:o);
+    link .style('opacity', l =>id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
   /* Tick */
