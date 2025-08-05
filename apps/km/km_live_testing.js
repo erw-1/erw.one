@@ -742,5 +742,4 @@ function route () {
   highlightCurrent();
 }
 
-// Kick‑off if user lands on '/' (no Markdown yet → wait) ------------------
-if (pages.length) route();
+route();
