@@ -126,9 +126,7 @@ fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
   .then(initUI)
-  .then(console.log("ok")) 
-  // ── 200 ms pause ─────────────────────────────
-  .then(() => new Promise(resolve => setTimeout(resolve, 1000)))
+  .then(() => new Promise(resolve => setTimeout(resolve, 100)))
   .then(highlightCurrent);
 
 /**
@@ -714,7 +712,6 @@ function highlightCurrent () {
 
   g.sim.alphaTarget(0.7).restart();
   setTimeout(() => g.sim.alphaTarget(0), 400);
-  console.log("highlighted");
 
   CURRENT = id;
 }
