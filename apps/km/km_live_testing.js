@@ -70,7 +70,7 @@ KM.ensureHighlight = (() => {
 /* *********************************************************************
    SECTION 2 • CONFIG EXTRACTION
 ************************************************************************ */
-const { TITLE, FAVICON, MD } = window.CONFIG;
+const { TITLE, MD } = window.CONFIG;
 
 /* *********************************************************************
    SECTION 3 • MARKDOWN / KaTeX LAZY‑LOADERS
@@ -207,15 +207,8 @@ function closePanels () {
 
 function initUI () {
   // --- 6‑A  Static header tweaks -------------------------------------------
-  $('#wiki-favicon').src      = FAVICON;
-  $('#wiki-favicon').width    = 16;   // or style in CSS
-  $('#wiki-favicon').height   = 16;
-
   $('#wiki-title-text').textContent = TITLE;
-
-  // Browser-tab title + <link rel="icon">
   document.title  = TITLE;
-  $('#favicon-el').href = FAVICON;
 
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
