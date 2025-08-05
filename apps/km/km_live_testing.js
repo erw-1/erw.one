@@ -36,9 +36,7 @@ import {
   forceManyBody, forceCenter           // force‑directed graph engine
 } from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
 import { drag }                        from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
-import { zoom } from 'https://cdn.jsdelivr.net/npm/d3-zoom@3/+esm'; 
-import { transition } from 'https://cdn.jsdelivr.net/npm/d3-transition@3/+esm'; 
-KM.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCenter, drag, transition, zoom };
+KM.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
 
 // --- 1‑B  highlight.js on‑demand --------------------------------------
 /**
@@ -577,7 +575,7 @@ const IDS = {
 };
 
 /* Single-SVG bookkeeping */
-const graphs   = {};      // { mini:{ node,label,sim,w,h,adj, gContainer, zoom } }
+const graphs   = {};      // { mini:{ node,label,sim,w,h,adj } }
 let   CURRENT  = -1;
 
 /* ────────────────────────────────────────────────────────────────────
@@ -592,14 +590,6 @@ function buildGraph () {
   const W    = box.width  || 300;
   const H    = box.height || 200;
 
-  // --- Make a transformable group ---
-  const gContainer = svg.append('g').attr('class', 'zoom-container');
-
-  // --- Edges, nodes, labels in this g ---
-  const edgesG  = gContainer.append('g');
-  const nodesG  = gContainer.append('g');
-  const labelsG = gContainer.append('g');
-
   const localN = nodes.map(n => ({ ...n }));
   const localL = links.map(l => ({ ...l }));
 
@@ -610,7 +600,7 @@ function buildGraph () {
     .force('center', KM.d3.forceCenter(W / 2, H / 2));
 
   /* Edges */
-  const edges = edgesG.selectAll('line')
+  svg.append('g').selectAll('line')
     .data(localL).join('line')
     .attr('id', d => d.kind === 'hier'
         ? IDS.hier
@@ -619,7 +609,7 @@ function buildGraph () {
                          : IDS.tag3);
 
   /* Nodes */
-  const node = nodesG.selectAll('circle')
+  const node = svg.append('g').selectAll('circle')
     .data(localN).join('circle')
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
@@ -633,7 +623,7 @@ function buildGraph () {
       .on('end',   (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=d.fy=null; }));
 
   /* Labels */
-  const label = labelsG.selectAll('text')
+  const label = svg.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label)
     .attr('font-size',10)
@@ -647,34 +637,26 @@ function buildGraph () {
 
   /* Tick */
   sim.on('tick', () => {
-    edges.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
-         .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    svg.selectAll('line')
+      .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
     node .attr('cx',d=>d.x)           .attr('cy',d=>d.y);
     label.attr('x', d=>d.x+8)         .attr('y', d=>d.y+3);
   });
 
-  // --- D3 Zoom support ---
-  const zoomBehavior = KM.d3.zoom()
-    .scaleExtent([0.3, 3])
-    .on('zoom', (event) => {
-      gContainer.attr('transform', event.transform);
-    });
+  /* Store handles */
+  graphs.mini = { node, label, sim, adj, w:W, h:H };
 
-  svg.call(zoomBehavior);
-
-  // Store handles
-  graphs.mini = { node, label, sim, adj, w:W, h:H, gContainer, zoom: zoomBehavior, svg, nodes: localN };
-
-  highlightCurrent();                 // first emphasise and center
+  highlightCurrent();                 // first emphasise
   observeMiniResize();                // start resize watcher
 }
 
 /* ────────────────────────────────────────────────────────────────────
-   Re-skin current node and center the view (called from route())
+   Re-skin current node (called from route())
    ────────────────────────────────────────────────────────────────── */
 function highlightCurrent () {
   if (!graphs.mini) return; // graph not built yet
-
+   
   const seg  = location.hash.slice(1).split('#').filter(Boolean);
   const pg   = find(seg);
   const id   = pg?._i ?? -1;
@@ -688,27 +670,15 @@ function highlightCurrent () {
     .attr('r',  d=> d.id===id ? 8 : 6);
   g.label.classed('current', d=> d.id===id);
 
-  // --- SVG pan/zoom to center the highlighted node ---
-  // Find the data for this node
-  const nodeData = g.nodes.find(d => d.id === id);
-  if (nodeData) {
-    const svgNode = document.getElementById('mini');
-    const { width, height } = svgNode.getBoundingClientRect();
-    const scale = 1; // you could choose to zoom in a bit here
-
-    // Target position so node appears in center
-    const tx = width/2  - nodeData.x * scale;
-    const ty = height/2 - nodeData.y * scale;
-    // Use d3-zoom to transition to this transform
-    g.svg.transition()
-      .duration(600)
-      .call(
-        g.zoom.transform,
-        KM.d3.zoomIdentity
-          .translate(tx, ty)
-          .scale(scale)
-      );
-  }
+  /* D3 shove toward centre */
+  const cx = g.w/2, cy = g.h/2;
+  g.node.filter(d=>d.id===id).each(d=>{
+    const k = 0.35;
+    d.vx += (cx-d.x)*k;
+    d.vy += (cy-d.y)*k;
+  });
+  g.sim.alphaTarget(0.7).restart();
+  setTimeout(()=>g.sim.alphaTarget(0),400);
 
   CURRENT = id;
 }
@@ -749,6 +719,7 @@ function buildGraphData () {
 
   return { nodes:N, links:L, adj:A };
 }
+
 
 /* *********************************************************************
    SECTION 12 • CLIENT‑SIDE ROUTER
