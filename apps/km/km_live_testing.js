@@ -213,15 +213,6 @@ function initUI () {
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
 
-  // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
-  new IntersectionObserver((entries, obs) => {
-    if (entries[0].isIntersecting) {
-      buildGraph();
-      highlightCurrent();
-      obs.disconnect();
-    }
-  }).observe($('#mini'));
-
   // --- 6‑D  Full‑screen graph  ----------------------------------------
   const mini = $('#mini');
   $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); };
@@ -277,7 +268,16 @@ function initUI () {
 
   // In‑app routing ----------------------------------------------------------
   addEventListener('hashchange', route);
-  route(); 
+  route();
+   
+  // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
+  new IntersectionObserver((entries, obs) => {
+    if (entries[0].isIntersecting) {
+      buildGraph();
+      highlightCurrent();
+      obs.disconnect();
+    }
+  }).observe($('#mini')); 
 }
 
 /* *********************************************************************
