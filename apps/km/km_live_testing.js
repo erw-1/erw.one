@@ -243,6 +243,31 @@ function initUI () {
     searchInput.focus();
   };
 
+  /* ── Light / dark theme toggle ───────────────────────── */
+  (() => {
+    const btn   = $('#theme-toggle');
+    const root  = document.documentElement;
+    const media = matchMedia('(prefers-color-scheme: dark)');
+  
+    // initial state: localStorage > OS setting > default light
+    let dark = localStorage.getItem('km-theme') === 'dark' ||
+               (!localStorage.getItem('km-theme') && media.matches);
+  
+    apply(dark);
+  
+    btn.onclick = () => {
+      dark = !dark;
+      apply(dark);
+      localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+    };
+   
+    // helper
+    function apply(isDark) {
+      root.style.setProperty('--color-main', isDark ? 'rgb(30,30,30)' : 'white');
+      root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    }
+  })(); 
+
   // --- 6‑F  Burger toggles (mobile / portrait UI) -------------------------------------
   const togglePanel = sel => {
     const el      = $(sel);
