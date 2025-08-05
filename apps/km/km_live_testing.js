@@ -220,7 +220,6 @@ function initUI () {
   new IntersectionObserver((entries, obs) => {
     if (entries[0].isIntersecting) {
       buildGraph();
-      highlightCurrent(); 
       obs.disconnect();
     }
   }).observe($('#mini'));
@@ -652,7 +651,10 @@ function buildGraph () {
   /* Store handles */
   graphs.mini = { node, label, sim, view, adj, w:W, h:H };
 
-  highlightCurrent();                 // first emphasise
+  // Centre after the initial layout has stabilised
+  g.sim.on('end.once', () => {
+    highlightCurrent();               
+  g.sim.on('end.once', null);         // self-remove
   observeMiniResize();                // start resize watcher
 }
 
