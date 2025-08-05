@@ -31,12 +31,14 @@ Object.assign(KM, { $, $$ });
 import {
   select, selectAll                    // DOM selections
 } from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
+import { transition }
+  from 'https://cdn.jsdelivr.net/npm/d3-transition@3/+esm';
 import {
   forceSimulation, forceLink,
   forceManyBody, forceCenter           // force‑directed graph engine
 } from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
 import { drag }                        from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
-KM.d3 = { select, selectAll, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
+KM.d3 = { select, selectAll, transition, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
 
 // --- 1‑B  highlight.js on‑demand --------------------------------------
 /**
