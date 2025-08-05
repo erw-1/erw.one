@@ -220,6 +220,7 @@ function initUI () {
   new IntersectionObserver((entries, obs) => {
     if (entries[0].isIntersecting) {
       buildGraph();
+      highlightCurrent(); 
       obs.disconnect();
     }
   }).observe($('#mini'));
