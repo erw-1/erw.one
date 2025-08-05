@@ -126,6 +126,8 @@ fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
   .then(initUI)
+  // ── 200 ms pause ─────────────────────────────
+  .then(() => new Promise(resolve => setTimeout(resolve, 200)))
   .then(route);
 
 /**
