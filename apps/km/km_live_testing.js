@@ -31,6 +31,7 @@ Object.assign(KM, { $, $$ });
 import {
   select, selectAll                    // DOM selections
 } from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
+import 'https://cdn.jsdelivr.net/npm/d3-transition@3/+esm';
 import {
   forceSimulation, forceLink,
   forceManyBody, forceCenter           // force‑directed graph engine
