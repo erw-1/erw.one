@@ -656,7 +656,6 @@ function buildGraph () {
    ────────────────────────────────────────────────────────────────── */
 function highlightCurrent () {
   if (!graphs.mini) return; // graph not built yet
-   
   const seg  = location.hash.slice(1).split('#').filter(Boolean);
   const pg   = find(seg);
   const id   = pg?._i ?? -1;
@@ -670,15 +669,21 @@ function highlightCurrent () {
     .attr('r',  d=> d.id===id ? 8 : 6);
   g.label.classed('current', d=> d.id===id);
 
-  /* D3 shove toward centre */
+  /* Strongly center the highlighted node by freezing it at the center briefly */
   const cx = g.w/2, cy = g.h/2;
-  g.node.filter(d=>d.id===id).each(d=>{
-    const k = 0.35;
-    d.vx += (cx-d.x)*k;
-    d.vy += (cy-d.y)*k;
+  g.node.filter(d => d.id === id).each(d => {
+    d.fx = cx;
+    d.fy = cy;
   });
-  g.sim.alphaTarget(0.7).restart();
-  setTimeout(()=>g.sim.alphaTarget(0),400);
+  g.sim.alphaTarget(0.8).restart();
+  setTimeout(() => {
+    // Release node to normal simulation
+    g.node.filter(d => d.id === id).each(d => {
+      d.fx = null;
+      d.fy = null;
+    });
+    g.sim.alphaTarget(0);
+  }, 800);
 
   CURRENT = id;
 }
@@ -719,7 +724,6 @@ function buildGraphData () {
 
   return { nodes:N, links:L, adj:A };
 }
-
 
 /* *********************************************************************
    SECTION 12 • CLIENT‑SIDE ROUTER
