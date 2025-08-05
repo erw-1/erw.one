@@ -126,7 +126,7 @@ fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
   .then(initUI)
-  .then(highlightCurrent);
+  .then(route);
 
 /**
  * Parses the special comment‑delimited Markdown bundle produced by the build
@@ -214,10 +214,7 @@ function initUI () {
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
 
-  // --- 6‑C  Initial route --------------------------------------------------
-  route(); // handles #hash & renders page
-
-  // --- 6‑D  Mini‑graph – lazy‑initialised when scrolled into view ----------
+  // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
   new IntersectionObserver((entries, obs) => {
     if (entries[0].isIntersecting) {
       buildGraph();
@@ -225,11 +222,11 @@ function initUI () {
     }
   }).observe($('#mini'));
 
-  // --- 6‑E  Full‑screen graph  ----------------------------------------
+  // --- 6‑D  Full‑screen graph  ----------------------------------------
   const mini = $('#mini');
   $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); };
 
-  // --- 6‑F  Search box -----------------------------------------------------
+  // --- 6‑E  Search box -----------------------------------------------------
   const searchInput = $('#search');
   const searchClear = $('#search-clear');
   let debounce = 0;
@@ -246,7 +243,7 @@ function initUI () {
     searchInput.focus();
   };
 
-  // --- 6‑G  Burger toggles (mobile / portrait UI) -------------------------------------
+  // --- 6‑F  Burger toggles (mobile / portrait UI) -------------------------------------
   const togglePanel = sel => {
     const el      = $(sel);
     const wasOpen = el.classList.contains('open');
