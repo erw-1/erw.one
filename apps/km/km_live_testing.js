@@ -582,7 +582,7 @@ let   CURRENT  = -1;
    Build once – mini only
    ────────────────────────────────────────────────────────────────── */
 function buildGraph () {
-  if (graphs.mini) return;                     // already built ✔️
+  if (graphs.mini) return;                     
 
   const { nodes, links, adj } = buildGraphData();
   const svg  = KM.d3.select('#mini');
@@ -653,8 +653,9 @@ function buildGraph () {
 
   // Centre after the initial layout has stabilised
   g.sim.on('end.once', () => {
-    highlightCurrent();               
-  g.sim.on('end.once', null);         // self-remove
+    highlightCurrent();               // final d.x/d.y
+    g.sim.on('end.once', null);       // self-remove
+  });
   observeMiniResize();                // start resize watcher
 }
 
