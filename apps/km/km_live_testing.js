@@ -29,16 +29,15 @@ Object.assign(KM, { $, $$ });
 ************************************************************************ */
 // --- 1‑A  D3: cherry‑picked to 6 KB instead of 200 KB full build -------
 import {
-  select, selectAll                    // DOM selections
+  select                    // DOM selections
 } from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
-import { transition }
-  from 'https://cdn.jsdelivr.net/npm/d3-transition@3/+esm';
+import 'https://cdn.jsdelivr.net/npm/d3-transition@3/+esm';
 import {
   forceSimulation, forceLink,
   forceManyBody, forceCenter           // force‑directed graph engine
 } from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
 import { drag }                        from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
-KM.d3 = { select, selectAll, transition, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
+KM.d3 = { select, forceSimulation, forceLink, forceManyBody, forceCenter, drag };
 
 // --- 1‑B  highlight.js on‑demand --------------------------------------
 /**
