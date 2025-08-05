@@ -586,6 +586,7 @@ function buildGraph () {
 
   const { nodes, links, adj } = buildGraphData();
   const svg  = KM.d3.select('#mini');
+  const pan   = svg.append('g').attr('class', 'pan');
   const box  = svg.node().getBoundingClientRect();
   const W    = box.width  || 300;
   const H    = box.height || 200;
@@ -600,7 +601,7 @@ function buildGraph () {
     .force('center', KM.d3.forceCenter(W / 2, H / 2));
 
   /* Edges */
-  svg.append('g').selectAll('line')
+  pan.append('g').selectAll('line')
     .data(localL).join('line')
     .attr('id', d => d.kind === 'hier'
         ? IDS.hier
@@ -609,7 +610,7 @@ function buildGraph () {
                          : IDS.tag3);
 
   /* Nodes */
-  const node = svg.append('g').selectAll('circle')
+  const node = pan.append('g').selectAll('circle')
     .data(localN).join('circle')
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
@@ -623,7 +624,7 @@ function buildGraph () {
       .on('end',   (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=d.fy=null; }));
 
   /* Labels */
-  const label = svg.append('g').selectAll('text')
+  const label = pan.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label)
     .attr('font-size',10)
@@ -645,7 +646,7 @@ function buildGraph () {
   });
 
   /* Store handles */
-  graphs.mini = { node, label, sim, adj, w:W, h:H };
+  graphs.mini = { node, label, sim, adj, w:W, h:H, pan };
 
   highlightCurrent();                 // first emphasise
   observeMiniResize();                // start resize watcher
@@ -679,6 +680,15 @@ function highlightCurrent () {
   });
   g.sim.alphaTarget(0.7).restart();
   setTimeout(()=>g.sim.alphaTarget(0),400);
+
+  /* --- Pan the whole graph so the active node sits in the viewport centre --- */
+   const datum = g.node.data().find(d => d.id === id);
+   if (datum) {
+     const dx = g.w / 2 - datum.x;
+     const dy = g.h / 2 - datum.y;
+     g.pan.transition().duration(400)              // animate ~0.4 s
+          .attr('transform', `translate(${dx},${dy})`);
+   } 
 
   CURRENT = id;
 }
