@@ -575,7 +575,7 @@ const IDS = {
 };
 
 /* Single-SVG bookkeeping */
-const graphs   = {};      // { mini:{ node,label,sim,w,h,adj } }
+const graphs   = {};      // { mini:{ node,label,sim,view,w,h,adj } }
 let   CURRENT  = -1;
 
 /* ────────────────────────────────────────────────────────────────────
@@ -599,8 +599,11 @@ function buildGraph () {
     .force('charge', KM.d3.forceManyBody().strength(-240))
     .force('center', KM.d3.forceCenter(W / 2, H / 2));
 
+  /* One wrapper so we can pan the whole graph in one go */
+  const view = svg.append('g').attr('class', 'view');
+
   /* Edges */
-  svg.append('g').selectAll('line')
+  const link = view.append('g').selectAll('line')
     .data(localL).join('line')
     .attr('id', d => d.kind === 'hier'
         ? IDS.hier
@@ -609,7 +612,7 @@ function buildGraph () {
                          : IDS.tag3);
 
   /* Nodes */
-  const node = svg.append('g').selectAll('circle')
+  const node = view.append('g').selectAll('circle')
     .data(localN).join('circle')
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
@@ -623,7 +626,7 @@ function buildGraph () {
       .on('end',   (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=d.fy=null; }));
 
   /* Labels */
-  const label = svg.append('g').selectAll('text')
+  const label = view.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label)
     .attr('font-size',10)
@@ -637,7 +640,7 @@ function buildGraph () {
 
   /* Tick */
   sim.on('tick', () => {
-    svg.selectAll('line')
+    link
       .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
       .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
     node .attr('cx',d=>d.x)           .attr('cy',d=>d.y);
@@ -645,14 +648,14 @@ function buildGraph () {
   });
 
   /* Store handles */
-  graphs.mini = { node, label, sim, adj, w:W, h:H };
+  graphs.mini = { node, label, sim, view, adj, w:W, h:H };
 
   highlightCurrent();                 // first emphasise
   observeMiniResize();                // start resize watcher
 }
 
 /* ────────────────────────────────────────────────────────────────────
-   Re-skin current node (called from route())
+   Re-skin current node (called from route()) & centre the view on it
    ────────────────────────────────────────────────────────────────── */
 function highlightCurrent () {
   if (!graphs.mini) return; // graph not built yet
@@ -670,15 +673,21 @@ function highlightCurrent () {
     .attr('r',  d=> d.id===id ? 8 : 6);
   g.label.classed('current', d=> d.id===id);
 
-  /* D3 shove toward centre */
-  const cx = g.w/2, cy = g.h/2;
-  g.node.filter(d=>d.id===id).each(d=>{
+  /* Pan the whole graph so the highlighted node is centred */
+  const cx = g.w / 2, cy = g.h / 2;
+  g.node.filter(d => d.id === id).each(d => {
+    const dx = cx - d.x;
+    const dy = cy - d.y;
+    g.view.attr('transform', `translate(${dx},${dy})`);
+
+    /* Keep the existing nudge so the node eases back to the centre */
     const k = 0.35;
-    d.vx += (cx-d.x)*k;
-    d.vy += (cy-d.y)*k;
+    d.vx += (cx - d.x) * k;
+    d.vy += (cy - d.y) * k;
   });
+
   g.sim.alphaTarget(0.7).restart();
-  setTimeout(()=>g.sim.alphaTarget(0),400);
+  setTimeout(() => g.sim.alphaTarget(0), 400);
 
   CURRENT = id;
 }
@@ -710,7 +719,7 @@ function buildGraphData () {
 
   pages.forEach(p=>{
     N.push({id:p._i,label:p.title,ref:p});
-    if(p.parent){ L.push({source:p._i,target:p.parent._i,shared:0,kind:'hier'}); touch(p._i,p.parent._i);}
+    if(p.parent){ L.push({source:p._i,target:p.parent._i,shared:0,kind:'hier'}); touch(p._i,p.parent._i); }
   });
 
   pages.forEach((a,i)=>{ for(let j=i+1;j<pages.length;j++){
