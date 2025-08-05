@@ -565,28 +565,43 @@ async function render (page, anchor) {
 /* ─── CSS hooks ─── */
 const IDS = {
   // node fills
-  current : 'node_current',   // current page node
-  parent  : 'node_parent',    // pages that have children
-  leaf    : 'node_leaf',      // pages with no children
+  current : 'node_current',
+  parent  : 'node_parent',
+  leaf    : 'node_leaf',
 
   // links
-  hier : 'link_hier',         // parent-child edges
-  tag1 : 'link_tag1',         // 1 shared tag
-  tag2 : 'link_tag2',         // 2 shared tags
-  tag3 : 'link_tag3',         // ≥3 shared tags
+  hier : 'link_hier',
+  tag1 : 'link_tag1',
+  tag2 : 'link_tag2',
+  tag3 : 'link_tag3',
 
   // text
-  label : 'graph_text'        // node labels
+  label : 'graph_text'
 };
 
-/** Builds node/edge arrays from the wiki dataset + tag overlap.            */
+/** Builds node/edge arrays from the wiki dataset + tag overlap. */
 function buildGraphData () {
   const nodes = [], links = [], adj = new Map();
 
-  /* Give every page a stable numeric index for D3. */
-  pages.forEach((p, i) => (p._i = i));
+  /* Helper functions -------------------------------------------------- */
+  function intersectionSize (A, B) {
+    let n = 0;
+    for (const x of A) if (B.has(x)) n++;
+    return n;
+  }
+  function addAdj (a, b) {
+    if (!adj.has(a)) adj.set(a, new Set());
+    if (!adj.has(b)) adj.set(b, new Set());
+    adj.get(a).add(b); adj.get(b).add(a);
+  }
 
-  /* ── 1 • Hierarchical edges ─────────────────────────────────────────── */
+  /* Give every page a stable numeric index and a Set of its tags. */
+  pages.forEach((p, i) => {
+    p._i      = i;
+    p.tagsSet = p.tagsSet || new Set(p.tags);
+  });
+
+  /* ── 1 • Hierarchical edges ───────────────────────────────────────── */
   pages.forEach(p => {
     nodes.push({ id: p._i, label: p.title, ref: p });
 
@@ -596,7 +611,7 @@ function buildGraphData () {
     }
   });
 
-  /* ── 2 • Tag-based edges with shared-tag count ──────────────────────── */
+  /* ── 2 • Tag-overlap edges (1 / 2 / 3+ shared tags) ───────────────── */
   pages.forEach((a, i) => {
     for (let j = i + 1; j < pages.length; j++) {
       const b       = pages[j];
@@ -608,18 +623,10 @@ function buildGraphData () {
     }
   });
 
-  /* Helpers */
-  function addAdj (a, b) {
-    if (!adj.has(a)) adj.set(a, new Set());
-    if (!adj.has(b)) adj.set(b, new Set());
-    adj.get(a).add(b); adj.get(b).add(a);
-  }
-  const intersectionSize = (A, B) => [...A].filter(x => B.has(x)).length;
-
   return { nodes, links, adj };
 }
 
-/** Renders both the «mini» and «full» SVG graphs.                         */
+/** Renders both the «mini» and «full» SVG graphs. */
 function buildGraph () {
   const { nodes, links, adj } = buildGraphData();
 
@@ -645,20 +652,20 @@ function buildGraph () {
       .force('charge', KM.d3.forceManyBody().strength(-240))
       .force('center', KM.d3.forceCenter(w / 2, h / 2));
 
-    /* ── Edges ────────────────────────────────────────────────────────── */
+    /* ── Edges ───────────────────────────────────────────────────────── */
     const link = svg.append('g').selectAll('line')
       .data(localLinks).join('line')
       .attr('id', d => {
-        if (d.kind === 'hier')       return IDS.hier;
-        if (d.shared === 1)          return IDS.tag1;
-        if (d.shared === 2)          return IDS.tag2;
-        return                       IDS.tag3;   // ≥3 shared tags
+        if (d.kind === 'hier')   return IDS.hier;
+        if (d.shared === 1)      return IDS.tag1;
+        if (d.shared === 2)      return IDS.tag2;
+        /* shared ≥ 3 */         return IDS.tag3;
       });
 
-    /* ── Nodes ────────────────────────────────────────────────────────── */
+    /* ── Nodes ───────────────────────────────────────────────────────── */
     const node = svg.append('g').selectAll('circle')
       .data(localNodes).join('circle')
-      .attr('r',  d => d.id === currentID ? 8 : 6)             // bigger current node
+      .attr('r',  d => d.id === currentID ? 8 : 6)
       .attr('id', d =>
         d.id === currentID
           ? IDS.current
@@ -675,22 +682,22 @@ function buildGraph () {
         .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; })
       );
 
-    /* ── Labels ───────────────────────────────────────────────────────── */
+    /* ── Labels ──────────────────────────────────────────────────────── */
     const label = svg.append('g').selectAll('text')
       .data(localNodes).join('text')
       .attr('id', IDS.label)
-      .classed('current', d => d.id === currentID)    // for bigger font
+      .classed('current', d => d.id === currentID)
       .attr('font-size', 10)
       .text(d => d.label);
 
-    /* ── Hover helper ─────────────────────────────────────────────────── */
+    /* ── Hover helper ───────────────────────────────────────────────── */
     function highlight (id, fade) {
       node .style('opacity', o => (id == null || adj.get(id)?.has(o.id) || o.id === id) ? 1 : fade);
-      link .style('opacity', l => (id == null || l.source.id === id  || l.target.id === id) ? 1 : fade);
+      link .style('opacity', l => (id == null || l.source.id === id || l.target.id === id) ? 1 : fade);
       label.style('opacity', o => (id == null || adj.get(id)?.has(o.id) || o.id === id) ? 1 : fade);
     }
 
-    /* ── Simulation loop ──────────────────────────────────────────────── */
+    /* ── Simulation loop ───────────────────────────────────────────── */
     sim.on('tick', () => {
       link .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
            .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
