@@ -276,7 +276,6 @@ function initUI () {
 
   // In‑app routing ----------------------------------------------------------
   addEventListener('hashchange', route);
-  route(); // handles #hash & renders page 
 }
 
 /* *********************************************************************
@@ -741,8 +740,8 @@ function route () {
   document.body.scrollTop            = 0;
 
   breadcrumb(page);
-  highlightCurrent();
   render(page, anchor);
+  highlightCurrent();
 }
 
 // Kick‑off if user lands on '/' (no Markdown yet → wait) ------------------
