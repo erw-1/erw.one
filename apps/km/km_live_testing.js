@@ -125,7 +125,8 @@ let   root  = null;        // defined after Markdown fetch resolves
 fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
-  .then(initUI);
+  .then(initUI)
+  .then(route);
 
 /**
  * Parses the special comment‑delimited Markdown bundle produced by the build
