@@ -221,14 +221,11 @@ function initUI () {
     }
   }).observe($('#mini'));
 
-  // --- 6‑D  Initial route --------------------------------------------------
-  route(); // handles #hash & renders page 
-
-  // --- 6‑E  Full‑screen graph  ----------------------------------------
+  // --- 6‑D  Full‑screen graph  ----------------------------------------
   const mini = $('#mini');
   $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); };
 
-  // --- 6‑F  Search box -----------------------------------------------------
+  // --- 6‑E  Search box -----------------------------------------------------
   const searchInput = $('#search');
   const searchClear = $('#search-clear');
   let debounce = 0;
@@ -245,7 +242,7 @@ function initUI () {
     searchInput.focus();
   };
 
-  // --- 6‑G  Burger toggles (mobile / portrait UI) -------------------------------------
+  // --- 6‑F  Burger toggles (mobile / portrait UI) -------------------------------------
   const togglePanel = sel => {
     const el      = $(sel);
     const wasOpen = el.classList.contains('open');
@@ -278,7 +275,8 @@ function initUI () {
   });
 
   // In‑app routing ----------------------------------------------------------
-  addEventListener('hashchange', route);  
+  addEventListener('hashchange', route);
+  route(); // handles #hash & renders page 
 }
 
 /* *********************************************************************
