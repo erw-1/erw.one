@@ -213,10 +213,6 @@ function initUI () {
   // --- 6‑B  Sidebar tree ---------------------------------------------------
   buildTree();
 
-  // --- 6‑D  Full‑screen graph  ----------------------------------------
-  const mini = $('#mini');
-  $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); };
-
   // --- 6‑E  Search box -----------------------------------------------------
   const searchInput = $('#search');
   const searchClear = $('#search-clear');
@@ -266,19 +262,20 @@ function initUI () {
     }
   });
 
+    // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
+    new IntersectionObserver((entries, obs) => {
+      if (entries[0].isIntersecting) {
+        buildGraph();
+        obs.disconnect();
+      }
+    }).observe($('#mini')); 
+  } 
+  // --- 6‑C  Full‑screen graph  ----------------------------------------
+  const mini = $('#mini');
+  $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); };
+   
   // In‑app routing ----------------------------------------------------------
   addEventListener('hashchange', route);
-  route();
-   
-  // --- 6‑C  Mini‑graph – lazy‑initialised when scrolled into view ----------
-  new IntersectionObserver((entries, obs) => {
-    if (entries[0].isIntersecting) {
-      buildGraph();
-      highlightCurrent();
-      obs.disconnect();
-    }
-  }).observe($('#mini')); 
-}
 
 /* *********************************************************************
    SECTION 7 • SIDEBAR TREE
@@ -656,7 +653,6 @@ function buildGraph () {
    Re-skin current node (called from route()) & centre the view on it
    ────────────────────────────────────────────────────────────────── */
 function highlightCurrent () {
-  if (!graphs.mini) return; // graph not built yet
    
   const seg  = location.hash.slice(1).split('#').filter(Boolean);
   const pg   = find(seg);
