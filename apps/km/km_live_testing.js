@@ -31,7 +31,6 @@ Object.assign(KM, { $, $$ });
 import {
   select, selectAll                    // DOM selections
 } from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
-import 'https://cdn.jsdelivr.net/npm/d3-transition@3/+esm';
 import {
   forceSimulation, forceLink,
   forceManyBody, forceCenter           // force‑directed graph engine
@@ -560,7 +559,7 @@ async function render (page, anchor) {
 }
 
 /* *********************************************************************
-   SECTION 11 • GRAPH VISUALISATION (single SVG that can go full‑screen)
+   SECTION 11 • GRAPH VISUALISATION (single SVG that can go full-screen)
 ************************************************************************ */
 
 /* ─── CSS hooks ─── */
@@ -575,8 +574,8 @@ const IDS = {
   label: 'graph_text'
 };
 
-/* Single‑SVG bookkeeping */
-const graphs   = {};      // { mini:{ pan,node,label,edge,sim,w,h,adj } }
+/* Single-SVG bookkeeping */
+const graphs   = {};      // { mini:{ node,label,sim,w,h,adj } }
 let   CURRENT  = -1;
 
 /* ────────────────────────────────────────────────────────────────────
@@ -600,11 +599,8 @@ function buildGraph () {
     .force('charge', KM.d3.forceManyBody().strength(-240))
     .force('center', KM.d3.forceCenter(W / 2, H / 2));
 
-  /* Parent group we will translate to centre the highlighted node */
-  const pan = svg.append('g').attr('class', 'pan');
-
   /* Edges */
-  const edge = pan.append('g').selectAll('line')
+  svg.append('g').selectAll('line')
     .data(localL).join('line')
     .attr('id', d => d.kind === 'hier'
         ? IDS.hier
@@ -613,7 +609,7 @@ function buildGraph () {
                          : IDS.tag3);
 
   /* Nodes */
-  const node = pan.append('g').selectAll('circle')
+  const node = svg.append('g').selectAll('circle')
     .data(localN).join('circle')
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
@@ -627,7 +623,7 @@ function buildGraph () {
       .on('end',   (e,d) => { if(!e.active) sim.alphaTarget(0); d.fx=d.fy=null; }));
 
   /* Labels */
-  const label = pan.append('g').selectAll('text')
+  const label = svg.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label)
     .attr('font-size',10)
@@ -641,21 +637,22 @@ function buildGraph () {
 
   /* Tick */
   sim.on('tick', () => {
-    edge.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
-        .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+    svg.selectAll('line')
+      .attr('x1',d=>d.source.x).attr('y1',d=>d.source.y)
+      .attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
     node .attr('cx',d=>d.x)           .attr('cy',d=>d.y);
     label.attr('x', d=>d.x+8)         .attr('y', d=>d.y+3);
   });
 
   /* Store handles */
-  graphs.mini = { pan, node, label, edge, sim, adj, w:W, h:H };
+  graphs.mini = { node, label, sim, adj, w:W, h:H };
 
   highlightCurrent();                 // first emphasise
   observeMiniResize();                // start resize watcher
 }
 
 /* ────────────────────────────────────────────────────────────────────
-   Re-skin current node and centre view (called from route())
+   Re-skin current node (called from route())
    ────────────────────────────────────────────────────────────────── */
 function highlightCurrent () {
   if (!graphs.mini) return; // graph not built yet
@@ -673,17 +670,15 @@ function highlightCurrent () {
     .attr('r',  d=> d.id===id ? 8 : 6);
   g.label.classed('current', d=> d.id===id);
 
-  /* Centre the view on the highlighted node */
-  const sel = g.node.filter(d => d.id === id);
-  if (!sel.empty()) {
-    const { x, y } = sel.datum();          // node’s absolute sim‑coords
-    const dx = g.w / 2 - x;                // translation needed
-    const dy = g.h / 2 - y;
-
-    g.pan.transition()                     // move everything at once
-         .duration(500)
-         .attr('transform', `translate(${dx},${dy})`);
-  }
+  /* D3 shove toward centre */
+  const cx = g.w/2, cy = g.h/2;
+  g.node.filter(d=>d.id===id).each(d=>{
+    const k = 0.35;
+    d.vx += (cx-d.x)*k;
+    d.vy += (cy-d.y)*k;
+  });
+  g.sim.alphaTarget(0.7).restart();
+  setTimeout(()=>g.sim.alphaTarget(0),400);
 
   CURRENT = id;
 }
@@ -699,7 +694,6 @@ function observeMiniResize () {
     g.w=w; g.h=h;
     g.sim.force('center', KM.d3.forceCenter(w/2,h/2));
     g.sim.alpha(0.3).restart();
-    highlightCurrent();               // recompute pan translation
   }).observe(document.getElementById('mini'));
 }
 
@@ -716,7 +710,8 @@ function buildGraphData () {
 
   pages.forEach(p=>{
     N.push({id:p._i,label:p.title,ref:p});
-    if(p.parent){ L.push({source:p._i,target:p.parent._i,shared:0,kind:'hier'}); touch(p._i,p.parent._i);}  });
+    if(p.parent){ L.push({source:p._i,target:p.parent._i,shared:0,kind:'hier'}); touch(p._i,p.parent._i);}
+  });
 
   pages.forEach((a,i)=>{ for(let j=i+1;j<pages.length;j++){
     const b=pages[j], n=overlap(a.tagsSet,b.tagsSet);
