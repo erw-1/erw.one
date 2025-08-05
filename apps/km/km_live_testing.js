@@ -742,5 +742,3 @@ function route () {
   render(page, anchor);
   highlightCurrent();
 }
-
-route();
