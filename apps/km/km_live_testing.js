@@ -400,8 +400,8 @@ function breadcrumb (page) {
     wrap.appendChild(a);
 
     // Dropdown with siblings -----------------------------------------------
-    const siblings = n.parent.children;
-    if (siblings.length > 1) {
+    const siblings = n.parent.children.filter(s => s !== n);  // exclude current page
+    if (siblings.length) {                                    // only show if something left
       const ul = document.createElement('ul');
       siblings.forEach(s => {
         const li = document.createElement('li');
