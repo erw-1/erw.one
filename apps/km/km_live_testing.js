@@ -655,6 +655,8 @@ function buildGraph () {
    Re-skin current node (called from route())
    ────────────────────────────────────────────────────────────────── */
 function highlightCurrent () {
+  if (!graphs.mini) return; // graph not built yet
+   
   const seg  = location.hash.slice(1).split('#').filter(Boolean);
   const pg   = find(seg);
   const id   = pg?._i ?? -1;
@@ -717,11 +719,6 @@ function buildGraphData () {
 
   return { nodes:N, links:L, adj:A };
 }
-
-/* ────────────────────────────────────────────────────────────────────
-   Kick-off
-   ────────────────────────────────────────────────────────────────── */
-document.addEventListener('DOMContentLoaded', buildGraph);
 
 
 /* *********************************************************************
