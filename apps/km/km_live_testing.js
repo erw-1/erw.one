@@ -264,7 +264,7 @@ function initUI () {
    
     // helper
     function apply(isDark) {
-      root.style.setProperty('--color-main', isDark ? 'rgb(30,30,30)' : 'white');
+      root.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
       root.setAttribute('data-theme', isDark ? 'dark' : 'light');
     }
   })(); 
