@@ -159,24 +159,23 @@ function parseMarkdownBundle (txt) {
     }
   });
 
-     // ── quick-and-dirty heading index for search sub-results ──────────────
-     pages.forEach(p => {
-       /* tags, title and body for regular page-level search */
-       p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
-       p.searchStr = `${p.title} ${[...p.tagsSet].join(' ')} ${p.content}`.toLowerCase();
-   
-       /* lightweight Markdown heading scan */
-       const counters = [0, 0, 0, 0, 0, 0];
-       p.headings = [];
-       for (const [, hashes, txt] of p.content.matchAll(/^(#{1,5})\s+(.+)$/gm)) {
-         const lvl = hashes.length - 1;
-         counters[lvl]++;                                  // bump own level
-         for (let i = lvl + 1; i < 6; i++) counters[i] = 0; // reset deeper
-         const id = counters.slice(0, lvl + 1).filter(Boolean).join('_');
-         p.headings.push({ id, txt, search: txt.toLowerCase() });
-       }
-     });
-   } 
+  // ── quick-and-dirty heading index for search sub-results ──────────────
+  pages.forEach(p => {
+    /* tags, title and body for regular page-level search */
+    p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
+    p.searchStr = `${p.title} ${[...p.tagsSet].join(' ')} ${p.content}`.toLowerCase();
+
+    /* lightweight Markdown heading scan */
+    const counters = [0, 0, 0, 0, 0, 0];
+    p.headings = [];
+    for (const [, hashes, txt] of p.content.matchAll(/^(#{1,5})\s+(.+)$/gm)) {
+      const lvl = hashes.length - 1;
+      counters[lvl]++;                                  // bump own level
+      for (let i = lvl + 1; i < 6; i++) counters[i] = 0; // reset deeper
+      const id = counters.slice(0, lvl + 1).filter(Boolean).join('_');
+      p.headings.push({ id, txt, search: txt.toLowerCase() });
+    }
+  });
 
   const wordRE = /\p{L}+/gu;
   pages.forEach(p => {
