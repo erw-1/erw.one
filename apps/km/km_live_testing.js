@@ -125,6 +125,7 @@ let   root  = null;        // defined after Markdown fetch resolves
 fetch(MD, { cache: 'reload' })
   .then(res => res.text())
   .then(parseMarkdownBundle)
+  .then(attachSecondaryHomes)
   .then(initUI)
   .then(() => new Promise(resolve => setTimeout(resolve, 50)))
   .then(highlightCurrent);
@@ -143,22 +144,19 @@ function parseMarkdownBundle (txt) {
     pages.push({ ...meta, content: body.trim(), children: [] });
   }
 
-  // Build parent → children relationships -----------------------------------
+  // parent → children ------------------------------------------------------
   pages.forEach(p => byId.set(p.id, p));
   root = byId.get('home') || pages[0];
 
   pages.forEach(p => {
-    if (p === root) return;             // root never has a parent
-
-    // Parent inheritance must be explicit ----------------------
+    if (p === root) return;
     const parId = (p.parent || '').trim();
     const par   = parId ? byId.get(parId) : null;
-
     if (par) {
       p.parent = par;
       par.children.push(p);
     } else {
-      p.parent = null;                  // orphan ⇒ top‑level page
+      p.parent = null; // top‑level orphan (disconnected from home)
     }
   });
 
@@ -169,6 +167,37 @@ function parseMarkdownBundle (txt) {
     const combo = `${p.title} ${[...p.tagsSet].join(' ')} ${p.content}`;
     p.wordSet   = new Set(combo.toLowerCase().match(wordRE) || []);
     p.searchStr = combo.toLowerCase();
+  });
+}
+
+/**
+ * Finds orphaned page‑clusters and promotes one page per cluster to act as a
+ * «secondary home».  The chosen page becomes a **direct child of root** and
+ * carries the flag `isSecondary = true` so the sidebar can render a divider.
+ */
+function attachSecondaryHomes () {
+  // Helper: climb to component‑top (page with parent == null)
+  const topOf = p => { while (p.parent) p = p.parent; return p; };
+
+  // Map from top‑level orphan → cluster list -------------------------------
+  const clusters = new Map();
+  pages.forEach(p => {
+    const top = topOf(p);
+    if (top === root) return;                      // already connected
+    (clusters.get(top) || clusters.set(top, []).get(top)).push(p);
+  });
+
+  // Select representative for each cluster (most descendants) --------------
+  const descCount = page => {
+    let n = 0; (function rec(x){ x.children.forEach(c=>{ n++; rec(c); }); })(page); return n; };
+
+  clusters.forEach((members, top) => {
+    const rep = members.reduce((a,b) => descCount(b) > descCount(a) ? b : a, top);
+    if (!rep.parent) {
+      rep.parent = root;
+      rep.isSecondary = true;
+      root.children.push(rep);
+    }
   });
 }
 
@@ -321,44 +350,40 @@ function buildTree () {
   const ul = $('#tree');
   ul.innerHTML = '';
 
-  /** Recursive side‑bar builder. */
+  // Split root.children into primary vs secondary groups -------------------
+  const prim = root.children.filter(c => !c.isSecondary);
+  const sec  = root.children.filter(c =>  c.isSecondary);
+
+  const addSeparator = () => {
+    const li = document.createElement('li');
+    li.className = 'group-sep';
+    li.innerHTML = '<hr>';
+    ul.appendChild(li);
+  };
+
   const rec = (list, container, depth = 0) => {
     list.sort((a, b) => a.title.localeCompare(b.title));
-
     list.forEach(p => {
       const li = document.createElement('li');
-
-      // Folder / parent ------------------------------------------------------
       if (p.children.length) {
-        const open = depth < 2; // auto‑open first two levels
+        const open = depth < 2;
         li.className = 'folder' + (open ? ' open' : '');
-
-        // Caret arrow --------------------------------------------------------
         const caret = document.createElement('button');
         caret.className = 'caret';
         caret.setAttribute('aria-expanded', String(open));
-        caret.onclick = e => {
-          e.stopPropagation();
-          const isOpen = li.classList.toggle('open');
-          caret.setAttribute('aria-expanded', String(isOpen));
-          sub.style.display = isOpen ? 'block' : 'none';
-        };
-
-        // Folder label -------------------------------------------------------
+        caret.onclick = e => { e.stopPropagation(); const isOpen = li.classList.toggle('open');
+                               caret.setAttribute('aria-expanded', String(isOpen));
+                               sub.style.display = isOpen ? 'block' : 'none'; };
         const lbl = document.createElement('a');
         lbl.className = 'lbl';
         lbl.href = '#' + hashOf(p);
         lbl.textContent = p.title;
-
         const sub = document.createElement('ul');
         sub.style.display = open ? 'block' : 'none';
-
         li.append(caret, lbl, sub);
         container.appendChild(li);
-
         rec(p.children, sub, depth + 1);
       } else {
-        // Leaf / article -----------------------------------------------------
         li.className = 'article';
         const a = document.createElement('a');
         a.href = '#' + hashOf(p);
@@ -369,7 +394,9 @@ function buildTree () {
     });
   };
 
-  rec(root.children, ul);
+  rec(prim, ul);
+  if (sec.length) addSeparator();
+  rec(sec,  ul);
 }
 
 /* *********************************************************************
