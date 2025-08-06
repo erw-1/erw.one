@@ -144,7 +144,6 @@ function parseMarkdownBundle (txt) {
     pages.push({ ...meta, content: body.trim(), children: [] });
   }
 
-  // parent → children ------------------------------------------------------
   pages.forEach(p => byId.set(p.id, p));
   root = byId.get('home') || pages[0];
 
@@ -156,16 +155,14 @@ function parseMarkdownBundle (txt) {
       p.parent = par;
       par.children.push(p);
     } else {
-      p.parent = null; // top‑level orphan (disconnected from home)
+      p.parent = null; // orphan (cluster top)
     }
   });
 
-  // Pre‑compute helper sets for search (case‑insensitive, accent‑aware) ------
-  const wordRE = /\p{L}+/gu; // Unicode letter class
+  const wordRE = /\p{L}+/gu;
   pages.forEach(p => {
     p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
     const combo = `${p.title} ${[...p.tagsSet].join(' ')} ${p.content}`;
-    p.wordSet   = new Set(combo.toLowerCase().match(wordRE) || []);
     p.searchStr = combo.toLowerCase();
   });
 }
@@ -176,26 +173,23 @@ function parseMarkdownBundle (txt) {
  * carries the flag `isSecondary = true` so the sidebar can render a divider.
  */
 function attachSecondaryHomes () {
-  // Helper: climb to component‑top (page with parent == null)
   const topOf = p => { while (p.parent) p = p.parent; return p; };
-
-  // Map from top‑level orphan → cluster list -------------------------------
   const clusters = new Map();
   pages.forEach(p => {
     const top = topOf(p);
-    if (top === root) return;                      // already connected
+    if (top === root) return;
     (clusters.get(top) || clusters.set(top, []).get(top)).push(p);
   });
 
-  // Select representative for each cluster (most descendants) --------------
-  const descCount = page => {
-    let n = 0; (function rec(x){ x.children.forEach(c=>{ n++; rec(c); }); })(page); return n; };
+  let cid = 0;
+  const descCount = page => { let n = 0; (function rec(x){ x.children.forEach(c=>{ n++; rec(c);} );})(page); return n; };
 
   clusters.forEach((members, top) => {
     const rep = members.reduce((a,b) => descCount(b) > descCount(a) ? b : a, top);
     if (!rep.parent) {
-      rep.parent = root;
+      rep.parent = root;            // for routing + sidebar only
       rep.isSecondary = true;
+      rep.clusterId   = cid++;
       root.children.push(rep);
     }
   });
@@ -350,20 +344,20 @@ function buildTree () {
   const ul = $('#tree');
   ul.innerHTML = '';
 
-  // Split root.children into primary vs secondary groups -------------------
-  const prim = root.children.filter(c => !c.isSecondary);
-  const sec  = root.children.filter(c =>  c.isSecondary);
+  const primRoots = root.children.filter(c => !c.isSecondary)
+                                 .sort((a,b)=>a.title.localeCompare(b.title));
+  const secRoots  = root.children.filter(c =>  c.isSecondary)
+                                 .sort((a,b)=>a.clusterId - b.clusterId);
 
-  const addSeparator = () => {
+  const sep = () => {
     const li = document.createElement('li');
     li.className = 'group-sep';
     li.innerHTML = '<hr>';
     ul.appendChild(li);
   };
 
-  const rec = (list, container, depth = 0) => {
-    list.sort((a, b) => a.title.localeCompare(b.title));
-    list.forEach(p => {
+  const rec = (nodes, container, depth=0) => {
+    nodes.forEach(p => {
       const li = document.createElement('li');
       if (p.children.length) {
         const open = depth < 2;
@@ -371,9 +365,8 @@ function buildTree () {
         const caret = document.createElement('button');
         caret.className = 'caret';
         caret.setAttribute('aria-expanded', String(open));
-        caret.onclick = e => { e.stopPropagation(); const isOpen = li.classList.toggle('open');
-                               caret.setAttribute('aria-expanded', String(isOpen));
-                               sub.style.display = isOpen ? 'block' : 'none'; };
+        caret.onclick = e => { e.stopPropagation(); const t = li.classList.toggle('open');
+                               caret.setAttribute('aria-expanded', t); sub.style.display = t?'block':'none'; };
         const lbl = document.createElement('a');
         lbl.className = 'lbl';
         lbl.href = '#' + hashOf(p);
@@ -382,7 +375,7 @@ function buildTree () {
         sub.style.display = open ? 'block' : 'none';
         li.append(caret, lbl, sub);
         container.appendChild(li);
-        rec(p.children, sub, depth + 1);
+        rec(p.children.sort((a,b)=>a.title.localeCompare(b.title)), sub, depth+1);
       } else {
         li.className = 'article';
         const a = document.createElement('a');
@@ -394,9 +387,11 @@ function buildTree () {
     });
   };
 
-  rec(prim, ul);
-  if (sec.length) addSeparator();
-  rec(sec,  ul);
+  rec(primRoots, ul);
+  secRoots.forEach((rootNode,i) => {
+    sep();
+    rec([rootNode], ul);
+  });
 }
 
 /* *********************************************************************
@@ -768,50 +763,38 @@ function observeMiniResize () {
    ────────────────────────────────────────────────────────────────── */
 function buildGraphData () {
   const N=[], L=[], A=new Map();
-  const hierPairs = new Set(); // to suppress duplicate tag-links
-
+  const hierPairs = new Set();
   const touch = (a,b)=>{ (A.get(a)||A.set(a,new Set()).get(a)).add(b);
                          (A.get(b)||A.set(b,new Set()).get(b)).add(a); };
   const overlap = (A,B)=>{let n=0;for(const x of A)if(B.has(x))n++;return n;};
 
-  // Helper: full descendant count for width tier ---------------------------
-  const descCount = (page) => {
-    let n = 0;
-    (function rec(p){ for (const c of p.children){ n++; rec(c); } })(page);
-    return n;
-  };
-  const tierOf = (n) => n < 3 ? 1 : n < 6 ? 2 : n < 11 ? 3 : n < 21 ? 4 : 5;
+  const descCount = p => { let n=0; (function rec(x){x.children.forEach(c=>{n++;rec(c);});})(p); return n; };
+  const tierOf = n => n<3?1:n<6?2:n<11?3:n<21?4:5;
 
-  /* 0 • Create node array */
-  pages.forEach((p,i)=>{
-    p._i = i;
-    p.tagsSet = p.tagsSet || new Set(p.tags);
-    N.push({ id: p._i, label: p.title, ref: p });
-  });
+  // nodes ------------------------------------------------------------------
+  pages.forEach((p,i)=>{ p._i=i; p.tagsSet=p.tagsSet||new Set(p.tags); N.push({id:i,label:p.title,ref:p}); });
 
-  /* 1 • hierarchy links ---------------------------------------------------- */
+  // hierarchy edges (skip secondary→root) ----------------------------------
   pages.forEach(p=>{
     if(!p.parent) return;
-    const a = p._i, b = p.parent._i;
-    const key = a<b ? `${a}|${b}` : `${b}|${a}`;
-    const tier = tierOf(descCount(p));           // compute width tier 1‑5
-    L.push({ source:a, target:b, shared:0, kind:'hier', tier });
-    hierPairs.add(key);
-    touch(a,b);
+    if(p.isSecondary && p.parent===root) return; // isolation rule
+    const a=p._i, b=p.parent._i;
+    const key=a<b?`${a}|${b}`:`${b}|${a}`;
+    const tier=tierOf(descCount(p));
+    L.push({source:a,target:b,shared:0,kind:'hier',tier});
+    hierPairs.add(key); touch(a,b);
   });
 
-  /* 2 • tag links (skip if hierarchy already connects the pair) ----------- */
-  pages.forEach((a,i)=>{ for(let j=i+1;j<pages.length;j++){
-    const b = pages[j], n = overlap(a.tagsSet,b.tagsSet);
-    if(!n) continue;
-    const key = i<j ? `${i}|${j}` : `${j}|${i}`;
-    if(hierPairs.has(key)) continue;            // suppress stacked lines
-    L.push({ source:i, target:j, shared:n, kind:'tag' }); // «shared» drives tier
-    touch(i,j);
+  // tag links --------------------------------------------------------------
+  pages.forEach((a,i)=>{for(let j=i+1;j<pages.length;j++){
+    const b=pages[j], n=overlap(a.tagsSet,b.tagsSet); if(!n) continue;
+    const key=i<j?`${i}|${j}`:`${j}|${i}`; if(hierPairs.has(key)) continue;
+    L.push({source:i,target:j,shared:n,kind:'tag'}); touch(i,j);
   }});
 
-  return { nodes:N, links:L, adj:A };
+  return {nodes:N,links:L,adj:A};
 }
+
 
 
 /* *********************************************************************
