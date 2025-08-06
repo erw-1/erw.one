@@ -168,7 +168,7 @@ function parseMarkdownBundle (txt) {
        /* lightweight Markdown heading scan */
        const counters = [0, 0, 0, 0, 0, 0];
        p.headings = [];
-       for (const [, hashes, txt] of p.content.matchAll(/^(\#{1,5})\s+(.+)$/gmu)) {
+       for (const [, hashes, txt] of p.content.matchAll(/^(#{1,5})\s+(.+)$/gm)) {
          const lvl = hashes.length - 1;
          counters[lvl]++;                                  // bump own level
          for (let i = lvl + 1; i < 6; i++) counters[i] = 0; // reset deeper
