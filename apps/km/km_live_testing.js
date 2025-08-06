@@ -727,10 +727,10 @@ async function render (page, anchor) {
 
   // 5. ToC + sibling prev/next + copy link / code---------------------------
   buildToc(page);
-  seeAlso(page);
-  prevNext(page);
   decorateHeadings(page);
-  decorateCodeBlocks();
+  decorateCodeBlocks(); 
+  prevNext(page);
+  seeAlso(page); 
 
   // 6. Optional deep‑link scroll -------------------------------------------
   if (anchor) document.getElementById(anchor)?.scrollIntoView({ behavior: 'smooth' });
