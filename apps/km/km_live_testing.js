@@ -146,11 +146,19 @@ function parseMarkdownBundle (txt) {
   // Build parent → children relationships -----------------------------------
   pages.forEach(p => byId.set(p.id, p));
   root = byId.get('home') || pages[0];
+
   pages.forEach(p => {
-    if (p !== root) {
-      const par = byId.get(p.parent) || root;
-      p.parent  = par;
+    if (p === root) return;             // root never has a parent
+
+    // Parent inheritance must be explicit ----------------------
+    const parId = (p.parent || '').trim();
+    const par   = parId ? byId.get(parId) : null;
+
+    if (par) {
+      p.parent = par;
       par.children.push(p);
+    } else {
+      p.parent = null;                  // orphan ⇒ top‑level page
     }
   });
 
@@ -591,11 +599,9 @@ const IDS = {
   current : 'node_current',
   parent  : 'node_parent',
   leaf    : 'node_leaf',
-  hier : 'link_hier',
-  tag1 : 'link_tag1',
-  tag2 : 'link_tag2',
-  tag3 : 'link_tag3',
-  label: 'graph_text'
+  hierPRE : 'link_hier',   // e.g. «link_hier3»
+  tagPRE  : 'link_tag',    // e.g. «link_tag2»
+  label   : 'graph_text'
 };
 
 /* Single-SVG bookkeeping */
@@ -611,8 +617,8 @@ function buildGraph () {
   const { nodes, links, adj } = buildGraphData();
   const svg  = KM.d3.select('#mini');
   const box  = svg.node().getBoundingClientRect();
-  const W    = box.width  || 300;
-  const H    = box.height || 200;
+  const W    = box.width  || 400;
+  const H    = box.height || 300;
 
   const localN = nodes.map(n => ({ ...n }));
   const localL = links.map(l => ({ ...l }));
@@ -629,11 +635,11 @@ function buildGraph () {
   /* Edges */
   const link = view.append('g').selectAll('line')
     .data(localL).join('line')
-    .attr('id', d => d.kind === 'hier'
-        ? IDS.hier
-        : d.shared === 1 ? IDS.tag1
-        : d.shared === 2 ? IDS.tag2
-                         : IDS.tag3);
+    .attr('id', d => {
+      if (d.kind === 'hier') return IDS.hierPRE + d.tier;      // 1–5
+      const tier = Math.min(d.shared, 5);                      // cap at 5
+      return IDS.tagPRE + tier;                                // «link_tag{n}»
+    });
 
   /* Nodes */
   const node = view.append('g').selectAll('circle')
@@ -735,20 +741,42 @@ function observeMiniResize () {
    ────────────────────────────────────────────────────────────────── */
 function buildGraphData () {
   const N=[], L=[], A=new Map();
+  const hierPairs = new Set(); // to suppress duplicate tag-links
+
   const touch = (a,b)=>{ (A.get(a)||A.set(a,new Set()).get(a)).add(b);
                          (A.get(b)||A.set(b,new Set()).get(b)).add(a); };
   const overlap = (A,B)=>{let n=0;for(const x of A)if(B.has(x))n++;return n;};
 
+  // Helper: full descendant count for width tier ---------------------------
+  const descCount = (page) => {
+    let n = 0;
+    (function rec(p){ for (const c of p.children){ n++; rec(c); } })(page);
+    return n;
+  };
+  const tierOf = (n) => n < 3 ? 1 : n < 6 ? 2 : n < 11 ? 3 : n < 21 ? 4 : 5;
+
   pages.forEach((p,i)=>{ p._i=i; p.tagsSet=p.tagsSet||new Set(p.tags); });
 
+  // 1 • hierarchy links -----------------------------------------------------
   pages.forEach(p=>{
-    N.push({id:p._i,label:p.title,ref:p});
-    if(p.parent){ L.push({source:p._i,target:p.parent._i,shared:0,kind:'hier'}); touch(p._i,p.parent._i); }
+    if(!p.parent) return;
+    const a=p._i, b=p.parent._i;
+    const key = a<b ? `${a}|${b}` : `${b}|${a}`;
+    const tier = tierOf(descCount(p));           // compute width tier 1‑5
+    L.push({source:a,target:b,shared:0,kind:'hier',tier});
+    hierPairs.add(key);
+    touch(a,b);
   });
 
+  // 2 • tag links (skip if hierarchy already connects the pair) ------------
   pages.forEach((a,i)=>{ for(let j=i+1;j<pages.length;j++){
     const b=pages[j], n=overlap(a.tagsSet,b.tagsSet);
-    if(n){ L.push({source:a._i,target:b._i,shared:n,kind:'tag'}); touch(a._i,b._i);} } });
+    if(!n) continue;
+    const key = i<j ? `${i}|${j}` : `${j}|${i}`;
+    if(hierPairs.has(key)) continue;            // suppress stacked lines
+    L.push({source:i,target:j,shared:n,kind:'tag'}); // «shared» drives tier
+    touch(i,j);
+  }});
 
   return { nodes:N, links:L, adj:A };
 }
