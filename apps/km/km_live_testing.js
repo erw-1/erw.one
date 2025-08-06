@@ -340,6 +340,8 @@ function initUI () {
    SECTION 7 • SIDEBAR TREE
 ************************************************************************ */
 /** Build the hierarchical tree in the sidebar (first 2 levels open). */
+let sidebarCurrent = null; // remembers <a> currently highlighted
+
 function buildTree () {
   const ul = $('#tree');
   ul.innerHTML = '';
@@ -352,8 +354,7 @@ function buildTree () {
   const sep = () => {
     const li = document.createElement('li');
     li.className = 'group-sep';
-    li.innerHTML = '<hr>';
-    ul.appendChild(li);
+    li.innerHTML = '<hr>'; ul.appendChild(li);
   };
 
   const rec = (nodes, container, depth=0) => {
@@ -369,6 +370,7 @@ function buildTree () {
                                caret.setAttribute('aria-expanded', t); sub.style.display = t?'block':'none'; };
         const lbl = document.createElement('a');
         lbl.className = 'lbl';
+        lbl.dataset.page = p.id;                     // <── page‑id hook
         lbl.href = '#' + hashOf(p);
         lbl.textContent = p.title;
         const sub = document.createElement('ul');
@@ -379,6 +381,7 @@ function buildTree () {
       } else {
         li.className = 'article';
         const a = document.createElement('a');
+        a.dataset.page = p.id;                       // <── page‑id hook
         a.href = '#' + hashOf(p);
         a.textContent = p.title;
         li.appendChild(a);
@@ -388,11 +391,16 @@ function buildTree () {
   };
 
   rec(primRoots, ul);
-  secRoots.forEach((rootNode,i) => {
-    sep();
-    rec([rootNode], ul);
-  });
+  secRoots.forEach(r => { sep(); rec([r], ul); });
 }
+
+/** Highlights the current page link in the sidebar. */
+function highlightSidebar (page) {
+  sidebarCurrent?.classList.remove('sidebar-current');
+  sidebarCurrent = $(`#tree a[data-page="${page.id}"]`);
+  sidebarCurrent?.classList.add('sidebar-current');
+}
+
 
 /* *********************************************************************
    SECTION 8 • CLIENT‑SIDE SEARCH (simple substring, ≥2 chars)
@@ -502,7 +510,8 @@ function numberHeadings (el) {
   });
 }
 
-/** Generates the right‑side Table‑of‑Contents (h1–h3). */
+let tocObserver = null;
+
 function buildToc (page) {
   const nav = $('#toc');
   nav.innerHTML = '';
@@ -513,7 +522,8 @@ function buildToc (page) {
   headings.forEach(h => {
     const li = document.createElement('li');
     li.dataset.level = h.tagName[1];
-    const a = document.createElement('a');
+    li.dataset.hid   = h.id;                 // <── heading‑id hook
+    const a  = document.createElement('a');
     const base = hashOf(page);
     a.href = '#' + (base ? base + '#' : '') + h.id;
     a.textContent = h.textContent;
@@ -521,7 +531,22 @@ function buildToc (page) {
     ul.appendChild(li);
   });
   nav.appendChild(ul);
+
+  /* ── Scroll spy ───────────────────────────────────── */
+  tocObserver?.disconnect();
+  tocObserver = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      const li = $(`#toc li[data-hid="${en.target.id}"] > a`);
+      if (!li) return;
+      if (en.isIntersecting) {
+        $('#toc').querySelectorAll('.toc-current').forEach(x => x.classList.remove('toc-current'));
+        li.classList.add('toc-current');
+      }
+    });
+  }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
+  headings.forEach(h => tocObserver.observe(h));
 }
+
 
 /** Injects «previous / next» links between siblings for linear reading. */
 function prevNext (page) {
@@ -813,4 +838,5 @@ function route () {
   breadcrumb(page);
   render(page, anchor);
   highlightCurrent(); 
+  highlightSidebar(page);
 }
