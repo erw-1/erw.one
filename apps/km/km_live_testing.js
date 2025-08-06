@@ -131,16 +131,13 @@ fetch(MD, { cache: 'reload' })
   .then(highlightCurrent);
 
 /**
- * Parses the special comment-delimited Markdown bundle produced by the build
- * script.  Each article is fenced by an HTML comment containing its metadata,
- * e.g.  <!--id:"home" tags:"foo,bar" parent:"home"-->.
+ * Parses the comment-delimited Markdown bundle produced by the build script.
+ * Adds per-page helpers:
+ *   page.tagsSet   : Set<string>
+ *   page.searchStr : lower-cased blob (title + tags + body)
+ *   page.sections  : [{ id, txt, body, search }]
  *
- * For every page it adds:
- *   ─ tagsSet    : Set<string>          (unique tags for quick overlap checks)
- *   ─ searchStr  : string               (title + tags + whole body, lower-cased)
- *   ─ sections[] : { id, txt, body, search }  // heading + its paragraph(s)
- *
- * @param {string} txt Raw Markdown bundle
+ * Headings inside fenced code-blocks (``` / ~~~) are ignored.
  */
 function parseMarkdownBundle (txt) {
   /* ── 0. Split bundle into individual pages ─────────────────────────── */
@@ -150,24 +147,18 @@ function parseMarkdownBundle (txt) {
     pages.push({ ...meta, content: body.trim(), children: [] });
   }
 
-  /* ── 1. Map lookup helpers ──────────────────────────────────────────── */
+  /* ── 1. Lookup helpers ─────────────────────────────────────────────── */
   pages.forEach(p => byId.set(p.id, p));
   root = byId.get('home') || pages[0];
 
-  /* ── 2. Parent/child wiring (tolerant: breaks become “orphans”) ─────── */
+  /* ── 2. Parent / child wiring ──────────────────────────────────────── */
   pages.forEach(p => {
     if (p === root) return;
-    const parId = (p.parent || '').trim();
-    const par   = parId ? byId.get(parId) : null;
-    if (par) {
-      p.parent = par;
-      par.children.push(p);
-    } else {
-      p.parent = null;                    // orphan (cluster top)
-    }
+    const par = byId.get((p.parent || '').trim());
+    if (par) { p.parent = par; par.children.push(p); } else { p.parent = null; }
   });
 
-  /* ── 3. Tag sets + fast page-level search strings ───────────────────── */
+  /* ── 3. Tag sets + fast page-level search blob ─────────────────────── */
   pages.forEach(p => {
     p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
     p.searchStr = (
@@ -177,37 +168,51 @@ function parseMarkdownBundle (txt) {
     ).toLowerCase();
   });
 
-  /* ── 4. Per-section index: heading + body text ──────────────────────── */
-  const secRe = /^(#{1,5})\s+(.+)$/gm;      // H1–H5 at start of line
+  /* ── 4. Section index (fence-aware) ────────────────────────────────── */
   pages.forEach(p => {
-    const counters = [0, 0, 0, 0, 0, 0];    // 1-based outline numbers
-    p.sections = [];
+    const counters  = [0, 0, 0, 0, 0, 0];   // outline numbers
+    const sections  = [];
+    let   inFence   = false;
+    let   offset    = 0;                    // running char-offset
+    let   prev      = null;                 // previous heading bucket
 
-    const matches = [...p.content.matchAll(secRe)];
-    matches.forEach((m, idx) => {
-      const level = m[1].length - 1;        // 0-based depth
-      counters[level]++;                    // bump own level counter
-      for (let i = level + 1; i < 6; i++) counters[i] = 0;   // reset deeper
+    for (const line of p.content.split(/\r?\n/)) {
+      const fenceHit = /^(?:```|~~~)/.test(line);
+      if (fenceHit) { inFence = !inFence; }
 
-      const id  = counters.slice(0, level + 1).filter(Boolean).join('_');
-      const txt = m[2].trim();
+      if (!inFence && /^(#{1,5})\s+/.test(line)) {
+        /* flush previous heading’s body */
+        if (prev) {
+          prev.body   = p.content.slice(prev.bodyStart, offset).trim();
+          prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+          sections.push(prev);
+        }
 
-      /* body = everything until the next heading or EOF */
-      const start = m.index + m[0].length;
-      const end   = idx + 1 < matches.length ? matches[idx + 1].index
-                                             : p.content.length;
-      const body  = p.content.slice(start, end).trim();
+        const [, hashes, txt] = line.match(/^(#{1,5})\s+(.+)/);
+        const level = hashes.length - 1;
+        counters[level]++;
+        for (let i = level + 1; i < 6; i++) counters[i] = 0;
 
-      p.sections.push({
-        id,
-        txt,
-        body,
-        search: (txt + ' ' + body).toLowerCase()
-      });
-    });
+        prev = {
+          id        : counters.slice(0, level + 1).filter(Boolean).join('_'),
+          txt       : txt.trim(),
+          bodyStart : offset + line.length + 1   // start of the body
+        };
+      }
+
+      offset += line.length + 1;             // +1 for the newline we split on
+    }
+
+    /* flush the last section */
+    if (prev) {
+      prev.body   = p.content.slice(prev.bodyStart).trim();
+      prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+      sections.push(prev);
+    }
+
+    p.sections = sections;
   });
 }
-
 /**
  * Finds orphaned page‑clusters and promotes one page per cluster to act as a
  * «secondary home».  The chosen page becomes a **direct child of root** and
