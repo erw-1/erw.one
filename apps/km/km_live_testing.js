@@ -159,6 +159,25 @@ function parseMarkdownBundle (txt) {
     }
   });
 
+     // ── quick-and-dirty heading index for search sub-results ──────────────
+     pages.forEach(p => {
+       /* tags, title and body for regular page-level search */
+       p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
+       p.searchStr = `${p.title} ${[...p.tagsSet].join(' ')} ${p.content}`.toLowerCase();
+   
+       /* lightweight Markdown heading scan */
+       const counters = [0, 0, 0, 0, 0, 0];
+       p.headings = [];
+       for (const [, hashes, txt] of p.content.matchAll(/^(\#{1,5})\s+(.+)$/gmu)) {
+         const lvl = hashes.length - 1;
+         counters[lvl]++;                                  // bump own level
+         for (let i = lvl + 1; i < 6; i++) counters[i] = 0; // reset deeper
+         const id = counters.slice(0, lvl + 1).filter(Boolean).join('_');
+         p.headings.push({ id, txt, search: txt.toLowerCase() });
+       }
+     });
+   } 
+
   const wordRE = /\p{L}+/gu;
   pages.forEach(p => {
     p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
@@ -480,14 +499,33 @@ function search (q) {
   pages
     .filter(p => tokens.every(tok => p.searchStr.includes(tok)))
     .forEach(p => {
+      /* top-level (page) result */
       const li = document.createElement('li');
-      li.setAttribute('role', 'option');
+      li.className = 'page-result';
       li.textContent = p.title;
-      li.onclick = () => {                // auto-collapse on mobile
-        nav(p);
-        closePanels();
-      };
+      li.onclick = () => { nav(p); closePanels(); };
       resUL.appendChild(li);
+
+      /* ── sub-results: headings that also match all tokens ──────────── */
+      const subMatches = p.headings
+        .filter(h => tokens.every(tok => h.search.includes(tok)));
+
+      if (subMatches.length) {
+        const subUL = document.createElement('ul');
+        subUL.className = 'sub-results';
+        subMatches.forEach(h => {
+          const subLI = document.createElement('li');
+          subLI.className = 'heading-result';
+          subLI.textContent = h.txt;
+          subLI.onclick = e => {
+            e.stopPropagation();                        // don’t trigger parent <li>
+            location.hash = `#${hashOf(p)}#${h.id}`;    // jump straight to heading
+            closePanels();
+          };
+          subUL.appendChild(subLI);
+        });
+        li.appendChild(subUL);
+      }
     });
 
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
