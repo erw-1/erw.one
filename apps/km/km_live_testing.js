@@ -131,22 +131,30 @@ fetch(MD, { cache: 'reload' })
   .then(highlightCurrent);
 
 /**
- * Parses the special comment‑delimited Markdown bundle produced by the build
- * script. Each article is fenced by an HTML comment containing its metadata,
- * e.g. `<!--id:"home" tags:"foo" parent:"home"-->`.
+ * Parses the special comment-delimited Markdown bundle produced by the build
+ * script.  Each article is fenced by an HTML comment containing its metadata,
+ * e.g.  <!--id:"home" tags:"foo,bar" parent:"home"-->.
+ *
+ * For every page it adds:
+ *   ─ tagsSet    : Set<string>          (unique tags for quick overlap checks)
+ *   ─ searchStr  : string               (title + tags + whole body, lower-cased)
+ *   ─ sections[] : { id, txt, body, search }  // heading + its paragraph(s)
  *
  * @param {string} txt Raw Markdown bundle
  */
 function parseMarkdownBundle (txt) {
+  /* ── 0. Split bundle into individual pages ─────────────────────────── */
   for (const [, hdr, body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
     pages.push({ ...meta, content: body.trim(), children: [] });
   }
 
+  /* ── 1. Map lookup helpers ──────────────────────────────────────────── */
   pages.forEach(p => byId.set(p.id, p));
   root = byId.get('home') || pages[0];
 
+  /* ── 2. Parent/child wiring (tolerant: breaks become “orphans”) ─────── */
   pages.forEach(p => {
     if (p === root) return;
     const parId = (p.parent || '').trim();
@@ -155,33 +163,48 @@ function parseMarkdownBundle (txt) {
       p.parent = par;
       par.children.push(p);
     } else {
-      p.parent = null; // orphan (cluster top)
+      p.parent = null;                    // orphan (cluster top)
     }
   });
 
-  // ── quick-and-dirty heading index for search sub-results ──────────────
+  /* ── 3. Tag sets + fast page-level search strings ───────────────────── */
   pages.forEach(p => {
-    /* tags, title and body for regular page-level search */
     p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
-    p.searchStr = `${p.title} ${[...p.tagsSet].join(' ')} ${p.content}`.toLowerCase();
-
-    /* lightweight Markdown heading scan */
-    const counters = [0, 0, 0, 0, 0, 0];
-    p.headings = [];
-    for (const [, hashes, txt] of p.content.matchAll(/^(#{1,5})\s+(.+)$/gm)) {
-      const lvl = hashes.length - 1;
-      counters[lvl]++;                                  // bump own level
-      for (let i = lvl + 1; i < 6; i++) counters[i] = 0; // reset deeper
-      const id = counters.slice(0, lvl + 1).filter(Boolean).join('_');
-      p.headings.push({ id, txt, search: txt.toLowerCase() });
-    }
+    p.searchStr = (
+      p.title + ' ' +
+      [...p.tagsSet].join(' ') + ' ' +
+      p.content
+    ).toLowerCase();
   });
 
-  const wordRE = /\p{L}+/gu;
+  /* ── 4. Per-section index: heading + body text ──────────────────────── */
+  const secRe = /^(#{1,5})\s+(.+)$/gm;      // H1–H5 at start of line
   pages.forEach(p => {
-    p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
-    const combo = `${p.title} ${[...p.tagsSet].join(' ')} ${p.content}`;
-    p.searchStr = combo.toLowerCase();
+    const counters = [0, 0, 0, 0, 0, 0];    // 1-based outline numbers
+    p.sections = [];
+
+    const matches = [...p.content.matchAll(secRe)];
+    matches.forEach((m, idx) => {
+      const level = m[1].length - 1;        // 0-based depth
+      counters[level]++;                    // bump own level counter
+      for (let i = level + 1; i < 6; i++) counters[i] = 0;   // reset deeper
+
+      const id  = counters.slice(0, level + 1).filter(Boolean).join('_');
+      const txt = m[2].trim();
+
+      /* body = everything until the next heading or EOF */
+      const start = m.index + m[0].length;
+      const end   = idx + 1 < matches.length ? matches[idx + 1].index
+                                             : p.content.length;
+      const body  = p.content.slice(start, end).trim();
+
+      p.sections.push({
+        id,
+        txt,
+        body,
+        search: (txt + ' ' + body).toLowerCase()
+      });
+    });
   });
 }
 
@@ -505,20 +528,20 @@ function search (q) {
       li.onclick = () => { nav(p); closePanels(); };
       resUL.appendChild(li);
 
-      /* ── sub-results: headings that also match all tokens ──────────── */
-      const subMatches = p.headings
-        .filter(h => tokens.every(tok => h.search.includes(tok)));
-
+      /* ── sub-results: sections whose HEADING or BODY matches all tokens ─── */
+      const subMatches = p.sections
+        .filter(sec => tokens.every(tok => sec.search.includes(tok)));
+      
       if (subMatches.length) {
         const subUL = document.createElement('ul');
         subUL.className = 'sub-results';
-        subMatches.forEach(h => {
+        subMatches.forEach(sec => {
           const subLI = document.createElement('li');
           subLI.className = 'heading-result';
-          subLI.textContent = h.txt;
+          subLI.textContent = sec.txt;
           subLI.onclick = e => {
-            e.stopPropagation();                        // don’t trigger parent <li>
-            location.hash = `#${hashOf(p)}#${h.id}`;    // jump straight to heading
+            e.stopPropagation();
+            location.hash = `#${hashOf(p)}#${sec.id}`;
             closePanels();
           };
           subUL.appendChild(subLI);
