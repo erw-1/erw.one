@@ -755,26 +755,31 @@ function buildGraphData () {
   };
   const tierOf = (n) => n < 3 ? 1 : n < 6 ? 2 : n < 11 ? 3 : n < 21 ? 4 : 5;
 
-  pages.forEach((p,i)=>{ p._i=i; p.tagsSet=p.tagsSet||new Set(p.tags); });
+  /* 0 • Create node array */
+  pages.forEach((p,i)=>{
+    p._i = i;
+    p.tagsSet = p.tagsSet || new Set(p.tags);
+    N.push({ id: p._i, label: p.title, ref: p });
+  });
 
-  // 1 • hierarchy links -----------------------------------------------------
+  /* 1 • hierarchy links ---------------------------------------------------- */
   pages.forEach(p=>{
     if(!p.parent) return;
-    const a=p._i, b=p.parent._i;
+    const a = p._i, b = p.parent._i;
     const key = a<b ? `${a}|${b}` : `${b}|${a}`;
     const tier = tierOf(descCount(p));           // compute width tier 1‑5
-    L.push({source:a,target:b,shared:0,kind:'hier',tier});
+    L.push({ source:a, target:b, shared:0, kind:'hier', tier });
     hierPairs.add(key);
     touch(a,b);
   });
 
-  // 2 • tag links (skip if hierarchy already connects the pair) ------------
+  /* 2 • tag links (skip if hierarchy already connects the pair) ----------- */
   pages.forEach((a,i)=>{ for(let j=i+1;j<pages.length;j++){
-    const b=pages[j], n=overlap(a.tagsSet,b.tagsSet);
+    const b = pages[j], n = overlap(a.tagsSet,b.tagsSet);
     if(!n) continue;
     const key = i<j ? `${i}|${j}` : `${j}|${i}`;
     if(hierPairs.has(key)) continue;            // suppress stacked lines
-    L.push({source:i,target:j,shared:n,kind:'tag'}); // «shared» drives tier
+    L.push({ source:i, target:j, shared:n, kind:'tag' }); // «shared» drives tier
     touch(i,j);
   }});
 
