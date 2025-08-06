@@ -631,6 +631,45 @@ function prevNext (page) {
 }
 
 /**
+ * Inserts a “See also” list with pages that share at least one tag.
+ * Items are ordered by the number of shared tags (descending).
+ * Hidden automatically when nothing qualifies.
+ */
+function seeAlso (page) {
+  // remove an earlier block, if any (hot-reload / routing)
+  $('#see-also')?.remove();
+
+  if (!page.tagsSet?.size) return;           // current page has no tags → nothing to do
+
+  const related = pages
+    .filter(p => p !== page)
+    .map(p => {
+      const shared = [...p.tagsSet].filter(t => page.tagsSet.has(t)).length;
+      return { p, shared };
+    })
+    .filter(r => r.shared > 0)
+    .sort((a, b) => b.shared - a.shared || a.p.title.localeCompare(b.p.title));
+
+  if (!related.length) return;               // no tag overlap → don’t show the block
+
+  const wrap = document.createElement('div');
+  wrap.id = 'see-also';
+  wrap.innerHTML = '<h2>See also</h2><ul></ul>';
+
+  const ul = wrap.querySelector('ul');
+  related.forEach(({ p }) => {
+    const li = document.createElement('li');
+    li.innerHTML = `<a href="#${hashOf(p)}">${p.title}</a>`;
+    ul.appendChild(li);
+  });
+
+  // insert just before the prev-next block so it’s visually above it
+  const content = $('#content');
+  const prevNext = $('#prev-next');
+  content.insertBefore(wrap, prevNext ?? null);
+}
+
+/**
  * Prefixes every in-page foot-note link (<a href="#footnote-…">, #fn-…,
  * #fnref-…) with the current page-hash so that, e.g.
  *   #footnote-1            →  #mechanics#tech#footnote-1
@@ -688,6 +727,7 @@ async function render (page, anchor) {
 
   // 5. ToC + sibling prev/next + copy link / code---------------------------
   buildToc(page);
+  seeAlso(page);
   prevNext(page);
   decorateHeadings(page);
   decorateCodeBlocks();
