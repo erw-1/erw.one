@@ -148,11 +148,13 @@ function hashOf(page) {
   const segs = []; for (let n = page; n && n.parent; n = n.parent) segs.unshift(n.id);
   return segs.join('#');
 }
+
 function find(segs) {
   let n = root;
   for (const id of segs) { const c = n.children.find(k => k.id === id); if (!c) break; n = c; }
   return n;
 }
+
 function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
@@ -207,12 +209,14 @@ KM.ensureHLJSTheme = (() => {
     if (!l) { l = document.createElement('link'); l.rel='stylesheet'; l.setAttribute('data-hljs-theme',''); document.head.appendChild(l); }
     return l;
   }
+   
   function mode() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
   function apply() {
     const href = THEME[mode()], l = getLink();
     if (l.getAttribute('href') === href) return Promise.resolve();
     return new Promise(res => { l.onload = l.onerror = res; l.setAttribute('href', href); });
   }
+   
   return function ensureHLJSTheme() {
     if (!ready) ready = apply();
     if (!wired) {
@@ -272,10 +276,17 @@ function decorateHeadings(page) {
       </svg>`;
     btn.title = 'Copy direct link';
     h.appendChild(btn);
-    const copy = () => copyText(`${location.origin}${location.pathname}#${hashOf(page)}#${h.id}`, btn);
-    h.style.cursor = 'pointer'; h.onclick = copy; btn.onclick = e => { e.stopPropagation(); copy(); };
+
+    const base = hashOf(page);
+    const copyUrl = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
+
+    const copy = () => copyText(copyUrl, btn);
+    h.style.cursor = 'pointer';
+    h.onclick = copy;
+    btn.onclick = e => { e.stopPropagation(); copy(); };
   });
 }
+
 function decorateCodeBlocks() {
   $$('#content pre').forEach(pre => {
     const btn = document.createElement('button');
@@ -290,6 +301,7 @@ function decorateCodeBlocks() {
     pre.appendChild(btn);
   });
 }
+
 function numberHeadings(el) {
   const counters = [0,0,0,0,0,0];
   $$('h1,h2,h3,h4,h5', el).forEach(h => {
@@ -298,6 +310,7 @@ function numberHeadings(el) {
     h.id = counters.slice(0, level+1).filter(Boolean).join('_');
   });
 }
+
 let tocObserver = null;
 function buildToc(page) {
   const nav = $('#toc'); nav.innerHTML = '';
@@ -324,6 +337,7 @@ function buildToc(page) {
   }, { rootMargin:'0px 0px -70% 0px', threshold:0 });
   heads.forEach(h => tocObserver.observe(h));
 }
+
 function prevNext(page) {
   $('#prev-next')?.remove();
   if (!page.parent) return;
@@ -334,6 +348,7 @@ function prevNext(page) {
   if (i < sib.length-1) nav.appendChild(Object.assign(document.createElement('a'), { href:'#'+hashOf(sib[i+1]), textContent:sib[i+1].title+' →' }));
   $('#content').appendChild(nav);
 }
+
 function seeAlso(page) {
   $('#see-also')?.remove();
   if (!page.tagsSet?.size) return;
@@ -349,6 +364,7 @@ function seeAlso(page) {
   related.forEach(({p}) => { const li = document.createElement('li'); li.innerHTML = `<a href="#${hashOf(p)}">${p.title}</a>`; ul.appendChild(li); });
   const content = $('#content'); const pn = $('#prev-next'); content.insertBefore(wrap, pn ?? null);
 }
+
 function fixFootnoteLinks(page) {
   const base = hashOf(page); if (!base) return;
   $$('#content a[href^="#"]').forEach(a => {
@@ -395,6 +411,7 @@ function buildTree() {
   rec(prim, ul);
   secs.forEach(r => { const sep = document.createElement('li'); sep.className='group-sep'; sep.innerHTML='<hr>'; ul.appendChild(sep); rec([r], ul); });
 }
+
 function highlightSidebar(page) {
   sidebarCurrent?.classList.remove('sidebar-current');
   sidebarCurrent = $(`#tree a[data-page="${page.id}"]`);
@@ -409,21 +426,35 @@ function search(q) {
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
   pages.filter(p => tokens.every(tok => p.searchStr.includes(tok))).forEach(p => {
-    const li = document.createElement('li'); li.className='page-result'; li.textContent=p.title;
-    li.onclick = () => { nav(p); closePanels(); }; resUL.appendChild(li);
+    // Page-level result as a link
+    const li = document.createElement('li'); li.className='page-result';
+    const a = document.createElement('a');
+    a.href = '#' + hashOf(p);                 // "#" for home, or "#a#b#c" for subpages
+    a.textContent = p.title;
+    li.appendChild(a);
+    resUL.appendChild(li);
 
+    // Heading-level matches under that page, also as links
     const subMatches = p.sections.filter(sec => tokens.every(tok => sec.search.includes(tok)));
     if (subMatches.length) {
       const subUL = document.createElement('ul'); subUL.className='sub-results';
+      const base = hashOf(p);
       subMatches.forEach(sec => {
-        const subLI = document.createElement('li'); subLI.className='heading-result'; subLI.textContent = sec.txt;
-        subLI.onclick = e => { e.stopPropagation(); location.hash = `#${hashOf(p)}#${sec.id}`; closePanels(); };
+        const subLI = document.createElement('li'); subLI.className='heading-result';
+        const subA = document.createElement('a');
+        subA.href = '#' + (base ? base + '#' : '') + sec.id;  // no double-# on home
+        subA.textContent = sec.txt;
+        subLI.appendChild(subA);
         subUL.appendChild(subLI);
       });
       li.appendChild(subUL);
     }
   });
+
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
+
+  // (Optional) close side panels when a result link is followed
+  resUL.querySelectorAll('a').forEach(a => a.addEventListener('click', closePanels));
 }
 
 // Breadcrumb
@@ -516,6 +547,7 @@ async function buildGraph() {
   graphs.mini = { node, label, sim, view, adj, w:W, h:H };
   observeMiniResize();
 }
+
 function highlightCurrent() {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -537,6 +569,7 @@ function highlightCurrent() {
   g.sim.alphaTarget(0.7).restart(); setTimeout(()=>g.sim.alphaTarget(0), 400);
   CURRENT = id;
 }
+
 function observeMiniResize() {
   new ResizeObserver(entries => {
     const g = graphs.mini; if (!g) return;
@@ -546,6 +579,7 @@ function observeMiniResize() {
     g.sim.alpha(0.3).restart();
   }).observe(document.getElementById('mini'));
 }
+
 function buildGraphData() {
   const N=[], L=[], A=new Map(); const hierPairs = new Set();
   const touch = (a,b) => { (A.get(a)||A.set(a,new Set()).get(a)).add(b); (A.get(b)||A.set(b,new Set()).get(b)).add(a); };
@@ -625,9 +659,9 @@ function route() {
   closePanels();
   const seg = location.hash.slice(1).split('#').filter(Boolean);
   const page = find(seg);
-  const anchor = seg.slice(hashOf(page).split('#').length).join('#');
+  const baseSegs = hashOf(page) ? hashOf(page).split('#') : [];
+  const anchor = seg.slice(baseSegs.length).join('#');
 
-  // reset scroll (iOS Safari needs both roots)
   document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
 
   breadcrumb(page);
