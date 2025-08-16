@@ -129,24 +129,38 @@ KM.ensureMarkdown = () => {
  * Loads KaTeX auto‑render bundle if needed (detected per page).
  * @returns {Promise<void>}
  */
+const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
+
 KM.ensureKatex = (() => {
   let ready;
   return function ensureKatex() {
     if (ready) return ready;
-    // Inject CSS on demand (non-blocking)
+
+    // on-demand CSS
     if (!document.getElementById('katex-css')) {
-      const l = document.createElement('link');
-      l.id = 'katex-css';
-      l.rel = 'stylesheet';
-      l.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css';
-      l.media = 'all';
-      document.head.appendChild(l);
+      const link = Object.assign(document.createElement('link'), {
+        id   : 'katex-css',
+        rel  : 'stylesheet',
+        href : BASE + 'katex.min.css'
+      });
+      document.head.appendChild(link);
     }
-    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.mjs')
-      .then(mod => { window.renderMathInElement = mod.default; });
+
+    // load the minified UMD bundle that jsDelivr rewrites as ESM (+esm)
+    // …and the likewise-rewritten auto-render bundle.
+    ready = Promise.all([
+      import(BASE + 'katex.min.js/+esm'),
+      import(BASE + 'contrib/auto-render.min.js/+esm')
+    ]).then(([katex, auto]) => {
+      // expose them globally if the rest of your code expects that
+      window.katex = katex;
+      window.renderMathInElement = auto.default;
+    });
+
     return ready;
   };
 })();
+
 
 /* *********************************************************************
    SECTION 4 • IN‑MEMORY WIKI DATABASE
