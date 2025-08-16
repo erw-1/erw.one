@@ -10,7 +10,7 @@
 
    Applied improvements: 
    (1) One-pass headings (IDs + copy + ToC), 
-   (3) Abort-safe renderer, 
+   (3) Abort-safe renderer (revised: never bails after DOM insert), 
    (4) On-demand HLJS language loading, 
    (5) LRU cache for parsed HTML, 
    (6) DocumentFragments in heavy DOM builders, 
@@ -596,8 +596,9 @@ async function render(page, anchor) {
     $('#content').innerHTML = renderCache.get(page.id);
   } else {
     const { parse } = await KM.ensureMarkdown();
-    if (token !== renderToken) return;
+    if (token !== renderToken) return;          // abort before touching DOM
     const html = parse(page.content, { headerIds:false });
+    if (token !== renderToken) return;          // still safe to abort pre-DOM
     $('#content').innerHTML = html;
     // LRU discipline
     renderCache.set(page.id, html);
@@ -606,7 +607,8 @@ async function render(page, anchor) {
       renderCache.delete(firstKey);
     }
   }
-  if (token !== renderToken) return;
+  // ⬇️ From here on, never early-return: always finalize the page DOM
+  //     (prevents half-rendered pages with no headings/HLJS/KaTeX)
 
   // images: defer work
   document.querySelectorAll('#content img').forEach(img => {
@@ -618,20 +620,20 @@ async function render(page, anchor) {
 
   // Syntax highlight (theme + core + missing languages)
   if (document.querySelector('#content pre code')) {
-    await KM.ensureHLJSTheme();             if (token !== renderToken) return;
-    await KM.ensureHighlight();             if (token !== renderToken) return;
+    await KM.ensureHLJSTheme();
+    await KM.ensureHighlight();
     const langsInPage = new Set(
       [...$('#content').querySelectorAll('pre code[class*="language-"]')]
         .map(n => (n.className.match(/language-([\w+-]+)/)||[])[1])
         .filter(Boolean)
     );
-    for (const lang of langsInPage) { await KM.ensureHLJSLanguage(lang); if (token !== renderToken) return; }
+    for (const lang of langsInPage) { await KM.ensureHLJSLanguage(lang); }
     window.hljs.highlightAll();
   }
 
   // Math typesetting
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
-    await KM.ensureKatex();                 if (token !== renderToken) return;
+    await KM.ensureKatex();
     window.renderMathInElement($('#content'), {
       delimiters: [
         { left:'$$', right:'$$', display:true },
@@ -647,7 +649,10 @@ async function render(page, anchor) {
   prevNext(page);
   seeAlso(page);
 
-  if (anchor) document.getElementById(anchor)?.scrollIntoView({ behavior:'smooth' });
+  if (anchor) {
+    const el = document.getElementById(anchor);
+    if (el) el.scrollIntoView({ behavior:'smooth' });
+  }
 }
 
 // Router
