@@ -106,6 +106,8 @@ fetch(MD, { cache: 'reload' })
   .then(parseMarkdownBundle)
   .then(attachSecondaryHomes)
   .then(initUI)                        // hoisted below
+  .then(new Promise(r => setTimeout(r, 150)))
+  .then(highlightCurrent(true));
 
 /* =====================================================================
    3) GENERIC HELPERS
@@ -786,6 +788,4 @@ function initUI() {
 
   // idle preloads (no DOM churn)
   whenIdle(async () => { await KM.ensureHighlight(); /* warm cache for snappy code blocks */ });
-  new Promise(r => setTimeout(r, 100))
-  highlightCurrent(true);
 }
