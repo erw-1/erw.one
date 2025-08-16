@@ -106,8 +106,8 @@ fetch(MD, { cache: 'reload' })
   .then(parseMarkdownBundle)
   .then(attachSecondaryHomes)
   .then(initUI)                        // hoisted below
-  .then(new Promise(r => setTimeout(r, 150)))
-  .then(highlightCurrent(true));
+  .then(() => new Promise(r => setTimeout(r, 50)))
+  .then(() => highlightCurrent(true)); // once graph exists it will center current (gentle)
 
 /* =====================================================================
    3) GENERIC HELPERS
@@ -711,8 +711,8 @@ function route() {
 
   breadcrumb(page);
   render(page, anchor);
+  highlightCurrent(true);
   highlightSidebar(page);
-  highlightCurrent(true); 
 }
 
 // UI init + listeners (runs once after data is ready)
