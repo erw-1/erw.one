@@ -138,11 +138,11 @@ KM.ensureKatex = (() => {
       const l = document.createElement('link');
       l.id = 'katex-css';
       l.rel = 'stylesheet';
-      l.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css';
+      l.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/katex.min.css';
       l.media = 'all';
       document.head.appendChild(l);
     }
-    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.mjs')
+    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/contrib/auto-render.min.mjs')
       .then(mod => { window.renderMathInElement = mod.default; });
     return ready;
   };
