@@ -256,20 +256,6 @@ KM.ensureKatex = (() => {
   };
 })();
 
-// On-demand HLJS languages (adds to CONFIG.LANGS set at runtime)
-const loadedLangs = new Set((window.CONFIG?.LANGS)||[]);
-KM.ensureHLJSLanguage = async (lang) => {
-  if (!window.hljs || loadedLangs.has(lang)) return;
-  try {
-    const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
-    hljs.registerLanguage(lang, mod.default);
-    loadedLangs.add(lang);
-  } catch (e) {
-    // Non-fatal: if a language is unknown, skip it.
-    console.warn('HLJS: failed to load language', lang, e);
-  }
-};
-
 // Small UI helpers
 function closePanels() { $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }
 
@@ -383,16 +369,12 @@ function fixFootnoteLinks(page) {
 let sidebarCurrent = null;
 function buildTree() {
   const ul = $('#tree'); ul.innerHTML = '';
-  ul.setAttribute('role', 'tree');
-
   const prim = root.children.filter(c => !c.isSecondary).sort((a,b)=>a.title.localeCompare(b.title));
   const secs = root.children.filter(c =>  c.isSecondary).sort((a,b)=>a.clusterId-b.clusterId);
 
   const rec = (nodes, container, depth=0) => {
-    const frag = document.createDocumentFragment();
     nodes.forEach(p => {
       const li = document.createElement('li');
-      li.setAttribute('role', 'treeitem');
       if (p.children.length) {
         const open = depth < 2;
         li.className = 'folder' + (open ? ' open' : '');
@@ -400,38 +382,23 @@ function buildTree() {
         const lbl = document.createElement('a'); lbl.className='lbl'; lbl.dataset.page=p.id; lbl.href = '#'+hashOf(p); lbl.textContent = p.title;
         const sub = document.createElement('ul'); sub.style.display = open ? 'block':'none';
         caret.onclick = e => { e.stopPropagation(); const t = li.classList.toggle('open'); caret.setAttribute('aria-expanded', t); sub.style.display = t ? 'block':'none'; };
-        li.append(caret, lbl, sub); frag.appendChild(li);
+        li.append(caret, lbl, sub); container.appendChild(li);
         rec(p.children.sort((a,b)=>a.title.localeCompare(b.title)), sub, depth+1);
       } else {
         li.className = 'article';
         const a = document.createElement('a'); a.dataset.page=p.id; a.href = '#'+hashOf(p); a.textContent = p.title;
-        li.appendChild(a); frag.appendChild(li);
+        li.appendChild(a); container.appendChild(li);
       }
     });
-    container.appendChild(frag);
   };
 
-  const frag = document.createDocumentFragment();
-  const primUL = document.createElement('ul');
-  rec(prim, primUL);
-  frag.appendChild(primUL);
-
-  secs.forEach(r => {
-    const sep = document.createElement('li'); sep.className='group-sep'; sep.innerHTML='<hr>';
-    frag.appendChild(sep);
-    const secUL = document.createElement('ul');
-    rec([r], secUL);
-    frag.append(...secUL.childNodes);
-  });
-
-  ul.appendChild(frag);
+  rec(prim, ul);
+  secs.forEach(r => { const sep = document.createElement('li'); sep.className='group-sep'; sep.innerHTML='<hr>'; ul.appendChild(sep); rec([r], ul); });
 }
 function highlightSidebar(page) {
   sidebarCurrent?.classList.remove('sidebar-current');
-  sidebarCurrent?.removeAttribute('aria-current');
   sidebarCurrent = $(`#tree a[data-page="${page.id}"]`);
   sidebarCurrent?.classList.add('sidebar-current');
-  sidebarCurrent?.setAttribute('aria-current', 'page');
 }
 
 // Search
@@ -441,27 +408,21 @@ function search(q) {
   const tokens = q.split(/\s+/).filter(t => t.length >= 2);
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
-  const frag = document.createDocumentFragment();
-
   pages.filter(p => tokens.every(tok => p.searchStr.includes(tok))).forEach(p => {
     const li = document.createElement('li'); li.className='page-result'; li.textContent=p.title;
-    li.onclick = () => { nav(p); closePanels(); }; frag.appendChild(li);
+    li.onclick = () => { nav(p); closePanels(); }; resUL.appendChild(li);
 
     const subMatches = p.sections.filter(sec => tokens.every(tok => sec.search.includes(tok)));
     if (subMatches.length) {
       const subUL = document.createElement('ul'); subUL.className='sub-results';
-      const subFrag = document.createDocumentFragment();
       subMatches.forEach(sec => {
         const subLI = document.createElement('li'); subLI.className='heading-result'; subLI.textContent = sec.txt;
         subLI.onclick = e => { e.stopPropagation(); location.hash = `#${hashOf(p)}#${sec.id}`; closePanels(); };
-        subFrag.appendChild(subLI);
+        subUL.appendChild(subLI);
       });
-      subUL.appendChild(subFrag);
       li.appendChild(subUL);
     }
   });
-
-  resUL.appendChild(frag);
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
 }
 
@@ -631,23 +592,12 @@ async function render(page, anchor) {
   fixFootnoteLinks(page);
   numberHeadings($('#content'));
 
-  // Syntax highlight
   if (document.querySelector('#content pre code')) {
     await KM.ensureHLJSTheme();
     await KM.ensureHighlight();
-
-    // On-demand: load any missing languages referenced by className
-    const langsInPage = new Set(
-      [...$('#content').querySelectorAll('pre code[class*="language-"]')]
-        .map(n => (n.className.match(/language-([\w+-]+)/)||[])[1])
-        .filter(Boolean)
-    );
-    for (const lang of langsInPage) await KM.ensureHLJSLanguage(lang);
-
     window.hljs.highlightAll();
   }
 
-  // Math typesetting
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
     await KM.ensureKatex();
     window.renderMathInElement($('#content'), {
@@ -742,7 +692,7 @@ function initUI() {
   // auto-close panels on desktop resize
   addEventListener('resize', () => {
     if (matchMedia('(min-width:1001px)').matches) { $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }
-  }, { passive: true });
+  });
 
   // in-app routing
   addEventListener('hashchange', route);
