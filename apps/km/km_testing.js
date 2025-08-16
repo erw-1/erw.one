@@ -85,12 +85,13 @@ KM.ensureHighlight = (() => {
 })();
 
 
-// One-and-done: load + live-switch the Highlight.js theme
+// One-and-done: load + live-switch the Highlight.js theme (no cssRules access)
 KM.ensureHLJSTheme = (() => {
   const DEF = {
     light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
     dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
   };
+
   let ready, wired = false;
   const overrideHref = () => window.CONFIG?.HLJS_THEME_URL || null;
 
@@ -112,20 +113,25 @@ KM.ensureHLJSTheme = (() => {
 
   function setHref(mode, urls) {
     const l = getOrCreateLink();
-    l.href = overrideHref() || (mode === 'dark' ? urls.dark : urls.light);
-    return new Promise((res, rej) => {
-      // If already loaded (or same href), resolve quickly
-      if (l.sheet && l.sheet.cssRules != null) return res();
-      l.onload = () => res();
-      l.onerror = rej;
+    const desired = overrideHref() || (mode === 'dark' ? urls.dark : urls.light);
+
+    // If it's already the desired href, resolve immediately (no cssRules probing!)
+    if (l.getAttribute('href') === desired) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      // Set handlers before assigning href (covers Safari)
+      l.onload = () => resolve();
+      // Some browsers don't reliably fire onerror for CSS; don't hang the promise.
+      l.onerror = () => resolve();
+      l.setAttribute('href', desired);
     });
   }
 
   function wireSwitchers(urls) {
-    if (wired || overrideHref()) return; // don't wire if using a fixed override
+    if (wired || overrideHref()) return; // skip wiring if using a fixed override
     wired = true;
 
-    const update = () => setHref(currentMode(), urls);
+    const update = () => { setHref(currentMode(), urls); };
 
     // System theme changes
     const mm = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
@@ -133,19 +139,16 @@ KM.ensureHLJSTheme = (() => {
 
     // App theme toggles (e.g., Tailwind's `.dark`)
     new MutationObserver(update).observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class'],
+      attributes: true, attributeFilter: ['class'],
     });
 
     // Optional manual API
     window.KM = window.KM || {};
-    KM.setCodeTheme = (mode /* 'light' | 'dark' */) => setHref(mode, urls);
+    KM.setCodeTheme = mode => setHref(mode === 'dark' ? 'dark' : 'light', urls);
   }
 
   return function ensureHLJSTheme(urls = DEF) {
-    if (!ready) {
-      ready = setHref(currentMode(), urls).then(() => wireSwitchers(urls));
-    }
+    if (!ready) ready = setHref(currentMode(), urls).then(() => wireSwitchers(urls));
     return ready;
   };
 })();
