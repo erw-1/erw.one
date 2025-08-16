@@ -48,7 +48,7 @@
   <!-- ——— Performance / UX ——— -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net">
   <link rel="preconnect" href="https://hackmd.io">
-  <link rel="preload"    href="https://hackmd.io/@h-s-n/doc_test/download" as="fetch" crossorigin>
+  <link rel="preload"    href="https://hackmd.io/@h-s-n/doc_test/download" as="fetch" crossorigin fetchpriority="high">
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.min.js">
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js">
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-alert/dist/index.umd.min.js">
@@ -165,7 +165,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
 
   <!-- ———————————————— USER CONFIG & KM FRAMEWORK BOOTSTRAP (title, paths, theme) ———————————————— -->
-  <link rel="stylesheet"  href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
+  <link rel="preload" as="style" href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
   <script type="module"   src="km_testing.js"></script>
 
 </head>
