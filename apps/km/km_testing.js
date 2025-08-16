@@ -30,28 +30,28 @@ Object.assign(KM, {
 /* *********************************************************************
    SECTION 1 • D3 MICRO‑BUNDLE + HIGHLIGHT.JS LOADER
 ************************************************************************ */
-import {
-    select,
-    selectAll // DOM selections
-} from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
-import {
-    forceSimulation,
-    forceLink,
-    forceManyBody,
-    forceCenter // force‑directed graph engine
-} from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
-import {
-    drag
-} from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
-KM.d3 = {
-    select,
-    selectAll,
-    forceSimulation,
-    forceLink,
-    forceManyBody,
-    forceCenter,
-    drag
-};
+KM.ensureD3 = (() => {
+  let ready;                        // memoised Promise
+  return function ensureD3 () {
+    if (ready) return ready;        // already loading / loaded
+    ready = Promise.all([
+      import('https://cdn.jsdelivr.net/npm/d3-selection@3/+esm'),
+      import('https://cdn.jsdelivr.net/npm/d3-force@3/+esm'),
+      import('https://cdn.jsdelivr.net/npm/d3-drag@3/+esm')
+    ]).then(([sel, force, drag]) => {
+      KM.d3 = {                     // re-export exactly what you use
+        select      : sel.select,
+        selectAll   : sel.selectAll,
+        forceSimulation : force.forceSimulation,
+        forceLink       : force.forceLink,
+        forceManyBody   : force.forceManyBody,
+        forceCenter     : force.forceCenter,
+        drag            : drag.drag
+      };
+    });
+    return ready;
+  };
+})();
 
 // --- 1‑B  highlight.js on‑demand --------------------------------------
 /**
@@ -919,6 +919,7 @@ let CURRENT = -1;
    Build once – mini only
    ────────────────────────────────────────────────────────────────── */
 function buildGraph() {
+    await KM.ensureD3();
     if (graphs.mini) return;
 
     const {
