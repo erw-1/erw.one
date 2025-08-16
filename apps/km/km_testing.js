@@ -1,23 +1,3 @@
-/* *********************************************************************
-   📚 MONOLITH – REFACTORED FOR READABILITY & SPEED
-   Order:
-   1) Config & globals
-   2) Markdown → Data-model (fetch starts immediately)
-   3) Generic helpers: idle/clipboard/DOM + URL + Lazy-loaders (D3, HLJS+theme,
-      Markdown, KaTeX) + small UI helpers
-   4) DOM builders: Sidebar, Search, Breadcrumb, Mini-graph
-   5) Clean listeners + Router + Renderer + Boot pipeline
-
-   Applied improvements: 
-   (1) One-pass headings (IDs + copy + ToC), 
-   (3) Abort-safe renderer, 
-   (4) On-demand HLJS language loading, 
-   (5) LRU cache for parsed HTML, 
-   (6) DocumentFragments in heavy DOM builders, 
-   (7) Robust hash parsing, 
-   (8) Resilient Markdown fetch (timeout + error UI)
-************************************************************************ */
-
 /* =====================================================================
    1) CONFIG & GLOBALS
 ====================================================================== */
