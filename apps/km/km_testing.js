@@ -7,6 +7,15 @@
       Markdown, KaTeX) + small UI helpers
    4) DOM builders: Sidebar, Search, Breadcrumb, Mini-graph
    5) Clean listeners + Router + Renderer + Boot pipeline
+
+   Applied improvements: 
+   (1) One-pass headings (IDs + copy + ToC), 
+   (3) Abort-safe renderer, 
+   (4) On-demand HLJS language loading, 
+   (5) LRU cache for parsed HTML, 
+   (6) DocumentFragments in heavy DOM builders, 
+   (7) Robust hash parsing, 
+   (8) Resilient Markdown fetch (timeout + error UI)
 ************************************************************************ */
 
 /* =====================================================================
@@ -21,7 +30,7 @@ const { TITLE, MD } = window.CONFIG || { TITLE:'Wiki', MD:'' }; // resilient def
 
 
 /* =====================================================================
-   2) MARKDOWN → DATA-MODEL  (fetch starts immediately)
+   2) MARKDOWN → DATA-MODEL
 ====================================================================== */
 const pages = [];               // every article
 const byId  = new Map();        // id → page
@@ -111,15 +120,6 @@ function attachSecondaryHomes() {
   });
 }
 
-// Kick off fetch ASAP (network first!)
-fetch(MD, { cache: 'reload' })
-  .then(r => r.text())
-  .then(parseMarkdownBundle)
-  .then(attachSecondaryHomes)
-  .then(initUI)                        // hoisted below
-  .then(() => new Promise(r => setTimeout(r, 50)))
-  .then(highlightCurrent);             // once graph exists it will center current
-
 
 /* =====================================================================
    3) GENERIC HELPERS
@@ -155,6 +155,8 @@ function find(segs) {
 }
 function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
+// robust hash splitting (anchors may contain '#')
+function splitHash() { return location.hash.slice(1).split('#').filter(Boolean); }
 
 // ── Lazy-loaders ─────────────────────────────────────────────────────
 KM.ensureD3 = (() => {
@@ -256,26 +258,18 @@ KM.ensureKatex = (() => {
   };
 })();
 
+// On-demand HLJS languages
+const loadedLangs = new Set((window.CONFIG?.LANGS)||[]);
+KM.ensureHLJSLanguage = async (lang) => {
+  if (!window.hljs || loadedLangs.has(lang)) return;
+  const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
+  hljs.registerLanguage(lang, mod.default);
+  loadedLangs.add(lang);
+};
+
 // Small UI helpers
 function closePanels() { $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }
 
-function decorateHeadings(page) {
-  $$('#content h1,h2,h3,h4,h5').forEach(h => {
-    const btn = document.createElement('button');
-    btn.className = 'heading-copy';
-    btn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor"
-          d="M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5
-             5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19
-             c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z"/>
-      </svg>`;
-    btn.title = 'Copy direct link';
-    h.appendChild(btn);
-    const copy = () => copyText(`${location.origin}${location.pathname}#${hashOf(page)}#${h.id}`, btn);
-    h.style.cursor = 'pointer'; h.onclick = copy; btn.onclick = e => { e.stopPropagation(); copy(); };
-  });
-}
 function decorateCodeBlocks() {
   $$('#content pre').forEach(pre => {
     const btn = document.createElement('button');
@@ -290,27 +284,52 @@ function decorateCodeBlocks() {
     pre.appendChild(btn);
   });
 }
-function numberHeadings(el) {
-  const counters = [0,0,0,0,0,0];
-  $$('h1,h2,h3,h4,h5', el).forEach(h => {
-    const level = +h.tagName[1] - 1;
-    counters[level]++; for (let i = level + 1; i < 6; i++) counters[i] = 0;
-    h.id = counters.slice(0, level+1).filter(Boolean).join('_');
-  });
-}
+
+// One-pass headings: IDs + copy buttons + ToC + scroll spy
 let tocObserver = null;
-function buildToc(page) {
+function indexHeadingsAndBuildToc(page) {
+  const content = $('#content');
+  const counters = [0,0,0,0,0,0];
+  const heads = content.querySelectorAll('h1,h2,h3,h4,h5');
   const nav = $('#toc'); nav.innerHTML = '';
-  const heads = $$('#content h1,#content h2,#content h3');
+
   if (!heads.length) return;
+
   const ul = document.createElement('ul');
+  const frag = document.createDocumentFragment();
+
   heads.forEach(h => {
-    const li = document.createElement('li'); li.dataset.level = h.tagName[1]; li.dataset.hid = h.id;
-    const a = document.createElement('a'); a.href = '#' + (hashOf(page) ? hashOf(page)+'#' : '') + h.id; a.textContent = h.textContent;
-    li.appendChild(a); ul.appendChild(li);
+    const level = +h.tagName[1] - 1;
+    counters[level]++; for (let i=level+1;i<6;i++) counters[i]=0;
+    const id = counters.slice(0, level+1).filter(Boolean).join('_');
+    h.id = id;
+
+    // copy button
+    const btn = document.createElement('button');
+    btn.className = 'heading-copy';
+    btn.title = 'Copy direct link';
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z"/></svg>`;
+    const copy = () => copyText(`${location.origin}${location.pathname}#${hashOf(page)}#${id}`, btn);
+    h.style.cursor = 'pointer'; h.onclick = copy; btn.onclick = e => { e.stopPropagation(); copy(); };
+    h.appendChild(btn);
+
+    // ToC for levels h1..h3
+    if (level <= 2) {
+      const li = document.createElement('li');
+      li.dataset.level = String(level+1);
+      li.dataset.hid = id;
+      const a = document.createElement('a');
+      const base = hashOf(page);
+      a.href = '#' + (base ? base + '#' : '') + id;
+      a.textContent = h.textContent;
+      li.appendChild(a); frag.appendChild(li);
+    }
   });
+
+  ul.appendChild(frag);
   nav.appendChild(ul);
 
+  // scroll-spy
   tocObserver?.disconnect();
   tocObserver = new IntersectionObserver(entries => {
     entries.forEach(en => {
@@ -323,38 +342,6 @@ function buildToc(page) {
     });
   }, { rootMargin:'0px 0px -70% 0px', threshold:0 });
   heads.forEach(h => tocObserver.observe(h));
-}
-function prevNext(page) {
-  $('#prev-next')?.remove();
-  if (!page.parent) return;
-  const sib = page.parent.children; if (sib.length < 2) return;
-  const i = sib.indexOf(page);
-  const nav = document.createElement('div'); nav.id = 'prev-next';
-  if (i > 0) nav.appendChild(Object.assign(document.createElement('a'), { href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title }));
-  if (i < sib.length-1) nav.appendChild(Object.assign(document.createElement('a'), { href:'#'+hashOf(sib[i+1]), textContent:sib[i+1].title+' →' }));
-  $('#content').appendChild(nav);
-}
-function seeAlso(page) {
-  $('#see-also')?.remove();
-  if (!page.tagsSet?.size) return;
-  const related = pages
-    .filter(p => p !== page)
-    .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
-    .filter(r => r.shared > 0)
-    .sort((a,b)=> b.shared - a.shared || a.p.title.localeCompare(b.p.title));
-  if (!related.length) return;
-
-  const wrap = document.createElement('div'); wrap.id='see-also'; wrap.innerHTML = '<h2>See also</h2><ul></ul>';
-  const ul = wrap.querySelector('ul');
-  related.forEach(({p}) => { const li = document.createElement('li'); li.innerHTML = `<a href="#${hashOf(p)}">${p.title}</a>`; ul.appendChild(li); });
-  const content = $('#content'); const pn = $('#prev-next'); content.insertBefore(wrap, pn ?? null);
-}
-function fixFootnoteLinks(page) {
-  const base = hashOf(page); if (!base) return;
-  $$('#content a[href^="#"]').forEach(a => {
-    const href = a.getAttribute('href');
-    if (/^#(?:fn|footnote)/.test(href) && !href.includes(base)) a.setAttribute('href', `#${base}${href}`);
-  });
 }
 
 
@@ -369,10 +356,13 @@ function fixFootnoteLinks(page) {
 let sidebarCurrent = null;
 function buildTree() {
   const ul = $('#tree'); ul.innerHTML = '';
+  const frag = document.createDocumentFragment();
+
   const prim = root.children.filter(c => !c.isSecondary).sort((a,b)=>a.title.localeCompare(b.title));
   const secs = root.children.filter(c =>  c.isSecondary).sort((a,b)=>a.clusterId-b.clusterId);
 
   const rec = (nodes, container, depth=0) => {
+    const localFrag = document.createDocumentFragment();
     nodes.forEach(p => {
       const li = document.createElement('li');
       if (p.children.length) {
@@ -382,18 +372,25 @@ function buildTree() {
         const lbl = document.createElement('a'); lbl.className='lbl'; lbl.dataset.page=p.id; lbl.href = '#'+hashOf(p); lbl.textContent = p.title;
         const sub = document.createElement('ul'); sub.style.display = open ? 'block':'none';
         caret.onclick = e => { e.stopPropagation(); const t = li.classList.toggle('open'); caret.setAttribute('aria-expanded', t); sub.style.display = t ? 'block':'none'; };
-        li.append(caret, lbl, sub); container.appendChild(li);
+        li.append(caret, lbl, sub); localFrag.appendChild(li);
         rec(p.children.sort((a,b)=>a.title.localeCompare(b.title)), sub, depth+1);
       } else {
         li.className = 'article';
         const a = document.createElement('a'); a.dataset.page=p.id; a.href = '#'+hashOf(p); a.textContent = p.title;
-        li.appendChild(a); container.appendChild(li);
+        li.appendChild(a); localFrag.appendChild(li);
       }
     });
+    container.appendChild(localFrag);
   };
 
-  rec(prim, ul);
-  secs.forEach(r => { const sep = document.createElement('li'); sep.className='group-sep'; sep.innerHTML='<hr>'; ul.appendChild(sep); rec([r], ul); });
+  rec(prim, frag);
+  secs.forEach(r => {
+    const sep = document.createElement('li'); sep.className='group-sep'; sep.innerHTML='<hr>'; frag.appendChild(sep);
+    const tmp = document.createElement('ul'); rec([r], tmp);
+    frag.append(...tmp.childNodes);
+  });
+
+  ul.appendChild(frag);
 }
 function highlightSidebar(page) {
   sidebarCurrent?.classList.remove('sidebar-current');
@@ -408,21 +405,27 @@ function search(q) {
   const tokens = q.split(/\s+/).filter(t => t.length >= 2);
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
+  const frag = document.createDocumentFragment();
+
   pages.filter(p => tokens.every(tok => p.searchStr.includes(tok))).forEach(p => {
     const li = document.createElement('li'); li.className='page-result'; li.textContent=p.title;
-    li.onclick = () => { nav(p); closePanels(); }; resUL.appendChild(li);
+    li.onclick = () => { nav(p); closePanels(); }; frag.appendChild(li);
 
     const subMatches = p.sections.filter(sec => tokens.every(tok => sec.search.includes(tok)));
     if (subMatches.length) {
       const subUL = document.createElement('ul'); subUL.className='sub-results';
+      const subFrag = document.createDocumentFragment();
       subMatches.forEach(sec => {
         const subLI = document.createElement('li'); subLI.className='heading-result'; subLI.textContent = sec.txt;
         subLI.onclick = e => { e.stopPropagation(); location.hash = `#${hashOf(p)}#${sec.id}`; closePanels(); };
-        subUL.appendChild(subLI);
+        subFrag.appendChild(subLI);
       });
+      subUL.appendChild(subFrag);
       li.appendChild(subUL);
     }
   });
+
+  resUL.appendChild(frag);
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
 }
 
@@ -518,7 +521,7 @@ async function buildGraph() {
 }
 function highlightCurrent() {
   if (!graphs.mini) return;
-  const seg = location.hash.slice(1).split('#').filter(Boolean);
+  const seg = splitHash();
   const pg = find(seg); const id = pg?._i ?? -1; if (id === CURRENT) return;
 
   const g = graphs.mini;
@@ -579,10 +582,31 @@ function buildGraphData() {
 /* =====================================================================
    5) CLEAN LISTENERS + ROUTER + RENDERER + BOOT PIPELINE
 ====================================================================== */
+// Render cache (LRU of parsed HTML)
+const renderCache = new Map(); // id -> html
+const MAX_CACHE = 20;
+let renderToken = 0;            // abort-safety for async renders
+
 // Renderer
 async function render(page, anchor) {
-  const { parse } = await KM.ensureMarkdown();
-  $('#content').innerHTML = parse(page.content, { headerIds:false });
+  const token = ++renderToken;
+
+  // cache hit?
+  if (renderCache.has(page.id)) {
+    $('#content').innerHTML = renderCache.get(page.id);
+  } else {
+    const { parse } = await KM.ensureMarkdown();
+    if (token !== renderToken) return;
+    const html = parse(page.content, { headerIds:false });
+    $('#content').innerHTML = html;
+    // LRU discipline
+    renderCache.set(page.id, html);
+    if (renderCache.size > MAX_CACHE) {
+      const firstKey = renderCache.keys().next().value;
+      renderCache.delete(firstKey);
+    }
+  }
+  if (token !== renderToken) return;
 
   // images: defer work
   document.querySelectorAll('#content img').forEach(img => {
@@ -590,16 +614,24 @@ async function render(page, anchor) {
   });
 
   fixFootnoteLinks(page);
-  numberHeadings($('#content'));
+  indexHeadingsAndBuildToc(page); // one-pass headings + ToC
 
+  // Syntax highlight (theme + core + missing languages)
   if (document.querySelector('#content pre code')) {
-    await KM.ensureHLJSTheme();
-    await KM.ensureHighlight();
+    await KM.ensureHLJSTheme();             if (token !== renderToken) return;
+    await KM.ensureHighlight();             if (token !== renderToken) return;
+    const langsInPage = new Set(
+      [...$('#content').querySelectorAll('pre code[class*="language-"]')]
+        .map(n => (n.className.match(/language-([\w+-]+)/)||[])[1])
+        .filter(Boolean)
+    );
+    for (const lang of langsInPage) { await KM.ensureHLJSLanguage(lang); if (token !== renderToken) return; }
     window.hljs.highlightAll();
   }
 
+  // Math typesetting
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
-    await KM.ensureKatex();
+    await KM.ensureKatex();                 if (token !== renderToken) return;
     window.renderMathInElement($('#content'), {
       delimiters: [
         { left:'$$', right:'$$', display:true },
@@ -611,8 +643,6 @@ async function render(page, anchor) {
     });
   }
 
-  buildToc(page);
-  decorateHeadings(page);
   decorateCodeBlocks();
   prevNext(page);
   seeAlso(page);
@@ -623,9 +653,11 @@ async function render(page, anchor) {
 // Router
 function route() {
   closePanels();
-  const seg = location.hash.slice(1).split('#').filter(Boolean);
+  const seg = splitHash();
   const page = find(seg);
-  const anchor = seg.slice(hashOf(page).split('#').length).join('#');
+  const baseHash = hashOf(page);
+  const baseLen = baseHash ? baseHash.split('#').length : 0;
+  const anchor = seg.slice(baseLen).join('#'); // preserves sub-ids containing '#'
 
   // reset scroll (iOS Safari needs both roots)
   document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
@@ -700,3 +732,76 @@ function initUI() {
   // idle preloads (no DOM churn)
   whenIdle(async () => { await KM.ensureHighlight(); /* warm cache for snappy code blocks */ });
 }
+
+
+/* =====================================================================
+   6) FOOTNOTE & RELATED UTILITIES
+====================================================================== */
+/**
+ * Prefixes in-page footnote links with current page-hash.
+ */
+function fixFootnoteLinks(page) {
+  const base = hashOf(page); if (!base) return;
+  $$('#content a[href^="#"]').forEach(a => {
+    const href = a.getAttribute('href');
+    if (/^#(?:fn|footnote)/.test(href) && !href.includes(base)) a.setAttribute('href', `#${base}${href}`);
+  });
+}
+
+/** Injects «previous / next» links between siblings for linear reading. */
+function prevNext(page) {
+  $('#prev-next')?.remove();
+  if (!page.parent) return;
+  const sib = page.parent.children; if (sib.length < 2) return;
+  const i = sib.indexOf(page);
+  const nav = document.createElement('div'); nav.id = 'prev-next';
+  if (i > 0) nav.appendChild(Object.assign(document.createElement('a'), { href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title }));
+  if (i < sib.length-1) nav.appendChild(Object.assign(document.createElement('a'), { href:'#'+hashOf(sib[i+1]), textContent:sib[i+1].title+' →' }));
+  $('#content').appendChild(nav);
+}
+
+/**
+ * Inserts a “See also” list with pages that share at least one tag.
+ */
+function seeAlso(page) {
+  $('#see-also')?.remove();
+  if (!page.tagsSet?.size) return;
+
+  const related = pages
+    .filter(p => p !== page)
+    .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
+    .filter(r => r.shared > 0)
+    .sort((a,b)=> b.shared - a.shared || a.p.title.localeCompare(b.p.title));
+
+  if (!related.length) return;
+
+  const wrap = document.createElement('div'); wrap.id='see-also'; wrap.innerHTML = '<h2>See also</h2><ul></ul>';
+  const ul = wrap.querySelector('ul');
+  related.forEach(({p}) => { const li = document.createElement('li'); li.innerHTML = `<a href="#${hashOf(p)}">${p.title}</a>`; ul.appendChild(li); });
+  const content = $('#content'); const prevNextEl = $('#prev-next'); content.insertBefore(wrap, prevNextEl ?? null);
+}
+
+
+/* =====================================================================
+   7) BOOTSTRAP: robust Markdown fetch (timeout, error UI)
+====================================================================== */
+(async () => {
+  const ctl = new AbortController();
+  const t = setTimeout(() => ctl.abort(), 10000); // 10s timeout
+  try {
+    const res = await fetch(MD, { cache:'reload', signal: ctl.signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const txt = await res.text();
+    parseMarkdownBundle(txt);
+    attachSecondaryHomes();
+    initUI();
+    await new Promise(r => setTimeout(r, 50));
+    highlightCurrent();
+  } catch (e) {
+    console.error('Failed to load MD bundle:', e);
+    $('#content')?.insertAdjacentHTML('afterbegin',
+      `<p class="error">Failed to load content. Please check your connection and reload.</p>`);
+  } finally {
+    clearTimeout(t);
+  }
+})();
