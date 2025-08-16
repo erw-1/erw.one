@@ -69,11 +69,11 @@ KM.ensureHighlight = (() => {
             const {
                 LANGS = []
             } = window.CONFIG;
-            const core = await import('https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm');
+            const core = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
             const hljs = core.default;
             await Promise.all(
                 LANGS.map(async lang => {
-                    const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11/es/languages/${lang}/+esm`);
+                    const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
                     hljs.registerLanguage(lang, mod.default);
                 })
             );
