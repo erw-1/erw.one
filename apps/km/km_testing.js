@@ -289,7 +289,8 @@ function indexHeadingsAndBuildToc(page) {
     btn.className = 'heading-copy';
     btn.title = 'Copy direct link';
     btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z"/></svg>`;
-    const copy = () => copyText(`${location.origin}${location.pathname}#${hashOf(page)}#${id}`, btn);
+    const base = hashOf(page);
+    const copy = () => copyText(`${location.origin}${location.pathname}#${base ? base + '#' : ''}${id}`, btn);
     h.style.cursor = 'pointer'; h.onclick = copy; btn.onclick = e => { e.stopPropagation(); copy(); };
     h.appendChild(btn);
 
@@ -397,7 +398,13 @@ function search(q) {
       const subFrag = document.createDocumentFragment();
       subMatches.forEach(sec => {
         const subLI = document.createElement('li'); subLI.className='heading-result'; subLI.textContent = sec.txt;
-        subLI.onclick = e => { e.stopPropagation(); location.hash = `#${hashOf(p)}#${sec.id}`; closePanels(); };
+        subLI.onclick = e => {
+          e.stopPropagation();
+          const base = hashOf(p);
+          location.hash = `#${base ? base + '#' : ''}${sec.id}`;
+          closePanels();
+        };
+
         subFrag.appendChild(subLI);
       });
       subUL.appendChild(subFrag);
