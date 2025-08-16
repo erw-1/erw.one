@@ -85,6 +85,33 @@ KM.ensureHighlight = (() => {
 })();
 
 
+// Lazy-load the Highlight.js theme CSS once
+KM.ensureHLJSCss = (() => {
+  let inflight;
+  return function ensureHLJSCss() {
+    if (document.querySelector('link[data-hljs-theme]')) return Promise.resolve();
+    if (inflight) return inflight;
+
+    // Pick a theme. Optional override via CONFIG.HLJS_THEME_URL
+    const DARK  = 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css';
+    const LIGHT = 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css';
+    const href  = window.CONFIG?.HLJS_THEME_URL ??
+                  (matchMedia('(prefers-color-scheme: dark)').matches ? DARK : LIGHT);
+
+    inflight = new Promise((resolve, reject) => {
+      const l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.href = href;
+      l.dataset.hljsTheme = '';     // marker so we don’t add it twice
+      l.onload = () => resolve();
+      l.onerror = reject;
+      document.head.appendChild(l);
+    });
+    return inflight;
+  };
+})();
+
+
 /* *********************************************************************
    SECTION 2 • CONFIG EXTRACTION
 ************************************************************************ */
@@ -869,8 +896,11 @@ async function render(page, anchor) {
     numberHeadings($('#content'));
 
     // 3. Syntax highlight -----------------------------------------------------
-    await KM.ensureHighlight();
-    window.hljs.highlightAll();
+   if (document.querySelector('#content pre code')) {
+     await KM.ensureHLJSCss();
+     await KM.ensureHighlight();
+     window.hljs.highlightAll();
+   }
 
     // 4. Math typesetting -----------------------------------------------------
     if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
