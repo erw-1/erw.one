@@ -130,15 +130,22 @@ KM.ensureMarkdown = () => {
  * @returns {Promise<void>}
  */
 KM.ensureKatex = (() => {
-    let ready;
-    return function ensureKatex() {
-        if (ready) return ready;
-        ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.mjs')
-            .then(mod => {
-                window.renderMathInElement = mod.default;
-            });
-        return ready;
-    };
+  let ready;
+  return function ensureKatex() {
+    if (ready) return ready;
+    // Inject CSS on demand (non-blocking)
+    if (!document.getElementById('katex-css')) {
+      const l = document.createElement('link');
+      l.id = 'katex-css';
+      l.rel = 'stylesheet';
+      l.href = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css';
+      l.media = 'all';
+      document.head.appendChild(l);
+    }
+    ready = import('https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.mjs')
+      .then(mod => { window.renderMathInElement = mod.default; });
+    return ready;
+  };
 })();
 
 /* *********************************************************************
