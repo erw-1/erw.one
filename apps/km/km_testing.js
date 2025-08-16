@@ -84,71 +84,45 @@ KM.ensureHighlight = (() => {
     };
 })();
 
-
-// One-and-done: load + live-switch the Highlight.js theme (no cssRules access)
+// Minimal loader + live switcher for Highlight.js theme (data-theme based)
 KM.ensureHLJSTheme = (() => {
-  const DEF = {
+  const THEME = {
     light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
     dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
   };
 
-  let ready, wired = false;
-  const overrideHref = () => window.CONFIG?.HLJS_THEME_URL || null;
+  let ready = null, wired = false;
 
-  const currentMode = () =>
-    document.documentElement.classList.contains('dark')
-      ? 'dark'
-      : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-
-  function getOrCreateLink() {
+  function getLink() {
     let l = document.querySelector('link[data-hljs-theme]');
     if (!l) {
       l = document.createElement('link');
       l.rel = 'stylesheet';
-      l.dataset.hljsTheme = '';
+      l.setAttribute('data-hljs-theme', '');
       document.head.appendChild(l);
     }
     return l;
   }
 
-  function setHref(mode, urls) {
-    const l = getOrCreateLink();
-    const desired = overrideHref() || (mode === 'dark' ? urls.dark : urls.light);
-
-    // If it's already the desired href, resolve immediately (no cssRules probing!)
-    if (l.getAttribute('href') === desired) return Promise.resolve();
-
-    return new Promise((resolve) => {
-      // Set handlers before assigning href (covers Safari)
-      l.onload = () => resolve();
-      // Some browsers don't reliably fire onerror for CSS; don't hang the promise.
-      l.onerror = () => resolve();
-      l.setAttribute('href', desired);
-    });
+  function currentMode() {
+    return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   }
 
-  function wireSwitchers(urls) {
-    if (wired || overrideHref()) return; // skip wiring if using a fixed override
-    wired = true;
-
-    const update = () => { setHref(currentMode(), urls); };
-
-    // System theme changes
-    const mm = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
-    if (mm) (mm.addEventListener ? mm.addEventListener('change', update) : mm.addListener(update));
-
-    // App theme toggles (e.g., Tailwind's `.dark`)
-    new MutationObserver(update).observe(document.documentElement, {
-      attributes: true, attributeFilter: ['class'],
-    });
-
-    // Optional manual API
-    window.KM = window.KM || {};
-    KM.setCodeTheme = mode => setHref(mode === 'dark' ? 'dark' : 'light', urls);
+  function apply() {
+    const href = THEME[currentMode()];
+    const l = getLink();
+    if (l.getAttribute('href') === href) return Promise.resolve();
+    return new Promise(res => { l.onload = l.onerror = res; l.setAttribute('href', href); });
   }
 
-  return function ensureHLJSTheme(urls = DEF) {
-    if (!ready) ready = setHref(currentMode(), urls).then(() => wireSwitchers(urls));
+  return function ensureHLJSTheme() {
+    if (!ready) ready = apply();
+    if (!wired) {
+      wired = true;
+      new MutationObserver(apply).observe(document.documentElement, {
+        attributes: true, attributeFilter: ['data-theme']
+      });
+    }
     return ready;
   };
 })();
