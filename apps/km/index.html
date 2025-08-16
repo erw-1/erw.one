@@ -46,16 +46,14 @@
   <link rel="canonical"    href="★ https://example.com/ ★">
 
   <!-- ——— Performance / UX ——— -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net">
-  <link rel="preconnect" href="https://hackmd.io">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://hackmd.io" crossorigin>
   <link rel="preload"    href="https://hackmd.io/@h-s-n/doc_test/download" as="fetch" crossorigin fetchpriority="high">
+  <link rel="preload" as="image" href="logo.webp" fetchpriority="low">
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.min.js">
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js">
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-alert/dist/index.umd.min.js">
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/highlight.js@11/es/core/+esm">
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-selection@3/+esm">
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-force@3/+esm">
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-drag@3/+esm">
   <meta name="theme-color" content="#1e1e1e">
 
   <!-- ——— Internationalisation (uncomment if multi-lingual) ——— -->
@@ -162,8 +160,6 @@
 
   <!-- ———————————————— 3ʳ‑PARTY STYLE SHEETS ———————————————— -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-
   <!-- ———————————————— USER CONFIG & KM FRAMEWORK BOOTSTRAP (title, paths, theme) ———————————————— -->
   <link rel="preload" as="style" href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
   <script type="module"   src="km_testing.js"></script>
@@ -177,7 +173,7 @@
 <aside id="sidebar" role="navigation" aria-label="Site navigation">
   <a href="#" title="Home">
     <h1 id="wiki-title" tabindex="0">
-      <img id="wiki-favicon" src="logo.webp" alt="" />
+      <img src="logo.webp" width="32" height="32" alt="" loading="lazy" decoding="async">
       <span id="wiki-title-text"></span>
     </h1>
   </a>
