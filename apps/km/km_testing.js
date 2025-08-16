@@ -759,6 +759,29 @@ function numberHeadings(el) {
     });
 }
 
+// ---------------------------------------------------------------------------
+//  Kick CPU-heavy tasks to the browser’s idle time
+// ---------------------------------------------------------------------------
+
+// Tiny helper: falls back to setTimeout for browsers that lack rIC
+function whenIdle(cb, timeout = 1500) {
+  ('requestIdleCallback' in window)
+    ? requestIdleCallback(cb, { timeout })
+    : setTimeout(cb, 1);
+}
+
+whenIdle(async () => {
+  /* 1. build the sidebar tree (DOM-heavy) */
+  buildTree();
+
+  /* 2. lay out the force-directed graph */
+  buildGraph();
+
+  /* 3. syntax-highlight code blocks */
+  await KM.ensureHighlight();
+  hljs.highlightAll();
+});
+
 let tocObserver = null;
 
 function buildToc(page) {
@@ -905,6 +928,18 @@ async function render(page, anchor) {
     $('#content').innerHTML = parse(page.content, {
         headerIds: false
     });
+
+    // ---------------------------------------------------------------------------
+    //  Defer off-screen images & speed up decoding
+    // ---------------------------------------------------------------------------
+     document.querySelectorAll('#content img').forEach(img => {
+      img.loading  = 'lazy';     // fetch only when close to viewport
+      img.decoding = 'async';    // decode off the main thread
+      if (!img.hasAttribute('fetchpriority')) {
+        img.setAttribute('fetchpriority', 'low'); // keep bandwidth for CSS/JS
+      }
+    });
+   
     // make foot-note anchors hash-aware
     fixFootnoteLinks(page);
 
