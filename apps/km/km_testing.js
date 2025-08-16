@@ -219,7 +219,7 @@ let mdReady = null;
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
   mdReady = Promise.all([
-    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/lib/marked.esm.min.js'),
+    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
     import('https://cdn.jsdelivr.net/npm/marked-footnote/+esm'),
     import('https://cdn.jsdelivr.net/npm/marked-alert/+esm'),
   ]).then(([marked, footnoteMod, alertMod]) => {
