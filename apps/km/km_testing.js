@@ -918,7 +918,7 @@ let CURRENT = -1;
 /* ────────────────────────────────────────────────────────────────────
    Build once – mini only
    ────────────────────────────────────────────────────────────────── */
-function buildGraph() {
+async function buildGraph() {
     await KM.ensureD3();
     if (graphs.mini) return;
 
