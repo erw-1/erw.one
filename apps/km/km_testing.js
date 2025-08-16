@@ -39,7 +39,7 @@ import {
   forceManyBody,
   forceCenter,       // force-directed graph engine
   drag
-} from 'https://cdn.jsdelivr.net/combine/npm/d3-selection@3/+esm,npm/d3-force@3/+esm,npm/d3-drag@3/+esm';
+} from 'https://cdn.jsdelivr.net/combine/npm/d3-selection@3,npm/d3-force@3,npm/d3-drag@3';
 
 KM.d3 = {
   select,
