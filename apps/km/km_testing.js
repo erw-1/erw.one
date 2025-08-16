@@ -490,23 +490,6 @@ function breadcrumb(page) {
 const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hierPRE:'link_hier', tagPRE:'link_tag', label:'graph_text' };
 const graphs = {}; let CURRENT = -1;
 
-// Smooth SVG translate tween (local to mini-graph section)
-function parseTranslate(tr) {
-  const m = /translate\(([-\d.]+)[ ,]([-\d.]+)\)/.exec(tr || '');
-  return m ? { x:+m[1], y:+m[2] } : { x:0, y:0 };
-}
-function animateTranslate(sel, txTo, tyTo, dur=450) {
-  const ease = t => (t<.5 ? 2*t*t : -1+(4-2*t)*t); // quad-in-out
-  const { x:tx0, y:ty0 } = parseTranslate(sel.attr('transform'));
-  const t0 = performance.now();
-  function step(now){
-    const p = Math.min(1, (now - t0) / dur), e = ease(p);
-    sel.attr('transform', `translate(${tx0 + (txTo - tx0)*e},${ty0 + (tyTo - ty0)*e})`);
-    if (p < 1) requestAnimationFrame(step);
-  }
-  requestAnimationFrame(step);
-}
-
 async function buildGraph() {
   await KM.ensureD3();
   if (graphs.mini) return;
@@ -516,8 +499,14 @@ async function buildGraph() {
   const box = svg.node().getBoundingClientRect();
   const W = box.width || 400, H = box.height || 300;
 
-  // Keep the internal coordinate system aligned with CSS pixels
-  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
+  // Keep the SVG's viewBox in sync with its display size (helps fullscreen)
+  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid');
+
+  // Clip everything to the svg bounds to avoid vectors spilling off-screen
+  const clipId = 'mini-clip';
+  const defs = svg.append('defs');
+  const clipRect = defs.append('clipPath').attr('id', clipId).append('rect')
+    .attr('x', 0).attr('y', 0).attr('width', W).attr('height', H);
 
   const localN = nodes.map(n => ({...n}));
   const localL = links.map(l => ({...l}));
@@ -527,7 +516,7 @@ async function buildGraph() {
     .force('charge', KM.d3.forceManyBody().strength(-240))
     .force('center', KM.d3.forceCenter(W/2, H/2));
 
-  const view = svg.append('g').attr('class','view');
+  const view = svg.append('g').attr('class','view').attr('clip-path', `url(#${clipId})`);
 
   const link = view.append('g').selectAll('line')
     .data(localL).join('line')
@@ -537,7 +526,12 @@ async function buildGraph() {
     .data(localN).join('circle')
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
+    // Larger, invisible stroke as a hit area for easier hovering/clicking
+    .attr('stroke', 'transparent')
+    .attr('stroke-width', 16)              // hitbox size
+    .style('pointer-events', 'stroke')     // interact with the stroke area
     .style('cursor','pointer')
+    .style('touch-action', 'none')
     .on('click', (e,d) => KM.nav(d.ref))
     .on('mouseover', (e,d) => fade(d.id, 0.15))
     .on('mouseout', () => fade(null, 1))
@@ -549,29 +543,11 @@ async function buildGraph() {
   const label = view.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label).attr('font-size', 10)
-    .attr('pointer-events', 'none')   // let clicks pass through labels
     .text(d => d.label);
-
-  // Bigger invisible hit targets for easier interaction
-  const hit = view.append('g').selectAll('circle.hit')
-    .data(localN).join('circle')
-    .attr('class', 'hit')
-    .attr('r', 16)                    // interaction radius (visual circle stays r=6/8)
-    .attr('fill', 'transparent')
-    .style('cursor', 'pointer')
-    .on('click',  (e,d) => KM.nav(d.ref))
-    .on('mouseover', (e,d) => fade(d.id, 0.15))
-    .on('mouseout',  ()    => fade(null, 1))
-    .call(KM.d3.drag()
-      .on('start', (e,d) => { d.fx = d.x; d.fy = d.y; })
-      .on('drag',  (e,d) => { sim.alphaTarget(0.3).restart(); d.fx = e.x; d.fy = e.y; })
-      .on('end',   (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; })
-    );
 
   function fade(id, o) {
     node .style('opacity', d => (id==null || adj.get(id)?.has(d.id) || d.id===id) ? 1 : o);
     label.style('opacity', d => (id==null || adj.get(id)?.has(d.id) || d.id===id) ? 1 : o);
-    hit  .style('opacity', d => (id==null || adj.get(id)?.has(d.id) || d.id===id) ? 1 : o);
     link .style('opacity', l => id==null || l.source.id===id || l.target.id===id ? 1 : o);
   }
 
@@ -579,49 +555,39 @@ async function buildGraph() {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node .attr('cx', d => d.x).attr('cy', d => d.y);
-    hit  .attr('cx', d => d.x).attr('cy', d => d.y);
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { svg, node, label, hit, sim, view, adj, w:W, h:H };
+  graphs.mini = { node, label, sim, view, adj, w:W, h:H, svg, clipRect };
   observeMiniResize();
 }
 
-function highlightCurrent(force=false) {
+function highlightCurrent() {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
-  const pg = find(seg); const id = pg?._i ?? -1;
+  const pg = find(seg); const id = pg?._i ?? -1; if (id === CURRENT) return;
 
   const g = graphs.mini;
-  if (id === CURRENT && !force) return;
-
   g.node
     .attr('id', d => d.id===id ? IDS.current : (d.ref.children.length ? IDS.parent : IDS.leaf))
     .attr('r',  d => d.id===id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
-  // bring focused bits to front
-  g.node.filter(d => d.id===id).raise();
-  g.label.filter(d => d.id===id).raise();
-  g.hit?.filter(d => d.id===id).raise?.();
-
-  // compute target translation to center the node
-  let tx = 0, ty = 0;
+  // Pan the graph so the current node is centered in the mini view
+  const cx = g.w/2, cy = g.h/2;
   g.node.filter(d => d.id===id).each(d => {
-    tx = g.w/2 - d.x;
-    ty = g.h/2 - d.y;
-    // softer nudge to help the layout settle
-    const k = 0.06;
-    d.vx += (g.w/2 - d.x) * k;
-    d.vy += (g.h/2 - d.y) * k;
+    const dx = cx - d.x, dy = cy - d.y;
+    g.view.attr('transform', `translate(${dx},${dy})`);
+
+    // Softer nudge toward center so it doesn't feel brutal
+    const k = 0.12; // was ~0.35
+    d.vx += (cx - d.x) * k;
+    d.vy += (cy - d.y) * k;
   });
 
-  // smooth pan to center
-  animateTranslate(g.view, tx, ty, 450);
-
-  // gentle alpha kick
-  g.sim.alphaTarget(0.2).restart();
-  setTimeout(() => g.sim.alphaTarget(0), 250);
+  // Lower alpha target so the layout settles more gently
+  g.sim.alphaTarget(0.25).restart();
+  setTimeout(()=>g.sim.alphaTarget(0), 300);
 
   CURRENT = id;
 }
@@ -630,15 +596,20 @@ function observeMiniResize() {
   new ResizeObserver(entries => {
     const g = graphs.mini; if (!g) return;
     const { width:w, height:h } = entries[0].contentRect;
+
+    // Update stored dimensions
     g.w = w; g.h = h;
+
+    // Keep simulation centered in the resized box
     g.sim.force('center', KM.d3.forceCenter(w/2, h/2));
     g.sim.alpha(0.3).restart();
 
-    // keep the SVG's internal coords in sync with CSS pixels
+    // Keep the SVG viewport & clip in sync with the actual size (esp. fullscreen)
     g.svg.attr('viewBox', `0 0 ${w} ${h}`);
+    g.clipRect.attr('width', w).attr('height', h);
 
-    // re-center the focused node smoothly after size changes
-    highlightCurrent(true);
+    // Re-center the currently selected node within the new viewport
+    highlightCurrent();
   }).observe(document.getElementById('mini'));
 }
 
