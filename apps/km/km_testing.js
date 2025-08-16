@@ -30,25 +30,27 @@ Object.assign(KM, {
 /* *********************************************************************
    SECTION 1 • D3 MICRO‑BUNDLE + HIGHLIGHT.JS LOADER
 ************************************************************************ */
-// --- 1‑A  D3: cherry‑picked to 6 KB instead of 200 KB full build -------
 import {
-  select,
-  selectAll,        // DOM selections
-  forceSimulation,
-  forceLink,
-  forceManyBody,
-  forceCenter,       // force-directed graph engine
-  drag
-} from 'https://cdn.jsdelivr.net/combine/npm/d3-selection@3,npm/d3-force@3,npm/d3-drag@3';
-
+    select,
+    selectAll // DOM selections
+} from 'https://cdn.jsdelivr.net/npm/d3-selection@3/+esm';
+import {
+    forceSimulation,
+    forceLink,
+    forceManyBody,
+    forceCenter // force‑directed graph engine
+} from 'https://cdn.jsdelivr.net/npm/d3-force@3/+esm';
+import {
+    drag
+} from 'https://cdn.jsdelivr.net/npm/d3-drag@3/+esm';
 KM.d3 = {
-  select,
-  selectAll,
-  forceSimulation,
-  forceLink,
-  forceManyBody,
-  forceCenter,
-  drag
+    select,
+    selectAll,
+    forceSimulation,
+    forceLink,
+    forceManyBody,
+    forceCenter,
+    drag
 };
 
 // --- 1‑B  highlight.js on‑demand --------------------------------------
