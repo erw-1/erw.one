@@ -711,8 +711,8 @@ function route() {
 
   breadcrumb(page);
   render(page, anchor);
-  highlightCurrent(true);
   highlightSidebar(page);
+  highlightCurrent(true); 
 }
 
 // UI init + listeners (runs once after data is ready)
