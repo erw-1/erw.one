@@ -104,25 +104,21 @@ let mdReady = null; // will hold the Promise so we don’t import twice
  * @returns {Promise<{parse:Function}>}
  */
 KM.ensureMarkdown = () => {
-    if (mdReady) return mdReady;
-
-    mdReady = Promise.all([
-        import('https://cdn.jsdelivr.net/npm/marked@16.1.2/lib/marked.esm.min.js'),
-        import('https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'),
-        import('https://cdn.jsdelivr.net/npm/marked-alert/dist/index.umd.min.js'),
-    ]).then(([marked, footnote]) => {
-        const md = new marked.Marked().use(markedFootnote()).use(markedAlert());
-        return {
-            parse: (src, opt) => md.parse(src, {
-                ...opt,
-                mangle: false
-            })
-        };
-    });
-
-    return mdReady;
+  if (mdReady) return mdReady;
+  mdReady = Promise.all([
+    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/lib/marked.esm.min.js'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert/+esm'),
+  ]).then(([marked, footnoteMod, alertMod]) => {
+    const md = new marked.Marked()
+      .use(footnoteMod.default())
+      .use(alertMod.default());
+    return {
+      parse: (src, opt) => md.parse(src, { ...opt, mangle:false })
+    };
+  });
+  return mdReady;
 };
-
 
 
 /**
