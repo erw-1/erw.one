@@ -106,8 +106,6 @@ fetch(MD, { cache: 'reload' })
   .then(parseMarkdownBundle)
   .then(attachSecondaryHomes)
   .then(initUI)                        // hoisted below
-  .then(() => new Promise(r => setTimeout(r, 50)))
-  .then(() => highlightCurrent(true)); // once graph exists it will center current (gentle)
 
 /* =====================================================================
    3) GENERIC HELPERS
