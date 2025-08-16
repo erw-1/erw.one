@@ -85,29 +85,68 @@ KM.ensureHighlight = (() => {
 })();
 
 
-// Lazy-load the Highlight.js theme CSS once
-KM.ensureHLJSCss = (() => {
-  let inflight;
-  return function ensureHLJSCss() {
-    if (document.querySelector('link[data-hljs-theme]')) return Promise.resolve();
-    if (inflight) return inflight;
+// One-and-done: load + live-switch the Highlight.js theme
+KM.ensureHLJSTheme = (() => {
+  const DEF = {
+    light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
+    dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
+  };
+  let ready, wired = false;
+  const overrideHref = () => window.CONFIG?.HLJS_THEME_URL || null;
 
-    // Pick a theme. Optional override via CONFIG.HLJS_THEME_URL
-    const DARK  = 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css';
-    const LIGHT = 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css';
-    const href  = window.CONFIG?.HLJS_THEME_URL ??
-                  (matchMedia('(prefers-color-scheme: dark)').matches ? DARK : LIGHT);
+  const currentMode = () =>
+    document.documentElement.classList.contains('dark')
+      ? 'dark'
+      : (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
 
-    inflight = new Promise((resolve, reject) => {
-      const l = document.createElement('link');
+  function getOrCreateLink() {
+    let l = document.querySelector('link[data-hljs-theme]');
+    if (!l) {
+      l = document.createElement('link');
       l.rel = 'stylesheet';
-      l.href = href;
-      l.dataset.hljsTheme = '';     // marker so we don’t add it twice
-      l.onload = () => resolve();
-      l.onerror = reject;
+      l.dataset.hljsTheme = '';
       document.head.appendChild(l);
+    }
+    return l;
+  }
+
+  function setHref(mode, urls) {
+    const l = getOrCreateLink();
+    l.href = overrideHref() || (mode === 'dark' ? urls.dark : urls.light);
+    return new Promise((res, rej) => {
+      // If already loaded (or same href), resolve quickly
+      if (l.sheet && l.sheet.cssRules != null) return res();
+      l.onload = () => res();
+      l.onerror = rej;
     });
-    return inflight;
+  }
+
+  function wireSwitchers(urls) {
+    if (wired || overrideHref()) return; // don't wire if using a fixed override
+    wired = true;
+
+    const update = () => setHref(currentMode(), urls);
+
+    // System theme changes
+    const mm = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+    if (mm) (mm.addEventListener ? mm.addEventListener('change', update) : mm.addListener(update));
+
+    // App theme toggles (e.g., Tailwind's `.dark`)
+    new MutationObserver(update).observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    // Optional manual API
+    window.KM = window.KM || {};
+    KM.setCodeTheme = (mode /* 'light' | 'dark' */) => setHref(mode, urls);
+  }
+
+  return function ensureHLJSTheme(urls = DEF) {
+    if (!ready) {
+      ready = setHref(currentMode(), urls).then(() => wireSwitchers(urls));
+    }
+    return ready;
   };
 })();
 
@@ -897,7 +936,7 @@ async function render(page, anchor) {
 
     // 3. Syntax highlight -----------------------------------------------------
    if (document.querySelector('#content pre code')) {
-     await KM.ensureHLJSCss();
+     await KM.ensureHLJSTheme();  // loads theme + wires live switching
      await KM.ensureHighlight();
      window.hljs.highlightAll();
    }
