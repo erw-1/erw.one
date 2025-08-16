@@ -490,6 +490,23 @@ function breadcrumb(page) {
 const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hierPRE:'link_hier', tagPRE:'link_tag', label:'graph_text' };
 const graphs = {}; let CURRENT = -1;
 
+// Smooth SVG translate tween (local to mini-graph section)
+function parseTranslate(tr) {
+  const m = /translate\(([-\d.]+)[ ,]([-\d.]+)\)/.exec(tr || '');
+  return m ? { x:+m[1], y:+m[2] } : { x:0, y:0 };
+}
+function animateTranslate(sel, txTo, tyTo, dur=450) {
+  const ease = t => (t<.5 ? 2*t*t : -1+(4-2*t)*t); // quad-in-out
+  const { x:tx0, y:ty0 } = parseTranslate(sel.attr('transform'));
+  const t0 = performance.now();
+  function step(now){
+    const p = Math.min(1, (now - t0) / dur), e = ease(p);
+    sel.attr('transform', `translate(${tx0 + (txTo - tx0)*e},${ty0 + (tyTo - ty0)*e})`);
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
 async function buildGraph() {
   await KM.ensureD3();
   if (graphs.mini) return;
@@ -498,6 +515,9 @@ async function buildGraph() {
   const svg = KM.d3.select('#mini');
   const box = svg.node().getBoundingClientRect();
   const W = box.width || 400, H = box.height || 300;
+
+  // Keep the internal coordinate system aligned with CSS pixels
+  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid meet');
 
   const localN = nodes.map(n => ({...n}));
   const localL = links.map(l => ({...l}));
@@ -529,11 +549,29 @@ async function buildGraph() {
   const label = view.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label).attr('font-size', 10)
+    .attr('pointer-events', 'none')   // let clicks pass through labels
     .text(d => d.label);
+
+  // Bigger invisible hit targets for easier interaction
+  const hit = view.append('g').selectAll('circle.hit')
+    .data(localN).join('circle')
+    .attr('class', 'hit')
+    .attr('r', 16)                    // interaction radius (visual circle stays r=6/8)
+    .attr('fill', 'transparent')
+    .style('cursor', 'pointer')
+    .on('click',  (e,d) => KM.nav(d.ref))
+    .on('mouseover', (e,d) => fade(d.id, 0.15))
+    .on('mouseout',  ()    => fade(null, 1))
+    .call(KM.d3.drag()
+      .on('start', (e,d) => { d.fx = d.x; d.fy = d.y; })
+      .on('drag',  (e,d) => { sim.alphaTarget(0.3).restart(); d.fx = e.x; d.fy = e.y; })
+      .on('end',   (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; })
+    );
 
   function fade(id, o) {
     node .style('opacity', d => (id==null || adj.get(id)?.has(d.id) || d.id===id) ? 1 : o);
     label.style('opacity', d => (id==null || adj.get(id)?.has(d.id) || d.id===id) ? 1 : o);
+    hit  .style('opacity', d => (id==null || adj.get(id)?.has(d.id) || d.id===id) ? 1 : o);
     link .style('opacity', l => id==null || l.source.id===id || l.target.id===id ? 1 : o);
   }
 
@@ -541,32 +579,50 @@ async function buildGraph() {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node .attr('cx', d => d.x).attr('cy', d => d.y);
+    hit  .attr('cx', d => d.x).attr('cy', d => d.y);
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { node, label, sim, view, adj, w:W, h:H };
+  graphs.mini = { svg, node, label, hit, sim, view, adj, w:W, h:H };
   observeMiniResize();
 }
 
-function highlightCurrent() {
+function highlightCurrent(force=false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
-  const pg = find(seg); const id = pg?._i ?? -1; if (id === CURRENT) return;
+  const pg = find(seg); const id = pg?._i ?? -1;
 
   const g = graphs.mini;
+  if (id === CURRENT && !force) return;
+
   g.node
     .attr('id', d => d.id===id ? IDS.current : (d.ref.children.length ? IDS.parent : IDS.leaf))
     .attr('r',  d => d.id===id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
-  const cx = g.w/2, cy = g.h/2;
+  // bring focused bits to front
+  g.node.filter(d => d.id===id).raise();
+  g.label.filter(d => d.id===id).raise();
+  g.hit?.filter(d => d.id===id).raise?.();
+
+  // compute target translation to center the node
+  let tx = 0, ty = 0;
   g.node.filter(d => d.id===id).each(d => {
-    const dx = cx - d.x, dy = cy - d.y;
-    g.view.attr('transform', `translate(${dx},${dy})`);
-    const k = 0.35; d.vx += (cx - d.x)*k; d.vy += (cy - d.y)*k;
+    tx = g.w/2 - d.x;
+    ty = g.h/2 - d.y;
+    // softer nudge to help the layout settle
+    const k = 0.06;
+    d.vx += (g.w/2 - d.x) * k;
+    d.vy += (g.h/2 - d.y) * k;
   });
 
-  g.sim.alphaTarget(0.7).restart(); setTimeout(()=>g.sim.alphaTarget(0), 400);
+  // smooth pan to center
+  animateTranslate(g.view, tx, ty, 450);
+
+  // gentle alpha kick
+  g.sim.alphaTarget(0.2).restart();
+  setTimeout(() => g.sim.alphaTarget(0), 250);
+
   CURRENT = id;
 }
 
@@ -577,6 +633,12 @@ function observeMiniResize() {
     g.w = w; g.h = h;
     g.sim.force('center', KM.d3.forceCenter(w/2, h/2));
     g.sim.alpha(0.3).restart();
+
+    // keep the SVG's internal coords in sync with CSS pixels
+    g.svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+    // re-center the focused node smoothly after size changes
+    highlightCurrent(true);
   }).observe(document.getElementById('mini'));
 }
 
