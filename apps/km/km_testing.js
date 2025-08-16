@@ -1,14 +1,3 @@
-/* *********************************************************************
-   📚 MONOLITH – REFACTORED FOR READABILITY & SPEED
-   Order:
-   1) Config & globals
-   2) Markdown → Data-model (fetch starts immediately)
-   3) Generic helpers: idle/clipboard/DOM + URL + Lazy-loaders (D3, HLJS+theme,
-      Markdown, KaTeX) + small UI helpers
-   4) DOM builders: Sidebar, Search, Breadcrumb, Mini-graph
-   5) Clean listeners + Router + Renderer + Boot pipeline
-************************************************************************ */
-
 /* =====================================================================
    1) CONFIG & GLOBALS
 ====================================================================== */
@@ -118,8 +107,7 @@ fetch(MD, { cache: 'reload' })
   .then(attachSecondaryHomes)
   .then(initUI)                        // hoisted below
   .then(() => new Promise(r => setTimeout(r, 50)))
-  .then(highlightCurrent);             // once graph exists it will center current
-
+  .then(() => highlightCurrent(true)); // once graph exists it will center current (gentle)
 
 /* =====================================================================
    3) GENERIC HELPERS
@@ -463,7 +451,7 @@ function breadcrumb(page) {
   const chain = []; for (let n = page; n; n = n.parent) chain.unshift(n); chain.shift(); // drop root
   chain.forEach(n => {
     dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
-    const wrap = document.createElement('span'); wrap.className='dropdown';
+    const wrap = document.createElement('span'); wrap.className = 'dropdown';
     const a = document.createElement('a'); a.textContent = n.title; a.href = '#'+hashOf(n); if (n===page) a.className='crumb-current';
     wrap.appendChild(a);
 
@@ -490,23 +478,46 @@ function breadcrumb(page) {
 const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hierPRE:'link_hier', tagPRE:'link_tag', label:'graph_text' };
 const graphs = {}; let CURRENT = -1;
 
+/* ==== Viewport helpers for the mini graph (NEW) ==== */
+function getMiniSize() {
+  const el = document.getElementById('mini');
+  if (!el) return { w: 400, h: 300 };
+  if (el.classList.contains('fullscreen')) {
+    return { w: window.innerWidth, h: window.innerHeight };
+  }
+  const r = el.getBoundingClientRect();
+  return { w: Math.max(1, Math.floor(r.width)), h: Math.max(1, Math.floor(r.height)) };
+}
+
+function updateMiniViewport() {
+  if (!graphs.mini) return;
+  const { svg, sim } = graphs.mini;
+  const { w, h } = getMiniSize();
+  graphs.mini.w = w; graphs.mini.h = h;
+
+  svg.attr('viewBox', `0 0 ${w} ${h}`)
+     .attr('width',  w)
+     .attr('height', h)
+     .attr('preserveAspectRatio', 'xMidYMid meet');
+
+  sim.force('center', KM.d3.forceCenter(w/2, h/2));
+  sim.alpha(0.2).restart();
+}
+
+/* ==== Build graph ==== */
 async function buildGraph() {
   await KM.ensureD3();
   if (graphs.mini) return;
 
   const { nodes, links, adj } = buildGraphData();
   const svg = KM.d3.select('#mini');
-  const box = svg.node().getBoundingClientRect();
-  const W = box.width || 400, H = box.height || 300;
 
-  // Keep the SVG's viewBox in sync with its display size (helps fullscreen)
-  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('preserveAspectRatio', 'xMidYMid');
-
-  // Clip everything to the svg bounds to avoid vectors spilling off-screen
-  const clipId = 'mini-clip';
-  const defs = svg.append('defs');
-  const clipRect = defs.append('clipPath').attr('id', clipId).append('rect')
-    .attr('x', 0).attr('y', 0).attr('width', W).attr('height', H);
+  // Use window-sized viewport when fullscreen; set a proper viewBox always
+  const { w: W, h: H } = getMiniSize();
+  svg.attr('viewBox', `0 0 ${W} ${H}`)
+     .attr('width',  W)
+     .attr('height', H)
+     .attr('preserveAspectRatio', 'xMidYMid meet');
 
   const localN = nodes.map(n => ({...n}));
   const localL = links.map(l => ({...l}));
@@ -516,33 +527,46 @@ async function buildGraph() {
     .force('charge', KM.d3.forceManyBody().strength(-240))
     .force('center', KM.d3.forceCenter(W/2, H/2));
 
-  const view = svg.append('g').attr('class','view').attr('clip-path', `url(#${clipId})`);
+  const view = svg.append('g').attr('class','view')
+    // CSS-animate panning instead of abrupt jumps
+    .attr('style','transition: transform 220ms ease-out');
 
   const link = view.append('g').selectAll('line')
     .data(localL).join('line')
     .attr('id', d => d.kind === 'hier' ? IDS.hierPRE + d.tier : IDS.tagPRE + Math.min(d.shared,5));
 
+  // Visible nodes (unchanged size)
   const node = view.append('g').selectAll('circle')
     .data(localN).join('circle')
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
-    // Larger, invisible stroke as a hit area for easier hovering/clicking
-    .attr('stroke', 'transparent')
-    .attr('stroke-width', 16)              // hitbox size
-    .style('pointer-events', 'stroke')     // interact with the stroke area
     .style('cursor','pointer')
-    .style('touch-action', 'none')
     .on('click', (e,d) => KM.nav(d.ref))
     .on('mouseover', (e,d) => fade(d.id, 0.15))
     .on('mouseout', () => fade(null, 1))
     .call(KM.d3.drag()
       .on('start', (e,d) => { d.fx = d.x; d.fy = d.y; })
-      .on('drag',  (e,d) => { sim.alphaTarget(0.3).restart(); d.fx = e.x; d.fy = e.y; })
+      .on('drag',  (e,d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
+      .on('end',   (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
+
+  // Larger, invisible hitboxes (do not change visuals)
+  const hit = view.append('g').attr('class','hitboxes').selectAll('circle')
+    .data(localN).join('circle')
+    .attr('r', 14)
+    .attr('fill', 'transparent')
+    .style('pointer-events', 'all')
+    .on('click', (e,d) => KM.nav(d.ref))
+    .on('mouseover', (e,d) => fade(d.id, 0.15))
+    .on('mouseout', () => fade(null, 1))
+    .call(KM.d3.drag()
+      .on('start', (e,d) => { d.fx = d.x; d.fy = d.y; })
+      .on('drag',  (e,d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
       .on('end',   (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
 
   const label = view.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label).attr('font-size', 10)
+    .attr('pointer-events','none')
     .text(d => d.label);
 
   function fade(id, o) {
@@ -555,17 +579,19 @@ async function buildGraph() {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node .attr('cx', d => d.x).attr('cy', d => d.y);
+    hit  .attr('cx', d => d.x).attr('cy', d => d.y);
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { node, label, sim, view, adj, w:W, h:H, svg, clipRect };
+  graphs.mini = { svg, node, hit, label, sim, view, adj, w:W, h:H };
   observeMiniResize();
 }
 
-function highlightCurrent() {
+function highlightCurrent(force=false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
-  const pg = find(seg); const id = pg?._i ?? -1; if (id === CURRENT) return;
+  const pg = find(seg); const id = pg?._i ?? -1;
+  if (id === CURRENT && !force) return;
 
   const g = graphs.mini;
   g.node
@@ -573,44 +599,30 @@ function highlightCurrent() {
     .attr('r',  d => d.id===id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
-  // Pan the graph so the current node is centered in the mini view
+  // Smoothly pan the 'view' group to center the current node
   const cx = g.w/2, cy = g.h/2;
   g.node.filter(d => d.id===id).each(d => {
     const dx = cx - d.x, dy = cy - d.y;
     g.view.attr('transform', `translate(${dx},${dy})`);
 
-    // Softer nudge toward center so it doesn't feel brutal
-    const k = 0.12; // was ~0.35
-    d.vx += (cx - d.x) * k;
-    d.vy += (cy - d.y) * k;
+    // gentler nudge
+    const k = 0.10;
+    d.vx += (cx - d.x)*k; d.vy += (cy - d.y)*k;
   });
 
-  // Lower alpha target so the layout settles more gently
-  g.sim.alphaTarget(0.25).restart();
-  setTimeout(()=>g.sim.alphaTarget(0), 300);
+  g.sim.alphaTarget(0.15).restart();
+  setTimeout(()=>g.sim.alphaTarget(0), 250);
 
   CURRENT = id;
 }
 
 function observeMiniResize() {
-  new ResizeObserver(entries => {
-    const g = graphs.mini; if (!g) return;
-    const { width:w, height:h } = entries[0].contentRect;
-
-    // Update stored dimensions
-    g.w = w; g.h = h;
-
-    // Keep simulation centered in the resized box
-    g.sim.force('center', KM.d3.forceCenter(w/2, h/2));
-    g.sim.alpha(0.3).restart();
-
-    // Keep the SVG viewport & clip in sync with the actual size (esp. fullscreen)
-    g.svg.attr('viewBox', `0 0 ${w} ${h}`);
-    g.clipRect.attr('width', w).attr('height', h);
-
-    // Re-center the currently selected node within the new viewport
-    highlightCurrent();
-  }).observe(document.getElementById('mini'));
+  const el = document.getElementById('mini');
+  new ResizeObserver(() => {
+    if (!graphs.mini) return;
+    updateMiniViewport();       // keep viewBox and forces in sync
+    highlightCurrent(true);     // recenter softly after any size change
+  }).observe(el);
 }
 
 function buildGraphData() {
@@ -699,7 +711,7 @@ function route() {
 
   breadcrumb(page);
   render(page, anchor);
-  highlightCurrent();
+  highlightCurrent(true);
   highlightSidebar(page);
 }
 
@@ -718,7 +730,13 @@ function initUI() {
   }).observe($('#mini'));
 
   // fullscreen toggle
-  const mini = $('#mini'); $('#expand').onclick = () => mini.classList.toggle('fullscreen');
+  const mini = $('#mini');
+  $('#expand').onclick = () => {
+    mini.classList.toggle('fullscreen');
+    // Sync to window resolution when fullscreen and recenter
+    updateMiniViewport();
+    requestAnimationFrame(() => highlightCurrent(true));
+  };
 
   // search
   const searchInput = $('#search'), searchClear = $('#search-clear'); let debounce = 0;
@@ -756,9 +774,13 @@ function initUI() {
   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
   $('#burger-util').onclick    = () => togglePanel('#util');
 
-  // auto-close panels on desktop resize
+  // auto-close panels on desktop resize + keep fullscreen graph exact
   addEventListener('resize', () => {
     if (matchMedia('(min-width:1001px)').matches) { $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }
+    if (document.getElementById('mini')?.classList.contains('fullscreen')) {
+      updateMiniViewport();
+      highlightCurrent(true);
+    }
   });
 
   // in-app routing
