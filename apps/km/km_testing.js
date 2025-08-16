@@ -94,25 +94,21 @@ let mdReady = null; // will hold the Promise so we don’t import twice
  * @returns {Promise<{parse:Function}>}
  */
 KM.ensureMarkdown = () => {
-    if (mdReady) return mdReady;
+  if (mdReady) return mdReady;
 
-    mdReady = Promise.all([
-        import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.min.js'),
-        import('https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'),
-        import('https://cdn.jsdelivr.net/npm/marked-alert/dist/index.umd.min.js'),
-    ]).then(([marked, footnote]) => {
-        const md = new marked.Marked().use(markedFootnote()).use(markedAlert());
-        return {
-            parse: (src, opt) => md.parse(src, {
-                ...opt,
-                mangle: false
-            })
-        };
-    });
+  mdReady = Promise.all([
+    import('https://cdn.jsdelivr.net/npm/marked@5/lib/marked.esm.min.js'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote/dist/index.umd.min.js'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert/dist/index.umd.min.js'),
+  ]).then(([marked, footnote, alert]) => {
+    const fn = (footnote?.default || footnote);
+    const al = (alert?.default || alert);
+    const md = new marked.Marked().use(fn()).use(al());
+    return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }) };
+  });
 
-    return mdReady;
+  return mdReady;
 };
-
 
 
 /**
@@ -304,49 +300,43 @@ function scheduleLazySectionIndexing(currentPage) {
  * appears as a new top-level group in the sidebar.
  */
 function attachSecondaryHomes() {
-    /* Find the forest of top-level roots (pages without parents) */
-    const roots = pages.filter(p => !p.parent);
+  /* Find the forest of top-level roots (pages without parents) */
+  const roots = pages.filter(p => !p.parent);
 
-    /* Build connected components (clusters) */
-    const clusters = new Map(); // rep → Set(members)
-    roots.forEach(top => {
-        const set = new Set([top]);
-        const walk = p => {
-            p.children.forEach(ch => {
-                set.add(ch);
-                walk(ch);
-            });
-        };
-        walk(top);
-        clusters.set(top, set);
-    });
+  /* Build connected components (clusters) */
+  const clusters = new Map(); // rep → Set(members)
+  roots.forEach(top => {
+    const set = new Set([top]);
+    (function walk(p) {
+      p.children.forEach(ch => { set.add(ch); walk(ch); });
+    })(top);
+    clusters.set(top, set);
+  });
 
-    // If we only have a single root, nothing to do --------------------------
-    if (clusters.size <= 1) return;
+  // If we only have a single root, nothing to do
+  if (clusters.size <= 1) return;
 
-    /* pick the page with the most descendants as the representative */
-    let cid = 1;
-    const descCount = page => {
-        let n = 0;
-        (function rec(x) {
-            x.children.forEach(c => {
-                n++;
-                rec(c);
-            });
-        })(page);
-        return n;
-    };
+  let cid = 1;
+  const descCount = page => {
+    let n = 0;
+    (function rec(x) { x.children.forEach(c => { n++; rec(c); }); })(page);
+    return n;
+  };
 
-    clusters.forEach((members, top) => {
-        const rep = members.reduce((a, b) => descCount(b) > descCount(a) ? b : a, top);
-        if (!rep.parent) {
-            rep.parent = root; // for routing + sidebar only
-            rep.isSecondary = true;
-            rep.clusterId = cid++;
-            root.children.push(rep);
-        }
-    });
+  clusters.forEach((members, top) => {
+    // members is a Set → spread to array before reduce
+    const rep = [...members].reduce((a, b) =>
+      descCount(b) > descCount(a) ? b : a, top);
+
+    if (!rep.parent) {
+      rep.parent = root;            // for routing + sidebar only
+      rep.isSecondary = true;
+      rep.clusterId = cid++;
+      if (!root.children.includes(rep)) root.children.push(rep);
+    }
+  });
 }
+
 
 /* *********************************************************************
    SECTION 5 • URL HELPERS & ROUTING UTILITIES
@@ -1132,33 +1122,26 @@ function fade(d, alpha) {
 }
 
 function highlightCurrent() {
-    const id = (location.hash.slice(1).split('#').filter(Boolean).pop() || '').trim();
-    const g = graphs.mini;
-    if (!g) return;
+  const segs = location.hash.slice(1).split('#').filter(Boolean);
+  const page = find(segs);
+  const id = page?.id || '';
 
-    // reset all ids
-    g.node.attr('id', d => {
-        if (d.id === id) return IDS.nodeCurrent;
-        if (d.children) return IDS.nodeParent;
-        return IDS.nodeLeaf;
-    });
+  const g = graphs.mini;
+  if (!g) return;
 
-    // nudge the sim towards centre on highlight
-    const box = document.getElementById('mini').getBoundingClientRect();
-    const cx = box.width / 2;
-    const cy = box.height / 2;
+  g.node.attr('id', d => {
+    if (d.id === id) return IDS.nodeCurrent;
+    if (d.children) return IDS.nodeParent;
+    return IDS.nodeLeaf;
+  });
 
-    g.node.each(d => {
-        /* Keep the existing nudge so the node eases back to the centre */
-        const k = 0.35;
-        d.vx += (cx - d.x) * k;
-        d.vy += (cy - d.y) * k;
-    });
+  const box = document.getElementById('mini').getBoundingClientRect();
+  const cx = box.width / 2, cy = box.height / 2;
+  g.node.each(d => { d.vx += (cx - d.x) * 0.35; d.vy += (cy - d.y) * 0.35; });
+  g.sim.alphaTarget(0.7).restart();
+  setTimeout(() => g.sim.alphaTarget(0), 400);
 
-    g.sim.alphaTarget(0.7).restart();
-    setTimeout(() => g.sim.alphaTarget(0), 400);
-
-    CURRENT = id;
+  CURRENT = id;
 }
 
 /* ────────────────────────────────────────────────────────────────────
