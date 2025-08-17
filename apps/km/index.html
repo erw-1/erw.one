@@ -1,58 +1,20 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <!-- =====================================================================
   km — STATIC WIKI
-  The goal of this file is to let anyone host a self‑contained wiki (Markdown + graph view + search) on any static host.  
-  ──────────────────────────────────────────────────────────────────────────
-
-  • Drop the file anywhere (GitHub Pages, Netlify Drop, S3, …) and you’re live.
-  • Third‑party libs come straight from CDNs – no build‑step required.
+  Self-contained wiki (Markdown + graph + search) runnable on any static host.
+  No build step. External libs via CDNs. Keep IDs and hash routing stable.
 ======================================================================== -->
-
 <html lang="en">
 <head>
-  <script>
-    window.CONFIG = {
-      // Appears above the search box and in the <title>
-      TITLE   : 'Title of your wiki',
-    
-      // Raw Markdown location (one file, many pages) can be 'content.md' next to index.html for instance
-      MD : 'https://hackmd.io/@h-s-n/doc_test/download',
-    
-      // List every Highlight.js language you want available
-      LANGS  : [
-        'javascript',
-        'bash',
-        'markdown',
-        'python'
-        // add or remove freely …
-      ]
-    };
-  </script>  
-  
-  <!-- —————————————————————— CORE META —————————————————————— -->
+  <!-- ——— Core meta ——— -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <link id="favicon-el" rel="icon" href="logo.webp">
-  <title>km – Static Wiki</title>
-
-  <!-- —————————————————————— SEO BLOCK ——————————————————————
-       Swap the ★ placeholders, delete what you don’t need, and you’re done.
-
-  <!-- ——— Primary meta ——— -->
-  <meta name="description" content="★ Concise one-sentence pitch (≤160 chars) ★">
-  <meta name="keywords"    content="★ knowledge management,wiki,static site,… ★">
-  <meta name="author"      content="★ Your Name / Organisation ★">
-  <meta name="robots"      content="index,follow"><!-- staging? set to noindex -->
-  <link rel="canonical"    href="★ https://example.com/ ★">
-  <meta name="theme-color" content="#1e1e1e">
-
-  <!-- ——— Performance / UX ——— -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://hackmd.io" crossorigin>
-  <link rel="preload"    href="https://hackmd.io/@h-s-n/doc_test/download" as="fetch" crossorigin fetchpriority="high">
-  
+  <link rel="preload" href="https://hackmd.io/@h-s-n/doc_test/download" as="fetch" crossorigin fetchpriority="high">
   <link rel="preload" as="image" href="logo.webp" fetchpriority="low">
-  
+
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-footnote/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-alert/+esm" crossorigin>
@@ -60,207 +22,154 @@
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-selection@3/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-force@3/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-drag@3/+esm" crossorigin>
-  
+
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm" crossorigin>
-  
+
   <link rel="modulepreload" href="km_testing.js">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
-
   
-  <!-- ——— Internationalisation (uncomment if multi-lingual) ——— -->
-  <!-- <link rel="alternate" hreflang="en" href="https://example.com/en/"> -->
-  <!-- <link rel="alternate" hreflang="fr" href="https://example.com/fr/"> -->
-  <!-- <meta property="og:locale"           content="en_US"> -->
-  <!-- <meta property="og:locale:alternate" content="fr_FR"> -->
+  <!-- =====================================================================
+  Configuration - Edit this !
+  ======================================================================== -->  
 
-  <!-- ——— Ownership / verification (optional) ——— -->
-  <!-- <meta name="google-site-verification" content="★ token ★"> -->
-  <!-- <meta name="msvalidate.01"            content="★ token ★"> -->
+  <script>
+    // Runtime configuration (kept as-is to preserve behavior / API)
+    window.CONFIG = {
+      TITLE: 'Title of your wiki',
+      MD   : 'https://hackmd.io/@h-s-n/doc_test/download',
+      LANGS: ['javascript', 'bash', 'markdown', 'python']
+    };
+  </script>
 
-  <!-- ——— Open Graph (FB / LinkedIn / Slack embeds) ——— -->
+  <!-- ——— SEO block / Open Graph / Twitter / JSON-LD ——— -->
+  <link id="favicon-el" rel="icon" href="logo.webp">
+  <title>km – Static Wiki</title>
+  
+  <meta name="description" content="★ Concise one-sentence pitch (≤160 chars) ★">
+  <meta name="keywords"    content="★ knowledge management,wiki,static site,… ★">
+  <meta name="author"      content="★ Your Name / Organisation ★">
+  <meta name="robots"      content="index,follow">
+  <link rel="canonical"    href="https://example.com/">
+  <meta name="theme-color" content="#1e1e1e">
+
   <meta property="og:type"        content="website">
   <meta property="og:site_name"   content="★ KM Static Wiki ★">
   <meta property="og:title"       content="★ Same as <title> (60–65 chars) ★">
   <meta property="og:description" content="★ Same as meta description (≤200 chars) ★">
-  <meta property="og:url"         content="★ https://example.com/ ★">
-  <meta property="og:image"       content="★ https://example.com/cover.png ★">
+  <meta property="og:url"         content="https://example.com/">
+  <meta property="og:image"       content="https://example.com/cover.png">
   <meta property="og:image:alt"   content="★ Alt text for the social image ★">
 
-  <!-- ——— Twitter Card ——— -->
   <meta name="twitter:card"        content="summary_large_image">
   <meta name="twitter:title"       content="★ Same as <title> ★">
   <meta name="twitter:description" content="★ Same as meta description ★">
-  <meta name="twitter:image"       content="★ https://example.com/cover.png ★">
+  <meta name="twitter:image"       content="https://example.com/cover.png">
 
-  <!-- ——— JSON-LD: TechArticle (fits knowledge-base pages) ——— -->
   <script type="application/ld+json">
-  {
-    "@context" : "https://schema.org",
-    "@type"    : "TechArticle",
-    "headline" : "★ Headline for Article or Wiki ★",
-    "about"    : ["Knowledge Management","Static Wiki","Documentation"],
-    "author"   : { "@type":"Person", "name":"★ Your Name ★" },
-    "publisher": { "@type":"Organization","name":"★ Org / Project ★" },
-    "url"      : "★ https://example.com/ ★",
-    "inLanguage":"en"
-  }
+  {"@context":"https://schema.org","@type":"TechArticle","headline":"★ Headline for Article or Wiki ★","about":["Knowledge Management","Static Wiki","Documentation"],"author":{"@type":"Person","name":"★ Your Name ★"},"publisher":{"@type":"Organization","name":"★ Org / Project ★"},"url":"★ https://example.com/ ★","inLanguage":"en"}
   </script>
-
-  <!-- ——— JSON-LD: WebSite (+ built-in search box) ——— -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    "name": "KM – Static Wiki Template",
-    "url": "https://example.com/",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "https://example.com/?q={search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
-  }
+  {"@context":"https://schema.org","@type":"WebSite","name":"KM – Static Wiki Template","url":"https://example.com/","potentialAction":{"@type":"SearchAction","target":"https://example.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
   </script>
-
-  <!-- ——— JSON-LD: Organization ——— -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "Organization",
-    "name": "Example Org",
-    "url": "https://example.com/",
-    "logo": "https://example.com/logo.png",
-    "sameAs": [
-      "https://www.linkedin.com/company/example",
-      "https://github.com/example"
-    ]
-  }
+  {"@context":"https://schema.org","@type":"Organization","name":"Example Org","url":"https://example.com/","logo":"https://example.com/logo.png","sameAs":["https://www.linkedin.com/company/example","https://github.com/example"]}
   </script>
-
-  <!-- ——— JSON-LD: BreadcrumbList (static example; can also be injected at runtime) ——— -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    "itemListElement": [{
-      "@type": "ListItem",
-      "position": 1,
-      "name": "Home",
-      "item": "https://example.com/"
-    },{
-      "@type": "ListItem",
-      "position": 2,
-      "name": "Section",
-      "item": "https://example.com/section"
-    }]
-  }
+  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://example.com/"},{"@type":"ListItem","position":2,"name":"Section","item":"https://example.com/section"}]}
   </script>
-
-  <!-- ——— JSON-LD: ImageObject (high-res social / Discover support) ——— -->
   <script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ImageObject",
-    "contentUrl": "https://example.com/cover.png",
-    "license": "https://example.com/licence",
-    "creator": { "@type":"Organization","name":"Example Org" },
-    "creditText": "© Example Org"
-  }
+  {"@context":"https://schema.org","@type":"ImageObject","contentUrl":"https://example.com/cover.png","license":"https://example.com/licence","creator":{"@type":"Organization","name":"Example Org"},"creditText":"© Example Org"}
   </script>
-
-  <!-- ———————————————————————————— END OF SEO BLOCK ———————————————————————————————— -->
+  <!-- =====================================================================
+  End of configuration
+  ======================================================================== -->  
 </head>
   
-<script type="module"  src="km_testing.js"></script>
+<!-- Keep the module script early to start the markdown fetch ASAP (behavior preserved) -->
+<script type="module" src="km_testing.js"></script>
+
 <body>
-<!-- ======================================================================
-     SIDEBAR • TREE + SEARCH
-====================================================================== -->
-<aside id="sidebar" role="navigation" aria-label="Site navigation">
-  <a href="#" title="Home">
-    <h1 id="wiki-title" tabindex="0">
-      <img src="logo.webp" width="32" height="32" alt="" loading="lazy" decoding="async">
-      <span id="wiki-title-text"></span>
-    </h1>
-  </a>
-
-
-  <!-- ——— SEARCH BOX ——— -->
-  <div id="search-box">
-    <input  id="search"        placeholder="Search…" autocomplete="off" aria-label="Search">
-    <button id="search-clear"  aria-label="Clear search" title="Clear search" style="display:none">✕</button>
-  </div>
-
-  <!-- ——— DYNAMIC NAVIGATION TREES ——— -->
-  <ul id="tree"></ul>
-  <ul id="results"></ul>
-</aside>
-
-<!-- ======================================================================
-     MAIN PANEL • BREADCRUMB + CONTENT + UTILS
-====================================================================== -->
-<main>
-  <!-- ——— BREADCRUMB / TOP BAR ——— -->
-  <header id="crumb" role="navigation" aria-label="Breadcrumb">
-    <!-- Hamburger to reveal sidebar on mobile -->
-    <button id="burger-sidebar" class="burger" aria-label="Open sidebar">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="grey"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
-    </button>
-
-    <!-- Shortcut to root page -->
-    <a id="home-link" href="#" title="Home">
-      <svg width="20" height="20" viewBox="0 0 24 16" fill="grey"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+  <!-- ======================================================================
+       SIDEBAR • TREE + SEARCH
+  ====================================================================== -->
+  <aside id="sidebar" role="navigation" aria-label="Site navigation">
+    <a href="#" title="Home">
+      <h1 id="wiki-title" tabindex="0">
+        <img src="logo.webp" width="32" height="32" alt="" loading="lazy" decoding="async">
+        <span id="wiki-title-text"></span>
+      </h1>
     </a>
 
-    <!-- Dynamic breadcrumb injects here -->
-    <span id="crumb-dyn"></span>
+    <!-- ——— SEARCH BOX ——— -->
+    <div id="search-box">
+      <input id="search" placeholder="Search…" autocomplete="off" aria-label="Search">
+      <button id="search-clear" aria-label="Clear search" title="Clear search" style="display:none">✕</button>
+    </div>
 
-    <!-- Utility panel burger -->
-    <button id="burger-util" class="burger" aria-label="Open utility panel">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="grey"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-    </button>
-    
-    <!-- Light / dark toggle -->
-    <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light / dark">
-      <!-- sun -->
-      <svg class="sun"   width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="5"/>
-        <g stroke-linecap="round" stroke-width="2">
-          <line x1="12" y1="1"  x2="12" y2="4"/>
-          <line x1="12" y1="20" x2="12" y2="23"/>
-          <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
-          <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/>
-          <line x1="1"  y1="12" x2="4"  y2="12"/>
-          <line x1="20" y1="12" x2="23" y2="12"/>
-          <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
-          <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
-        </g>
-      </svg>
-    
-      <!-- moon -->
-      <svg class="moon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
-      </svg>
-    </button>
-  </header>
+    <!-- ——— DYNAMIC NAVIGATION TREES ——— -->
+    <ul id="tree"></ul>
+    <ul id="results"></ul>
+  </aside>
 
-  <!-- ——— MAIN CONTENT / ARTICLE AREA ——— -->
-  <div id="content-area">
-    <article id="content">
-      <h1 id="loading">Knowledge is loading...</h1>
-    </article>
+  <!-- ======================================================================
+       MAIN PANEL • BREADCRUMB + CONTENT + UTILS
+  ====================================================================== -->
+  <main>
+    <!-- ——— BREADCRUMB / TOP BAR ——— -->
+    <header id="crumb" role="navigation" aria-label="Breadcrumb">
+      <button id="burger-sidebar" class="burger" aria-label="Open sidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="grey"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      </button>
 
-    <!-- ——— RIGHT UTILITY PANE (mini-graph + ToC) ——— -->
-    <section id="util">
-      <div id="graph-box">
-        <svg id="mini"></svg>
-        <button id="expand" title="Full-screen">⛶</button>
-      </div>
+      <a id="home-link" href="#" title="Home">
+        <svg width="20" height="20" viewBox="0 0 24 16" fill="grey"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+      </a>
 
-      <a class="watermark" href="https://github.com/erw-1/km" target="_blank" rel="noopener noreferrer">Powered by KM</a>
-      <nav id="toc" aria-label="Table of contents"></nav>
-    </section>
-  </div>
-</main>
+      <span id="crumb-dyn"></span>
 
+      <button id="burger-util" class="burger" aria-label="Open utility panel">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="grey"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      </button>
+
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light / dark">
+        <!-- sun -->
+        <svg class="sun" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"></circle>
+          <g stroke-linecap="round" stroke-width="2">
+            <line x1="12" y1="1"  x2="12" y2="4"></line>
+            <line x1="12" y1="20" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"></line>
+            <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"></line>
+            <line x1="1"  y1="12" x2="4"  y2="12"></line>
+            <line x1="20" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"></line>
+            <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"></line>
+          </g>
+        </svg>
+        <!-- moon -->
+        <svg class="moon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"></path>
+        </svg>
+      </button>
+    </header>
+
+    <!-- ——— MAIN CONTENT / ARTICLE AREA ——— -->
+    <div id="content-area">
+      <article id="content">
+        <h1 id="loading">Knowledge is loading...</h1>
+      </article>
+
+      <!-- ——— RIGHT UTILITY PANE (mini-graph + ToC) ——— -->
+      <section id="util">
+        <div id="graph-box">
+          <svg id="mini"></svg>
+          <button id="expand" title="Full-screen">⛶</button>
+        </div>
+
+        <a class="watermark" href="https://github.com/erw-1/km" target="_blank" rel="noopener noreferrer">Powered by KM</a>
+        <nav id="toc" aria-label="Table of contents"></nav>
+      </section>
+    </div>
+  </main>
 </body>
 </html>
