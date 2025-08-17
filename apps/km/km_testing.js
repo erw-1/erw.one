@@ -1,10 +1,7 @@
-// km_testing.js
 /* eslint-env browser, es2022 */
-/* km — Static No-Build Wiki runtime (ESM)
-   Public API kept: window.CONFIG (TITLE, MD, LANGS, DEFAULT_THEME?, ACCENT?) and window.KM.nav(page)
-   Two files only; ESM via CDNs; no build step. */
-'use strict';
+/* km — Static No-Build Wiki runtime (ESM) - Two files only; ESM via CDNs; no build step. */
 
+'use strict';
 window.KM = window.KM || {}; // micro-namespace
 
 /* ────────────────────────────── tiny helpers ───────────────────────────── */
@@ -25,14 +22,8 @@ const el = (tag, props = {}, children = []) => {
 };
 Object.assign(KM, { $, $$, DEBUG: false });
 
-const CFG = window.CONFIG || {};
-const {
-  TITLE = 'Wiki',
-  MD = '',
-  LANGS = [],
-  DEFAULT_THEME, // 'dark' | 'light' (optional)
-  ACCENT        // CSS color string (optional)
-} = CFG;
+const CFG = window.CONFIG || {}; // See HTML file for changing config
+const { TITLE = 'Wiki',  MD = '',  LANGS = [],  DEFAULT_THEME,  ACCENT } = CFG;
 
 /* ─────────────────────── data model (bundle → pages) ───────────────────── */
 const pages = [];                 // all articles
