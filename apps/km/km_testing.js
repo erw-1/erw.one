@@ -627,7 +627,7 @@ async function render(page, anchor) {
 
   // Light image hints for faster layouts.
   $$('#content img').forEach(img => {
-    img.loading='lazy'; img.decoding='async'; if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','low');
+    img.loading='lazy'; img.decoding='async'; if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','high');
   });
 
   fixFootnoteLinks(page);
