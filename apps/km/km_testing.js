@@ -227,8 +227,8 @@ KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
   mdReady = Promise.all([
     import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-alert@1.4.0/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-footnote@2.1.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
   ]).then(([marked, footnoteMod, alertMod]) => {
     const md = new marked.Marked().use(footnoteMod.default()).use(alertMod.default());
     return { parse: (src, opt) => md.parse(src, { ...opt, mangle:false }) };
