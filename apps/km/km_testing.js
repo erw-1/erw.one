@@ -1,14 +1,16 @@
 /* eslint-env browser, es2022 */
-/* km — Static No-Build Wiki runtime (ESM) - Two files only; ESM via CDNs; no build step. */
+/* km — Static No-Build Wiki runtime (ESM) • Two files only, libs via CDN */
 
 'use strict';
-window.KM = window.KM || {}; // micro-namespace
 
-/* ────────────────────────────── tiny helpers ───────────────────────────── */
+// Public micro-namespace to expose a couple utilities for integrations.
+window.KM = window.KM || {};
+
+/* ─────────────────────────────── DOM helpers ───────────────────────────── */
 const DOC = document;
-const $  = (sel, c = DOC) => c.querySelector(sel);
-const $$ = (sel, c = DOC) => [...c.querySelectorAll(sel)];
-const el = (tag, props = {}, children = []) => {
+const $   = (sel, c = DOC) => c.querySelector(sel);
+const $$  = (sel, c = DOC) => [...c.querySelectorAll(sel)];
+const el  = (tag, props = {}, children = []) => {
   const n = DOC.createElement(tag);
   for (const k in props) {
     const v = props[k];
@@ -22,29 +24,37 @@ const el = (tag, props = {}, children = []) => {
 };
 Object.assign(KM, { $, $$, DEBUG: false });
 
-const CFG = window.CONFIG || {}; // See HTML file for changing config
-const { TITLE = 'Wiki',  MD = '',  LANGS = [],  DEFAULT_THEME,  ACCENT } = CFG;
+const CFG = window.CONFIG || {};
+const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT } = CFG;
 
-/* ─────────────────────── data model (bundle → pages) ───────────────────── */
-const pages = [];                 // all articles
-const byId  = new Map();          // id → page
-let root    = null;               // set after parsing
-const descMemo = new Map();       // page → descendant count (memoized)
+const whenIdle = (cb, timeout = 1500) =>
+  'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 1);
 
-/** Parse a Markdown bundle into pages with metadata + a fence-aware section index. */
+const domReady = () =>
+  DOC.readyState !== 'loading'
+    ? Promise.resolve()
+    : new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
+
+/* ───────────────────────────── data model ──────────────────────────────── */
+const pages = [];
+const byId  = new Map();
+let root    = null;
+const descMemo = new Map();
+
+/** Parse a Markdown bundle split by HTML comments; headers carry key:"value". */
 function parseMarkdownBundle(txt) {
-  for (const [, hdr, body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
+  const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
+  for (const [, hdr, body] of m) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
     pages.push({ ...meta, content: body.trim(), children: [] });
   }
   if (!pages.length) throw new Error('No pages parsed from MD bundle.');
 
-  // lookups + root
   pages.forEach(p => byId.set(p.id, p));
   root = byId.get('home') || pages[0];
 
-  // parent/children
+  // Link parent/children (top-level pages will get attached to root)
   pages.forEach(p => {
     if (p === root) return;
     const par = byId.get((p.parent || '').trim());
@@ -52,13 +62,13 @@ function parseMarkdownBundle(txt) {
     par && par.children.push(p);
   });
 
-  // tags + fast search blob
+  // Tags + fast search blob
   pages.forEach(p => {
     p.tagsSet   = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
   });
 
-  // section index (fence-aware)
+  // Section index (fence-aware) for deep search results
   pages.forEach(p => {
     const counters = [0,0,0,0,0,0];
     const sections = [];
@@ -93,7 +103,7 @@ function parseMarkdownBundle(txt) {
   });
 }
 
-/* ─────────────────────────── shared descendants() ───────────────────────── */
+/** Descendants count with memoization (used for graph weighting & clustering). */
 function descendants(page) {
   if (descMemo.has(page)) return descMemo.get(page);
   let n = 0; (function rec(x){ x.children.forEach(c => { n++; rec(c); }); })(page);
@@ -101,16 +111,15 @@ function descendants(page) {
   return n;
 }
 
-/** Add one representative “secondary home” per non-root cluster, under root. */
+/** Lift one representative node from non-root clusters directly under root. */
 function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
-  const clusters = new Map(); // top → members[]
+  const clusters = new Map();
 
   for (const p of pages) {
     const top = topOf(p);
     if (top === root) continue;
-    if (!clusters.has(top)) clusters.set(top, []);
-    clusters.get(top).push(p);
+    (clusters.get(top) || clusters.set(top, []).get(top)).push(p);
   }
 
   let cid = 0;
@@ -125,32 +134,17 @@ function attachSecondaryHomes() {
   }
 }
 
-/** Compute and cache the hash path (id chain) for all pages. */
+/** Pre-compute hash paths (id chains) for all pages. */
 function computeHashes() {
-  const make = p => {
+  pages.forEach(p => {
     const segs = [];
     for (let n = p; n && n.parent; n = n.parent) segs.unshift(n.id);
     p.hash = segs.join('#'); // '' for root
-  };
-  pages.forEach(make);
+  });
 }
 
-/* ──────────────────────── idle / clipboard / URL helpers ───────────────── */
-const whenIdle = (cb, timeout = 1500) =>
-  ('requestIdleCallback' in window) ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 1);
-
-async function copyText(txt, node) {
-  try {
-    await navigator.clipboard.writeText(txt);
-    node?.classList.add('flash');
-    setTimeout(() => node?.classList.remove('flash'), 300);
-  } catch (e) {
-    if (KM.DEBUG) console.warn('Clipboard API unavailable', e);
-  }
-}
-
-function hashOf(page) { return page?.hash ?? ''; }
-function find(segs) {
+const hashOf = page => page?.hash ?? '';
+const find = segs => {
   let n = root;
   for (const id of segs) {
     const c = n.children.find(k => k.id === id);
@@ -158,58 +152,50 @@ function find(segs) {
     n = c;
   }
   return n;
-}
+};
 function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
-/* ───────────────────────────── lazy-loaders ────────────────────────────── */
-KM.ensureD3 = (() => {
-  let ready;
-  return function ensureD3 () {
-    if (ready) return ready;
-    ready = Promise.all([
-      import('https://cdn.jsdelivr.net/npm/d3-selection@3/+esm'),
-      import('https://cdn.jsdelivr.net/npm/d3-force@3/+esm'),
-      import('https://cdn.jsdelivr.net/npm/d3-drag@3/+esm')
-    ]).then(([sel, force, drag]) => {
-      KM.d3 = {
-        select: sel.select, selectAll: sel.selectAll,
-        forceSimulation: force.forceSimulation,
-        forceLink: force.forceLink, forceManyBody: force.forceManyBody, forceCenter: force.forceCenter,
-        drag: drag.drag
-      };
-    });
-    return ready;
-  };
-})();
+/* ───────────────────────────── asset loaders ───────────────────────────── */
+const ensureOnce = fn => {
+  let p; return () => (p ||= fn());
+};
 
-KM.ensureHighlight = (() => {
-  let ready;
-  return function ensureHighlight() {
-    if (ready) return ready;
-    ready = (async () => {
-      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
-      if (Array.isArray(LANGS) && LANGS.length) {
-        const loads = LANGS.map(async lang => {
-          try {
-            const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
-            hljs.registerLanguage(lang, mod.default);
-          } catch (_) { /* ignore unknown language; keep going */ }
-        });
-        await Promise.allSettled(loads);
-      }
-      window.hljs = hljs;
-    })();
-    return ready;
+KM.ensureD3 = ensureOnce(async () => {
+  const [sel, force, drag] = await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/d3-selection@3/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-force@3/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-drag@3/+esm')
+  ]);
+  KM.d3 = {
+    select: sel.select, selectAll: sel.selectAll,
+    forceSimulation: force.forceSimulation,
+    forceLink: force.forceLink, forceManyBody: force.forceManyBody, forceCenter: force.forceCenter,
+    drag: drag.drag
   };
-})();
+});
+
+KM.ensureHighlight = ensureOnce(async () => {
+  const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
+  if (Array.isArray(LANGS) && LANGS.length) {
+    const loads = LANGS.map(async lang => {
+      try {
+        const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
+        hljs.registerLanguage(lang, mod.default);
+      } catch (_) { /* ignore unknown language; continue */ }
+    });
+    await Promise.allSettled(loads);
+  }
+  window.hljs = hljs;
+});
 
 KM.ensureHLJSTheme = (() => {
   const THEME = {
     light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
     dark : 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
   };
-  let ready = null, wired = false;
+  let wired = false;
+  const mode = () => DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
 
   function linkEl() {
     let l = DOC.querySelector('link[data-hljs-theme]');
@@ -221,20 +207,19 @@ KM.ensureHLJSTheme = (() => {
     }
     return l;
   }
-  const mode = () => DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  const apply = () => {
+  const apply = () => new Promise(res => {
     const href = THEME[mode()], l = linkEl();
-    if (l.getAttribute('href') === href) return Promise.resolve();
-    return new Promise(res => { l.onload = l.onerror = res; l.setAttribute('href', href); });
-  };
-  return function ensureHLJSTheme() {
-    if (!ready) ready = apply();
+    if (l.getAttribute('href') === href) return res();
+    l.onload = l.onerror = res; l.setAttribute('href', href);
+  });
+
+  return ensureOnce(() => {
     if (!wired) {
       wired = true;
       new MutationObserver(apply).observe(DOC.documentElement, { attributes:true, attributeFilter:['data-theme'] });
     }
-    return ready;
-  };
+    return apply();
+  });
 })();
 
 let mdReady = null;
@@ -251,37 +236,29 @@ KM.ensureMarkdown = () => {
   return mdReady;
 };
 
-KM.ensureKatex = (() => {
+KM.ensureKatex = ensureOnce(async () => {
   const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
-  let ready;
-  return function ensureKatex() {
-    if (ready) return ready;
-    if (!DOC.getElementById('katex-css')) {
-      const link = Object.assign(DOC.createElement('link'), { id:'katex-css', rel:'stylesheet', href: BASE + 'katex.min.css' });
-      DOC.head.appendChild(link);
-    }
-    ready = Promise.all([
-      import(BASE + 'katex.min.js/+esm'),
-      import(BASE + 'contrib/auto-render.min.js/+esm')
-    ]).then(([katex, auto]) => {
-      window.katex = katex; window.renderMathInElement = auto.default;
-    });
-    return ready;
-  };
-})();
+  if (!DOC.getElementById('katex-css')) {
+    const link = Object.assign(DOC.createElement('link'), { id:'katex-css', rel:'stylesheet', href: BASE + 'katex.min.css' });
+    DOC.head.appendChild(link);
+  }
+  const [katex, auto] = await Promise.all([
+    import(BASE + 'katex.min.js/+esm'),
+    import(BASE + 'contrib/auto-render.min.js/+esm')
+  ]);
+  window.katex = katex; window.renderMathInElement = auto.default;
+});
 
-/* ─────────────────────── UI helpers + decorations ──────────────────────── */
-function closePanels() {
-  $('#sidebar')?.classList.remove('open');
-  $('#util')?.classList.remove('open');
+/* ───────────────────────── UI decorations & utils ──────────────────────── */
+async function copyText(txt, node) {
+  try {
+    await navigator.clipboard.writeText(txt);
+    node?.classList.add('flash');
+    setTimeout(() => node?.classList.remove('flash'), 300);
+  } catch (e) {
+    if (KM.DEBUG) console.warn('Clipboard API unavailable', e);
+  }
 }
-const ICONS = {
-  link : 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
-  code : 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
-};
-const iconBtn = (title, path, cls, onClick) =>
-  el('button', { class: cls, title, onclick:onClick, innerHTML:
-    `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>` });
 
 function numberHeadings(elm) {
   const counters = [0,0,0,0,0,0];
@@ -292,7 +269,6 @@ function numberHeadings(elm) {
   });
 }
 
-let tocObserver = null;
 function buildToc(page) {
   const nav = $('#toc'); if (!nav) return;
   nav.innerHTML = '';
@@ -309,8 +285,8 @@ function buildToc(page) {
   }
   nav.append(ulEl);
 
-  tocObserver?.disconnect();
-  tocObserver = new IntersectionObserver(entries => {
+  // Highlight current heading as it intersects the viewport.
+  let tocObserver = new IntersectionObserver(entries => {
     for (const en of entries) {
       const a = $(`#toc li[data-hid="${en.target.id}"] > a`);
       if (!a) continue;
@@ -320,7 +296,6 @@ function buildToc(page) {
       }
     }
   }, { rootMargin:'0px 0px -70% 0px', threshold:0 });
-
   heads.forEach(h => tocObserver.observe(h));
 }
 
@@ -359,6 +334,15 @@ function fixFootnoteLinks(page) {
   });
 }
 
+const ICONS = {
+  link : 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
+  code : 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
+};
+
+const iconBtn = (title, path, cls, onClick) =>
+  el('button', { class: cls, title, onclick:onClick, innerHTML:
+    `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>` });
+
 function decorateHeadings(page) {
   const base = hashOf(page);
   $$('#content h1,h2,h3,h4,h5').forEach(h => {
@@ -379,7 +363,7 @@ function decorateCodeBlocks() {
   });
 }
 
-/* ──────────────────────── sidebar / search / crumb ─────────────────────── */
+/* ─────────────────────────── sidebar / search ──────────────────────────── */
 let sidebarCurrent = null;
 
 function buildTree() {
@@ -425,6 +409,8 @@ function search(q) {
   const tokens = q.toLowerCase().split(/\s+/).filter(t => t.length >= 2);
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
+  const frag = DOC.createDocumentFragment();
+
   pages.filter(p => tokens.every(tok => p.searchStr.includes(tok))).forEach(p => {
     const li = el('li', { class:'page-result' }, [
       el('a', { href:'#'+hashOf(p), textContent:p.title })
@@ -438,12 +424,14 @@ function search(q) {
       ])));
       li.append(sub);
     }
-    resUL.append(li);
+    frag.append(li);
   });
 
+  resUL.append(frag);
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
 }
 
+/* ─────────────────────────── breadcrumb / crumb ────────────────────────── */
 function breadcrumb(page) {
   const dyn = $('#crumb-dyn'); if (!dyn) return;
   dyn.innerHTML = '';
@@ -474,7 +462,7 @@ function breadcrumb(page) {
   }
 }
 
-/* ─────────────────────────── mini-graph (D3) ──────────────────────────── */
+/* ───────────────────────────── mini graph (D3) ─────────────────────────── */
 const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hierPRE:'link_hier', tagPRE:'link_tag', label:'graph_text' };
 const graphs = {}; let CURRENT = -1;
 
@@ -565,7 +553,7 @@ async function buildGraph() {
 
   const node = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
 
-  // Larger, invisible hitboxes
+  // Larger, invisible hitboxes to improve pointer ergonomics.
   const hit = wireNode(
     view.append('g').attr('class','hitboxes').selectAll('circle')
       .data(localN).join('circle')
@@ -610,30 +598,26 @@ function highlightCurrent(force=false) {
     .attr('r',  d => d.id===id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
-  // Smoothly pan the 'view' group to center the current node
+  // Smoothly pan the 'view' group to center the current node and give it a gentle nudge.
   const cx = g.w/2, cy = g.h/2;
   g.node.filter(d => d.id===id).each(d => {
     const dx = cx - d.x, dy = cy - d.y;
     g.view.attr('transform', `translate(${dx},${dy})`);
-
-    // gentle nudge towards center
-    const k = 0.10;
-    d.vx += (cx - d.x)*k; d.vy += (cy - d.y)*k;
+    const k = 0.10; d.vx += (cx - d.x)*k; d.vy += (cy - d.y)*k;
   });
 
   g.sim.alphaTarget(0.15).restart();
   setTimeout(()=>g.sim.alphaTarget(0), 250);
-
   CURRENT = id;
 }
 
 function observeMiniResize() {
-  const el = $('#mini'); if (!el) return;
+  const elx = $('#mini'); if (!elx) return;
   new ResizeObserver(() => {
     if (!graphs.mini) return;
     updateMiniViewport();
-    highlightCurrent(true); // recenter softly after size change
-  }).observe(el);
+    highlightCurrent(true);
+  }).observe(elx);
 }
 
 /* ───────────────────────── renderer + router + init ────────────────────── */
@@ -641,7 +625,7 @@ async function render(page, anchor) {
   const { parse } = await KM.ensureMarkdown();
   $('#content').innerHTML = parse(page.content, { headerIds:false });
 
-  // light image hints
+  // Light image hints for faster layouts.
   $$('#content img').forEach(img => {
     img.loading='lazy'; img.decoding='async'; if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','low');
   });
@@ -649,12 +633,14 @@ async function render(page, anchor) {
   fixFootnoteLinks(page);
   numberHeadings($('#content'));
 
+  // Syntax highlighting (theme CSS must match page theme first).
   if (DOC.querySelector('#content pre code')) {
     await KM.ensureHLJSTheme();
     await KM.ensureHighlight();
     window.hljs.highlightAll();
   }
 
+  // Inline math blocks
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
     await KM.ensureKatex();
     window.renderMathInElement($('#content'), {
@@ -677,14 +663,8 @@ async function render(page, anchor) {
   if (anchor) DOC.getElementById(anchor)?.scrollIntoView({ behavior:'smooth' });
 }
 
-// Track the currently rendered page so anchor-only navigation is cheap.
 let currentPage = null;
 
-/**
- * Router:
- * - If the page segment changes → render + nudge graph/current node.
- * - If only the heading changes   → smooth scroll only; no re-render, no graph nudge.
- */
 function route() {
   closePanels();
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -711,16 +691,21 @@ function route() {
   }
 }
 
-/** UI init + listeners (runs once after data is ready) */
+/* ─────────────────────────── global UI + theme ─────────────────────────── */
+function closePanels() {
+  $('#sidebar')?.classList.remove('open');
+  $('#util')?.classList.remove('open');
+}
+
 function initUI() {
-  // title
+  // Title
   $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
 
-  // sidebar + first route
+  // Sidebar + first route
   buildTree();
 
-  // THEME: persisted → config default → OS; accent override if provided
-  (() => {
+  // Theme: persisted → config default → OS; single accent injection if provided.
+  (function themeInit() {
     const btn = $('#theme-toggle');
     const rootEl = DOC.documentElement;
     const media = matchMedia('(prefers-color-scheme: dark)');
@@ -729,10 +714,7 @@ function initUI() {
     const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
     let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
 
-    // one-time accent override from CONFIG
-    if (typeof ACCENT === 'string' && ACCENT) {
-      rootEl.style.setProperty('--color-accent', ACCENT);
-    }
+    if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
 
     apply(dark);
     btn.onclick = () => { dark = !dark; apply(dark); localStorage.setItem('km-theme', dark ? 'dark' : 'light'); };
@@ -743,14 +725,14 @@ function initUI() {
     }
   })();
 
-  route(); // initial render after theme applied (so HLJS/ToC theme picks up)
+  route(); // initial render after theme applied
 
-  // mini-graph lazy init
+  // Mini-graph lazy init
   new IntersectionObserver((entries, obs) => {
     if (entries[0].isIntersecting) { buildGraph(); obs.disconnect(); }
   }).observe($('#mini'));
 
-  // fullscreen toggle
+  // Fullscreen toggle for mini graph
   const mini = $('#mini');
   $('#expand').onclick = () => {
     mini.classList.toggle('fullscreen');
@@ -758,7 +740,7 @@ function initUI() {
     requestAnimationFrame(() => highlightCurrent(true));
   };
 
-  // search input (debounced) + clear
+  // Search input (debounced) + clear
   const searchInput = $('#search'), searchClear = $('#search-clear'); let debounce = 0;
   searchInput.oninput = e => {
     clearTimeout(debounce);
@@ -767,7 +749,7 @@ function initUI() {
   };
   searchClear.onclick = () => { searchInput.value=''; searchClear.style.display='none'; search(''); searchInput.focus(); };
 
-  // burger toggles (mobile)
+  // Burger toggles (mobile)
   const togglePanel = sel => {
     const elx = $(sel); const wasOpen = elx.classList.contains('open');
     closePanels(); if (!wasOpen) {
@@ -780,13 +762,13 @@ function initUI() {
   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
   $('#burger-util').onclick    = () => togglePanel('#util');
 
-  // auto-close panels on desktop resize + keep fullscreen graph exact
+  // Auto-close panels on desktop resize + keep fullscreen graph exact
   addEventListener('resize', () => {
     if (matchMedia('(min-width:1001px)').matches) { $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }
     if ($('#mini')?.classList.contains('fullscreen')) { updateMiniViewport(); highlightCurrent(true); }
   }, { passive: true });
 
-  // event delegation: sidebar caret + links
+  // Event delegation: sidebar caret + links
   $('#tree').addEventListener('click', e => {
     const caret = e.target.closest('button.caret');
     if (caret) {
@@ -798,34 +780,43 @@ function initUI() {
       if (sub) sub.style.display = open ? 'block' : 'none';
       return;
     }
-    const a = e.target.closest('a');
-    if (a) closePanels();
+    if (e.target.closest('a')) closePanels();
   });
 
-  // close panels when selecting search results
+  // Close panels when selecting search results
   $('#results').addEventListener('click', e => {
     if (e.target.closest('a')) closePanels();
   });
 
-  // in-app routing
+  // In-app routing
   addEventListener('hashchange', route, { passive: true });
 
-  // warm caches during idle
-  whenIdle(async () => { await KM.ensureHighlight(); /* snappy code blocks */ });
+  // Warm caches during idle
+  whenIdle(async () => { await KM.ensureHighlight(); });
 }
 
 /* ──────────────────────────────── boot ─────────────────────────────────── */
 (async () => {
   try {
     if (!MD) throw new Error('CONFIG.MD is empty.');
-    const r = await fetch(MD, { cache: 'reload' });
+
+    // Begin fetch ASAP; add a conservative timeout to avoid hanging UIs.
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort('fetch-timeout'), 20000);
+
+    const r = await fetch(MD, { cache: 'reload', signal: ctrl.signal });
+    clearTimeout(t);
     if (!r.ok) throw new Error(`Failed to fetch MD (${r.status})`);
     const txt = await r.text();
+
     parseMarkdownBundle(txt);
     attachSecondaryHomes();
-    computeHashes();              // cache page.hash after hierarchy is final
+    computeHashes();
+
+    await domReady();
     initUI();
-    // ensure first graph highlighting after initial layout stabilizes
+
+    // Ensure first graph highlighting after initial layout stabilizes
     await new Promise(res => setTimeout(res, 120));
     highlightCurrent(true);
   } catch (err) {
