@@ -28,7 +28,7 @@ const CFG = window.CONFIG || {};
 const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT } = CFG;
 
 const whenIdle = (cb, timeout = 1500) =>
-  'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 1);
+  'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 0);
 
 const domReady = () =>
   DOC.readyState !== 'loading'
@@ -41,14 +41,13 @@ const byId  = new Map();
 let root    = null;
 const descMemo = new Map();
 
-// The Markdown bundle is split by HTML comment blocks with metadata key:"value" pairs
-// Create a page object for each section with its content and metadata
+// Parse a Markdown bundle split by HTML comments holding key:"value" metadata.
 function parseMarkdownBundle(txt) {
   const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
-    const page = { ...meta, content: body.trim(), children: [] };
+    const page = { ...meta, content: (body || '').trim(), children: [] };
     pages.push(page);
     byId.set(page.id, page);
   }
@@ -56,19 +55,18 @@ function parseMarkdownBundle(txt) {
 
   root = byId.get('home') || pages[0];
 
-  // Link each page to its parent (skip root) to build hierarchy
-  // Also create a tags set and search string for each page
+  // Link each page to its parent (skip root) and prep tags/search strings.
   pages.forEach(p => {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
       p.parent = parent || null;
-      if (parent) parent.children.push(p);
+      parent && parent.children.push(p);
     }
-    p.tagsSet = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
+    p.tagsSet   = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
   });
 
-  // Section index (fence-aware) for deep search results
+  // Heading sections (fence-aware) for deep search.
   pages.forEach(p => {
     const counters = [0,0,0,0,0,0];
     const sections = [];
@@ -103,18 +101,16 @@ function parseMarkdownBundle(txt) {
   });
 }
 
-// Count total descendant pages for weighting in graph clustering
+// Count total descendant pages for weighting in graph clustering.
 function descendants(page) {
   if (descMemo.has(page)) return descMemo.get(page);
   let n = 0;
-  (function rec(x) {
-    x.children.forEach(c => { n++; rec(c); });
-  })(page);
+  (function rec(x) { x.children.forEach(c => { n++; rec(c); }); })(page);
   descMemo.set(page, n);
   return n;
 }
 
-// Attach one representative page of each disconnected cluster to the root
+// Attach one representative page of each disconnected cluster to the root.
 function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
   const clusters = new Map();
@@ -128,7 +124,7 @@ function attachSecondaryHomes() {
   let cid = 0;
   for (const [top, members] of clusters) {
     const rep = members.reduce((a,b) => descendants(b) > descendants(a) ? b : a, top);
-    if (!rep.parent) { // only lift if not already attached under root
+    if (!rep.parent) {
       rep.parent = root;
       rep.isSecondary = true;
       rep.clusterId = cid++;
@@ -137,7 +133,7 @@ function attachSecondaryHomes() {
   }
 }
 
-// Compute navigation hash (ID path) for each page
+// Compute navigation hash (ID path) for each page.
 function computeHashes() {
   pages.forEach(p => {
     const segs = [];
@@ -160,10 +156,7 @@ function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
 /* ───────────────────────────── asset loaders ───────────────────────────── */
-const ensureOnce = fn => {
-  let p;
-  return () => (p ||= fn());
-};
+const ensureOnce = fn => { let p; return () => (p ||= fn()); };
 
 KM.ensureD3 = ensureOnce(async () => {
   const [sel, force, drag] = await Promise.all([
@@ -182,13 +175,12 @@ KM.ensureD3 = ensureOnce(async () => {
 KM.ensureHighlight = ensureOnce(async () => {
   const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
   if (Array.isArray(LANGS) && LANGS.length) {
-    const loads = LANGS.map(async lang => {
+    await Promise.allSettled(LANGS.map(async lang => {
       try {
         const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
         hljs.registerLanguage(lang, mod.default);
       } catch (_) { /* ignore unknown language; continue */ }
-    });
-    await Promise.allSettled(loads);
+    }));
   }
   window.hljs = hljs;
 });
@@ -235,7 +227,6 @@ KM.ensureMarkdown = () => {
     import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
     import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
   ]).then(([marked, alertMod, footnoteMod]) => {
-    // Apply plugins in the intended order with correctly named variables.
     const md = new marked.Marked().use(alertMod.default()).use(footnoteMod.default());
     return { parse: (src, opt) => md.parse(src, { ...opt, mangle:false }) };
   });
@@ -257,10 +248,8 @@ KM.ensureKatex = ensureOnce(async () => {
 });
 
 /* ───────────────────────── UI decorations & utils ──────────────────────── */
-// Utility function to sort pages alphabetically by title
-function sortByTitle(a, b) {
-  return a.title.localeCompare(b.title);
-}
+// Sort pages by title (locale-aware).
+const sortByTitle = (a, b) => a.title.localeCompare(b.title);
 
 async function copyText(txt, node) {
   try {
@@ -272,6 +261,7 @@ async function copyText(txt, node) {
   }
 }
 
+// Number headings to create stable anchor IDs.
 function numberHeadings(elm) {
   const counters = [0,0,0,0,0,0];
   $$('h1,h2,h3,h4,h5', elm).forEach(h => {
@@ -281,32 +271,35 @@ function numberHeadings(elm) {
   });
 }
 
-// Keep a single IntersectionObserver instance for the ToC to avoid leaks.
+// Keep a single IntersectionObserver instance for the ToC.
 let tocObserver = null;
 
 function buildToc(page) {
   const nav = $('#toc');
   if (!nav) return;
   nav.innerHTML = '';
+
   const heads = $$('#content h1,#content h2,#content h3');
   if (!heads.length) {
-    // Ensure previous observer gets disconnected when no headings.
-    if (tocObserver) { tocObserver.disconnect(); tocObserver = null; }
+    tocObserver?.disconnect(); tocObserver = null;
     return;
   }
 
   const base = hashOf(page);
   const ulEl = el('ul');
+  const frag = DOC.createDocumentFragment();
   for (const h of heads) {
-    const li = el('li', { dataset:{ level: h.tagName[1], hid: h.id } }, [
-      el('a', { href: '#' + (base ? base + '#' : '') + h.id, textContent: h.textContent })
-    ]);
-    ulEl.append(li);
+    frag.append(
+      el('li', { dataset:{ level: h.tagName[1], hid: h.id } }, [
+        el('a', { href: '#' + (base ? base + '#' : '') + h.id, textContent: h.textContent })
+      ])
+    );
   }
+  ulEl.append(frag);
   nav.append(ulEl);
 
-  // Highlight current heading as it intersects the viewport.
-  if (tocObserver) tocObserver.disconnect();
+  // Highlight the current heading as it intersects the viewport.
+  tocObserver?.disconnect();
   tocObserver = new IntersectionObserver(entries => {
     for (const en of entries) {
       const a = $(`#toc li[data-hid="${en.target.id}"] > a`);
@@ -332,7 +325,7 @@ function prevNext(page) {
   $('#content').append(wrap);
 }
 
-// List related pages (shared tags) sorted by overlap count
+// List related pages (shared tags) sorted by overlap count.
 function seeAlso(page) {
   $('#see-also')?.remove();
   if (!page.tagsSet?.size) return;
@@ -351,6 +344,7 @@ function seeAlso(page) {
   content.insertBefore(wrap, pn ?? null);
 }
 
+// Adjust footnote/self-links so deep anchors stay page-scoped.
 function fixFootnoteLinks(page) {
   const base = hashOf(page);
   if (!base) return;
@@ -420,19 +414,18 @@ function buildTree() {
     });
   };
 
-  rec(prim, ul);
+  const frag = DOC.createDocumentFragment();
+  rec(prim, frag);
   secs.forEach(r => {
-    ul.append(el('li', { class:'group-sep', innerHTML:'<hr>' }));
-    rec([r], ul);
+    frag.append(el('li', { class:'group-sep', innerHTML:'<hr>' }));
+    rec([r], frag);
   });
+  ul.append(frag);
 }
 
 function highlightSidebar(page) {
-  // Highlight the current page link in the sidebar navigation
-  const prevSelected = $('#tree .sidebar-current');
-  prevSelected?.classList.remove('sidebar-current');
-  const newSelected = $(`#tree a[data-page="${page.id}"]`);
-  newSelected?.classList.add('sidebar-current');
+  $('#tree .sidebar-current')?.classList.remove('sidebar-current');
+  $(`#tree a[data-page="${page.id}"]`)?.classList.add('sidebar-current');
 }
 
 function search(q) {
@@ -445,6 +438,7 @@ function search(q) {
     treeUL.style.display='';
     return;
   }
+
   const tokens = q.toLowerCase().split(/\s+/).filter(t => t.length >= 2);
   resUL.innerHTML='';
   resUL.style.display='';
@@ -537,7 +531,7 @@ function updateMiniViewport() {
   sim.alpha(0.2).restart();
 }
 
-// Prepare graph nodes (pages) and links (hierarchy and tag overlaps)
+// Prepare graph nodes (pages) and links (hierarchy and tag overlaps).
 function buildGraphData() {
   const nodes = [], links = [];
   const adj = new Map();
@@ -632,8 +626,8 @@ async function buildGraph() {
     .text(d => d.label);
 
   function fade(id, o) {
-    node .style('opacity', d => (id == null || adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
-    label.style('opacity', d => (id == null || adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
+    node .style('opacity', d => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
+    label.style('opacity', d => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
     link .style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
@@ -649,7 +643,7 @@ async function buildGraph() {
   observeMiniResize();
 }
 
-// Update graph highlight for current page and center it
+// Update graph highlight for current page and center it.
 function highlightCurrent(force=false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -663,7 +657,6 @@ function highlightCurrent(force=false) {
     .attr('r',  d => d.id === id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
-  // Smoothly pan the 'view' group to center the current node and give it a gentle nudge.
   const cx = g.w/2, cy = g.h/2;
   g.node.filter(d => d.id === id).each(d => {
     const dx = cx - d.x, dy = cy - d.y;
@@ -779,7 +772,7 @@ function initUI() {
   // Sidebar + first route
   buildTree();
 
-  // Theme: persisted → config default → OS; single accent injection if provided.
+  // Theme: persisted → config default → OS; optional accent color.
   (function themeInit() {
     const btn = $('#theme-toggle');
     const rootEl = DOC.documentElement;
@@ -801,17 +794,12 @@ function initUI() {
     };
 
     function apply(isDark) {
-      // Update CSS custom properties and dataset flag
       const mainColor = isDark ? 'rgb(29,29,29)' : 'white';
       rootEl.style.setProperty('--color-main', mainColor);
       rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
 
-      // Keep the browser UI (mobile address bar, etc.) in sync with active theme.
       const metaTheme = DOC.querySelector('meta[name="theme-color"]');
-      if (metaTheme) {
-        // Use hex values that roughly match --color-main for better contrast handling.
-        metaTheme.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
-      }
+      if (metaTheme) metaTheme.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
     }
   })();
 
@@ -845,7 +833,7 @@ function initUI() {
   searchClear.onclick = () => {
     searchInput.value='';
     searchClear.style.display='none';
-    search(''); 
+    search('');
     searchInput.focus();
   };
 
@@ -866,7 +854,7 @@ function initUI() {
 
   // Auto-close panels on desktop resize + keep fullscreen graph updated
   addEventListener('resize', () => {
-    if (matchMedia('(min-width:1001px)').matches) { closePanels(); }
+    if (matchMedia('(min-width:1001px)').matches) closePanels();
     if ($('#mini')?.classList.contains('fullscreen')) {
       updateMiniViewport();
       highlightCurrent(true);
@@ -897,9 +885,7 @@ function initUI() {
   addEventListener('hashchange', route, { passive: true });
 
   // Warm caches during idle
-  whenIdle(async () => {
-    await KM.ensureHighlight();
-  });
+  whenIdle(async () => { await KM.ensureHighlight(); });
 }
 
 /* ──────────────────────────────── boot ─────────────────────────────────── */
