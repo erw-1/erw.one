@@ -11,25 +11,15 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://hackmd.io" crossorigin>
-  <link rel="preload" href="https://hackmd.io/@h-s-n/doc_test/download" as="fetch" crossorigin fetchpriority="high">
-  <link rel="preload" as="image" href="logo.webp" fetchpriority="low">
-
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm" crossorigin>
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-footnote/+esm" crossorigin>
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-alert/+esm" crossorigin>
-
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-selection@3/+esm" crossorigin>
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-force@3/+esm" crossorigin>
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-drag@3/+esm" crossorigin>
-
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm" crossorigin>
-
   <link rel="modulepreload" href="km_testing.js">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
   
   <!-- =====================================================================
   Configuration - Edit this !
-  ======================================================================== -->  
+  ======================================================================== --> 
+  <link rel="preload" href="https://hackmd.io/@h-s-n/doc_test/download" as="fetch" crossorigin fetchpriority="high">
+  <link rel="preload" as="image" href="logo.webp" fetchpriority="low">
+  
     <script>
       // JS configuration
       window.CONFIG = {
@@ -46,45 +36,47 @@
     <meta name="theme-color"         content="#1e1e1e">
     
     <!-- ——— You can remove all this if you don't want to be referenced on the internet: SEO block / Open Graph / Twitter / JSON-LD ——— -->
-    <meta name="description"         content="Concise one-sentence pitch (≤160 chars)">
-    <meta name="keywords"            content="knowledge management,wiki,static site,…">
-    <meta name="author"              content="Your Name / Organisation">
-    <meta name="robots"              content="index,follow">
-    <link rel="canonical"               href="https://example.com/">
   
-    <meta property="og:type"         content="website">
-    <meta property="og:site_name"    content="KM Static Wiki">
-    <meta property="og:title"        content="Same as <title> (60–65 chars)">
-    <meta property="og:description"  content="Same as meta description (≤200 chars)">
-    <meta property="og:url"          content="https://example.com/">
-    <meta property="og:image"        content="https://example.com/cover.png">
-    <meta property="og:image:alt"    content="Alt text for the social image">
+    <!--<meta name="description"         content="Concise one-sentence pitch (≤160 chars)">
+        <meta name="keywords"            content="knowledge management,wiki,static site,…">
+        <meta name="author"              content="Your Name / Organisation">
+        <meta name="robots"              content="index,follow">
+        <link rel="canonical"               href="https://example.com/">
+      
+        <meta property="og:type"         content="website">
+        <meta property="og:site_name"    content="KM Static Wiki">
+        <meta property="og:title"        content="Same as <title> (60–65 chars)">
+        <meta property="og:description"  content="Same as meta description (≤200 chars)">
+        <meta property="og:url"          content="https://example.com/">
+        <meta property="og:image"        content="https://example.com/cover.png">
+        <meta property="og:image:alt"    content="Alt text for the social image">
+      
+        <meta name="twitter:card"        content="summary_large_image">
+        <meta name="twitter:title"       content="Same as <title>">
+        <meta name="twitter:description" content="Same as meta description">
+        <meta name="twitter:image"       content="https://example.com/cover.png">
+      
+        <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"TechArticle","headline":"Headline for Article or Wiki","about":["Knowledge Management","Static Wiki","Documentation"],"author":{"@type":"Person","name":"Your Name"},"publisher":{"@type":"Organization","name":"Org / Project"},"url":"https://example.com/","inLanguage":"en"}
+        </script>
+        <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"WebSite","name":"KM – Static Wiki Template","url":"https://example.com/","potentialAction":{"@type":"SearchAction","target":"https://example.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
+        </script>
+        <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"Organization","name":"Example Org","url":"https://example.com/","logo":"https://example.com/logo.png","sameAs":["https://www.linkedin.com/company/example","https://github.com/example"]}
+        </script>
+        <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://example.com/"},{"@type":"ListItem","position":2,"name":"Section","item":"https://example.com/section"}]}
+        </script>
+        <script type="application/ld+json">
+        {"@context":"https://schema.org","@type":"ImageObject","contentUrl":"https://example.com/cover.png","license":"https://example.com/licence","creator":{"@type":"Organization","name":"Example Org"},"creditText":"© Example Org"}
+        </script> -->
   
-    <meta name="twitter:card"        content="summary_large_image">
-    <meta name="twitter:title"       content="Same as <title>">
-    <meta name="twitter:description" content="Same as meta description">
-    <meta name="twitter:image"       content="https://example.com/cover.png">
-  
-    <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"TechArticle","headline":"Headline for Article or Wiki","about":["Knowledge Management","Static Wiki","Documentation"],"author":{"@type":"Person","name":"Your Name"},"publisher":{"@type":"Organization","name":"Org / Project"},"url":"https://example.com/","inLanguage":"en"}
-    </script>
-    <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"WebSite","name":"KM – Static Wiki Template","url":"https://example.com/","potentialAction":{"@type":"SearchAction","target":"https://example.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
-    </script>
-    <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"Organization","name":"Example Org","url":"https://example.com/","logo":"https://example.com/logo.png","sameAs":["https://www.linkedin.com/company/example","https://github.com/example"]}
-    </script>
-    <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://example.com/"},{"@type":"ListItem","position":2,"name":"Section","item":"https://example.com/section"}]}
-    </script>
-    <script type="application/ld+json">
-    {"@context":"https://schema.org","@type":"ImageObject","contentUrl":"https://example.com/cover.png","license":"https://example.com/licence","creator":{"@type":"Organization","name":"Example Org"},"creditText":"© Example Org"}
-    </script>
   <!-- =====================================================================
   End of configuration
   ======================================================================== -->  
-</head>
   
+</head>
 <!-- Keep the module script early to start the markdown fetch ASAP (behavior preserved) -->
 <script type="module" src="km_testing.js"></script>
 
@@ -156,6 +148,7 @@
     <!-- ——— MAIN CONTENT / ARTICLE AREA ——— -->
     <div id="content-area">
       <article id="content">
+        <noscript>This site requires JavaScript to load content.</noscript>
         <h1 id="loading">Knowledge is loading...</h1>
       </article>
 
