@@ -3,6 +3,9 @@
    km_testing.js — Static No-Build Wiki runtime (ESM)
    Structure: parse → helpers → UI builders → graph → router → boot
    Public API kept: window.CONFIG (TITLE, MD, LANGS) and window.KM.nav(page)
+   Optional config recognized:
+     - DEFAULT_THEME?: 'dark' | 'light'
+     - ACCENT?: string (CSS color) → overrides --color-accent
 ====================================================================== */
 'use strict';
 
@@ -29,7 +32,13 @@ const el = (tag, props = {}, children = []) => {
 Object.assign(KM, { $, $$, DEBUG: false });
 
 const CFG = window.CONFIG || {};
-const { TITLE = 'Wiki', MD = '' } = CFG;
+const {
+  TITLE = 'Wiki',
+  MD = '',
+  LANGS = [],
+  DEFAULT_THEME, // 'dark' | 'light' (optional)
+  ACCENT        // CSS color string (optional)
+} = CFG;
 
 /* =====================================================================
    1) MARKDOWN → DATA MODEL
@@ -198,7 +207,6 @@ KM.ensureHighlight = (() => {
   return function ensureHighlight() {
     if (ready) return ready;
     ready = (async () => {
-      const { LANGS = [] } = window.CONFIG || {};
       const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
       await Promise.all(LANGS.map(async lang => {
         const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
@@ -739,7 +747,32 @@ function initUI() {
 
   // sidebar + first route
   buildTree();
-  route();
+
+  // THEME: persisted → config default → OS; accent override if provided
+  (() => {
+    const btn = $('#theme-toggle');
+    const rootEl = DOC.documentElement;
+    const media = matchMedia('(prefers-color-scheme: dark)');
+
+    const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
+    const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
+    let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
+
+    // one-time accent override from CONFIG
+    if (typeof ACCENT === 'string' && ACCENT) {
+      rootEl.style.setProperty('--color-accent', ACCENT);
+    }
+
+    apply(dark);
+    btn.onclick = () => { dark = !dark; apply(dark); localStorage.setItem('km-theme', dark ? 'dark' : 'light'); };
+
+    function apply(isDark) {
+      rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
+      rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    }
+  })();
+
+  route(); // initial render after theme applied (so HLJS/ToC theme picks up)
 
   // mini-graph lazy init
   new IntersectionObserver((entries, obs) => {
@@ -762,20 +795,6 @@ function initUI() {
     debounce = setTimeout(() => search(val.toLowerCase()), 150);
   };
   searchClear.onclick = () => { searchInput.value=''; searchClear.style.display='none'; search(''); searchInput.focus(); };
-
-  // theme toggle (persist + live)
-  (() => {
-    const btn = $('#theme-toggle');
-    const rootEl = DOC.documentElement;
-    const media = matchMedia('(prefers-color-scheme: dark)');
-    let dark = localStorage.getItem('km-theme') === 'dark' || (!localStorage.getItem('km-theme') && media.matches);
-    apply(dark);
-    btn.onclick = () => { dark = !dark; apply(dark); localStorage.setItem('km-theme', dark ? 'dark' : 'light'); };
-    function apply(isDark) {
-      rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
-      rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    }
-  })();
 
   // burger toggles (mobile)
   const togglePanel = sel => {
