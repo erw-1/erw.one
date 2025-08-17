@@ -1,19 +1,13 @@
+// km_testing.js
 /* eslint-env browser, es2022 */
-/* =====================================================================
-   km_testing.js — Static No-Build Wiki runtime (ESM)
-   Structure: parse → helpers → UI builders → graph → router → boot
-   Public API kept: window.CONFIG (TITLE, MD, LANGS) and window.KM.nav(page)
-   Optional config recognized:
-     - DEFAULT_THEME?: 'dark' | 'light'
-     - ACCENT?: string (CSS color) → overrides --color-accent
-====================================================================== */
+/* km — Static No-Build Wiki runtime (ESM)
+   Public API kept: window.CONFIG (TITLE, MD, LANGS, DEFAULT_THEME?, ACCENT?) and window.KM.nav(page)
+   Two files only; ESM via CDNs; no build step. */
 'use strict';
 
 window.KM = window.KM || {}; // micro-namespace
 
-/* ────────────────────────────────────────────────────────────────────
-   Short helpers (kept tiny on purpose)
-──────────────────────────────────────────────────────────────────── */
+/* ────────────────────────────── tiny helpers ───────────────────────────── */
 const DOC = document;
 const $  = (sel, c = DOC) => c.querySelector(sel);
 const $$ = (sel, c = DOC) => [...c.querySelectorAll(sel)];
@@ -40,18 +34,14 @@ const {
   ACCENT        // CSS color string (optional)
 } = CFG;
 
-/* =====================================================================
-   1) MARKDOWN → DATA MODEL
-   Bundle: <!--id:"home" title:"..." parent:"..." tags:"a,b"-->…content…
-====================================================================== */
+/* ─────────────────────── data model (bundle → pages) ───────────────────── */
 const pages = [];                 // all articles
 const byId  = new Map();          // id → page
 let root    = null;               // set after parsing
 const descMemo = new Map();       // page → descendant count (memoized)
 
-/** Parse a Markdown bundle into pages with metadata + a section index. */
+/** Parse a Markdown bundle into pages with metadata + a fence-aware section index. */
 function parseMarkdownBundle(txt) {
-  // split bundle into individual pages
   for (const [, hdr, body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
@@ -112,63 +102,63 @@ function parseMarkdownBundle(txt) {
   });
 }
 
+/* ─────────────────────────── shared descendants() ───────────────────────── */
+function descendants(page) {
+  if (descMemo.has(page)) return descMemo.get(page);
+  let n = 0; (function rec(x){ x.children.forEach(c => { n++; rec(c); }); })(page);
+  descMemo.set(page, n);
+  return n;
+}
+
 /** Add one representative “secondary home” per non-root cluster, under root. */
 function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
   const clusters = new Map(); // top → members[]
-  pages.forEach(p => {
+
+  for (const p of pages) {
     const top = topOf(p);
-    if (top === root) return;
-    (clusters.get(top) || clusters.set(top, []).get(top)).push(p);
-  });
+    if (top === root) continue;
+    if (!clusters.has(top)) clusters.set(top, []);
+    clusters.get(top).push(p);
+  }
 
   let cid = 0;
-  const descCount = page => {
-    if (descMemo.has(page)) return descMemo.get(page);
-    let n = 0; (function rec(x){ x.children.forEach(c => { n++; rec(c); }); })(page);
-    descMemo.set(page, n);
-    return n;
-  };
-
-  clusters.forEach((members, top) => {
-    const rep = members.reduce((a,b)=>descCount(b)>descCount(a)?b:a, top);
-    if (!rep.parent) {
+  for (const [top, members] of clusters) {
+    const rep = members.reduce((a,b)=> descendants(b) > descendants(a) ? b : a, top);
+    if (!rep.parent) { // only lift if not already attached under root
       rep.parent = root;
       rep.isSecondary = true;
       rep.clusterId = cid++;
       root.children.push(rep);
     }
-  });
+  }
 }
 
-/* =====================================================================
-   2) GENERIC HELPERS
-   - idle / clipboard / URL helpers
-   - lazy loaders: D3, Highlight (+theme), Markdown, KaTeX
-   - tiny UI helpers
-====================================================================== */
-function whenIdle(cb, timeout = 1500) {
-  ('requestIdleCallback' in window)
-    ? requestIdleCallback(cb, { timeout })
-    : setTimeout(cb, 1);
+/** Compute and cache the hash path (id chain) for all pages. */
+function computeHashes() {
+  const make = p => {
+    const segs = [];
+    for (let n = p; n && n.parent; n = n.parent) segs.unshift(n.id);
+    p.hash = segs.join('#'); // '' for root
+  };
+  pages.forEach(make);
 }
+
+/* ──────────────────────── idle / clipboard / URL helpers ───────────────── */
+const whenIdle = (cb, timeout = 1500) =>
+  ('requestIdleCallback' in window) ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 1);
 
 async function copyText(txt, node) {
   try {
     await navigator.clipboard.writeText(txt);
     node?.classList.add('flash');
-    setTimeout(() => node?.classList.remove('flash'), 350);
+    setTimeout(() => node?.classList.remove('flash'), 300);
   } catch (e) {
     if (KM.DEBUG) console.warn('Clipboard API unavailable', e);
   }
 }
 
-// URL / tree helpers
-function hashOf(page) {
-  const segs = [];
-  for (let n = page; n && n.parent; n = n.parent) segs.unshift(n.id);
-  return segs.join('#');
-}
+function hashOf(page) { return page?.hash ?? ''; }
 function find(segs) {
   let n = root;
   for (const id of segs) {
@@ -181,7 +171,7 @@ function find(segs) {
 function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
-// ── Lazy-loaders ─────────────────────────────────────────────────────
+/* ───────────────────────────── lazy-loaders ────────────────────────────── */
 KM.ensureD3 = (() => {
   let ready;
   return function ensureD3 () {
@@ -208,10 +198,15 @@ KM.ensureHighlight = (() => {
     if (ready) return ready;
     ready = (async () => {
       const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
-      await Promise.all(LANGS.map(async lang => {
-        const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
-        hljs.registerLanguage(lang, mod.default);
-      }));
+      if (Array.isArray(LANGS) && LANGS.length) {
+        const loads = LANGS.map(async lang => {
+          try {
+            const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
+            hljs.registerLanguage(lang, mod.default);
+          } catch (_) { /* ignore unknown language; keep going */ }
+        });
+        await Promise.allSettled(loads);
+      }
       window.hljs = hljs;
     })();
     return ready;
@@ -284,7 +279,7 @@ KM.ensureKatex = (() => {
   };
 })();
 
-// UI helpers
+/* ─────────────────────── UI helpers + decorations ──────────────────────── */
 function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
@@ -297,9 +292,6 @@ const iconBtn = (title, path, cls, onClick) =>
   el('button', { class: cls, title, onclick:onClick, innerHTML:
     `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>` });
 
-/* =====================================================================
-   3) CONTENT DECORATION (numbers, ToC, copy, links)
-====================================================================== */
 function numberHeadings(elm) {
   const counters = [0,0,0,0,0,0];
   $$('h1,h2,h3,h4,h5', elm).forEach(h => {
@@ -396,9 +388,7 @@ function decorateCodeBlocks() {
   });
 }
 
-/* =====================================================================
-   4) DOM BUILDERS: tree, search, breadcrumb
-====================================================================== */
+/* ──────────────────────── sidebar / search / crumb ─────────────────────── */
 let sidebarCurrent = null;
 
 function buildTree() {
@@ -493,9 +483,7 @@ function breadcrumb(page) {
   }
 }
 
-/* =====================================================================
-   5) Mini-graph (D3)
-====================================================================== */
+/* ─────────────────────────── mini-graph (D3) ──────────────────────────── */
 const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hierPRE:'link_hier', tagPRE:'link_tag', label:'graph_text' };
 const graphs = {}; let CURRENT = -1;
 
@@ -526,11 +514,6 @@ function buildGraphData() {
   const N=[], L=[], A=new Map(); const hierPairs = new Set();
   const touch = (a,b) => { (A.get(a)||A.set(a,new Set()).get(a)).add(b); (A.get(b)||A.set(b,new Set()).get(b)).add(a); };
   const overlap = (Aset,Bset) => { let n=0; for (const x of Aset) if (Bset.has(x)) n++; return n; };
-  const descCount = p => {
-    if (descMemo.has(p)) return descMemo.get(p);
-    let n=0; (function rec(x){ x.children.forEach(c=>{ n++; rec(c); }); })(p);
-    descMemo.set(p, n); return n;
-  };
   const tierOf = n => n<3?1 : n<6?2 : n<11?3 : n<21?4 : 5;
 
   pages.forEach((p,i) => { p._i = i; N.push({ id:i, label:p.title, ref:p }); });
@@ -539,7 +522,7 @@ function buildGraphData() {
     if (!p.parent) return;
     if (p.isSecondary && p.parent === root) return;
     const a = p._i, b = p.parent._i, key = a<b?`${a}|${b}`:`${b}|${a}`;
-    L.push({ source:a, target:b, shared:0, kind:'hier', tier: tierOf(descCount(p)) });
+    L.push({ source:a, target:b, shared:0, kind:'hier', tier: tierOf(descendants(p)) });
     hierPairs.add(key); touch(a,b);
   });
 
@@ -662,9 +645,7 @@ function observeMiniResize() {
   }).observe(el);
 }
 
-/* =====================================================================
-   6) RENDERER + ROUTER + UI INIT
-====================================================================== */
+/* ───────────────────────── renderer + router + init ────────────────────── */
 async function render(page, anchor) {
   const { parse } = await KM.ensureMarkdown();
   $('#content').innerHTML = parse(page.content, { headerIds:false });
@@ -717,7 +698,8 @@ function route() {
   closePanels();
   const seg = location.hash.slice(1).split('#').filter(Boolean);
   const page = find(seg);
-  const baseSegs = hashOf(page) ? hashOf(page).split('#') : [];
+  const base = hashOf(page);
+  const baseSegs = base ? base.split('#') : [];
   const anchor = seg.slice(baseSegs.length).join('#');
 
   if (currentPage !== page) {
@@ -729,11 +711,9 @@ function route() {
     highlightCurrent(true);
     highlightSidebar(page);
   } else if (anchor) {
-    // Same page; jump to heading and let the ToC observer update the highlight.
     const target = DOC.getElementById(anchor);
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
-      // Proactively sync ToC highlight (observer will usually do this as well).
       const a = $(`#toc li[data-hid="${anchor}"] > a`);
       if (a) { $('#toc .toc-current')?.classList.remove('toc-current'); a.classList.add('toc-current'); }
     }
@@ -837,15 +817,13 @@ function initUI() {
   });
 
   // in-app routing
-  addEventListener('hashchange', route);
+  addEventListener('hashchange', route, { passive: true });
 
   // warm caches during idle
   whenIdle(async () => { await KM.ensureHighlight(); /* snappy code blocks */ });
 }
 
-/* =====================================================================
-   7) BOOTSTRAP — fetch MD, parse, attach homes, init UI
-====================================================================== */
+/* ──────────────────────────────── boot ─────────────────────────────────── */
 (async () => {
   try {
     if (!MD) throw new Error('CONFIG.MD is empty.');
@@ -854,6 +832,7 @@ function initUI() {
     const txt = await r.text();
     parseMarkdownBundle(txt);
     attachSecondaryHomes();
+    computeHashes();              // cache page.hash after hierarchy is final
     initUI();
     // ensure first graph highlighting after initial layout stabilizes
     await new Promise(res => setTimeout(res, 120));
