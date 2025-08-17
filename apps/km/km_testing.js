@@ -1,29 +1,47 @@
+/* eslint-env browser, es2022 */
 /* =====================================================================
-   km.js  —  Static No-Build Wiki runtime
+   km_testing.js — Static No-Build Wiki runtime (ESM)
+   Structure: parse → helpers → UI builders → graph → router → boot
 ====================================================================== */
+'use strict';
 
-window.KM = window.KM || {};                      // micro-namespace
-const $  = (s, c = document) => c.querySelector(s);
-const $$ = (s, c = document) => [...c.querySelectorAll(s)];
+window.KM = window.KM || {}; // micro-namespace
+
+/* ────────────────────────────────────────────────────────────────────
+   Short helpers (kept tiny on purpose)
+──────────────────────────────────────────────────────────────────── */
+const DOC = document;
+const $  = (sel, c = DOC) => c.querySelector(sel);
+const $$ = (sel, c = DOC) => [...c.querySelectorAll(sel)];
+const el = (tag, props = {}, children = []) => {
+  const n = DOC.createElement(tag);
+  for (const k in props) {
+    const v = props[k];
+    if (k === 'class' || k === 'className') n.className = v;
+    else if (k === 'dataset') Object.assign(n.dataset, v);
+    else if (k in n) n[k] = v;
+    else n.setAttribute(k, v);
+  }
+  for (const ch of children) n.append(ch);
+  return n;
+};
 Object.assign(KM, { $, $$, DEBUG: false });
 
-const DOC = document;
 const CFG = window.CONFIG || {};
 const { TITLE = 'Wiki', MD = '' } = CFG;
 
 /* =====================================================================
-   1) MARKDOWN → DATA-MODEL
+   1) MARKDOWN → DATA MODEL
+   Bundle: <!--id:"home" title:"..." parent:"..." tags:"a,b"-->…content…
 ====================================================================== */
-const pages = [];                // every article
-const byId  = new Map();         // id → page
-let root    = null;              // set after parsing
+const pages = [];                 // all articles
+const byId  = new Map();          // id → page
+let root    = null;               // set after parsing
+const descMemo = new Map();       // page → descendant count (memoized)
 
-/**
- * Parse a Markdown bundle into pages with metadata and section index.
- * Bundle format: <!--id:"home" title:"..." parent:"..." tags:"a,b"-->…content…
- */
+/** Parse a Markdown bundle into pages with metadata + a section index. */
 function parseMarkdownBundle(txt) {
-  // 0) split bundle into individual pages
+  // split bundle into individual pages
   for (const [, hdr, body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
@@ -31,25 +49,25 @@ function parseMarkdownBundle(txt) {
   }
   if (!pages.length) throw new Error('No pages parsed from MD bundle.');
 
-  // 1) lookups
+  // lookups + root
   pages.forEach(p => byId.set(p.id, p));
   root = byId.get('home') || pages[0];
 
-  // 2) parent / children
+  // parent/children
   pages.forEach(p => {
     if (p === root) return;
     const par = byId.get((p.parent || '').trim());
-    if (par) { p.parent = par; par.children.push(p); }
-    else     { p.parent = null; }
+    p.parent = par || null;
+    par && par.children.push(p);
   });
 
-  // 3) tag sets + fast search blob
+  // tags + fast search blob
   pages.forEach(p => {
-    p.tagsSet   = new Set((p.tags || '').split(',').filter(Boolean));
+    p.tagsSet   = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
   });
 
-  // 4) section index (fence-aware)
+  // section index (fence-aware)
   pages.forEach(p => {
     const counters = [0,0,0,0,0,0];
     const sections = [];
@@ -84,9 +102,10 @@ function parseMarkdownBundle(txt) {
   });
 }
 
+/** Add one representative “secondary home” per non-root cluster, under root. */
 function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
-  const clusters = new Map();
+  const clusters = new Map(); // top → members[]
   pages.forEach(p => {
     const top = topOf(p);
     if (top === root) return;
@@ -95,7 +114,9 @@ function attachSecondaryHomes() {
 
   let cid = 0;
   const descCount = page => {
+    if (descMemo.has(page)) return descMemo.get(page);
     let n = 0; (function rec(x){ x.children.forEach(c => { n++; rec(c); }); })(page);
+    descMemo.set(page, n);
     return n;
   };
 
@@ -112,18 +133,16 @@ function attachSecondaryHomes() {
 
 /* =====================================================================
    2) GENERIC HELPERS
-   ─ idle / clipboard / URL helpers
-   ─ lazy loaders: D3, Highlight (+theme), Markdown, KaTeX
-   ─ tiny UI helpers
+   - idle / clipboard / URL helpers
+   - lazy loaders: D3, Highlight (+theme), Markdown, KaTeX
+   - tiny UI helpers
 ====================================================================== */
-// idle (rIC fallback)
 function whenIdle(cb, timeout = 1500) {
   ('requestIdleCallback' in window)
     ? requestIdleCallback(cb, { timeout })
     : setTimeout(cb, 1);
 }
 
-// clipboard
 async function copyText(txt, node) {
   try {
     await navigator.clipboard.writeText(txt);
@@ -134,7 +153,7 @@ async function copyText(txt, node) {
   }
 }
 
-// URL helpers
+// URL / tree helpers
 function hashOf(page) {
   const segs = [];
   for (let n = page; n && n.parent; n = n.parent) segs.unshift(n.id);
@@ -198,27 +217,27 @@ KM.ensureHLJSTheme = (() => {
   };
   let ready = null, wired = false;
 
-  function getLink() {
-    let l = document.querySelector('link[data-hljs-theme]');
+  function linkEl() {
+    let l = DOC.querySelector('link[data-hljs-theme]');
     if (!l) {
-      l = document.createElement('link');
+      l = DOC.createElement('link');
       l.rel = 'stylesheet';
       l.setAttribute('data-hljs-theme','');
-      document.head.appendChild(l);
+      DOC.head.appendChild(l);
     }
     return l;
   }
-  function mode() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
-  function apply() {
-    const href = THEME[mode()], l = getLink();
+  const mode = () => DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const apply = () => {
+    const href = THEME[mode()], l = linkEl();
     if (l.getAttribute('href') === href) return Promise.resolve();
     return new Promise(res => { l.onload = l.onerror = res; l.setAttribute('href', href); });
-  }
+  };
   return function ensureHLJSTheme() {
     if (!ready) ready = apply();
     if (!wired) {
       wired = true;
-      new MutationObserver(apply).observe(document.documentElement, { attributes:true, attributeFilter:['data-theme'] });
+      new MutationObserver(apply).observe(DOC.documentElement, { attributes:true, attributeFilter:['data-theme'] });
     }
     return ready;
   };
@@ -243,9 +262,9 @@ KM.ensureKatex = (() => {
   let ready;
   return function ensureKatex() {
     if (ready) return ready;
-    if (!document.getElementById('katex-css')) {
-      const link = Object.assign(document.createElement('link'), { id:'katex-css', rel:'stylesheet', href: BASE + 'katex.min.css' });
-      document.head.appendChild(link);
+    if (!DOC.getElementById('katex-css')) {
+      const link = Object.assign(DOC.createElement('link'), { id:'katex-css', rel:'stylesheet', href: BASE + 'katex.min.css' });
+      DOC.head.appendChild(link);
     }
     ready = Promise.all([
       import(BASE + 'katex.min.js/+esm'),
@@ -257,67 +276,25 @@ KM.ensureKatex = (() => {
   };
 })();
 
-// Small UI helpers
+// UI helpers
 function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
 }
+const ICONS = {
+  link : 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
+  code : 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
+};
+const iconBtn = (title, path, cls, onClick) =>
+  el('button', { class: cls, title, onclick:onClick, innerHTML:
+    `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>` });
 
-function addCopyButton({ parent, title, iconPath, onClick }) {
-  const btn = document.createElement('button');
-  btn.title = title;
-  btn.innerHTML = `
-    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="${iconPath}"></path>
-    </svg>`;
-  btn.onclick = onClick;
-  parent.appendChild(btn);
-}
-
-function decorateHeadings(page) {
-  $$('#content h1,h2,h3,h4,h5').forEach(h => {
-    const iconPath = 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z';
-    addCopyButton({
-      parent: Object.assign(document.createElement('button'), { className:'heading-copy' }),
-      title : 'Copy direct link',
-      iconPath,
-      onClick: () => {}
-    });
-    const btn = h.querySelector('button.heading-copy') || (() => {
-      const b = document.createElement('button'); b.className = 'heading-copy'; h.appendChild(b); return b;
-    })();
-
-    const base = hashOf(page);
-    const copyUrl = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
-    const copy = () => copyText(copyUrl, btn);
-
-    h.style.cursor = 'pointer';
-    h.onclick = copy;
-    btn.onclick = e => { e.stopPropagation(); copy(); };
-    btn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="${iconPath}"></path>
-      </svg>`;
-  });
-}
-
-function decorateCodeBlocks() {
-  $$('#content pre').forEach(pre => {
-    const iconPath = 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z';
-    const btn = document.createElement('button');
-    btn.className = 'code-copy'; btn.title = 'Copy code';
-    btn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor" d="${iconPath}"></path>
-      </svg>`;
-    btn.onclick = () => copyText(pre.innerText, btn);
-    pre.appendChild(btn);
-  });
-}
-
-function numberHeadings(el) {
+/* =====================================================================
+   3) CONTENT DECORATION (numbers, ToC, copy, links)
+====================================================================== */
+function numberHeadings(elm) {
   const counters = [0,0,0,0,0,0];
-  $$('h1,h2,h3,h4,h5', el).forEach(h => {
+  $$('h1,h2,h3,h4,h5', elm).forEach(h => {
     const level = +h.tagName[1] - 1;
     counters[level]++; for (let i = level + 1; i < 6; i++) counters[i] = 0;
     h.id = counters.slice(0, level+1).filter(Boolean).join('_');
@@ -331,25 +308,28 @@ function buildToc(page) {
   const heads = $$('#content h1,#content h2,#content h3');
   if (!heads.length) return;
 
-  const ul = document.createElement('ul');
-  heads.forEach(h => {
-    const li = document.createElement('li'); li.dataset.level = h.tagName[1]; li.dataset.hid = h.id;
-    const a = document.createElement('a'); a.href = '#' + (hashOf(page) ? hashOf(page)+'#' : '') + h.id; a.textContent = h.textContent;
-    li.appendChild(a); ul.appendChild(li);
-  });
-  nav.appendChild(ul);
+  const base = hashOf(page);
+  const ulEl = el('ul');
+  for (const h of heads) {
+    const li = el('li', { dataset:{ level: h.tagName[1], hid: h.id } }, [
+      el('a', { href: '#' + (base ? base + '#' : '') + h.id, textContent: h.textContent })
+    ]);
+    ulEl.append(li);
+  }
+  nav.append(ulEl);
 
   tocObserver?.disconnect();
   tocObserver = new IntersectionObserver(entries => {
-    entries.forEach(en => {
+    for (const en of entries) {
       const a = $(`#toc li[data-hid="${en.target.id}"] > a`);
-      if (!a) return;
+      if (!a) continue;
       if (en.isIntersecting) {
-        $('#toc').querySelectorAll('.toc-current').forEach(x => x.classList.remove('toc-current'));
+        $('#toc .toc-current')?.classList.remove('toc-current');
         a.classList.add('toc-current');
       }
-    });
+    }
   }, { rootMargin:'0px 0px -70% 0px', threshold:0 });
+
   heads.forEach(h => tocObserver.observe(h));
 }
 
@@ -358,10 +338,10 @@ function prevNext(page) {
   if (!page.parent) return;
   const sib = page.parent.children; if (sib.length < 2) return;
   const i = sib.indexOf(page);
-  const nav = document.createElement('div'); nav.id = 'prev-next';
-  if (i > 0) nav.appendChild(Object.assign(document.createElement('a'), { href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title }));
-  if (i < sib.length-1) nav.appendChild(Object.assign(document.createElement('a'), { href:'#'+hashOf(sib[i+1]), textContent:sib[i+1].title+' →' }));
-  $('#content').appendChild(nav);
+  const wrap = el('div', { id:'prev-next' });
+  if (i > 0) wrap.append(el('a', { href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title }));
+  if (i < sib.length-1) wrap.append(el('a', { href:'#'+hashOf(sib[i+1]), textContent:sib[i+1].title+' →' }));
+  $('#content').append(wrap);
 }
 
 function seeAlso(page) {
@@ -374,9 +354,9 @@ function seeAlso(page) {
     .sort((a,b)=> b.shared - a.shared || a.p.title.localeCompare(b.p.title));
   if (!related.length) return;
 
-  const wrap = document.createElement('div'); wrap.id='see-also'; wrap.innerHTML = '<h2>See also</h2><ul></ul>';
-  const ul = wrap.querySelector('ul');
-  related.forEach(({p}) => { const li = document.createElement('li'); li.innerHTML = `<a href="#${hashOf(p)}">${p.title}</a>`; ul.appendChild(li); });
+  const wrap = el('div', { id:'see-also' }, [ el('h2', { textContent:'See also' }), el('ul') ]);
+  const ulEl = wrap.querySelector('ul');
+  related.forEach(({p}) => ulEl.append(el('li', {}, [el('a', { href:'#'+hashOf(p), textContent:p.title })])));
   const content = $('#content'); const pn = $('#prev-next'); content.insertBefore(wrap, pn ?? null);
 }
 
@@ -384,19 +364,35 @@ function fixFootnoteLinks(page) {
   const base = hashOf(page); if (!base) return;
   $$('#content a[href^="#"]').forEach(a => {
     const href = a.getAttribute('href');
-    if (/^#(?:fn|footnote)/.test(href) && !href.includes(base)) a.setAttribute('href', `#${base}${href}`);
+    if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) a.setAttribute('href', `#${base}${href}`);
+  });
+}
+
+function decorateHeadings(page) {
+  const base = hashOf(page);
+  $$('#content h1,h2,h3,h4,h5').forEach(h => {
+    const url = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
+    const btn = h.querySelector('button.heading-copy') ||
+      h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy', e => {
+        e.stopPropagation(); copyText(url, h.querySelector('button.heading-copy'));
+      }));
+    h.style.cursor = 'pointer';
+    h.onclick = () => copyText(url, btn);
+  });
+}
+
+function decorateCodeBlocks() {
+  $$('#content pre').forEach(pre => {
+    if (pre.querySelector('button.code-copy')) return;
+    pre.append(iconBtn('Copy code', ICONS.code, 'code-copy', () => copyText(pre.innerText, pre.querySelector('button.code-copy'))));
   });
 }
 
 /* =====================================================================
-   3) DOM BUILDERS
-   ─ Sidebar tree + highlight
-   ─ Search
-   ─ Breadcrumb
-   ─ Mini-graph (D3)
+   4) DOM BUILDERS: tree, search, breadcrumb
 ====================================================================== */
-// Sidebar
 let sidebarCurrent = null;
+
 function buildTree() {
   const ul = $('#tree'); if (!ul) return;
   ul.innerHTML = '';
@@ -405,26 +401,25 @@ function buildTree() {
 
   const rec = (nodes, container, depth=0) => {
     nodes.forEach(p => {
-      const li = document.createElement('li');
+      const li = el('li');
       if (p.children.length) {
         const open = depth < 2;
         li.className = 'folder' + (open ? ' open' : '');
-        const caret = document.createElement('button'); caret.className='caret'; caret.setAttribute('aria-expanded', String(open));
-        const lbl = document.createElement('a'); lbl.className='lbl'; lbl.dataset.page=p.id; lbl.href = '#'+hashOf(p); lbl.textContent = p.title;
-        const sub = document.createElement('ul'); sub.style.display = open ? 'block':'none';
-        caret.onclick = e => { e.stopPropagation(); const t = li.classList.toggle('open'); caret.setAttribute('aria-expanded', t); sub.style.display = t ? 'block':'none'; };
-        li.append(caret, lbl, sub); container.appendChild(li);
+        const caret = el('button', { class:'caret', 'aria-expanded': String(open) });
+        const lbl   = el('a', { class:'lbl', dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title });
+        const sub   = el('ul', { style:`display:${open?'block':'none'}` });
+        li.append(caret, lbl, sub); container.append(li);
         rec(p.children.sort((a,b)=>a.title.localeCompare(b.title)), sub, depth+1);
       } else {
         li.className = 'article';
-        const a = document.createElement('a'); a.dataset.page=p.id; a.href = '#'+hashOf(p); a.textContent = p.title;
-        li.appendChild(a); container.appendChild(li);
+        li.append(el('a', { dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title }));
+        container.append(li);
       }
     });
   };
 
   rec(prim, ul);
-  secs.forEach(r => { const sep = document.createElement('li'); sep.className='group-sep'; sep.innerHTML='<hr>'; ul.appendChild(sep); rec([r], ul); });
+  secs.forEach(r => { ul.append(el('li', { class:'group-sep', innerHTML:'<hr>' })); rec([r], ul); });
 }
 
 function highlightSidebar(page) {
@@ -433,91 +428,75 @@ function highlightSidebar(page) {
   sidebarCurrent?.classList.add('sidebar-current');
 }
 
-// Search
 function search(q) {
   const resUL = $('#results'), treeUL = $('#tree');
   if (!resUL || !treeUL) return;
 
-  if (!q.trim()) { resUL.style.display='none'; treeUL.style.display=''; return; }
+  if (!q.trim()) { resUL.style.display='none'; resUL.innerHTML=''; treeUL.style.display=''; return; }
   const tokens = q.toLowerCase().split(/\s+/).filter(t => t.length >= 2);
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
   pages.filter(p => tokens.every(tok => p.searchStr.includes(tok))).forEach(p => {
-    // Page-level result as a link
-    const li = document.createElement('li'); li.className='page-result';
-    const a = document.createElement('a');
-    a.href = '#' + hashOf(p);
-    a.textContent = p.title;
-    li.appendChild(a);
-    resUL.appendChild(li);
-
-    // Heading-level matches under that page, also as links
-    const subMatches = p.sections.filter(sec => tokens.every(tok => sec.search.includes(tok)));
-    if (subMatches.length) {
-      const subUL = document.createElement('ul'); subUL.className='sub-results';
+    const li = el('li', { class:'page-result' }, [
+      el('a', { href:'#'+hashOf(p), textContent:p.title })
+    ]);
+    const matches = p.sections.filter(sec => tokens.every(tok => sec.search.includes(tok)));
+    if (matches.length) {
       const base = hashOf(p);
-      subMatches.forEach(sec => {
-        const subLI = document.createElement('li'); subLI.className='heading-result';
-        const subA = document.createElement('a');
-        subA.href = '#' + (base ? base + '#' : '') + sec.id;
-        subA.textContent = sec.txt;
-        subLI.appendChild(subA);
-        subUL.appendChild(subLI);
-      });
-      li.appendChild(subUL);
+      const sub = el('ul', { class:'sub-results' });
+      matches.forEach(sec => sub.append(el('li', { class:'heading-result' }, [
+        el('a', { href:'#'+(base ? base+'#' : '')+sec.id, textContent:sec.txt })
+      ])));
+      li.append(sub);
     }
+    resUL.append(li);
   });
 
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
-
-  // Close side panels when a result link is followed
-  resUL.querySelectorAll('a').forEach(a => a.addEventListener('click', closePanels));
 }
 
-// Breadcrumb
 function breadcrumb(page) {
   const dyn = $('#crumb-dyn'); if (!dyn) return;
   dyn.innerHTML = '';
   const chain = []; for (let n = page; n; n = n.parent) chain.unshift(n); chain.shift(); // drop root
+
   chain.forEach(n => {
     dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
-    const wrap = document.createElement('span'); wrap.className = 'dropdown';
-    const a = document.createElement('a'); a.textContent = n.title; a.href = '#'+hashOf(n); if (n===page) a.className='crumb-current';
-    wrap.appendChild(a);
+    const wrap = el('span', { class:'dropdown' });
+    const a = el('a', { textContent:n.title, href:'#'+hashOf(n) });
+    if (n === page) a.className = 'crumb-current';
+    wrap.append(a);
 
     const siblings = n.parent.children.filter(s => s !== n);
     if (siblings.length) {
-      const ul = document.createElement('ul');
-      siblings.forEach(s => { const li = document.createElement('li'); li.textContent = s.title; li.onclick = () => nav(s); ul.appendChild(li); });
-      wrap.appendChild(ul);
+      const ul = el('ul');
+      siblings.forEach(s => ul.append(el('li', { textContent:s.title, onclick: () => nav(s) })));
+      wrap.append(ul);
     }
-    dyn.appendChild(wrap);
+    dyn.append(wrap);
   });
 
   if (page.children.length) {
-    const box = document.createElement('span'); box.className='childbox'; box.innerHTML = '<span class="toggle">▾</span><ul></ul>';
+    const box = el('span', { class:'childbox' }, [ el('span', { class:'toggle', textContent:'▾' }), el('ul') ]);
     const ul = box.querySelector('ul');
-    page.children.sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch => {
-      const li = document.createElement('li'); li.textContent = ch.title; li.onclick = () => nav(ch); ul.appendChild(li);
-    });
-    dyn.appendChild(box);
+    page.children.sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch =>
+      ul.append(el('li', { textContent:ch.title, onclick: () => nav(ch) })));
+    dyn.append(box);
   }
 }
 
 /* =====================================================================
-   4) Mini-graph (D3)
+   5) Mini-graph (D3)
 ====================================================================== */
 const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hierPRE:'link_hier', tagPRE:'link_tag', label:'graph_text' };
 const graphs = {}; let CURRENT = -1;
 
 function getMiniSize() {
-  const el = document.getElementById('mini');
-  if (!el) return { w: 400, h: 300 };
-  if (el.classList.contains('fullscreen')) {
-    return { w: window.innerWidth, h: window.innerHeight };
-  }
-  const r = el.getBoundingClientRect();
-  return { w: Math.max(1, Math.floor(r.width)), h: Math.max(1, Math.floor(r.height)) };
+  const svg = $('#mini');
+  if (!svg) return { w: 400, h: 300 };
+  if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
+  const r = svg.getBoundingClientRect();
+  return { w: Math.max(1, r.width|0), h: Math.max(1, r.height|0) };
 }
 
 function updateMiniViewport() {
@@ -533,6 +512,38 @@ function updateMiniViewport() {
 
   sim.force('center', KM.d3.forceCenter(w/2, h/2));
   sim.alpha(0.2).restart();
+}
+
+function buildGraphData() {
+  const N=[], L=[], A=new Map(); const hierPairs = new Set();
+  const touch = (a,b) => { (A.get(a)||A.set(a,new Set()).get(a)).add(b); (A.get(b)||A.set(b,new Set()).get(b)).add(a); };
+  const overlap = (Aset,Bset) => { let n=0; for (const x of Aset) if (Bset.has(x)) n++; return n; };
+  const descCount = p => {
+    if (descMemo.has(p)) return descMemo.get(p);
+    let n=0; (function rec(x){ x.children.forEach(c=>{ n++; rec(c); }); })(p);
+    descMemo.set(p, n); return n;
+  };
+  const tierOf = n => n<3?1 : n<6?2 : n<11?3 : n<21?4 : 5;
+
+  pages.forEach((p,i) => { p._i = i; N.push({ id:i, label:p.title, ref:p }); });
+
+  pages.forEach(p => {
+    if (!p.parent) return;
+    if (p.isSecondary && p.parent === root) return;
+    const a = p._i, b = p.parent._i, key = a<b?`${a}|${b}`:`${b}|${a}`;
+    L.push({ source:a, target:b, shared:0, kind:'hier', tier: tierOf(descCount(p)) });
+    hierPairs.add(key); touch(a,b);
+  });
+
+  for (let i=0; i<pages.length; i++) {
+    const a = pages[i];
+    for (let j=i+1; j<pages.length; j++) {
+      const b = pages[j], n = overlap(a.tagsSet, b.tagsSet); if (!n) continue;
+      const key = i<j?`${i}|${j}`:`${j}|${i}`; if (hierPairs.has(key)) continue;
+      L.push({ source:i, target:j, shared:n, kind:'tag' }); touch(i,j);
+    }
+  }
+  return { nodes:N, links:L, adj:A };
 }
 
 async function buildGraph() {
@@ -623,7 +634,7 @@ function highlightCurrent(force=false) {
     const dx = cx - d.x, dy = cy - d.y;
     g.view.attr('transform', `translate(${dx},${dy})`);
 
-    // gentle nudge
+    // gentle nudge towards center
     const k = 0.10;
     d.vx += (cx - d.x)*k; d.vy += (cy - d.y)*k;
   });
@@ -635,60 +646,30 @@ function highlightCurrent(force=false) {
 }
 
 function observeMiniResize() {
-  const el = document.getElementById('mini');
-  if (!el) return;
+  const el = $('#mini'); if (!el) return;
   new ResizeObserver(() => {
     if (!graphs.mini) return;
-    updateMiniViewport();       // keep viewBox and forces in sync
-    highlightCurrent(true);     // recenter softly after any size change
+    updateMiniViewport();
+    highlightCurrent(true); // recenter softly after size change
   }).observe(el);
 }
 
-function buildGraphData() {
-  const N=[], L=[], A=new Map(); const hierPairs = new Set();
-  const touch = (a,b) => { (A.get(a)||A.set(a,new Set()).get(a)).add(b); (A.get(b)||A.set(b,new Set()).get(b)).add(a); };
-  const overlap = (Aset,Bset) => { let n=0; for (const x of Aset) if (Bset.has(x)) n++; return n; };
-  const descCount = p => { let n=0; (function rec(x){ x.children.forEach(c=>{ n++; rec(c); }); })(p); return n; };
-  const tierOf = n => n<3?1 : n<6?2 : n<11?3 : n<21?4 : 5;
-
-  pages.forEach((p,i) => { p._i = i; p.tagsSet = p.tagsSet || new Set(p.tags);
-    N.push({ id:i, label:p.title, ref:p }); });
-
-  pages.forEach(p => {
-    if (!p.parent) return;
-    if (p.isSecondary && p.parent === root) return;
-    const a = p._i, b = p.parent._i, key = a<b?`${a}|${b}`:`${b}|${a}`;
-    L.push({ source:a, target:b, shared:0, kind:'hier', tier: tierOf(descCount(p)) });
-    hierPairs.add(key); touch(a,b);
-  });
-
-  pages.forEach((a,i) => {
-    for (let j=i+1; j<pages.length; j++) {
-      const b = pages[j], n = overlap(a.tagsSet, b.tagsSet); if (!n) continue;
-      const key = i<j?`${i}|${j}`:`${j}|${i}`; if (hierPairs.has(key)) continue;
-      L.push({ source:i, target:j, shared:n, kind:'tag' }); touch(i,j);
-    }
-  });
-
-  return { nodes:N, links:L, adj:A };
-}
-
 /* =====================================================================
-   5) RENDERER + ROUTER + BOOT
+   6) RENDERER + ROUTER + UI INIT
 ====================================================================== */
 async function render(page, anchor) {
   const { parse } = await KM.ensureMarkdown();
   $('#content').innerHTML = parse(page.content, { headerIds:false });
 
-  // images: defer work
-  document.querySelectorAll('#content img').forEach(img => {
+  // light image hints
+  $$('#content img').forEach(img => {
     img.loading='lazy'; img.decoding='async'; if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','low');
   });
 
   fixFootnoteLinks(page);
   numberHeadings($('#content'));
 
-  if (document.querySelector('#content pre code')) {
+  if (DOC.querySelector('#content pre code')) {
     await KM.ensureHLJSTheme();
     await KM.ensureHighlight();
     window.hljs.highlightAll();
@@ -713,7 +694,7 @@ async function render(page, anchor) {
   prevNext(page);
   seeAlso(page);
 
-  if (anchor) document.getElementById(anchor)?.scrollIntoView({ behavior:'smooth' });
+  if (anchor) DOC.getElementById(anchor)?.scrollIntoView({ behavior:'smooth' });
 }
 
 function route() {
@@ -723,7 +704,7 @@ function route() {
   const baseSegs = hashOf(page) ? hashOf(page).split('#') : [];
   const anchor = seg.slice(baseSegs.length).join('#');
 
-  document.documentElement.scrollTop = 0; document.body.scrollTop = 0;
+  DOC.documentElement.scrollTop = 0; DOC.body.scrollTop = 0;
 
   breadcrumb(page);
   render(page, anchor);
@@ -733,7 +714,7 @@ function route() {
 
 /** UI init + listeners (runs once after data is ready) */
 function initUI() {
-  // header
+  // title
   $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
 
   // sidebar + first route
@@ -753,7 +734,7 @@ function initUI() {
     requestAnimationFrame(() => highlightCurrent(true));
   };
 
-  // search
+  // search input (debounced) + clear
   const searchInput = $('#search'), searchClear = $('#search-clear'); let debounce = 0;
   searchInput.oninput = e => {
     clearTimeout(debounce);
@@ -765,7 +746,7 @@ function initUI() {
   // theme toggle (persist + live)
   (() => {
     const btn = $('#theme-toggle');
-    const rootEl = document.documentElement;
+    const rootEl = DOC.documentElement;
     const media = matchMedia('(prefers-color-scheme: dark)');
     let dark = localStorage.getItem('km-theme') === 'dark' || (!localStorage.getItem('km-theme') && media.matches);
     apply(dark);
@@ -778,11 +759,11 @@ function initUI() {
 
   // burger toggles (mobile)
   const togglePanel = sel => {
-    const el = $(sel); const wasOpen = el.classList.contains('open');
+    const elx = $(sel); const wasOpen = elx.classList.contains('open');
     closePanels(); if (!wasOpen) {
-      el.classList.add('open');
-      if (!el.querySelector('.panel-close')) {
-        const btn = document.createElement('button'); btn.className='panel-close'; btn.textContent='✕'; btn.onclick = closePanels; el.appendChild(btn);
+      elx.classList.add('open');
+      if (!elx.querySelector('.panel-close')) {
+        elx.append(el('button', { class:'panel-close', textContent:'✕', onclick: closePanels }));
       }
     }
   };
@@ -792,19 +773,39 @@ function initUI() {
   // auto-close panels on desktop resize + keep fullscreen graph exact
   addEventListener('resize', () => {
     if (matchMedia('(min-width:1001px)').matches) { $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }
-    if (document.getElementById('mini')?.classList.contains('fullscreen')) {
-      updateMiniViewport();
-      highlightCurrent(true);
-    }
+    if ($('#mini')?.classList.contains('fullscreen')) { updateMiniViewport(); highlightCurrent(true); }
   }, { passive: true });
+
+  // event delegation: sidebar caret + links
+  $('#tree').addEventListener('click', e => {
+    const caret = e.target.closest('button.caret');
+    if (caret) {
+      const li = caret.closest('li.folder');
+      const sub = li.querySelector('ul');
+      const open = !li.classList.contains('open');
+      li.classList.toggle('open', open);
+      caret.setAttribute('aria-expanded', String(open));
+      if (sub) sub.style.display = open ? 'block' : 'none';
+      return;
+    }
+    const a = e.target.closest('a');
+    if (a) closePanels();
+  });
+
+  // close panels when selecting search results
+  $('#results').addEventListener('click', e => {
+    if (e.target.closest('a')) closePanels();
+  });
 
   // in-app routing
   addEventListener('hashchange', route);
-  whenIdle(async () => { await KM.ensureHighlight(); /* warm cache for snappy code blocks */ });
+
+  // warm caches during idle
+  whenIdle(async () => { await KM.ensureHighlight(); /* snappy code blocks */ });
 }
 
 /* =====================================================================
-   6) BOOTSTRAP — fetch MD, parse, attach homes, init UI
+   7) BOOTSTRAP — fetch MD, parse, attach homes, init UI
 ====================================================================== */
 (async () => {
   try {
@@ -815,13 +816,14 @@ function initUI() {
     parseMarkdownBundle(txt);
     attachSecondaryHomes();
     initUI();
-    await new Promise(res => setTimeout(res, 150));
+    // ensure first graph highlighting after initial layout stabilizes
+    await new Promise(res => setTimeout(res, 120));
     highlightCurrent(true);
   } catch (err) {
     console.warn('Markdown load failed:', err);
-    const el = $('#content');
-    if (el) {
-      el.innerHTML = `
+    const elc = $('#content');
+    if (elc) {
+      elc.innerHTML = `
         <h1>Content failed to load</h1>
         <p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p>
         <pre>${String(err?.message || err)}</pre>`;
