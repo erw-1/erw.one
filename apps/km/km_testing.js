@@ -2,6 +2,7 @@
 /* =====================================================================
    km_testing.js — Static No-Build Wiki runtime (ESM)
    Structure: parse → helpers → UI builders → graph → router → boot
+   Public API kept: window.CONFIG (TITLE, MD, LANGS) and window.KM.nav(page)
 ====================================================================== */
 'use strict';
 
@@ -198,8 +199,7 @@ KM.ensureHighlight = (() => {
     if (ready) return ready;
     ready = (async () => {
       const { LANGS = [] } = window.CONFIG || {};
-      const core = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
-      const hljs = core.default;
+      const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
       await Promise.all(LANGS.map(async lang => {
         const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
         hljs.registerLanguage(lang, mod.default);
@@ -697,6 +697,14 @@ async function render(page, anchor) {
   if (anchor) DOC.getElementById(anchor)?.scrollIntoView({ behavior:'smooth' });
 }
 
+// Track the currently rendered page so anchor-only navigation is cheap.
+let currentPage = null;
+
+/**
+ * Router:
+ * - If the page segment changes → render + nudge graph/current node.
+ * - If only the heading changes   → smooth scroll only; no re-render, no graph nudge.
+ */
 function route() {
   closePanels();
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -704,12 +712,24 @@ function route() {
   const baseSegs = hashOf(page) ? hashOf(page).split('#') : [];
   const anchor = seg.slice(baseSegs.length).join('#');
 
-  DOC.documentElement.scrollTop = 0; DOC.body.scrollTop = 0;
+  if (currentPage !== page) {
+    currentPage = page;
+    DOC.documentElement.scrollTop = 0; DOC.body.scrollTop = 0;
 
-  breadcrumb(page);
-  render(page, anchor);
-  highlightCurrent(true);
-  highlightSidebar(page);
+    breadcrumb(page);
+    render(page, anchor);
+    highlightCurrent(true);
+    highlightSidebar(page);
+  } else if (anchor) {
+    // Same page; jump to heading and let the ToC observer update the highlight.
+    const target = DOC.getElementById(anchor);
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+      // Proactively sync ToC highlight (observer will usually do this as well).
+      const a = $(`#toc li[data-hid="${anchor}"] > a`);
+      if (a) { $('#toc .toc-current')?.classList.remove('toc-current'); a.classList.add('toc-current'); }
+    }
+  }
 }
 
 /** UI init + listeners (runs once after data is ready) */
