@@ -1,21 +1,27 @@
 /* =====================================================================
-   1) CONFIG & GLOBALS
+   km.js  —  Static No-Build Wiki runtime
 ====================================================================== */
-window.KM = {};                                      // micro-namespace
-const $  = (s, c=document) => c.querySelector(s);    // tiny DOM helpers
-const $$ = (s, c=document) => [...c.querySelectorAll(s)];
-Object.assign(KM, { $, $$ });
 
-const { TITLE, MD } = window.CONFIG || { TITLE:'Wiki', MD:'' }; // resilient defaults
+window.KM = window.KM || {};                      // micro-namespace
+const $  = (s, c = document) => c.querySelector(s);
+const $$ = (s, c = document) => [...c.querySelectorAll(s)];
+Object.assign(KM, { $, $$, DEBUG: false });
 
+const DOC = document;
+const CFG = window.CONFIG || {};
+const { TITLE = 'Wiki', MD = '' } = CFG;
 
 /* =====================================================================
-   2) MARKDOWN → DATA-MODEL  (fetch starts immediately)
+   1) MARKDOWN → DATA-MODEL
 ====================================================================== */
-const pages = [];               // every article
-const byId  = new Map();        // id → page
-let root    = null;             // set after parsing
+const pages = [];                // every article
+const byId  = new Map();         // id → page
+let root    = null;              // set after parsing
 
+/**
+ * Parse a Markdown bundle into pages with metadata and section index.
+ * Bundle format: <!--id:"home" title:"..." parent:"..." tags:"a,b"-->…content…
+ */
 function parseMarkdownBundle(txt) {
   // 0) split bundle into individual pages
   for (const [, hdr, body] of txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g)) {
@@ -23,6 +29,7 @@ function parseMarkdownBundle(txt) {
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
     pages.push({ ...meta, content: body.trim(), children: [] });
   }
+  if (!pages.length) throw new Error('No pages parsed from MD bundle.');
 
   // 1) lookups
   pages.forEach(p => byId.set(p.id, p));
@@ -44,14 +51,15 @@ function parseMarkdownBundle(txt) {
 
   // 4) section index (fence-aware)
   pages.forEach(p => {
-    const counters = [0,0,0,0,0,0], sections = [];
+    const counters = [0,0,0,0,0,0];
+    const sections = [];
     let inFence = false, offset = 0, prev = null;
 
     for (const line of p.content.split(/\r?\n/)) {
       if (/^(?:```|~~~)/.test(line)) inFence = !inFence;
 
       if (!inFence && /^(#{1,5})\s+/.test(line)) {
-        if (prev) { // flush
+        if (prev) {
           prev.body = p.content.slice(prev.bodyStart, offset).trim();
           prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
           sections.push(prev);
@@ -59,13 +67,15 @@ function parseMarkdownBundle(txt) {
         const [, hashes, txt] = line.match(/^(#{1,5})\s+(.+)/);
         const level = hashes.length - 1;
         counters[level]++; for (let i = level + 1; i < 6; i++) counters[i] = 0;
-        prev = { id: counters.slice(0, level+1).filter(Boolean).join('_'),
-                 txt: txt.trim(),
-                 bodyStart: offset + line.length + 1 };
+        prev = {
+          id: counters.slice(0, level + 1).filter(Boolean).join('_'),
+          txt: txt.trim(),
+          bodyStart: offset + line.length + 1
+        };
       }
       offset += line.length + 1;
     }
-    if (prev) { // last section
+    if (prev) {
       prev.body = p.content.slice(prev.bodyStart).trim();
       prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
       sections.push(prev);
@@ -100,17 +110,8 @@ function attachSecondaryHomes() {
   });
 }
 
-// Kick off fetch ASAP (network first!)
-fetch(MD, { cache: 'reload' })
-  .then(r => r.text())
-  .then(parseMarkdownBundle)
-  .then(attachSecondaryHomes)
-  .then(initUI)                        // hoisted below
-  .then(() => new Promise(r => setTimeout(r, 150)))
-  .then(() => highlightCurrent(true)); // once graph exists it will center current (gentle)
-
 /* =====================================================================
-   3) GENERIC HELPERS
+   2) GENERIC HELPERS
    ─ idle / clipboard / URL helpers
    ─ lazy loaders: D3, Highlight (+theme), Markdown, KaTeX
    ─ tiny UI helpers
@@ -128,21 +129,26 @@ async function copyText(txt, node) {
     await navigator.clipboard.writeText(txt);
     node?.classList.add('flash');
     setTimeout(() => node?.classList.remove('flash'), 350);
-  } catch (e) { console.warn('Clipboard API unavailable', e); }
+  } catch (e) {
+    if (KM.DEBUG) console.warn('Clipboard API unavailable', e);
+  }
 }
 
 // URL helpers
 function hashOf(page) {
-  const segs = []; for (let n = page; n && n.parent; n = n.parent) segs.unshift(n.id);
+  const segs = [];
+  for (let n = page; n && n.parent; n = n.parent) segs.unshift(n.id);
   return segs.join('#');
 }
-
 function find(segs) {
   let n = root;
-  for (const id of segs) { const c = n.children.find(k => k.id === id); if (!c) break; n = c; }
+  for (const id of segs) {
+    const c = n.children.find(k => k.id === id);
+    if (!c) break;
+    n = c;
+  }
   return n;
 }
-
 function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
@@ -194,17 +200,20 @@ KM.ensureHLJSTheme = (() => {
 
   function getLink() {
     let l = document.querySelector('link[data-hljs-theme]');
-    if (!l) { l = document.createElement('link'); l.rel='stylesheet'; l.setAttribute('data-hljs-theme',''); document.head.appendChild(l); }
+    if (!l) {
+      l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.setAttribute('data-hljs-theme','');
+      document.head.appendChild(l);
+    }
     return l;
   }
-   
   function mode() { return document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'; }
   function apply() {
     const href = THEME[mode()], l = getLink();
     if (l.getAttribute('href') === href) return Promise.resolve();
     return new Promise(res => { l.onload = l.onerror = res; l.setAttribute('href', href); });
   }
-   
   return function ensureHLJSTheme() {
     if (!ready) ready = apply();
     if (!wired) {
@@ -249,41 +258,57 @@ KM.ensureKatex = (() => {
 })();
 
 // Small UI helpers
-function closePanels() { $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }
+function closePanels() {
+  $('#sidebar')?.classList.remove('open');
+  $('#util')?.classList.remove('open');
+}
+
+function addCopyButton({ parent, title, iconPath, onClick }) {
+  const btn = document.createElement('button');
+  btn.title = title;
+  btn.innerHTML = `
+    <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="${iconPath}"></path>
+    </svg>`;
+  btn.onclick = onClick;
+  parent.appendChild(btn);
+}
 
 function decorateHeadings(page) {
   $$('#content h1,h2,h3,h4,h5').forEach(h => {
-    const btn = document.createElement('button');
-    btn.className = 'heading-copy';
-    btn.innerHTML = `
-      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor"
-          d="M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5
-             5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19
-             c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z"/>
-      </svg>`;
-    btn.title = 'Copy direct link';
-    h.appendChild(btn);
+    const iconPath = 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z';
+    addCopyButton({
+      parent: Object.assign(document.createElement('button'), { className:'heading-copy' }),
+      title : 'Copy direct link',
+      iconPath,
+      onClick: () => {}
+    });
+    const btn = h.querySelector('button.heading-copy') || (() => {
+      const b = document.createElement('button'); b.className = 'heading-copy'; h.appendChild(b); return b;
+    })();
 
     const base = hashOf(page);
     const copyUrl = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
-
     const copy = () => copyText(copyUrl, btn);
+
     h.style.cursor = 'pointer';
     h.onclick = copy;
     btn.onclick = e => { e.stopPropagation(); copy(); };
+    btn.innerHTML = `
+      <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="currentColor" d="${iconPath}"></path>
+      </svg>`;
   });
 }
 
 function decorateCodeBlocks() {
   $$('#content pre').forEach(pre => {
+    const iconPath = 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z';
     const btn = document.createElement('button');
     btn.className = 'code-copy'; btn.title = 'Copy code';
     btn.innerHTML = `
       <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="currentColor"
-          d="M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12
-             c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z"/>
+        <path fill="currentColor" d="${iconPath}"></path>
       </svg>`;
     btn.onclick = () => copyText(pre.innerText, btn);
     pre.appendChild(btn);
@@ -301,9 +326,11 @@ function numberHeadings(el) {
 
 let tocObserver = null;
 function buildToc(page) {
-  const nav = $('#toc'); nav.innerHTML = '';
+  const nav = $('#toc'); if (!nav) return;
+  nav.innerHTML = '';
   const heads = $$('#content h1,#content h2,#content h3');
   if (!heads.length) return;
+
   const ul = document.createElement('ul');
   heads.forEach(h => {
     const li = document.createElement('li'); li.dataset.level = h.tagName[1]; li.dataset.hid = h.id;
@@ -361,9 +388,8 @@ function fixFootnoteLinks(page) {
   });
 }
 
-
 /* =====================================================================
-   4) DOM BUILDERS
+   3) DOM BUILDERS
    ─ Sidebar tree + highlight
    ─ Search
    ─ Breadcrumb
@@ -372,7 +398,8 @@ function fixFootnoteLinks(page) {
 // Sidebar
 let sidebarCurrent = null;
 function buildTree() {
-  const ul = $('#tree'); ul.innerHTML = '';
+  const ul = $('#tree'); if (!ul) return;
+  ul.innerHTML = '';
   const prim = root.children.filter(c => !c.isSecondary).sort((a,b)=>a.title.localeCompare(b.title));
   const secs = root.children.filter(c =>  c.isSecondary).sort((a,b)=>a.clusterId-b.clusterId);
 
@@ -409,15 +436,17 @@ function highlightSidebar(page) {
 // Search
 function search(q) {
   const resUL = $('#results'), treeUL = $('#tree');
+  if (!resUL || !treeUL) return;
+
   if (!q.trim()) { resUL.style.display='none'; treeUL.style.display=''; return; }
-  const tokens = q.split(/\s+/).filter(t => t.length >= 2);
+  const tokens = q.toLowerCase().split(/\s+/).filter(t => t.length >= 2);
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
   pages.filter(p => tokens.every(tok => p.searchStr.includes(tok))).forEach(p => {
     // Page-level result as a link
     const li = document.createElement('li'); li.className='page-result';
     const a = document.createElement('a');
-    a.href = '#' + hashOf(p);                 // "#" for home, or "#a#b#c" for subpages
+    a.href = '#' + hashOf(p);
     a.textContent = p.title;
     li.appendChild(a);
     resUL.appendChild(li);
@@ -430,7 +459,7 @@ function search(q) {
       subMatches.forEach(sec => {
         const subLI = document.createElement('li'); subLI.className='heading-result';
         const subA = document.createElement('a');
-        subA.href = '#' + (base ? base + '#' : '') + sec.id;  // no double-# on home
+        subA.href = '#' + (base ? base + '#' : '') + sec.id;
         subA.textContent = sec.txt;
         subLI.appendChild(subA);
         subUL.appendChild(subLI);
@@ -441,13 +470,14 @@ function search(q) {
 
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
 
-  // (Optional) close side panels when a result link is followed
+  // Close side panels when a result link is followed
   resUL.querySelectorAll('a').forEach(a => a.addEventListener('click', closePanels));
 }
 
 // Breadcrumb
 function breadcrumb(page) {
-  const dyn = $('#crumb-dyn'); dyn.innerHTML = '';
+  const dyn = $('#crumb-dyn'); if (!dyn) return;
+  dyn.innerHTML = '';
   const chain = []; for (let n = page; n; n = n.parent) chain.unshift(n); chain.shift(); // drop root
   chain.forEach(n => {
     dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
@@ -474,11 +504,12 @@ function breadcrumb(page) {
   }
 }
 
-// Mini-graph (single SVG, can go fullscreen)
+/* =====================================================================
+   4) Mini-graph (D3)
+====================================================================== */
 const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hierPRE:'link_hier', tagPRE:'link_tag', label:'graph_text' };
 const graphs = {}; let CURRENT = -1;
 
-/* ==== Viewport helpers for the mini graph (NEW) ==== */
 function getMiniSize() {
   const el = document.getElementById('mini');
   if (!el) return { w: 400, h: 300 };
@@ -504,20 +535,14 @@ function updateMiniViewport() {
   sim.alpha(0.2).restart();
 }
 
-/* ==== Build graph ==== */
 async function buildGraph() {
   await KM.ensureD3();
   if (graphs.mini) return;
 
   const { nodes, links, adj } = buildGraphData();
   const svg = KM.d3.select('#mini');
-
-  // Use window-sized viewport when fullscreen; set a proper viewBox always
   const { w: W, h: H } = getMiniSize();
-  svg.attr('viewBox', `0 0 ${W} ${H}`)
-     .attr('width',  W)
-     .attr('height', H)
-     .attr('preserveAspectRatio', 'xMidYMid meet');
+  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
 
   const localN = nodes.map(n => ({...n}));
   const localL = links.map(l => ({...l}));
@@ -527,17 +552,13 @@ async function buildGraph() {
     .force('charge', KM.d3.forceManyBody().strength(-240))
     .force('center', KM.d3.forceCenter(W/2, H/2));
 
-  const view = svg.append('g').attr('class','view')
-    // CSS-animate panning instead of abrupt jumps
-    .attr('style','transition: transform 220ms ease-out');
+  const view = svg.append('g').attr('class','view').attr('style','transition: transform 220ms ease-out');
 
   const link = view.append('g').selectAll('line')
     .data(localL).join('line')
     .attr('id', d => d.kind === 'hier' ? IDS.hierPRE + d.tier : IDS.tagPRE + Math.min(d.shared,5));
 
-  // Visible nodes (unchanged size)
-  const node = view.append('g').selectAll('circle')
-    .data(localN).join('circle')
+  const wireNode = sel => sel
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
     .style('cursor','pointer')
@@ -549,19 +570,16 @@ async function buildGraph() {
       .on('drag',  (e,d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
       .on('end',   (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
 
-  // Larger, invisible hitboxes (do not change visuals)
-  const hit = view.append('g').attr('class','hitboxes').selectAll('circle')
-    .data(localN).join('circle')
-    .attr('r', 14)
-    .attr('fill', 'transparent')
-    .style('pointer-events', 'all')
-    .on('click', (e,d) => KM.nav(d.ref))
-    .on('mouseover', (e,d) => fade(d.id, 0.15))
-    .on('mouseout', () => fade(null, 1))
-    .call(KM.d3.drag()
-      .on('start', (e,d) => { d.fx = d.x; d.fy = d.y; })
-      .on('drag',  (e,d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
-      .on('end',   (e,d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
+  const node = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
+
+  // Larger, invisible hitboxes
+  const hit = wireNode(
+    view.append('g').attr('class','hitboxes').selectAll('circle')
+      .data(localN).join('circle')
+      .attr('r', 14)
+      .attr('fill', 'transparent')
+      .style('pointer-events', 'all')
+  );
 
   const label = view.append('g').selectAll('text')
     .data(localN).join('text')
@@ -605,7 +623,7 @@ function highlightCurrent(force=false) {
     const dx = cx - d.x, dy = cy - d.y;
     g.view.attr('transform', `translate(${dx},${dy})`);
 
-    // gentler nudge
+    // gentle nudge
     const k = 0.10;
     d.vx += (cx - d.x)*k; d.vy += (cy - d.y)*k;
   });
@@ -618,6 +636,7 @@ function highlightCurrent(force=false) {
 
 function observeMiniResize() {
   const el = document.getElementById('mini');
+  if (!el) return;
   new ResizeObserver(() => {
     if (!graphs.mini) return;
     updateMiniViewport();       // keep viewBox and forces in sync
@@ -654,11 +673,9 @@ function buildGraphData() {
   return { nodes:N, links:L, adj:A };
 }
 
-
 /* =====================================================================
-   5) CLEAN LISTENERS + ROUTER + RENDERER + BOOT PIPELINE
+   5) RENDERER + ROUTER + BOOT
 ====================================================================== */
-// Renderer
 async function render(page, anchor) {
   const { parse } = await KM.ensureMarkdown();
   $('#content').innerHTML = parse(page.content, { headerIds:false });
@@ -699,7 +716,6 @@ async function render(page, anchor) {
   if (anchor) document.getElementById(anchor)?.scrollIntoView({ behavior:'smooth' });
 }
 
-// Router
 function route() {
   closePanels();
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -715,7 +731,7 @@ function route() {
   highlightSidebar(page);
 }
 
-// UI init + listeners (runs once after data is ready)
+/** UI init + listeners (runs once after data is ready) */
 function initUI() {
   // header
   $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
@@ -733,7 +749,6 @@ function initUI() {
   const mini = $('#mini');
   $('#expand').onclick = () => {
     mini.classList.toggle('fullscreen');
-    // Sync to window resolution when fullscreen and recenter
     updateMiniViewport();
     requestAnimationFrame(() => highlightCurrent(true));
   };
@@ -781,11 +796,35 @@ function initUI() {
       updateMiniViewport();
       highlightCurrent(true);
     }
-  });
+  }, { passive: true });
 
   // in-app routing
   addEventListener('hashchange', route);
-
-  // idle preloads (no DOM churn)
   whenIdle(async () => { await KM.ensureHighlight(); /* warm cache for snappy code blocks */ });
 }
+
+/* =====================================================================
+   6) BOOTSTRAP — fetch MD, parse, attach homes, init UI
+====================================================================== */
+(async () => {
+  try {
+    if (!MD) throw new Error('CONFIG.MD is empty.');
+    const r = await fetch(MD, { cache: 'reload' });
+    if (!r.ok) throw new Error(`Failed to fetch MD (${r.status})`);
+    const txt = await r.text();
+    parseMarkdownBundle(txt);
+    attachSecondaryHomes();
+    initUI();
+    await new Promise(res => setTimeout(res, 150));
+    highlightCurrent(true);
+  } catch (err) {
+    console.warn('Markdown load failed:', err);
+    const el = $('#content');
+    if (el) {
+      el.innerHTML = `
+        <h1>Content failed to load</h1>
+        <p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p>
+        <pre>${String(err?.message || err)}</pre>`;
+    }
+  }
+})();
