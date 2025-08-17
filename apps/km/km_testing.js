@@ -163,9 +163,9 @@ const ensureOnce = fn => {
 
 KM.ensureD3 = ensureOnce(async () => {
   const [sel, force, drag] = await Promise.all([
-    import('https://cdn.jsdelivr.net/npm/d3-selection@3/+esm'),
-    import('https://cdn.jsdelivr.net/npm/d3-force@3/+esm'),
-    import('https://cdn.jsdelivr.net/npm/d3-drag@3/+esm')
+    import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm')
   ]);
   KM.d3 = {
     select: sel.select, selectAll: sel.selectAll,
@@ -227,8 +227,8 @@ KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
   mdReady = Promise.all([
     import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-footnote/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-alert/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert@1.4.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote@2.1.2/+esm'),
   ]).then(([marked, footnoteMod, alertMod]) => {
     const md = new marked.Marked().use(footnoteMod.default()).use(alertMod.default());
     return { parse: (src, opt) => md.parse(src, { ...opt, mangle:false }) };
