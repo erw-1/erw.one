@@ -229,8 +229,9 @@ KM.ensureMarkdown = () => {
     import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
     import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
     import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
-  ]).then(([marked, footnoteMod, alertMod]) => {
-    const md = new marked.Marked().use(footnoteMod.default()).use(alertMod.default());
+  ]).then(([marked, alertMod, footnoteMod]) => {
+    // Apply plugins in the intended order with correctly named variables.
+    const md = new marked.Marked().use(alertMod.default()).use(footnoteMod.default());
     return { parse: (src, opt) => md.parse(src, { ...opt, mangle:false }) };
   });
   return mdReady;
@@ -269,11 +270,18 @@ function numberHeadings(elm) {
   });
 }
 
+// Keep a single IntersectionObserver instance for the ToC to avoid leaks.
+let tocObserver = null;
+
 function buildToc(page) {
   const nav = $('#toc'); if (!nav) return;
   nav.innerHTML = '';
   const heads = $$('#content h1,#content h2,#content h3');
-  if (!heads.length) return;
+  if (!heads.length) {
+    // Ensure previous observer gets disconnected when no headings.
+    if (tocObserver) { tocObserver.disconnect(); tocObserver = null; }
+    return;
+  }
 
   const base = hashOf(page);
   const ulEl = el('ul');
@@ -286,7 +294,8 @@ function buildToc(page) {
   nav.append(ulEl);
 
   // Highlight current heading as it intersects the viewport.
-  let tocObserver = new IntersectionObserver(entries => {
+  if (tocObserver) tocObserver.disconnect();
+  tocObserver = new IntersectionObserver(entries => {
     for (const en of entries) {
       const a = $(`#toc li[data-hid="${en.target.id}"] > a`);
       if (!a) continue;
@@ -711,7 +720,8 @@ function initUI() {
     const media = matchMedia('(prefers-color-scheme: dark)');
 
     const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
-    const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
+    const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null
+    ;
     let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
 
     if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
@@ -720,8 +730,17 @@ function initUI() {
     btn.onclick = () => { dark = !dark; apply(dark); localStorage.setItem('km-theme', dark ? 'dark' : 'light'); };
 
     function apply(isDark) {
-      rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
+      // Update CSS custom properties and dataset flag
+      const mainColor = isDark ? 'rgb(29,29,29)' : 'white';
+      rootEl.style.setProperty('--color-main', mainColor);
       rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+      // Keep the browser UI (mobile address bar, etc.) in sync with active theme.
+      const metaTheme = DOC.querySelector('meta[name="theme-color"]');
+      if (metaTheme) {
+        // Use hex values that roughly match --color-main for better contrast handling.
+        metaTheme.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
+      }
     }
   })();
 
