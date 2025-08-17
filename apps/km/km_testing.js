@@ -41,30 +41,30 @@ const byId  = new Map();
 let root    = null;
 const descMemo = new Map();
 
-/** Parse a Markdown bundle split by HTML comments; headers carry key:"value". */
+// The Markdown bundle is split by HTML comment blocks with metadata key:"value" pairs
+// Create a page object for each section with its content and metadata
 function parseMarkdownBundle(txt) {
   const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
-    pages.push({ ...meta, content: body.trim(), children: [] });
+    const page = { ...meta, content: body.trim(), children: [] };
+    pages.push(page);
+    byId.set(page.id, page);
   }
   if (!pages.length) throw new Error('No pages parsed from MD bundle.');
 
-  pages.forEach(p => byId.set(p.id, p));
   root = byId.get('home') || pages[0];
 
-  // Link parent/children (top-level pages will get attached to root)
+  // Link each page to its parent (skip root) to build hierarchy
+  // Also create a tags set and search string for each page
   pages.forEach(p => {
-    if (p === root) return;
-    const par = byId.get((p.parent || '').trim());
-    p.parent = par || null;
-    par && par.children.push(p);
-  });
-
-  // Tags + fast search blob
-  pages.forEach(p => {
-    p.tagsSet   = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
+    if (p !== root) {
+      const parent = byId.get((p.parent || '').trim());
+      p.parent = parent || null;
+      if (parent) parent.children.push(p);
+    }
+    p.tagsSet = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
   });
 
@@ -103,15 +103,18 @@ function parseMarkdownBundle(txt) {
   });
 }
 
-/** Descendants count with memoization (used for graph weighting & clustering). */
+// Count total descendant pages for weighting in graph clustering
 function descendants(page) {
   if (descMemo.has(page)) return descMemo.get(page);
-  let n = 0; (function rec(x){ x.children.forEach(c => { n++; rec(c); }); })(page);
+  let n = 0;
+  (function rec(x) {
+    x.children.forEach(c => { n++; rec(c); });
+  })(page);
   descMemo.set(page, n);
   return n;
 }
 
-/** Lift one representative node from non-root clusters directly under root. */
+// Attach one representative page of each disconnected cluster to the root
 function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
   const clusters = new Map();
@@ -124,7 +127,7 @@ function attachSecondaryHomes() {
 
   let cid = 0;
   for (const [top, members] of clusters) {
-    const rep = members.reduce((a,b)=> descendants(b) > descendants(a) ? b : a, top);
+    const rep = members.reduce((a,b) => descendants(b) > descendants(a) ? b : a, top);
     if (!rep.parent) { // only lift if not already attached under root
       rep.parent = root;
       rep.isSecondary = true;
@@ -134,7 +137,7 @@ function attachSecondaryHomes() {
   }
 }
 
-/** Pre-compute hash paths (id chains) for all pages. */
+// Compute navigation hash (ID path) for each page
 function computeHashes() {
   pages.forEach(p => {
     const segs = [];
@@ -158,7 +161,8 @@ KM.nav = nav;
 
 /* ───────────────────────────── asset loaders ───────────────────────────── */
 const ensureOnce = fn => {
-  let p; return () => (p ||= fn());
+  let p;
+  return () => (p ||= fn());
 };
 
 KM.ensureD3 = ensureOnce(async () => {
@@ -210,7 +214,8 @@ KM.ensureHLJSTheme = (() => {
   const apply = () => new Promise(res => {
     const href = THEME[mode()], l = linkEl();
     if (l.getAttribute('href') === href) return res();
-    l.onload = l.onerror = res; l.setAttribute('href', href);
+    l.onload = l.onerror = res;
+    l.setAttribute('href', href);
   });
 
   return ensureOnce(() => {
@@ -247,10 +252,16 @@ KM.ensureKatex = ensureOnce(async () => {
     import(BASE + 'katex.min.js/+esm'),
     import(BASE + 'contrib/auto-render.min.js/+esm')
   ]);
-  window.katex = katex; window.renderMathInElement = auto.default;
+  window.katex = katex;
+  window.renderMathInElement = auto.default;
 });
 
 /* ───────────────────────── UI decorations & utils ──────────────────────── */
+// Utility function to sort pages alphabetically by title
+function sortByTitle(a, b) {
+  return a.title.localeCompare(b.title);
+}
+
 async function copyText(txt, node) {
   try {
     await navigator.clipboard.writeText(txt);
@@ -274,7 +285,8 @@ function numberHeadings(elm) {
 let tocObserver = null;
 
 function buildToc(page) {
-  const nav = $('#toc'); if (!nav) return;
+  const nav = $('#toc');
+  if (!nav) return;
   nav.innerHTML = '';
   const heads = $$('#content h1,#content h2,#content h3');
   if (!heads.length) {
@@ -311,7 +323,8 @@ function buildToc(page) {
 function prevNext(page) {
   $('#prev-next')?.remove();
   if (!page.parent) return;
-  const sib = page.parent.children; if (sib.length < 2) return;
+  const sib = page.parent.children;
+  if (sib.length < 2) return;
   const i = sib.indexOf(page);
   const wrap = el('div', { id:'prev-next' });
   if (i > 0) wrap.append(el('a', { href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title }));
@@ -319,6 +332,7 @@ function prevNext(page) {
   $('#content').append(wrap);
 }
 
+// List related pages (shared tags) sorted by overlap count
 function seeAlso(page) {
   $('#see-also')?.remove();
   if (!page.tagsSet?.size) return;
@@ -326,26 +340,31 @@ function seeAlso(page) {
     .filter(p => p !== page)
     .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
     .filter(r => r.shared > 0)
-    .sort((a,b)=> b.shared - a.shared || a.p.title.localeCompare(b.p.title));
+    .sort((a,b)=> b.shared - a.shared || sortByTitle(a.p, b.p));
   if (!related.length) return;
 
   const wrap = el('div', { id:'see-also' }, [ el('h2', { textContent:'See also' }), el('ul') ]);
   const ulEl = wrap.querySelector('ul');
-  related.forEach(({p}) => ulEl.append(el('li', {}, [el('a', { href:'#'+hashOf(p), textContent:p.title })])));
-  const content = $('#content'); const pn = $('#prev-next'); content.insertBefore(wrap, pn ?? null);
+  related.forEach(({p}) => ulEl.append(el('li', {}, [ el('a', { href:'#'+hashOf(p), textContent:p.title }) ])));
+  const content = $('#content');
+  const pn = $('#prev-next');
+  content.insertBefore(wrap, pn ?? null);
 }
 
 function fixFootnoteLinks(page) {
-  const base = hashOf(page); if (!base) return;
+  const base = hashOf(page);
+  if (!base) return;
   $$('#content a[href^="#"]').forEach(a => {
     const href = a.getAttribute('href');
-    if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) a.setAttribute('href', `#${base}${href}`);
+    if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) {
+      a.setAttribute('href', `#${base}${href}`);
+    }
   });
 }
 
 const ICONS = {
-  link : 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
-  code : 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
+  link: 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
+  code: 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
 };
 
 const iconBtn = (title, path, cls, onClick) =>
@@ -358,7 +377,8 @@ function decorateHeadings(page) {
     const url = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
     const btn = h.querySelector('button.heading-copy') ||
       h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy', e => {
-        e.stopPropagation(); copyText(url, h.querySelector('button.heading-copy'));
+        e.stopPropagation();
+        copyText(url, h.querySelector('button.heading-copy'));
       }));
     h.style.cursor = 'pointer';
     h.onclick = () => copyText(url, btn);
@@ -373,13 +393,12 @@ function decorateCodeBlocks() {
 }
 
 /* ─────────────────────────── sidebar / search ──────────────────────────── */
-let sidebarCurrent = null;
-
 function buildTree() {
-  const ul = $('#tree'); if (!ul) return;
+  const ul = $('#tree');
+  if (!ul) return;
   ul.innerHTML = '';
-  const prim = root.children.filter(c => !c.isSecondary).sort((a,b)=>a.title.localeCompare(b.title));
-  const secs = root.children.filter(c =>  c.isSecondary).sort((a,b)=>a.clusterId-b.clusterId);
+  const prim = root.children.filter(c => !c.isSecondary).sort(sortByTitle);
+  const secs = root.children.filter(c => c.isSecondary).sort((a,b)=> a.clusterId - b.clusterId);
 
   const rec = (nodes, container, depth=0) => {
     nodes.forEach(p => {
@@ -390,8 +409,9 @@ function buildTree() {
         const caret = el('button', { class:'caret', 'aria-expanded': String(open) });
         const lbl   = el('a', { class:'lbl', dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title });
         const sub   = el('ul', { style:`display:${open?'block':'none'}` });
-        li.append(caret, lbl, sub); container.append(li);
-        rec(p.children.sort((a,b)=>a.title.localeCompare(b.title)), sub, depth+1);
+        li.append(caret, lbl, sub);
+        container.append(li);
+        rec(p.children.sort(sortByTitle), sub, depth+1);
       } else {
         li.className = 'article';
         li.append(el('a', { dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title }));
@@ -401,22 +421,34 @@ function buildTree() {
   };
 
   rec(prim, ul);
-  secs.forEach(r => { ul.append(el('li', { class:'group-sep', innerHTML:'<hr>' })); rec([r], ul); });
+  secs.forEach(r => {
+    ul.append(el('li', { class:'group-sep', innerHTML:'<hr>' }));
+    rec([r], ul);
+  });
 }
 
 function highlightSidebar(page) {
-  sidebarCurrent?.classList.remove('sidebar-current');
-  sidebarCurrent = $(`#tree a[data-page="${page.id}"]`);
-  sidebarCurrent?.classList.add('sidebar-current');
+  // Highlight the current page link in the sidebar navigation
+  const prevSelected = $('#tree .sidebar-current');
+  prevSelected?.classList.remove('sidebar-current');
+  const newSelected = $(`#tree a[data-page="${page.id}"]`);
+  newSelected?.classList.add('sidebar-current');
 }
 
 function search(q) {
   const resUL = $('#results'), treeUL = $('#tree');
   if (!resUL || !treeUL) return;
 
-  if (!q.trim()) { resUL.style.display='none'; resUL.innerHTML=''; treeUL.style.display=''; return; }
+  if (!q.trim()) {
+    resUL.style.display='none';
+    resUL.innerHTML='';
+    treeUL.style.display='';
+    return;
+  }
   const tokens = q.toLowerCase().split(/\s+/).filter(t => t.length >= 2);
-  resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
+  resUL.innerHTML='';
+  resUL.style.display='';
+  treeUL.style.display='none';
 
   const frag = DOC.createDocumentFragment();
 
@@ -437,14 +469,19 @@ function search(q) {
   });
 
   resUL.append(frag);
-  if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
+  if (!resUL.children.length) {
+    resUL.innerHTML = '<li id="no_result">No result</li>';
+  }
 }
 
 /* ─────────────────────────── breadcrumb / crumb ────────────────────────── */
 function breadcrumb(page) {
-  const dyn = $('#crumb-dyn'); if (!dyn) return;
+  const dyn = $('#crumb-dyn');
+  if (!dyn) return;
   dyn.innerHTML = '';
-  const chain = []; for (let n = page; n; n = n.parent) chain.unshift(n); chain.shift(); // drop root
+  const chain = [];
+  for (let n = page; n; n = n.parent) chain.unshift(n);
+  chain.shift(); // drop root
 
   chain.forEach(n => {
     dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
@@ -465,7 +502,7 @@ function breadcrumb(page) {
   if (page.children.length) {
     const box = el('span', { class:'childbox' }, [ el('span', { class:'toggle', textContent:'▾' }), el('ul') ]);
     const ul = box.querySelector('ul');
-    page.children.sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch =>
+    page.children.sort(sortByTitle).forEach(ch =>
       ul.append(el('li', { textContent:ch.title, onclick: () => nav(ch) })));
     dyn.append(box);
   }
@@ -473,7 +510,8 @@ function breadcrumb(page) {
 
 /* ───────────────────────────── mini graph (D3) ─────────────────────────── */
 const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hierPRE:'link_hier', tagPRE:'link_tag', label:'graph_text' };
-const graphs = {}; let CURRENT = -1;
+const graphs = {};
+let CURRENT = -1;
 
 function getMiniSize() {
   const svg = $('#mini');
@@ -487,7 +525,8 @@ function updateMiniViewport() {
   if (!graphs.mini) return;
   const { svg, sim } = graphs.mini;
   const { w, h } = getMiniSize();
-  graphs.mini.w = w; graphs.mini.h = h;
+  graphs.mini.w = w;
+  graphs.mini.h = h;
 
   svg.attr('viewBox', `0 0 ${w} ${h}`)
      .attr('width',  w)
@@ -498,31 +537,46 @@ function updateMiniViewport() {
   sim.alpha(0.2).restart();
 }
 
+// Prepare graph nodes (pages) and links (hierarchy and tag overlaps)
 function buildGraphData() {
-  const N=[], L=[], A=new Map(); const hierPairs = new Set();
-  const touch = (a,b) => { (A.get(a)||A.set(a,new Set()).get(a)).add(b); (A.get(b)||A.set(b,new Set()).get(b)).add(a); };
-  const overlap = (Aset,Bset) => { let n=0; for (const x of Aset) if (Bset.has(x)) n++; return n; };
+  const nodes = [], links = [];
+  const adj = new Map();
+  const hierPairs = new Set();
+  const touch = (a,b) => {
+    (adj.get(a) || adj.set(a, new Set()).get(a)).add(b);
+    (adj.get(b) || adj.set(b, new Set()).get(b)).add(a);
+  };
+  const overlap = (Aset, Bset) => { let n=0; for (const x of Aset) if (Bset.has(x)) n++; return n; };
   const tierOf = n => n<3?1 : n<6?2 : n<11?3 : n<21?4 : 5;
 
-  pages.forEach((p,i) => { p._i = i; N.push({ id:i, label:p.title, ref:p }); });
+  pages.forEach((p,i) => {
+    p._i = i;
+    nodes.push({ id:i, label:p.title, ref:p });
+  });
 
   pages.forEach(p => {
     if (!p.parent) return;
     if (p.isSecondary && p.parent === root) return;
-    const a = p._i, b = p.parent._i, key = a<b?`${a}|${b}`:`${b}|${a}`;
-    L.push({ source:a, target:b, shared:0, kind:'hier', tier: tierOf(descendants(p)) });
-    hierPairs.add(key); touch(a,b);
+    const a = p._i, b = p.parent._i;
+    const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+    links.push({ source:a, target:b, shared:0, kind:'hier', tier: tierOf(descendants(p)) });
+    hierPairs.add(key);
+    touch(a, b);
   });
 
-  for (let i=0; i<pages.length; i++) {
+  for (let i = 0; i < pages.length; i++) {
     const a = pages[i];
-    for (let j=i+1; j<pages.length; j++) {
-      const b = pages[j], n = overlap(a.tagsSet, b.tagsSet); if (!n) continue;
-      const key = i<j?`${i}|${j}`:`${j}|${i}`; if (hierPairs.has(key)) continue;
-      L.push({ source:i, target:j, shared:n, kind:'tag' }); touch(i,j);
+    for (let j = i+1; j < pages.length; j++) {
+      const b = pages[j];
+      const n = overlap(a.tagsSet, b.tagsSet);
+      if (!n) continue;
+      const key = i < j ? `${i}|${j}` : `${j}|${i}`;
+      if (hierPairs.has(key)) continue;
+      links.push({ source:i, target:j, shared:n, kind:'tag' });
+      touch(i, j);
     }
   }
-  return { nodes:N, links:L, adj:A };
+  return { nodes, links, adj };
 }
 
 async function buildGraph() {
@@ -534,11 +588,11 @@ async function buildGraph() {
   const { w: W, h: H } = getMiniSize();
   svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
 
-  const localN = nodes.map(n => ({...n}));
-  const localL = links.map(l => ({...l}));
+  const localN = nodes.map(n => ({ ...n }));
+  const localL = links.map(l => ({ ...l }));
 
   const sim = KM.d3.forceSimulation(localN)
-    .force('link',   KM.d3.forceLink(localL).id(d=>d.id).distance(80))
+    .force('link',   KM.d3.forceLink(localL).id(d => d.id).distance(80))
     .force('charge', KM.d3.forceManyBody().strength(-240))
     .force('center', KM.d3.forceCenter(W/2, H/2));
 
@@ -578,9 +632,9 @@ async function buildGraph() {
     .text(d => d.label);
 
   function fade(id, o) {
-    node .style('opacity', d => (id==null || adj.get(id)?.has(d.id) || d.id===id) ? 1 : o);
-    label.style('opacity', d => (id==null || adj.get(id)?.has(d.id) || d.id===id) ? 1 : o);
-    link .style('opacity', l => id==null || l.source.id===id || l.target.id===id ? 1 : o);
+    node .style('opacity', d => (id == null || adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
+    label.style('opacity', d => (id == null || adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
+    link .style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
   sim.on('tick', () => {
@@ -595,33 +649,38 @@ async function buildGraph() {
   observeMiniResize();
 }
 
+// Update graph highlight for current page and center it
 function highlightCurrent(force=false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
-  const pg = find(seg); const id = pg?._i ?? -1;
+  const pg = find(seg);
+  const id = pg?._i ?? -1;
   if (id === CURRENT && !force) return;
 
   const g = graphs.mini;
   g.node
-    .attr('id', d => d.id===id ? IDS.current : (d.ref.children.length ? IDS.parent : IDS.leaf))
-    .attr('r',  d => d.id===id ? 8 : 6);
+    .attr('id', d => d.id === id ? IDS.current : (d.ref.children.length ? IDS.parent : IDS.leaf))
+    .attr('r',  d => d.id === id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
   // Smoothly pan the 'view' group to center the current node and give it a gentle nudge.
   const cx = g.w/2, cy = g.h/2;
-  g.node.filter(d => d.id===id).each(d => {
+  g.node.filter(d => d.id === id).each(d => {
     const dx = cx - d.x, dy = cy - d.y;
     g.view.attr('transform', `translate(${dx},${dy})`);
-    const k = 0.10; d.vx += (cx - d.x)*k; d.vy += (cy - d.y)*k;
+    const k = 0.10;
+    d.vx += (cx - d.x) * k;
+    d.vy += (cy - d.y) * k;
   });
 
   g.sim.alphaTarget(0.15).restart();
-  setTimeout(()=>g.sim.alphaTarget(0), 250);
+  setTimeout(() => g.sim.alphaTarget(0), 250);
   CURRENT = id;
 }
 
 function observeMiniResize() {
-  const elx = $('#mini'); if (!elx) return;
+  const elx = $('#mini');
+  if (!elx) return;
   new ResizeObserver(() => {
     if (!graphs.mini) return;
     updateMiniViewport();
@@ -636,7 +695,9 @@ async function render(page, anchor) {
 
   // Light image hints for faster layouts.
   $$('#content img').forEach(img => {
-    img.loading='lazy'; img.decoding='async'; if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','high');
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','high');
   });
 
   fixFootnoteLinks(page);
@@ -656,10 +717,10 @@ async function render(page, anchor) {
       delimiters: [
         { left:'$$', right:'$$', display:true },
         { left:'\\[', right:'\\]', display:true },
-        { left:'$', right:'$', display:false },
+        { left:'$',  right:'$',  display:false },
         { left:'\\(', right:'\\)', display:false }
       ],
-      throwOnError:false
+      throwOnError: false
     });
   }
 
@@ -684,7 +745,8 @@ function route() {
 
   if (currentPage !== page) {
     currentPage = page;
-    DOC.documentElement.scrollTop = 0; DOC.body.scrollTop = 0;
+    DOC.documentElement.scrollTop = 0;
+    DOC.body.scrollTop = 0;
 
     breadcrumb(page);
     render(page, anchor);
@@ -695,7 +757,10 @@ function route() {
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
       const a = $(`#toc li[data-hid="${anchor}"] > a`);
-      if (a) { $('#toc .toc-current')?.classList.remove('toc-current'); a.classList.add('toc-current'); }
+      if (a) {
+        $('#toc .toc-current')?.classList.remove('toc-current');
+        a.classList.add('toc-current');
+      }
     }
   }
 }
@@ -708,7 +773,8 @@ function closePanels() {
 
 function initUI() {
   // Title
-  $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
+  $('#wiki-title-text').textContent = TITLE;
+  document.title = TITLE;
 
   // Sidebar + first route
   buildTree();
@@ -720,14 +786,19 @@ function initUI() {
     const media = matchMedia('(prefers-color-scheme: dark)');
 
     const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
-    const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null
-    ;
+    const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
     let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
 
-    if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
+    if (typeof ACCENT === 'string' && ACCENT) {
+      rootEl.style.setProperty('--color-accent', ACCENT);
+    }
 
     apply(dark);
-    btn.onclick = () => { dark = !dark; apply(dark); localStorage.setItem('km-theme', dark ? 'dark' : 'light'); };
+    btn.onclick = () => {
+      dark = !dark;
+      apply(dark);
+      localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+    };
 
     function apply(isDark) {
       // Update CSS custom properties and dataset flag
@@ -748,7 +819,10 @@ function initUI() {
 
   // Mini-graph lazy init
   new IntersectionObserver((entries, obs) => {
-    if (entries[0].isIntersecting) { buildGraph(); obs.disconnect(); }
+    if (entries[0].isIntersecting) {
+      buildGraph();
+      obs.disconnect();
+    }
   }).observe($('#mini'));
 
   // Fullscreen toggle for mini graph
@@ -760,18 +834,27 @@ function initUI() {
   };
 
   // Search input (debounced) + clear
-  const searchInput = $('#search'), searchClear = $('#search-clear'); let debounce = 0;
+  const searchInput = $('#search'), searchClear = $('#search-clear');
+  let debounce = 0;
   searchInput.oninput = e => {
     clearTimeout(debounce);
-    const val = e.target.value; searchClear.style.display = val ? '' : 'none';
+    const val = e.target.value;
+    searchClear.style.display = val ? '' : 'none';
     debounce = setTimeout(() => search(val.toLowerCase()), 150);
   };
-  searchClear.onclick = () => { searchInput.value=''; searchClear.style.display='none'; search(''); searchInput.focus(); };
+  searchClear.onclick = () => {
+    searchInput.value='';
+    searchClear.style.display='none';
+    search(''); 
+    searchInput.focus();
+  };
 
   // Burger toggles (mobile)
   const togglePanel = sel => {
-    const elx = $(sel); const wasOpen = elx.classList.contains('open');
-    closePanels(); if (!wasOpen) {
+    const elx = $(sel);
+    const wasOpen = elx.classList.contains('open');
+    closePanels();
+    if (!wasOpen) {
       elx.classList.add('open');
       if (!elx.querySelector('.panel-close')) {
         elx.append(el('button', { class:'panel-close', textContent:'✕', onclick: closePanels }));
@@ -781,13 +864,16 @@ function initUI() {
   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
   $('#burger-util').onclick    = () => togglePanel('#util');
 
-  // Auto-close panels on desktop resize + keep fullscreen graph exact
+  // Auto-close panels on desktop resize + keep fullscreen graph updated
   addEventListener('resize', () => {
-    if (matchMedia('(min-width:1001px)').matches) { $('#sidebar').classList.remove('open'); $('#util').classList.remove('open'); }
-    if ($('#mini')?.classList.contains('fullscreen')) { updateMiniViewport(); highlightCurrent(true); }
+    if (matchMedia('(min-width:1001px)').matches) { closePanels(); }
+    if ($('#mini')?.classList.contains('fullscreen')) {
+      updateMiniViewport();
+      highlightCurrent(true);
+    }
   }, { passive: true });
 
-  // Event delegation: sidebar caret + links
+  // Event delegation: sidebar caret toggle and link clicks
   $('#tree').addEventListener('click', e => {
     const caret = e.target.closest('button.caret');
     if (caret) {
@@ -811,7 +897,9 @@ function initUI() {
   addEventListener('hashchange', route, { passive: true });
 
   // Warm caches during idle
-  whenIdle(async () => { await KM.ensureHighlight(); });
+  whenIdle(async () => {
+    await KM.ensureHighlight();
+  });
 }
 
 /* ──────────────────────────────── boot ─────────────────────────────────── */
