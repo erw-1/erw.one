@@ -9,10 +9,14 @@
   <!-- ——— Core meta ——— -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <!-- Basic CSP for safer inline Markdown -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' https: data:; object-src 'none'; base-uri 'self'; form-action 'self';">
 
   <!-- ——— Perf ——— -->
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://hackmd.io" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://hackmd.io">
   
   <link rel="modulepreload" href="km_testing.js">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
