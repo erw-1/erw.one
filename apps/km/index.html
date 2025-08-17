@@ -31,57 +31,56 @@
   <!-- =====================================================================
   Configuration - Edit this !
   ======================================================================== -->  
-
-  <script>
-    // Runtime configuration (kept as-is to preserve behavior / API)
-    window.CONFIG = {
-      TITLE:         'Title of your wiki',
-      MD   :         'https://hackmd.io/@h-s-n/doc_test/download',  // Can also be a file eg. 'content.md'
-      DEFAULT_THEME: 'light',                                       // (optional) 'dark' | 'light' 
-      ACCENT:        '#3fabd1',                                     // (optional) CSS color string '#3fabd1', 'red', etc. (optional)
-      LANGS:         ['javascript', 'bash', 'markdown', 'python']   // (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
-    };
-  </script>
-
-  <!-- ——— SEO block / Open Graph / Twitter / JSON-LD ——— -->
-  <link id="favicon-el" rel="icon" href="logo.webp">
-  <title>km – Static Wiki</title>
+    <script>
+      // JS configuration
+      window.CONFIG = {
+        TITLE:         'Title of your wiki',
+        MD   :         'https://hackmd.io/@h-s-n/doc_test/download',  // Can also be a file eg. 'content.md'
+        DEFAULT_THEME: 'light',                                       // (optional) 'dark' | 'light' 
+        ACCENT:        '#3fabd1',                                     // (optional) CSS color string '#3fabd1', 'red', etc. (optional)
+        LANGS:         ['javascript', 'bash', 'markdown', 'python']   // (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
+      };
+    </script>
   
-  <meta name="description" content="★ Concise one-sentence pitch (≤160 chars) ★">
-  <meta name="keywords"    content="★ knowledge management,wiki,static site,… ★">
-  <meta name="author"      content="★ Your Name / Organisation ★">
-  <meta name="robots"      content="index,follow">
-  <link rel="canonical"    href="https://example.com/">
-  <meta name="theme-color" content="#1e1e1e">
-
-  <meta property="og:type"        content="website">
-  <meta property="og:site_name"   content="★ KM Static Wiki ★">
-  <meta property="og:title"       content="★ Same as <title> (60–65 chars) ★">
-  <meta property="og:description" content="★ Same as meta description (≤200 chars) ★">
-  <meta property="og:url"         content="https://example.com/">
-  <meta property="og:image"       content="https://example.com/cover.png">
-  <meta property="og:image:alt"   content="★ Alt text for the social image ★">
-
-  <meta name="twitter:card"        content="summary_large_image">
-  <meta name="twitter:title"       content="★ Same as <title> ★">
-  <meta name="twitter:description" content="★ Same as meta description ★">
-  <meta name="twitter:image"       content="https://example.com/cover.png">
-
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"TechArticle","headline":"★ Headline for Article or Wiki ★","about":["Knowledge Management","Static Wiki","Documentation"],"author":{"@type":"Person","name":"★ Your Name ★"},"publisher":{"@type":"Organization","name":"★ Org / Project ★"},"url":"★ https://example.com/ ★","inLanguage":"en"}
-  </script>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"WebSite","name":"KM – Static Wiki Template","url":"https://example.com/","potentialAction":{"@type":"SearchAction","target":"https://example.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
-  </script>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"Organization","name":"Example Org","url":"https://example.com/","logo":"https://example.com/logo.png","sameAs":["https://www.linkedin.com/company/example","https://github.com/example"]}
-  </script>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://example.com/"},{"@type":"ListItem","position":2,"name":"Section","item":"https://example.com/section"}]}
-  </script>
-  <script type="application/ld+json">
-  {"@context":"https://schema.org","@type":"ImageObject","contentUrl":"https://example.com/cover.png","license":"https://example.com/licence","creator":{"@type":"Organization","name":"Example Org"},"creditText":"© Example Org"}
-  </script>
+    <title>km - Static Wiki</title>
+    <link id="favicon-el" rel="icon" href="logo.webp">
+    <meta name="theme-color"         content="#1e1e1e">
+    
+    <!-- ——— You can remove all this if you don't want to be referenced on the internet: SEO block / Open Graph / Twitter / JSON-LD ——— -->
+    <meta name="description"         content="Concise one-sentence pitch (≤160 chars)">
+    <meta name="keywords"            content="knowledge management,wiki,static site,…">
+    <meta name="author"              content="Your Name / Organisation">
+    <meta name="robots"              content="index,follow">
+    <link rel="canonical"               href="https://example.com/">
+  
+    <meta property="og:type"         content="website">
+    <meta property="og:site_name"    content="KM Static Wiki">
+    <meta property="og:title"        content="Same as <title> (60–65 chars)">
+    <meta property="og:description"  content="Same as meta description (≤200 chars)">
+    <meta property="og:url"          content="https://example.com/">
+    <meta property="og:image"        content="https://example.com/cover.png">
+    <meta property="og:image:alt"    content="Alt text for the social image">
+  
+    <meta name="twitter:card"        content="summary_large_image">
+    <meta name="twitter:title"       content="Same as <title>">
+    <meta name="twitter:description" content="Same as meta description">
+    <meta name="twitter:image"       content="https://example.com/cover.png">
+  
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"TechArticle","headline":"Headline for Article or Wiki","about":["Knowledge Management","Static Wiki","Documentation"],"author":{"@type":"Person","name":"Your Name"},"publisher":{"@type":"Organization","name":"Org / Project"},"url":"https://example.com/","inLanguage":"en"}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"WebSite","name":"KM – Static Wiki Template","url":"https://example.com/","potentialAction":{"@type":"SearchAction","target":"https://example.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"Organization","name":"Example Org","url":"https://example.com/","logo":"https://example.com/logo.png","sameAs":["https://www.linkedin.com/company/example","https://github.com/example"]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://example.com/"},{"@type":"ListItem","position":2,"name":"Section","item":"https://example.com/section"}]}
+    </script>
+    <script type="application/ld+json">
+    {"@context":"https://schema.org","@type":"ImageObject","contentUrl":"https://example.com/cover.png","license":"https://example.com/licence","creator":{"@type":"Organization","name":"Example Org"},"creditText":"© Example Org"}
+    </script>
   <!-- =====================================================================
   End of configuration
   ======================================================================== -->  
