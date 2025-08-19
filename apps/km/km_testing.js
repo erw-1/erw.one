@@ -8,9 +8,12 @@ window.KM = window.KM || {};
 const KM = window.KM;
 
 /* ─────────────────────────────── DOM helpers ───────────────────────────── */
+/** Shortcut single selector within optional context */
 const DOC = document;
 const $   = (sel, c = DOC) => c.querySelector(sel);
+/** Shortcut multi selector within optional context */
 const $$  = (sel, c = DOC) => [...c.querySelectorAll(sel)];
+/** Element factory: props map to DOM properties when possible, else attributes */
 const el  = (tag, props = {}, children = []) => {
   const n = DOC.createElement(tag);
   for (const k in props) {
@@ -30,9 +33,11 @@ const CFG = window.CONFIG || {};
 const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT } = CFG;
 
 /* ─────────────────────────────── small utils ───────────────────────────── */
+/** Run when idle (polyfilled) */
 const whenIdle = (cb, timeout = 1500) =>
   'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 0);
 
+/** Promise for DOMContentLoaded */
 const domReady = () =>
   DOC.readyState !== 'loading'
     ? Promise.resolve()
@@ -44,6 +49,10 @@ const byId  = new Map();
 let root    = null;
 const descMemo = new Map();
 
+/**
+ * Parse a Markdown bundle made of repeated:
+ * <!-- id:"home" title:"Home" parent:"" tags:"..." -->\nCONTENT
+ */
 function parseMarkdownBundle(txt) {
   const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
@@ -59,13 +68,13 @@ function parseMarkdownBundle(txt) {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
       p.parent = parent || null;
-      parent && parent.children.push(p);
+      if (parent) parent.children.push(p);
     }
     p.tagsSet   = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
   });
 
-  // Fence-aware heading sections for deep search.
+  // Build fence-aware heading sections for deep search.
   pages.forEach(p => {
     const counters = [0,0,0,0,0,0];
     const sections = [];
@@ -99,6 +108,7 @@ function parseMarkdownBundle(txt) {
   });
 }
 
+/** Count total descendants for a page (memoized) */
 function descendants(page) {
   if (descMemo.has(page)) return descMemo.get(page);
   let n = 0;
@@ -107,14 +117,18 @@ function descendants(page) {
   return n;
 }
 
+/** Attach representative top-level cluster homes under the main root */
 function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
-  const clusters = new Map();
+  const clusters = new Map(); // top node -> members[]
+
   for (const p of pages) {
     const top = topOf(p);
     if (top === root) continue;
-    (clusters.get(top) || clusters.set(top, []).get(top)).push(p);
+    if (!clusters.has(top)) clusters.set(top, []);
+    clusters.get(top).push(p);
   }
+
   let cid = 0;
   for (const [, members] of clusters) {
     const rep = members.reduce((a,b) => descendants(b) > descendants(a) ? b : a, members[0]);
@@ -125,6 +139,7 @@ function attachSecondaryHomes() {
   }
 }
 
+/** Compute URL hash segments for each page */
 function computeHashes() {
   pages.forEach(p => {
     const segs = [];
@@ -133,6 +148,7 @@ function computeHashes() {
   });
 }
 const hashOf = page => page?.hash ?? '';
+/** Resolve a chain of ids from the root; returns deepest match (never null) */
 const find = segs => {
   let n = root;
   for (const id of segs) {
@@ -142,10 +158,12 @@ const find = segs => {
   }
   return n;
 };
+/** Navigate by writing a computed hash */
 function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
 /* ───────────────────────────── asset loaders ───────────────────────────── */
+/** Ensure a loader runs once and memoizes its promise */
 const ensureOnce = fn => { let p; return () => (p ||= fn()); };
 
 KM.ensureD3 = ensureOnce(async () => {
@@ -188,6 +206,7 @@ KM.ensureHLJSTheme = ensureOnce(() => new Promise(res => {
 }));
 
 let mdReady = null;
+/** Lazy-load and configure Markdown parser and plugins */
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
   mdReady = Promise.all([
@@ -201,6 +220,7 @@ KM.ensureMarkdown = () => {
   return mdReady;
 };
 
+/** Lazy-load KaTeX core + auto-render, and stylesheet once */
 KM.ensureKatex = ensureOnce(async () => {
   const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
   if (!DOC.getElementById('katex-css')) {
@@ -217,16 +237,29 @@ KM.ensureKatex = ensureOnce(async () => {
 
 /* ───────────────────────── UI decorations & utils ──────────────────────── */
 const sortByTitle = (a, b) => a.title.localeCompare(b.title);
+
+/** Copy helper with secure Clipboard API and robust fallback */
 async function copyText(txt, node) {
   try {
-    await navigator.clipboard.writeText(txt);
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(txt);
+    } else {
+      const ta = DOC.createElement('textarea');
+      ta.value = txt;
+      ta.setAttribute('style','position:fixed;top:-9999px;left:-9999px');
+      DOC.body.appendChild(ta);
+      ta.focus(); ta.select();
+      document.execCommand('copy');
+      DOC.body.removeChild(ta);
+    }
     node?.classList.add('flash'); setTimeout(() => node?.classList.remove('flash'), 300);
-  } catch(e) { if (KM.DEBUG) console.warn('Clipboard API unavailable', e); }
+  } catch(e) { if (KM.DEBUG) console.warn('Clipboard copy failed', e); }
 }
 
+/** Auto-number headings and assign deterministic ids 1_1, 1_2, 2_1… */
 function numberHeadings(elm) {
   const counters = [0,0,0,0,0,0];
-  $$('h1,h2,h3,h4,h5', elm).forEach(h => {
+  $$('#h1,h2,h3,h4,h5', elm).forEach(h => {
     const level = +h.tagName[1] - 1;
     counters[level]++; for (let i = level + 1; i < 6; i++) counters[i] = 0;
     h.id = counters.slice(0, level+1).filter(Boolean).join('_');
@@ -234,6 +267,7 @@ function numberHeadings(elm) {
 }
 
 let tocObserver = null;
+/** Build Table of Contents and in-view highlighting */
 function buildToc(page) {
   const nav = $('#toc'); if (!nav) return;
   nav.innerHTML = '';
@@ -258,6 +292,7 @@ function buildToc(page) {
   heads.forEach(h => tocObserver.observe(h));
 }
 
+/** Previous / next pager within siblings */
 function prevNext(page) {
   $('#prev-next')?.remove();
   if (!page.parent) return;
@@ -269,6 +304,7 @@ function prevNext(page) {
   $('#content').append(wrap);
 }
 
+/** Related pages by shared tags, sorted by overlap */
 function seeAlso(page) {
   $('#see-also')?.remove();
   if (!page.tagsSet?.size) return;
@@ -286,6 +322,7 @@ function seeAlso(page) {
   content.insertBefore(wrap, pn ?? null);
 }
 
+/** Fix footnote self-links to include page base hash */
 function fixFootnoteLinks(page) {
   const base = hashOf(page); if (!base) return;
   $$('#content a[href^="#"]').forEach(a => {
@@ -294,6 +331,7 @@ function fixFootnoteLinks(page) {
   });
 }
 
+/** Small inline SVG controls used in headings/code blocks */
 const ICONS = {
   link: 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
   code: 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
@@ -302,10 +340,12 @@ const iconBtn = (title, path, cls, onClick) =>
   el('button', { class: cls, title, onclick:onClick, innerHTML:
     `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>` });
 
+/** Add “copy link” buttons to headings and make them clickable */
 function decorateHeadings(page) {
   const base = hashOf(page);
+  const baseUrl = location.href.split('#')[0];
   $$('#content h1,h2,h3,h4,h5').forEach(h => {
-    const url = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
+    const url = `${baseUrl}#${base ? base + '#' : ''}${h.id}`;
     const btn = h.querySelector('button.heading-copy') ||
       h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy', e => {
         e.stopPropagation();
@@ -316,6 +356,7 @@ function decorateHeadings(page) {
   });
 }
 
+/** Add “copy code” buttons to <pre> blocks (no-op if already present) */
 function decorateCodeBlocks() {
   $$('#content pre').forEach(pre => {
     if (pre.querySelector('button.code-copy')) return;
@@ -324,6 +365,7 @@ function decorateCodeBlocks() {
 }
 
 /* ─────────────────────────── sidebar / search ──────────────────────────── */
+/** Build the collapsible sidebar tree (primary + grouped secondary roots) */
 function buildTree() {
   const ul = $('#tree'); if (!ul) return;
   ul.innerHTML = '';
@@ -356,11 +398,13 @@ function buildTree() {
   ul.append(frag);
 }
 
+/** Highlight the current page in the sidebar */
 function highlightSidebar(page) {
   $('#tree .sidebar-current')?.classList.remove('sidebar-current');
   $(`#tree a[data-page="${page.id}"]`)?.classList.add('sidebar-current');
 }
 
+/** Full-text search across pages and sections with token matching */
 function search(q) {
   const resUL = $('#results'), treeUL = $('#tree'); if (!resUL || !treeUL) return;
   const val = q.trim().toLowerCase();
@@ -388,6 +432,7 @@ function search(q) {
 }
 
 /* ─────────────────────────── breadcrumb / crumb ────────────────────────── */
+/** Render breadcrumb with sibling/child dropdowns */
 function breadcrumb(page) {
   const dyn = $('#crumb-dyn'); if (!dyn) return;
   dyn.innerHTML = '';
@@ -422,6 +467,7 @@ const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hi
 const graphs = {};
 let CURRENT = -1;
 
+/** Compute current mini-graph size (handles fullscreen class) */
 function getMiniSize() {
   const svg = $('#mini'); if (!svg) return { w: 400, h: 300 };
   if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
@@ -429,6 +475,7 @@ function getMiniSize() {
   return { w: Math.max(1, r.width|0), h: Math.max(1, r.height|0) };
 }
 
+/** Update the viewport on resize/fullscreen changes */
 function updateMiniViewport() {
   if (!graphs.mini) return;
   const { svg, sim } = graphs.mini;
@@ -439,31 +486,53 @@ function updateMiniViewport() {
   sim.alpha(0.2).restart();
 }
 
+/**
+ * Build graph data from the page tree and tags.
+ * Hierarchy links: 1 per parent/child (skip synthetic secondary roots).
+ * Tag links: built via a tag -> page index map, counting pair overlaps.
+ */
 function buildGraphData() {
   const nodes = [], links = [], adj = new Map(), hierPairs = new Set();
   const touch = (a,b) => { (adj.get(a) || adj.set(a, new Set()).get(a)).add(b); (adj.get(b) || adj.set(b, new Set()).get(b)).add(a); };
-  const overlap = (A, B) => { let n=0; for (const x of A) if (B.has(x)) n++; return n; };
   const tierOf = n => n<3?1 : n<6?2 : n<11?3 : n<21?4 : 5;
 
+  // Assign stable indices and nodes
   pages.forEach((p,i) => { p._i=i; nodes.push({ id:i, label:p.title, ref:p }); });
 
+  // Hierarchy links
   pages.forEach(p => {
     if (!p.parent) return;
-    if (p.isSecondary && p.parent === root) return;
+    if (p.isSecondary && p.parent === root) return; // avoid redundant top-level synthetic links
     const a = p._i, b = p.parent._i;
     const key = a < b ? `${a}|${b}` : `${b}|${a}`;
     links.push({ source:a, target:b, shared:0, kind:'hier', tier: tierOf(descendants(p)) });
     hierPairs.add(key); touch(a, b);
   });
 
-  for (let i = 0; i < pages.length; i++) for (let j = i+1; j < pages.length; j++) {
-    const n = overlap(pages[i].tagsSet, pages[j].tagsSet); if (!n) continue;
-    const key = i < j ? `${i}|${j}` : `${j}|${i}`; if (hierPairs.has(key)) continue;
-    links.push({ source:i, target:j, shared:n, kind:'tag' }); touch(i, j);
+  // Tag links (indexed, scalable)
+  const tagIndex = new Map(); // tag -> [pageIndices]
+  pages.forEach(p => { for (const t of p.tagsSet) { (tagIndex.get(t) || tagIndex.set(t, []).get(t)).push(p._i); } });
+
+  const pairCount = new Map(); // "a|b" -> shared count
+  for (const ids of tagIndex.values()) {
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        const a = ids[i], b = ids[j];
+        const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+        pairCount.set(key, (pairCount.get(key) || 0) + 1);
+      }
+    }
   }
+  for (const [key, shared] of pairCount) {
+    if (hierPairs.has(key)) continue;
+    const [a,b] = key.split('|').map(Number);
+    links.push({ source:a, target:b, shared, kind:'tag' }); touch(a, b);
+  }
+
   return { nodes, links, adj };
 }
 
+/** Create and render the D3 mini-graph once */
 async function buildGraph() {
   await KM.ensureD3();
   if (graphs.mini) return;
@@ -523,6 +592,7 @@ async function buildGraph() {
   observeMiniResize();
 }
 
+/** Highlight current page in the mini-graph and gently center it */
 function highlightCurrent(force=false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -547,20 +617,22 @@ function highlightCurrent(force=false) {
   CURRENT = id;
 }
 
+/** Observe #mini size changes to keep forces/viewport consistent */
 function observeMiniResize() {
   const elx = $('#mini'); if (!elx) return;
   new ResizeObserver(() => { if (!graphs.mini) return; updateMiniViewport(); highlightCurrent(true); }).observe(elx);
 }
 
 /* ───────────────────────── renderer + router + init ────────────────────── */
+/** Render a page into #content, with syntax highlighting, math, toc, etc. */
 async function render(page, anchor) {
   const { parse } = await KM.ensureMarkdown();
   const contentEl = $('#content');
   contentEl.innerHTML = parse(page.content, { headerIds:false });
 
+  // Image loading hints: let browser decide priority; keep lazy+async
   $$('#content img').forEach(img => {
     img.loading = 'lazy'; img.decoding = 'async';
-    if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','high');
   });
 
   fixFootnoteLinks(page);
@@ -594,6 +666,7 @@ async function render(page, anchor) {
 
 let currentPage = null;
 
+/** Router: interpret hash as page path + optional heading anchor */
 function route() {
   closePanels();
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -617,15 +690,18 @@ function route() {
 }
 
 /* ─────────────────────────── global UI + theme ─────────────────────────── */
+/** Close slide-out panels (sidebar & util) */
 function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
 }
 
+/** Initialize UI, theme, listeners, and kick off routing + mini-graph */
 function initUI() {
   $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
   buildTree();
 
+  // Theme init with localStorage override, config default, or system media
   (function themeInit() {
     const btn = $('#theme-toggle'), rootEl = DOC.documentElement, media = matchMedia('(prefers-color-scheme: dark)');
     const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
@@ -648,11 +724,13 @@ function initUI() {
 
   route();
 
+  // Lazy-build graph once it becomes visible
   new IntersectionObserver((entries, obs) => { if (entries[0].isIntersecting) { buildGraph(); obs.disconnect(); } }).observe($('#mini'));
 
   const mini = $('#mini');
   $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); updateMiniViewport(); requestAnimationFrame(() => highlightCurrent(true)); };
 
+  // Search box (debounced)
   const searchInput = $('#search'), searchClear = $('#search-clear');
   let debounce = 0;
   searchInput.oninput = e => {
@@ -662,6 +740,7 @@ function initUI() {
   };
   searchClear.onclick = () => { searchInput.value=''; searchClear.style.display='none'; search(''); searchInput.focus(); };
 
+  // Slide-out panels
   const togglePanel = sel => {
     const elx = $(sel); const wasOpen = elx.classList.contains('open');
     closePanels(); if (!wasOpen) { elx.classList.add('open'); if (!elx.querySelector('.panel-close')) elx.append(el('button', { class:'panel-close', textContent:'✕', onclick: closePanels })); }
@@ -669,6 +748,7 @@ function initUI() {
   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
   $('#burger-util').onclick    = () => togglePanel('#util');
 
+  // Global listeners
   addEventListener('resize', () => {
     if (matchMedia('(min-width:1001px)').matches) closePanels();
     if ($('#mini')?.classList.contains('fullscreen')) { updateMiniViewport(); highlightCurrent(true); }
