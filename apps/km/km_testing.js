@@ -9,7 +9,7 @@ window.KM = window.KM || {};
 const KM = window.KM;
 
 /* ─────────────────────────────── DOM helpers ───────────────────────────── */
-// Tiny, focused DOM helpers keep the rest of the code compact and legible.
+// Focused utilities to keep call sites simple. Prefer properties over attributes.
 const DOC = document;
 const $   = (sel, c = DOC) => c.querySelector(sel);
 const $$  = (sel, c = DOC) => [...c.querySelectorAll(sel)];
@@ -19,7 +19,7 @@ const el  = (tag, props = {}, children = []) => {
     const v = props[k];
     if (k === 'class' || k === 'className') n.className = v;
     else if (k === 'dataset') Object.assign(n.dataset, v);
-    else if (k in n) n[k] = v;                           // prefer properties when available
+    else if (k in n) n[k] = v;
     else n.setAttribute(k, v);
   }
   for (const ch of children) n.append(ch);
@@ -43,11 +43,20 @@ const domReady = () =>
     ? Promise.resolve()
     : new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
 
+/** Remove any existing selection (used before programmatic focus/scroll) */
+const clearSelection = () => {
+  const sel = window.getSelection?.();
+  if (sel && !sel.isCollapsed) sel.removeAllRanges();
+};
+
+/** Base URL without hash for robust deep links (works for file:// and querystrings) */
+const baseURLNoHash = () => location.href.replace(/#.*$/, '');
+
 /* ───────────────────────────── data model ──────────────────────────────── */
 // In-memory page graph extracted from a concatenated Markdown bundle.
-const pages = [];
-const byId  = new Map();
-let root    = null;
+let pages = [];
+let byId  = new Map();
+let root  = null;
 const descMemo = new Map();
 
 /**
@@ -57,6 +66,12 @@ const descMemo = new Map();
  * Repeated for each page.
  */
 function parseMarkdownBundle(txt) {
+  // Reset all model state before (re)parsing to avoid stale data.
+  pages = [];
+  byId  = new Map();
+  root  = null;
+  descMemo.clear();
+
   const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
     const meta = {};
@@ -72,7 +87,9 @@ function parseMarkdownBundle(txt) {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
       p.parent = parent || null;
-      parent && parent.children.push(p);
+      if (parent) parent.children.push(p);
+    } else {
+      p.parent = null;
     }
     p.tagsSet   = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
@@ -115,7 +132,8 @@ function parseMarkdownBundle(txt) {
 /** Count all descendants of a page (memoized) */
 function descendants(page) {
   if (descMemo.has(page)) return descMemo.get(page);
-  let n = 0; (function rec(x) { x.children.forEach(c => { n++; rec(c); }); })(page);
+  let n = 0;
+  (function rec(x) { x.children.forEach(c => { n++; rec(c); }); })(page);
   descMemo.set(page, n);
   return n;
 }
@@ -123,17 +141,23 @@ function descendants(page) {
 /** Promote largest clusters to sit under root as "secondary homes" */
 function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
-  const clusters = new Map();
+  const clusters = new Map(); // Map<topNode, Page[]>
+
   for (const p of pages) {
     const top = topOf(p);
     if (top === root) continue;
-    (clusters.get(top) || clusters.set(top, []).get(top)).push(p);
+    if (!clusters.has(top)) clusters.set(top, []);
+    clusters.get(top).push(p);
   }
+
   let cid = 0;
-  for (const [, members] of clusters) {
-    const rep = members.reduce((a,b) => descendants(b) > descendants(a) ? b : a, members[0]);
+  for (const [top, members] of clusters) {
+    // Representative is the member with the largest subtree.
+    const rep = members.reduce((a,b) => (descendants(b) > descendants(a) ? b : a), members[0]);
     if (!rep.parent) {
-      rep.parent = root; rep.isSecondary = true; rep.clusterId = cid++;
+      rep.parent = root;
+      rep.isSecondary = true;
+      rep.clusterId = cid++;
       root.children.push(rep);
     }
   }
@@ -157,7 +181,7 @@ const find = segs => {
   }
   return n;
 };
-function nav(page) { location.hash = '#' + hashOf(page); }
+function nav(page) { if (page) location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
 /* ───────────────────────────── asset loaders ───────────────────────────── */
@@ -242,7 +266,7 @@ const sortByTitle = (a, b) => a.title.localeCompare(b.title);
 async function copyText(txt, node) {
   try {
     await navigator.clipboard.writeText(txt);
-    node?.classList.add('flash'); setTimeout(() => node?.classList.remove('flash'), 300);
+    if (node) { node.classList.add('flash'); setTimeout(() => node.classList.remove('flash'), 300); }
   } catch(e) { if (KM.DEBUG) console.warn('Clipboard API unavailable', e); }
 }
 
@@ -272,6 +296,7 @@ function buildToc(page) {
   }
   ulEl.append(frag); nav.append(ulEl);
 
+  // Reset previous observer before creating a new one to avoid stale callbacks.
   tocObserver?.disconnect();
   tocObserver = new IntersectionObserver(entries => {
     for (const en of entries) {
@@ -302,7 +327,7 @@ function seeAlso(page) {
     .filter(p => p !== page)
     .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
     .filter(r => r.shared > 0)
-    .sort((a,b)=> b.shared - a.shared || sortByTitle(a.p, b.p)); // fixed comparator
+    .sort((a,b)=> (b.shared - a.shared) || sortByTitle(a.p, b.p));
   if (!related.length) return;
 
   const wrap = el('div', { id:'see-also' }, [ el('h2', { textContent:'See also' }), el('ul') ]);
@@ -327,27 +352,41 @@ const ICONS = {
   code: 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
 };
 const iconBtn = (title, path, cls, onClick) =>
-  el('button', { class: cls, title, onclick:onClick, innerHTML:
-    `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>` });
+  el('button', {
+    class: cls,
+    title,
+    'aria-label': title,
+    onclick:onClick,
+    innerHTML: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>`
+  });
 
 /** Add copy buttons & clickable deep links to headings and code blocks */
 function decorateHeadings(page) {
   const base = hashOf(page);
+  const prefix = baseURLNoHash() + '#' + (base ? base + '#' : '');
   $$('#content h1,h2,h3,h4,h5').forEach(h => {
-    const url = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
+    const url = `${prefix}${h.id}`;
     const btn = h.querySelector('button.heading-copy') ||
       h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy', e => {
         e.stopPropagation();
         copyText(url, h.querySelector('button.heading-copy'));
       }));
     h.style.cursor = 'pointer';
-    h.onclick = () => copyText(url, btn);
+    h.onclick = () => {
+      // Avoid hijacking when user is selecting text within the heading.
+      if (window.getSelection && String(window.getSelection()).length) return;
+      clearSelection();
+      copyText(url, btn);
+    };
   });
 }
 function decorateCodeBlocks() {
   $$('#content pre').forEach(pre => {
     if (pre.querySelector('button.code-copy')) return;
-    pre.append(iconBtn('Copy code', ICONS.code, 'code-copy', () => copyText(pre.innerText, pre.querySelector('button.code-copy'))));
+    pre.append(iconBtn('Copy code', ICONS.code, 'code-copy', () => {
+      const code = pre.querySelector('code');
+      copyText(code ? code.innerText : pre.innerText, pre.querySelector('button.code-copy'));
+    }));
   });
 }
 
@@ -471,25 +510,46 @@ function updateMiniViewport() {
 function buildGraphData() {
   const nodes = [], links = [], adj = new Map(), hierPairs = new Set();
   const touch = (a,b) => { (adj.get(a) || adj.set(a, new Set()).get(a)).add(b); (adj.get(b) || adj.set(b, new Set()).get(b)).add(a); };
-  const overlap = (A, B) => { let n=0; for (const x of A) if (B.has(x)) n++; return n; };
   const tierOf = n => n<3?1 : n<6?2 : n<11?3 : n<21?4 : 5;
 
   pages.forEach((p,i) => { p._i=i; nodes.push({ id:i, label:p.title, ref:p }); });
 
+  // Hierarchical edges
   pages.forEach(p => {
     if (!p.parent) return;
-    if (p.isSecondary && p.parent === root) return;
+    if (p.isSecondary && p.parent === root) return; // keep secondary-home less noisy
     const a = p._i, b = p.parent._i;
     const key = a < b ? `${a}|${b}` : `${b}|${a}`;
     links.push({ source:a, target:b, shared:0, kind:'hier', tier: tierOf(descendants(p)) });
     hierPairs.add(key); touch(a, b);
   });
 
-  for (let i = 0; i < pages.length; i++) for (let j = i+1; j < pages.length; j++) {
-    const n = overlap(pages[i].tagsSet, pages[j].tagsSet); if (!n) continue;
-    const key = i < j ? `${i}|${j}` : `${j}|${i}`; if (hierPairs.has(key)) continue;
-    links.push({ source:i, target:j, shared:n, kind:'tag' }); touch(i, j);
+  // Tag-based edges (scalable): accumulate shared-tag counts per pair.
+  const tagToPages = new Map(); // Map<tag, number[]>
+  pages.forEach(p => {
+    for (const t of p.tagsSet) {
+      if (!tagToPages.has(t)) tagToPages.set(t, []);
+      tagToPages.get(t).push(p._i);
+    }
+  });
+  const shared = new Map(); // key "i|j" -> count
+  for (const arr of tagToPages.values()) {
+    // For each tag, count pairs
+    for (let x = 0; x < arr.length; x++) {
+      for (let y = x+1; y < arr.length; y++) {
+        const i = arr[x], j = arr[y];
+        const key = i < j ? `${i}|${j}` : `${j}|${i}`;
+        shared.set(key, (shared.get(key) || 0) + 1);
+      }
+    }
   }
+  for (const [key, count] of shared) {
+    if (hierPairs.has(key)) continue; // don't duplicate with hierarchy
+    const [i, j] = key.split('|').map(Number);
+    links.push({ source:i, target:j, shared: count, kind:'tag' });
+    touch(i, j);
+  }
+
   return { nodes, links, adj };
 }
 
@@ -584,10 +644,17 @@ function observeMiniResize() {
 }
 
 /* ───────────────────────── renderer + router + init ────────────────────── */
+/** Scroll to anchor if present on page; no-op if missing. */
+function scrollToAnchor(anchor) {
+  if (!anchor) return;
+  const target = DOC.getElementById(anchor);
+  if (target) target.scrollIntoView({ behavior:'smooth' });
+}
+
 /** Render current page HTML: markdown → HTML, code highlight, math, toc, etc. */
 async function render(page, anchor) {
+  const contentEl = $('#content'); if (!contentEl) return;
   const { parse } = await KM.ensureMarkdown();
-  const contentEl = $('#content');
   contentEl.innerHTML = parse(page.content, { headerIds:false });
 
   // Progressive image hints: lazy + async by default; only a couple "high" to avoid starving text/css
@@ -605,7 +672,7 @@ async function render(page, anchor) {
     await KM.ensureHLJSTheme(); await KM.ensureHighlight(); window.hljs.highlightAll();
   }
 
-  // LaTeX math (katex)
+  // LaTeX math (katex) — only attempt when mathy delimiters appear in raw content
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
     await KM.ensureKatex();
     window.renderMathInElement(contentEl, {
@@ -625,7 +692,7 @@ async function render(page, anchor) {
   prevNext(page);
   seeAlso(page);
 
-  if (anchor) DOC.getElementById(anchor)?.scrollIntoView({ behavior:'smooth' });
+  scrollToAnchor(anchor);
 }
 
 let currentPage = null;
@@ -637,19 +704,21 @@ function route() {
   const page = find(seg);
   const base = hashOf(page);
   const baseSegs = base ? base.split('#') : [];
-  const anchor = seg.slice(baseSegs.length).join('#');
+  const anchor = seg.slice(baseSegs.length).join('#'); // leftover is the in-page heading id (can be empty)
 
   if (currentPage !== page) {
     currentPage = page;
-    DOC.documentElement.scrollTop = 0; DOC.body.scrollTop = 0;
-    breadcrumb(page); render(page, anchor); highlightCurrent(true); highlightSidebar(page);
+    // Reset to top for new pages. Use scrollTo to be consistent across browsers.
+    window.scrollTo({ top: 0 });
+    breadcrumb(page);
+    render(page, anchor);
+    highlightCurrent(true);
+    highlightSidebar(page);
   } else if (anchor) {
-    const target = DOC.getElementById(anchor);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
-      const a = $(`#toc li[data-hid="${anchor}"] > a`);
-      if (a) { $('#toc .toc-current')?.classList.remove('toc-current'); a.classList.add('toc-current'); }
-    }
+    // Same page, just an anchor change.
+    scrollToAnchor(anchor);
+    const a = $(`#toc li[data-hid="${anchor}"] > a`);
+    if (a) { $('#toc .toc-current')?.classList.remove('toc-current'); a.classList.add('toc-current'); }
   }
 }
 
@@ -660,9 +729,14 @@ function closePanels() {
   $('#util')?.classList.remove('open');
 }
 
+let uiInited = false;
 function initUI() {
+  if (uiInited) return; // idempotent safety
+  uiInited = true;
+
   // Title & sidebar
-  $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
+  $('#wiki-title-text').textContent = TITLE;
+  document.title = TITLE;
   buildTree();
 
   // THEME: persists preference, respects config, reacts to system & storage
@@ -692,15 +766,15 @@ function initUI() {
     function apply(isDark) {
       rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
       rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      metaTheme && metaTheme.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
-      KM.ensureHLJSTheme(); // swap HLJS stylesheet to match theme
+      if (metaTheme) metaTheme.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
+      KM.ensureHLJSTheme(); // swap HLJS stylesheet to match theme (async is fine)
     }
   })();
 
   route();
 
   // Lazy-build the mini-graph on first visibility
-  new IntersectionObserver((entries, obs) => { if (entries[0].isIntersecting) { buildGraph(); obs.disconnect(); } }).observe($('#mini'));
+  new IntersectionObserver((entries, obs) => { if (entries[0]?.isIntersecting) { buildGraph(); obs.disconnect(); } }).observe($('#mini'));
 
   // Graph fullscreen toggle with stateful aria
   const mini = $('#mini');
@@ -728,7 +802,7 @@ function initUI() {
     closePanels();
     if (!wasOpen) {
       elx.classList.add('open');
-      if (!elx.querySelector('.panel-close')) elx.append(el('button', { class:'panel-close', textContent:'✕', onclick: closePanels }));
+      if (!elx.querySelector('.panel-close')) elx.append(el('button', { class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels }));
     }
   };
   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
