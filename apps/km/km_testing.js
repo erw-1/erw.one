@@ -8,6 +8,7 @@ window.KM = window.KM || {};
 const KM = window.KM;
 
 /* ─────────────────────────────── DOM helpers ───────────────────────────── */
+/* Lightweight utility helpers. Keep these tiny: they're used everywhere. */
 const DOC = document;
 const $   = (sel, c = DOC) => c.querySelector(sel);
 const $$  = (sel, c = DOC) => [...c.querySelectorAll(sel)];
@@ -39,22 +40,28 @@ const domReady = () =>
     : new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
 
 /* ───────────────────────────── data model ──────────────────────────────── */
+/* Parsed pages live here. `byId` accelerates parent lookups. */
 const pages = [];
 const byId  = new Map();
 let root    = null;
 const descMemo = new Map();
 
 function parseMarkdownBundle(txt) {
+  /* Expect chunks like:
+     <!-- id:"home" title:"…" parent:"…" tags:"a,b" -->
+     (body markdown) */
   const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
     const meta = {};
-    hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
+    // allow keys like "parent-id" or "kebab_case"
+    hdr.replace(/([A-Za-z0-9_-]+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
     const page = { ...meta, content: (body || '').trim(), children: [] };
     pages.push(page); byId.set(page.id, page);
   }
   if (!pages.length) throw new Error('No pages parsed from MD bundle.');
   root = byId.get('home') || pages[0];
 
+  // Build tree + fast search strings
   pages.forEach(p => {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
@@ -146,6 +153,7 @@ function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
 /* ───────────────────────────── asset loaders ───────────────────────────── */
+/* Load heavy libs lazily and at most once. */
 const ensureOnce = fn => { let p; return () => (p ||= fn()); };
 
 KM.ensureD3 = ensureOnce(async () => {
@@ -175,6 +183,7 @@ KM.ensureHighlight = ensureOnce(async () => {
   window.hljs = hljs;
 });
 
+/* Keep HLJS stylesheet in sync with theme. */
 KM.ensureHLJSTheme = ensureOnce(() => new Promise(res => {
   const THEME = {
     light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
@@ -217,7 +226,9 @@ KM.ensureKatex = ensureOnce(async () => {
 
 /* ───────────────────────── UI decorations & utils ──────────────────────── */
 const sortByTitle = (a, b) => a.title.localeCompare(b.title);
+
 async function copyText(txt, node) {
+  /* Gracefully handle environments without Clipboard API. */
   try {
     await navigator.clipboard.writeText(txt);
     node?.classList.add('flash'); setTimeout(() => node?.classList.remove('flash'), 300);
@@ -225,6 +236,7 @@ async function copyText(txt, node) {
 }
 
 function numberHeadings(elm) {
+  /* Assign stable numeric ids (1_2_1…) to H1–H5 for deep links & ToC. */
   const counters = [0,0,0,0,0,0];
   $$('h1,h2,h3,h4,h5', elm).forEach(h => {
     const level = +h.tagName[1] - 1;
@@ -235,8 +247,8 @@ function numberHeadings(elm) {
 
 let tocObserver = null;
 function buildToc(page) {
-  const nav = $('#toc'); if (!nav) return;
-  nav.innerHTML = '';
+  const navEl = $('#toc'); if (!navEl) return;
+  navEl.innerHTML = '';
   const heads = $$('#content h1,#content h2,#content h3');
   if (!heads.length) { tocObserver?.disconnect(); tocObserver = null; return; }
 
@@ -246,7 +258,7 @@ function buildToc(page) {
       el('a', { href: '#' + (base ? base + '#' : '') + h.id, textContent: h.textContent })
     ]));
   }
-  ulEl.append(frag); nav.append(ulEl);
+  ulEl.append(frag); navEl.append(ulEl);
 
   tocObserver?.disconnect();
   tocObserver = new IntersectionObserver(entries => {
@@ -287,6 +299,7 @@ function seeAlso(page) {
 }
 
 function fixFootnoteLinks(page) {
+  /* Keep footnote backlinks local to the current page segment. */
   const base = hashOf(page); if (!base) return;
   $$('#content a[href^="#"]').forEach(a => {
     const href = a.getAttribute('href');
@@ -303,6 +316,7 @@ const iconBtn = (title, path, cls, onClick) =>
     `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>` });
 
 function decorateHeadings(page) {
+  /* Click/Copy deep links on headings for easy sharing. */
   const base = hashOf(page);
   $$('#content h1,h2,h3,h4,h5').forEach(h => {
     const url = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
@@ -317,6 +331,7 @@ function decorateHeadings(page) {
 }
 
 function decorateCodeBlocks() {
+  /* Add one-tap copy on <pre> blocks. */
   $$('#content pre').forEach(pre => {
     if (pre.querySelector('button.code-copy')) return;
     pre.append(iconBtn('Copy code', ICONS.code, 'code-copy', () => copyText(pre.innerText, pre.querySelector('button.code-copy'))));
@@ -362,6 +377,7 @@ function highlightSidebar(page) {
 }
 
 function search(q) {
+  /* Simple tokenized search across pages + headings. */
   const resUL = $('#results'), treeUL = $('#tree'); if (!resUL || !treeUL) return;
   const val = q.trim().toLowerCase();
 
@@ -430,6 +446,7 @@ function getMiniSize() {
 }
 
 function updateMiniViewport() {
+  /* Recompute viewBox + simulation center on size change. */
   if (!graphs.mini) return;
   const { svg, sim } = graphs.mini;
   const { w, h } = getMiniSize();
@@ -440,6 +457,7 @@ function updateMiniViewport() {
 }
 
 function buildGraphData() {
+  /* Build nodes/links from hierarchy + tag overlap. */
   const nodes = [], links = [], adj = new Map(), hierPairs = new Set();
   const touch = (a,b) => { (adj.get(a) || adj.set(a, new Set()).get(a)).add(b); (adj.get(b) || adj.set(b, new Set()).get(b)).add(a); };
   const overlap = (A, B) => { let n=0; for (const x of A) if (B.has(x)) n++; return n; };
@@ -524,6 +542,7 @@ async function buildGraph() {
 }
 
 function highlightCurrent(force=false) {
+  /* Keep current page centered + slightly energized in the graph. */
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
   const pg = find(seg); const id = pg?._i ?? -1;
@@ -554,10 +573,12 @@ function observeMiniResize() {
 
 /* ───────────────────────── renderer + router + init ────────────────────── */
 async function render(page, anchor) {
+  /* Convert markdown -> HTML, then decorate and wire the page. */
   const { parse } = await KM.ensureMarkdown();
   const contentEl = $('#content');
   contentEl.innerHTML = parse(page.content, { headerIds:false });
 
+  // Images: load fast & lazily
   $$('#content img').forEach(img => {
     img.loading = 'lazy'; img.decoding = 'async';
     if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','high');
@@ -566,10 +587,12 @@ async function render(page, anchor) {
   fixFootnoteLinks(page);
   numberHeadings(contentEl);
 
+  // Code highlighting: theme-aware, loaded on demand
   if (DOC.querySelector('#content pre code')) {
     await KM.ensureHLJSTheme(); await KM.ensureHighlight(); window.hljs.highlightAll();
   }
 
+  // Math typesetting when needed
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
     await KM.ensureKatex();
     window.renderMathInElement(contentEl, {
@@ -595,7 +618,8 @@ async function render(page, anchor) {
 let currentPage = null;
 
 function route() {
-  closePanels();
+  /* Hash-based router: render page + optional anchor. */
+  closePanels(); // UX: navigating closes any open panes
   const seg = location.hash.slice(1).split('#').filter(Boolean);
   const page = find(seg);
   const base = hashOf(page);
@@ -618,11 +642,13 @@ function route() {
 
 /* ─────────────────────────── global UI + theme ─────────────────────────── */
 function closePanels() {
+  /* Close both side panes. Safe to call repeatedly. */
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
 }
 
 function initUI() {
+  /* One-time DOM wiring + listeners. */
   $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
   buildTree();
 
@@ -636,7 +662,27 @@ function initUI() {
     const metaTheme = DOC.querySelector('meta[name="theme-color"]');
 
     apply(dark);
-    btn.onclick = () => { dark = !dark; apply(dark); localStorage.setItem('km-theme', dark ? 'dark' : 'light'); };
+
+    // User toggle
+    btn.onclick = () => {
+      dark = !dark; apply(dark);
+      localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+    };
+
+    // If user didn't manually choose, track OS changes.
+    media.addEventListener?.('change', e => {
+      if (!localStorage.getItem('km-theme')) { dark = e.matches; apply(dark); }
+    });
+
+    // Cross-tab sync
+    addEventListener('storage', e => {
+      if (e.key === 'km-theme' && e.newValue) { dark = (e.newValue === 'dark'); apply(dark); }
+    });
+
+    // Extra safety: if some external script flips data-theme, keep HLJS in sync.
+    new MutationObserver(muts => {
+      if (muts.some(m => m.attributeName === 'data-theme')) KM.ensureHLJSTheme();
+    }).observe(rootEl, { attributes: true });
 
     function apply(isDark) {
       rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
@@ -648,6 +694,7 @@ function initUI() {
 
   route();
 
+  // Lazy build the mini-graph when it's scrolled into view.
   new IntersectionObserver((entries, obs) => { if (entries[0].isIntersecting) { buildGraph(); obs.disconnect(); } }).observe($('#mini'));
 
   const mini = $('#mini');
@@ -664,7 +711,13 @@ function initUI() {
 
   const togglePanel = sel => {
     const elx = $(sel); const wasOpen = elx.classList.contains('open');
-    closePanels(); if (!wasOpen) { elx.classList.add('open'); if (!elx.querySelector('.panel-close')) elx.append(el('button', { class:'panel-close', textContent:'✕', onclick: closePanels })); }
+    closePanels();
+    if (!wasOpen) {
+      elx.classList.add('open');
+      if (!elx.querySelector('.panel-close')) {
+        elx.append(el('button', { class:'panel-close', textContent:'✕', onclick: closePanels }));
+      }
+    }
   };
   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
   $('#burger-util').onclick    = () => togglePanel('#util');
@@ -690,6 +743,25 @@ function initUI() {
 
   addEventListener('hashchange', route, { passive: true });
 
+  // Global ESC: close panels and exit mini-graph fullscreen.
+  addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      const hadFullscreen = $('#mini')?.classList.contains('fullscreen');
+      const hadSidebar = $('#sidebar')?.classList.contains('open');
+      const hadUtil = $('#util')?.classList.contains('open');
+
+      if (hadFullscreen) {
+        $('#mini').classList.remove('fullscreen');
+        updateMiniViewport();
+        requestAnimationFrame(() => highlightCurrent(true));
+      }
+      closePanels();
+
+      if (hadFullscreen || hadSidebar || hadUtil) e.preventDefault();
+    }
+  });
+
+  // Warm-highlight in idle time
   whenIdle(() => { KM.ensureHighlight(); });
 }
 
