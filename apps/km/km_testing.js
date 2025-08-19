@@ -1,180 +1,216 @@
 /* eslint-env browser, es2022 */
-/* km — Static No-Build Wiki runtime (ESM) • Two files only, libs via CDN */
+/**
+ * km — Static No-Build Wiki runtime (ESM) • Two files only, libs via CDN
+ * All state lives in this file or the HTML. No build tools, no sanitizer.
+ * Public API: window.KM, see code below.
+ */
 
 'use strict';
 
-/* ───────────────────────────── PUBLIC API  ──────────────────────────── */
+/* ────────────── Public API & Namespace ─────────────── */
 window.KM = window.KM || {};
 const KM = window.KM;
 
-/* ───────────────────────────── SHORTCUTS  ───────────────────────────── */
-const DOC = document;
-const $   = (sel, ctx = DOC) => ctx.querySelector(sel);
-const $$  = (sel, ctx = DOC) => [...ctx.querySelectorAll(sel)];
-const el  = (tag, props = {}, children = []) => {
-  const n = DOC.createElement(tag);
+/* ────────────── DOM Helper Utilities ─────────────── */
+
+/**
+ * Shorthand for querySelector.
+ * @param {string} sel - Selector.
+ * @param {ParentNode} [c=document] - Context node.
+ * @returns {Element|null}
+ */
+const $ = (sel, c = document) => c.querySelector(sel);
+
+/**
+ * Shorthand for querySelectorAll (as Array).
+ * @param {string} sel - Selector.
+ * @param {ParentNode} [c=document] - Context node.
+ * @returns {Element[]}
+ */
+const $$ = (sel, c = document) => Array.from(c.querySelectorAll(sel));
+
+/**
+ * Create an element with props and children.
+ * @param {string} tag
+ * @param {object} [props]
+ * @param {Array<Node|string>} [children]
+ * @returns {Element}
+ */
+const el = (tag, props = {}, children = []) => {
+  const n = document.createElement(tag);
   for (const k in props) {
     const v = props[k];
     if (k === 'class' || k === 'className') n.className = v;
     else if (k === 'dataset') Object.assign(n.dataset, v);
     else if (k in n) n[k] = v;
-    else n.setAttribute(k, v);
+    else n !== null && n.setAttribute(k, v);
   }
-  for (const c of children) n.append(c);
+  for (const ch of children) n.append(ch);
   return n;
 };
 Object.assign(KM, { $, $$, DEBUG: false });
 
-/* ───────────────────────────── CONFIG  ──────────────────────────────── */
+/* ────────────── Config Access ─────────────── */
 const CFG = window.CONFIG || {};
 const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT } = CFG;
 
-/* ───────────────────────────── HELPERS  ─────────────────────────────── */
-/** Resolve work during idle time or soon after. */
+/* ────────────── Utility Functions ─────────────── */
+
+/**
+ * Run cb when the main thread is idle or after a timeout.
+ * @param {Function} cb
+ * @param {number} [timeout=1500]
+ */
 const whenIdle = (cb, timeout = 1500) =>
   'requestIdleCallback' in window
     ? requestIdleCallback(cb, { timeout })
     : setTimeout(cb, 0);
 
-/** Promise that resolves when DOM is ready. */
+/**
+ * Resolves once the DOM is ready.
+ * @returns {Promise<void>}
+ */
 const domReady = () =>
-  DOC.readyState !== 'loading'
+  document.readyState !== 'loading'
     ? Promise.resolve()
-    : new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
+    : new Promise(res =>
+        document.addEventListener('DOMContentLoaded', res, { once: true })
+      );
 
-/** Simple slug generator (a-z0-9 + dash). */
-const safeSlug = str =>
-  str
-    .toLowerCase()
-    .replace(/['"()[\]]+/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 64);
+/* ────────────── Data Model ─────────────── */
 
-/* ───────────────────────────── DATA MODEL  ──────────────────────────── */
-const pages   = [];
-const byId    = new Map();
-let   root    = null;
-const descCnt = new Map();
+const pages = [];          // All pages.
+const byId = new Map();    // id -> page
+let root = null;           // Root/home page.
+const descMemo = new Map();// Memoization for descendants
 
 /**
- * Parse the markdown bundle contained in a single string.
- * Requires front-matter blocks wrapped in HTML comments:
- * <!-- id:"home" title:"Welcome" parent:"" tags:"intro,foo" -->
- * @throws {Error} if no pages were detected.
+ * Parse Markdown bundle, populates pages array and parent/children relations.
+ * Expects trusted Markdown (no sanitizer).
+ * @param {string} txt
+ * @throws {Error}
  */
 function parseMarkdownBundle(txt) {
-  /** Ensure unique IDs, auto-slugging from title if needed. */
-  const uniqId = meta => {
-    let id = meta.id?.trim() || safeSlug(meta.title || '');
-    if (!id) id = `page-${pages.length}`;
-    let base = id, n = 1;
-    while (byId.has(id)) id = `${base}-${n++}`;
-    return id;
-  };
-
-  const blocks = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
-  for (const [, hdr, body] of blocks) {
+  const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
+  for (const [, hdr, body] of m) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
-    meta.id = uniqId(meta);
-    const page = {
-      ...meta,
-      content: (body || '').trim(),
-      children: [],
-    };
+    const page = { ...meta, content: (body || '').trim(), children: [] };
     pages.push(page);
     byId.set(page.id, page);
   }
   if (!pages.length) throw new Error('No pages parsed from MD bundle.');
   root = byId.get('home') || pages[0];
 
-  /* ── Relationships, tags & search strings ── */
-  for (const p of pages) {
+  pages.forEach(p => {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
       p.parent = parent || null;
-      parent?.children.push(p);
+      parent && parent.children.push(p);
     }
-    p.tagsSet   = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
-    p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
-  }
+    // tagsSet: Set of tags for the page
+    p.tagsSet = new Set(
+      (p.tags || '').split(',').map(s => s.trim()).filter(Boolean)
+    );
+    // searchStr: content for text search
+    p.searchStr = (
+      p.title +
+      ' ' +
+      [...p.tagsSet].join(' ') +
+      ' ' +
+      p.content
+    ).toLowerCase();
+  });
 
-  /* ── Section extraction for deep-heading search ── */
-  for (const p of pages) {
-    const counters   = Array(6).fill(0);
-    const sections   = [];
-    let inFence      = false;
-    let offset       = 0;
-    let prevSection  = null;
+  // Preprocess sections for search (by headings, fence-aware)
+  pages.forEach(p => {
+    const counters = [0, 0, 0, 0, 0, 0];
+    const sections = [];
+    let inFence = false,
+      offset = 0,
+      prev = null;
 
     for (const line of p.content.split(/\r?\n/)) {
       if (/^(?:```|~~~)/.test(line)) inFence = !inFence;
-
       if (!inFence && /^(#{1,5})\s+/.test(line)) {
-        if (prevSection) {
-          prevSection.body   = p.content.slice(prevSection.bodyStart, offset).trim();
-          prevSection.search = (prevSection.txt + ' ' + prevSection.body).toLowerCase();
-          sections.push(prevSection);
+        if (prev) {
+          prev.body = p.content.slice(prev.bodyStart, offset).trim();
+          prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+          sections.push(prev);
         }
         const [, hashes, txt] = line.match(/^(#{1,5})\s+(.+)/);
-        const lvl = hashes.length - 1;
-        counters[lvl]++; for (let i = lvl + 1; i < 6; i++) counters[i] = 0;
-
-        prevSection = {
-          id: counters.slice(0, lvl + 1).filter(Boolean).join('_'),
+        const level = hashes.length - 1;
+        counters[level]++;
+        for (let i = level + 1; i < 6; i++) counters[i] = 0;
+        prev = {
+          id: counters.slice(0, level + 1).filter(Boolean).join('_'),
           txt: txt.trim(),
           bodyStart: offset + line.length + 1,
         };
       }
       offset += line.length + 1;
     }
-    if (prevSection) {
-      prevSection.body   = p.content.slice(prevSection.bodyStart).trim();
-      prevSection.search = (prevSection.txt + ' ' + prevSection.body).toLowerCase();
-      sections.push(prevSection);
+    if (prev) {
+      prev.body = p.content.slice(prev.bodyStart).trim();
+      prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+      sections.push(prev);
     }
     p.sections = sections;
-  }
+  });
 }
 
-/** Return total descendant count (memoized). */
+/**
+ * Returns the number of descendants (children, recursively) of a page.
+ * Memoized for scale.
+ * @param {object} page
+ * @returns {number}
+ */
 function descendants(page) {
-  if (descCnt.has(page)) return descCnt.get(page);
+  if (descMemo.has(page)) return descMemo.get(page);
   let n = 0;
-  (function walk(p) { p.children.forEach(c => { n++; walk(c); }); })(page);
-  descCnt.set(page, n);
+  (function rec(x) {
+    x.children.forEach(c => {
+      n++;
+      rec(c);
+    });
+  })(page);
+  descMemo.set(page, n);
   return n;
 }
 
 /**
- * Promote the representative of each non-root cluster directly under root.
- * Representative = member with the highest descendant count.
+ * Attach "secondary" cluster roots to the real root if they have no parent.
+ * These are disconnected clusters.
  */
 function attachSecondaryHomes() {
-  const findTop = p => { while (p.parent) p = p.parent; return p; };
+  const topOf = p => {
+    while (p.parent) p = p.parent;
+    return p;
+  };
   const clusters = new Map();
-
   for (const p of pages) {
-    const top = findTop(p);
+    const top = topOf(p);
     if (top === root) continue;
-    if (!clusters.has(top)) clusters.set(top, []);
-    clusters.get(top).push(p);
+    (clusters.get(top) || clusters.set(top, []).get(top)).push(p);
   }
-
   let cid = 0;
-  for (const members of clusters.values()) {
-    const rep = members.reduce((a, b) => (descendants(b) > descendants(a) ? b : a));
+  for (const [, members] of clusters) {
+    const rep = members.reduce(
+      (a, b) => (descendants(b) > descendants(a) ? b : a),
+      members[0]
+    );
     if (!rep.parent) {
       rep.parent = root;
       rep.isSecondary = true;
-      rep.clusterId   = cid++;
+      rep.clusterId = cid++;
       root.children.push(rep);
     }
   }
 }
 
-/* ───────────────────────────── HASH ROUTING  ─────────────────────────── */
+/**
+ * Precompute URL hashes for each page (root#section#...).
+ */
 function computeHashes() {
   pages.forEach(p => {
     const segs = [];
@@ -182,29 +218,58 @@ function computeHashes() {
     p.hash = segs.join('#');
   });
 }
-const hashOf = p => p?.hash ?? '';
-/** Find page by following `segs` from root. */
+
+/**
+ * Get hash for a page (or '' for null).
+ * @param {object} page
+ * @returns {string}
+ */
+const hashOf = page => (page?.hash ?? '');
+
+/**
+ * Finds a page by hash segments array.
+ * @param {string[]} segs
+ * @returns {object|null}
+ */
 const find = segs => {
   let n = root;
   for (const id of segs) {
-    const child = n.children.find(k => k.id === id);
-    if (!child) break;
-    n = child;
+    const c = n.children.find(k => k.id === id);
+    if (!c) break;
+    n = c;
   }
   return n;
 };
-/** Navigate to a page (exposed as `KM.nav`). */
-function nav(p) { location.hash = '#' + hashOf(p); }
+
+/**
+ * Navigates to a page by setting location.hash.
+ * @param {object} page
+ */
+function nav(page) {
+  location.hash = '#' + hashOf(page);
+}
 KM.nav = nav;
 
-/* ───────────────────────────── MODULE LOADERS  ────────────────────────── */
-const ensureOnce = fn => { let memo; return () => (memo ||= fn()); };
+/* ────────────── Asset Loaders (external libs) ─────────────── */
 
+/**
+ * Ensures a function only runs once and caches its promise.
+ * @param {Function} fn
+ * @returns {Function}
+ */
+const ensureOnce = fn => {
+  let p;
+  return () => (p ||= fn());
+};
+
+/**
+ * Load D3 dependencies for graph visualization (mini-graph).
+ */
 KM.ensureD3 = ensureOnce(async () => {
   const [sel, force, drag] = await Promise.all([
-    import('https://cdn.jsdelivr.net/npm/d3-selection@3/+esm'),
-    import('https://cdn.jsdelivr.net/npm/d3-force@3/+esm'),
-    import('https://cdn.jsdelivr.net/npm/d3-drag@3/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm'),
   ]);
   KM.d3 = {
     select: sel.select,
@@ -217,8 +282,13 @@ KM.ensureD3 = ensureOnce(async () => {
   };
 });
 
+/**
+ * Load highlight.js core + desired languages.
+ */
 KM.ensureHighlight = ensureOnce(async () => {
-  const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
+  const { default: hljs } = await import(
+    'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm'
+  );
   if (Array.isArray(LANGS) && LANGS.length) {
     await Promise.allSettled(
       LANGS.map(async lang => {
@@ -227,52 +297,80 @@ KM.ensureHighlight = ensureOnce(async () => {
             `https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`
           );
           hljs.registerLanguage(lang, mod.default);
-        } catch (_) { /* ignore missing langs */ }
-      }),
+        } catch (_) {}
+      })
     );
   }
   window.hljs = hljs;
 });
 
-KM.ensureHLJSTheme = ensureOnce(
-  () =>
-    new Promise(res => {
-      const THEME = {
-        light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
-        dark: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
-      };
-      const mode = DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-      let link = DOC.querySelector('link[data-hljs-theme]');
-      if (!link) {
-        link = el('link', { rel: 'stylesheet', 'data-hljs-theme': '' });
-        DOC.head.appendChild(link);
-      }
-      if (link.href === THEME[mode]) return res();
-      link.onload = link.onerror = res;
-      link.href = THEME[mode];
-    }),
+/**
+ * Load and apply highlight.js theme for current color scheme.
+ */
+KM.ensureHLJSTheme = ensureOnce(() =>
+  new Promise(res => {
+    const THEME = {
+      light:
+        'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
+      dark:
+        'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
+    };
+    const mode =
+      document.documentElement.getAttribute('data-theme') === 'dark'
+        ? 'dark'
+        : 'light';
+    let l = document.querySelector('link[data-hljs-theme]');
+    if (!l) {
+      l = document.createElement('link');
+      l.rel = 'stylesheet';
+      l.setAttribute('data-hljs-theme', '');
+      document.head.appendChild(l);
+    }
+    if (l.getAttribute('href') === THEME[mode]) return res();
+    l.onload = l.onerror = res;
+    l.href = THEME[mode];
+  })
 );
 
+/**
+ * Load marked, marked-alert, marked-footnote.
+ */
 let mdReady = null;
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
   mdReady = Promise.all([
-    import('https://cdn.jsdelivr.net/npm/marked@16/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-alert@2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-footnote@1/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
   ]).then(([marked, alertMod, footnoteMod]) => {
-    const md = new marked.Marked().use(alertMod.default()).use(footnoteMod.default());
-    return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }) };
+    const md = new marked.Marked()
+      .use(alertMod.default())
+      .use(footnoteMod.default());
+    return {
+      /**
+       * Parses markdown source to HTML.
+       * @param {string} src
+       * @param {object} [opt]
+       * @returns {string}
+       */
+      parse: (src, opt) => md.parse(src, { ...opt, mangle: false }),
+    };
   });
   return mdReady;
 };
 
+/**
+ * Load KaTeX for math rendering.
+ */
 KM.ensureKatex = ensureOnce(async () => {
-  const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16/dist/';
-  if (!DOC.getElementById('katex-css')) {
-    DOC.head.append(
-      el('link', { id: 'katex-css', rel: 'stylesheet', href: BASE + 'katex.min.css' }),
-    );
+  const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
+  if (!document.getElementById('katex-css')) {
+    const link = Object.assign(document.createElement('link'), {
+      id: 'katex-css',
+      rel: 'stylesheet',
+      href: BASE + 'katex.min.css',
+    });
+    document.head.appendChild(link);
   }
   const [katex, auto] = await Promise.all([
     import(BASE + 'katex.min.js/+esm'),
@@ -282,118 +380,161 @@ KM.ensureKatex = ensureOnce(async () => {
   window.renderMathInElement = auto.default;
 });
 
-/* ───────────────────────────── RENDER UTILS  ──────────────────────────── */
+/* ────────────── UI Decorations & Utilities ─────────────── */
+
+/** Sort function: case-insensitive title sort */
 const sortByTitle = (a, b) => a.title.localeCompare(b.title);
 
-/** Copy helper with UI flash. */
+/**
+ * Copies text to clipboard and flashes a visual indicator.
+ * @param {string} txt
+ * @param {Element} [node]
+ */
 async function copyText(txt, node) {
   try {
-    await navigator.clipboard.writeText(txt);
-    node?.classList.add('flash');
-    setTimeout(() => node?.classList.remove('flash'), 300);
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      await navigator.clipboard.writeText(txt);
+      node?.classList.add('flash');
+      setTimeout(() => node?.classList.remove('flash'), 300);
+    }
   } catch (e) {
     if (KM.DEBUG) console.warn('Clipboard API unavailable', e);
   }
 }
 
-/** Add numeric IDs to headings for deep linking. */
-function numberHeadings(container) {
-  const counters = Array(6).fill(0);
-  $$('h1,h2,h3,h4,h5', container).forEach(h => {
-    const lvl = +h.tagName[1] - 1;
-    counters[lvl]++; for (let i = lvl + 1; i < 6; i++) counters[i] = 0;
-    if (!h.id) h.id = counters.slice(0, lvl + 1).filter(Boolean).join('_');
+/**
+ * Adds section heading IDs (1_2_3 style) for TOC/anchors.
+ * @param {Element} elm
+ */
+function numberHeadings(elm) {
+  const counters = [0, 0, 0, 0, 0, 0];
+  $$('h1,h2,h3,h4,h5', elm).forEach(h => {
+    const level = +h.tagName[1] - 1;
+    counters[level]++;
+    for (let i = level + 1; i < 6; i++) counters[i] = 0;
+    h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
   });
 }
 
-/* ──────────────────────── DYNAMIC DECORATIONS  ───────────────────────── */
-/** Cleanup store for observers to avoid leaks between page swaps. */
-const liveObservers = new Set();
-const rememberObs = obs => (liveObservers.add(obs), obs);
-const clearLiveObservers = () => {
-  for (const o of liveObservers) o.disconnect();
-  liveObservers.clear();
-};
-
-/** Build the table-of-contents pane. */
+let tocObserver = null;
+/**
+ * Builds table of contents from headings.
+ * @param {object} page
+ */
 function buildToc(page) {
   const nav = $('#toc');
   if (!nav) return;
   nav.innerHTML = '';
-
   const heads = $$('#content h1,#content h2,#content h3');
-  if (!heads.length) return;
+  if (!heads.length) {
+    tocObserver?.disconnect();
+    tocObserver = null;
+    return;
+  }
 
-  const base = hashOf(page);
-  const ul = el('ul');
-  const frag = DOC.createDocumentFragment();
+  const base = hashOf(page),
+    ulEl = el('ul'),
+    frag = document.createDocumentFragment();
   for (const h of heads) {
     frag.append(
       el(
         'li',
         { dataset: { level: h.tagName[1], hid: h.id } },
-        [el('a', { href: `#${base ? base + '#' : ''}${h.id}`, textContent: h.textContent })],
-      ),
+        [
+          el('a', {
+            href: '#' + (base ? base + '#' : '') + h.id,
+            textContent: h.textContent,
+          }),
+        ]
+      )
     );
   }
-  ul.append(frag);
-  nav.append(ul);
+  ulEl.append(frag);
+  nav.append(ulEl);
 
-  /* Active-heading tracking */
-  const obs = rememberObs(
-    new IntersectionObserver(
-      entries => {
-        for (const en of entries) {
-          const a = $(`#toc li[data-hid="${en.target.id}"] > a`);
-          if (a && en.isIntersecting) {
-            $('#toc .toc-current')?.classList.remove('toc-current');
-            a.classList.add('toc-current');
-          }
+  tocObserver?.disconnect();
+  tocObserver = new IntersectionObserver(
+    entries => {
+      for (const en of entries) {
+        const a = $(`#toc li[data-hid="${en.target.id}"] > a`);
+        if (!a) continue;
+        if (en.isIntersecting) {
+          $('#toc .toc-current')?.classList.remove('toc-current');
+          a.classList.add('toc-current');
         }
-      },
-      { rootMargin: '0px 0px -70% 0px', threshold: 0 },
-    ),
+      }
+    },
+    { rootMargin: '0px 0px -70% 0px', threshold: 0 }
   );
-  heads.forEach(h => obs.observe(h));
+  heads.forEach(h => tocObserver.observe(h));
 }
 
-/** Prev / Next sibling links. */
+/**
+ * Adds previous/next links for siblings.
+ * @param {object} page
+ */
 function prevNext(page) {
   $('#prev-next')?.remove();
   if (!page.parent) return;
   const sib = page.parent.children;
   if (sib.length < 2) return;
-  const i = sib.indexOf(page);
-  const wrap = el('div', { id: 'prev-next' });
-
+  const i = sib.indexOf(page),
+    wrap = el('div', { id: 'prev-next' });
   if (i > 0)
-    wrap.append(el('a', { href: `#${hashOf(sib[i - 1])}`, textContent: `← ${sib[i - 1].title}` }));
+    wrap.append(
+      el('a', {
+        href: '#' + hashOf(sib[i - 1]),
+        textContent: '← ' + sib[i - 1].title,
+      })
+    );
   if (i < sib.length - 1)
-    wrap.append(el('a', { href: `#${hashOf(sib[i + 1])}`, textContent: `${sib[i + 1].title} →` }));
-  $('#content').append(wrap);
+    wrap.append(
+      el('a', {
+        href: '#' + hashOf(sib[i + 1]),
+        textContent: sib[i + 1].title + ' →',
+      })
+    );
+  $('#content')?.append(wrap);
 }
 
-/** "See also" recommendations by tag overlap. */
+/**
+ * Show "See also" for related pages with shared tags.
+ * @param {object} page
+ */
 function seeAlso(page) {
   $('#see-also')?.remove();
   if (!page.tagsSet?.size) return;
   const related = pages
     .filter(p => p !== page)
-    .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
-    .filter(r => r.shared)
+    .map(p => ({
+      p,
+      shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length,
+    }))
+    .filter(r => r.shared > 0)
     .sort((a, b) => b.shared - a.shared || sortByTitle(a.p, b.p));
   if (!related.length) return;
 
-  const wrap = el('div', { id: 'see-also' }, [el('h2', { textContent: 'See also' }), el('ul')]);
-  const ul = wrap.querySelector('ul');
-  for (const { p } of related) {
-    ul.append(el('li', {}, [el('a', { href: `#${hashOf(p)}`, textContent: p.title })]));
-  }
-  const pn = $('#prev-next');
-  $('#content').insertBefore(wrap, pn ?? null);
+  const wrap = el('div', { id: 'see-also' }, [
+    el('h2', { textContent: 'See also' }),
+    el('ul'),
+  ]);
+  const ulEl = wrap.querySelector('ul');
+  related.forEach(({ p }) =>
+    ulEl.append(
+      el('li', {}, [
+        el('a', { href: '#' + hashOf(p), textContent: p.title }),
+      ])
+    )
+  );
+  const content = $('#content'),
+    pn = $('#prev-next');
+  content && content.insertBefore(wrap, pn ?? null);
 }
 
-/** Fix footnote self-links that broke after hash prefixing. */
+/**
+ * Patch footnote anchor hrefs to be unique (per-page).
+ * @param {object} page
+ */
 function fixFootnoteLinks(page) {
   const base = hashOf(page);
   if (!base) return;
@@ -405,178 +546,231 @@ function fixFootnoteLinks(page) {
   });
 }
 
-/* ────────────────────────── COPY BUTTONS  ────────────────────────────── */
+// SVG paths for link/copy/code icons
 const ICONS = {
   link: 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
   code: 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
 };
 
-const makeBtn = (title, path, cls) =>
+/**
+ * Create a button element for icons in headings or code blocks.
+ * @param {string} title
+ * @param {string} path - SVG path
+ * @param {string} cls - CSS class
+ * @param {function} onClick
+ * @returns {HTMLButtonElement}
+ */
+const iconBtn = (title, path, cls, onClick) =>
   el('button', {
     class: cls,
     title,
-    'aria-label': title,
+    onclick: onClick,
     innerHTML: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>`,
   });
 
-/** Decorate headings with copy-link buttons + click-to-copy behaviour. */
+/**
+ * Decorate headings with copy-link buttons and pointer/click handlers.
+ * @param {object} page
+ */
 function decorateHeadings(page) {
   const base = hashOf(page);
   $$('#content h1,h2,h3,h4,h5').forEach(h => {
     const url = `${location.origin}${location.pathname}#${base ? base + '#' : ''}${h.id}`;
     let btn = h.querySelector('button.heading-copy');
     if (!btn) {
-      btn = makeBtn('Copy direct link', ICONS.link, 'heading-copy');
-      h.append(btn);
+      btn = iconBtn('Copy direct link', ICONS.link, 'heading-copy', e => {
+        e.stopPropagation();
+        copyText(url, btn);
+      });
+      h.appendChild(btn);
     }
     h.style.cursor = 'pointer';
     h.onclick = () => copyText(url, btn);
   });
 }
 
-/** Decorate codeblocks with copy buttons (event delegation). */
+/**
+ * Decorate code blocks with copy buttons.
+ */
 function decorateCodeBlocks() {
-  const content = $('#content');
-  const btnHTML = makeBtn('Copy code', ICONS.code, 'code-copy').outerHTML;
-
-  $$('pre', content).forEach(pre => {
-    if (!pre.querySelector('button.code-copy')) pre.insertAdjacentHTML('beforeend', btnHTML);
-  });
-
-  content.addEventListener('click', e => {
-    const btn = e.target.closest('button.code-copy');
-    if (!btn) return;
-    const pre = btn.closest('pre');
-    copyText(pre.innerText, btn);
+  $$('#content pre').forEach(pre => {
+    if (!pre.querySelector('button.code-copy')) {
+      pre.append(
+        iconBtn('Copy code', ICONS.code, 'code-copy', () =>
+          copyText(pre.innerText, pre.querySelector('button.code-copy'))
+        )
+      );
+    }
   });
 }
 
-/* ────────────────────────── SIDEBAR / SEARCH  ────────────────────────── */
+/* ────────────── Sidebar / Search ─────────────── */
+
+/**
+ * Build sidebar navigation tree.
+ */
 function buildTree() {
   const ul = $('#tree');
   if (!ul) return;
   ul.innerHTML = '';
+  const prim = root.children.filter(c => !c.isSecondary).sort(sortByTitle);
+  const secs = root.children.filter(c => c.isSecondary).sort((a, b) => a.clusterId - b.clusterId);
 
-  const prim  = root.children.filter(c => !c.isSecondary).sort(sortByTitle);
-  const secs  = root.children.filter(c => c.isSecondary).sort((a, b) => a.clusterId - b.clusterId);
-
-  /** Recursive builder. */
+  /**
+   * Recursive helper to create tree structure.
+   * @param {object[]} nodes
+   * @param {Node} container
+   * @param {number} depth
+   */
   const rec = (nodes, container, depth = 0) => {
-    for (const p of nodes) {
+    nodes.forEach(p => {
       const li = el('li');
       if (p.children.length) {
-        const open  = depth < 2;
+        const open = depth < 2;
         li.className = 'folder' + (open ? ' open' : '');
         const caret = el('button', { class: 'caret', 'aria-expanded': String(open) });
-        const lbl   = el('a', { class: 'lbl', dataset: { page: p.id }, href: `#${hashOf(p)}`, textContent: p.title });
-        const sub   = el('ul', { style: `display:${open ? 'block' : 'none'}` });
+        const lbl = el('a', { class: 'lbl', dataset: { page: p.id }, href: '#' + hashOf(p), textContent: p.title });
+        const sub = el('ul', { style: `display:${open ? 'block' : 'none'}` });
         li.append(caret, lbl, sub);
         container.append(li);
         rec(p.children.sort(sortByTitle), sub, depth + 1);
       } else {
         li.className = 'article';
-        li.append(el('a', { dataset: { page: p.id }, href: `#${hashOf(p)}`, textContent: p.title }));
+        li.append(el('a', { dataset: { page: p.id }, href: '#' + hashOf(p), textContent: p.title }));
         container.append(li);
       }
-    }
+    });
   };
 
-  const frag = DOC.createDocumentFragment();
+  const frag = document.createDocumentFragment();
   rec(prim, frag);
-  for (const r of secs) {
+  secs.forEach(r => {
     frag.append(el('li', { class: 'group-sep', innerHTML: '<hr>' }));
     rec([r], frag);
-  }
+  });
   ul.append(frag);
 }
 
+/**
+ * Highlight the currently active page in sidebar.
+ * @param {object} page
+ */
 function highlightSidebar(page) {
   $('#tree .sidebar-current')?.classList.remove('sidebar-current');
   $(`#tree a[data-page="${page.id}"]`)?.classList.add('sidebar-current');
 }
 
-/** Full-text search in pages + headings. */
+/**
+ * Search over all pages and sections.
+ * @param {string} q - Query string
+ */
 function search(q) {
-  const resUL  = $('#results');
-  const treeUL = $('#tree');
+  const resUL = $('#results'),
+    treeUL = $('#tree');
   if (!resUL || !treeUL) return;
+  const val = q.trim().toLowerCase();
 
-  const val    = q.trim().toLowerCase();
   if (!val) {
     resUL.style.display = 'none';
-    resUL.innerHTML     = '';
+    resUL.innerHTML = '';
     treeUL.style.display = '';
     return;
   }
 
-  const tokens = val.split(/\s+/).filter(tok => tok.length >= 2);
-  resUL.innerHTML      = '';
-  resUL.style.display  = '';
+  // Tokenize, ignore single-char tokens.
+  const tokens = val.split(/\s+/).filter(t => t.length >= 2);
+  resUL.innerHTML = '';
+  resUL.style.display = '';
   treeUL.style.display = 'none';
 
-  const frag = DOC.createDocumentFragment();
-  for (const p of pages) {
-    if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
-    const li   = el('li', { class: 'page-result' }, [
-      el('a', { href: `#${hashOf(p)}`, textContent: p.title }),
-    ]);
-    const matches = p.sections.filter(sec => tokens.every(tok => sec.search.includes(tok)));
-    if (matches.length) {
-      const base = hashOf(p);
-      const sub  = el('ul', { class: 'sub-results' });
-      for (const sec of matches) {
-        sub.append(
-          el('li', { class: 'heading-result' }, [
-            el('a', { href: `#${base ? base + '#' : ''}${sec.id}`, textContent: sec.txt }),
-          ]),
+  const frag = document.createDocumentFragment();
+
+  // Algorithm: O(N) for pages, O(M) for sections per page. Scales for ≤10k pages/sections.
+  pages
+    .filter(p => tokens.every(tok => p.searchStr.includes(tok)))
+    .forEach(p => {
+      const li = el('li', { class: 'page-result' }, [
+        el('a', { href: '#' + hashOf(p), textContent: p.title }),
+      ]);
+      const matches = p.sections.filter(sec =>
+        tokens.every(tok => sec.search.includes(tok))
+      );
+      if (matches.length) {
+        const base = hashOf(p),
+          sub = el('ul', { class: 'sub-results' });
+        matches.forEach(sec =>
+          sub.append(
+            el('li', { class: 'heading-result' }, [
+              el('a', {
+                href: '#' + (base ? base + '#' : '') + sec.id,
+                textContent: sec.txt,
+              }),
+            ])
+          )
         );
+        li.append(sub);
       }
-      li.append(sub);
-    }
-    frag.append(li);
-  }
+      frag.append(li);
+    });
   resUL.append(frag);
-  if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
+  if (!resUL.children.length)
+    resUL.innerHTML = '<li id="no_result">No result</li>';
 }
 
-/* ───────────────────────── BREADCRUMB / CRUMB  ───────────────────────── */
+/* ────────────── Breadcrumb / Crumb ─────────────── */
+
+/**
+ * Renders breadcrumb chain for the current page.
+ * @param {object} page
+ */
 function breadcrumb(page) {
   const dyn = $('#crumb-dyn');
   if (!dyn) return;
   dyn.innerHTML = '';
-
   const chain = [];
   for (let n = page; n; n = n.parent) chain.unshift(n);
-  chain.shift(); // remove root
+  chain.shift(); // Don't show root
 
-  for (const n of chain) {
+  chain.forEach(n => {
     dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
     const wrap = el('span', { class: 'dropdown' });
-    const a    = el('a', { textContent: n.title, href: `#${hashOf(n)}` });
+    const a = el('a', { textContent: n.title, href: '#' + hashOf(n) });
     if (n === page) a.className = 'crumb-current';
     wrap.append(a);
 
-    const sibs = n.parent.children.filter(s => s !== n);
-    if (sibs.length) {
+    const siblings = n.parent.children.filter(s => s !== n);
+    if (siblings.length) {
       const ul = el('ul');
-      sibs.forEach(s => ul.append(el('li', { textContent: s.title, onclick: () => nav(s) })));
+      siblings.forEach(s =>
+        ul.append(
+          el('li', { textContent: s.title, onclick: () => nav(s) })
+        )
+      );
       wrap.append(ul);
     }
     dyn.append(wrap);
-  }
+  });
 
-  /* Children dropdown */
+  // Dropdown for children (next step from here)
   if (page.children.length) {
-    const box  = el('span', { class: 'childbox' }, [el('span', { class: 'toggle', textContent: '▾' }), el('ul')]);
-    const ul   = box.querySelector('ul');
-    page.children.sort(sortByTitle).forEach(ch =>
-      ul.append(el('li', { textContent: ch.title, onclick: () => nav(ch) })),
-    );
+    const box = el('span', { class: 'childbox' }, [
+      el('span', { class: 'toggle', textContent: '▾' }),
+      el('ul'),
+    ]);
+    const ul = box.querySelector('ul');
+    page.children
+      .sort(sortByTitle)
+      .forEach(ch =>
+        ul.append(
+          el('li', { textContent: ch.title, onclick: () => nav(ch) })
+        )
+      );
     dyn.append(box);
   }
 }
 
-/* ──────────────────────────── MINI GRAPH  ───────────────────────────── */
+/* ────────────── Mini Graph (D3) ─────────────── */
+
 const IDS = {
   current: 'node_current',
   parent: 'node_parent',
@@ -585,76 +779,104 @@ const IDS = {
   tagPRE: 'link_tag',
   label: 'graph_text',
 };
-const graphs   = {};
-let   CURRENT  = -1;
+const graphs = {};
+let CURRENT = -1;
 
+/**
+ * Get current mini-graph svg size, responsive to fullscreen.
+ * @returns {{w:number,h:number}}
+ */
 function getMiniSize() {
   const svg = $('#mini');
   if (!svg) return { w: 400, h: 300 };
-  if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
+  if (svg.classList.contains('fullscreen'))
+    return { w: innerWidth, h: innerHeight };
   const r = svg.getBoundingClientRect();
   return { w: Math.max(1, r.width | 0), h: Math.max(1, r.height | 0) };
 }
 
+/**
+ * Update D3 graph viewport after resize/fullscreen.
+ */
 function updateMiniViewport() {
   if (!graphs.mini) return;
   const { svg, sim } = graphs.mini;
-  const { w, h }     = getMiniSize();
+  const { w, h } = getMiniSize();
   graphs.mini.w = w;
   graphs.mini.h = h;
-  svg.attr('viewBox', `0 0 ${w} ${h}`).attr('width', w).attr('height', h).attr('preserveAspectRatio', 'xMidYMid meet');
+  svg
+    .attr('viewBox', `0 0 ${w} ${h}`)
+    .attr('width', w)
+    .attr('height', h)
+    .attr('preserveAspectRatio', 'xMidYMid meet');
   sim.force('center', KM.d3.forceCenter(w / 2, h / 2));
   sim.alpha(0.2).restart();
 }
 
-/** Build node / link lists with tag-indexing (O(N + E)). */
+/**
+ * Build graph data for D3 (nodes, links).
+ * @returns {{nodes: Array, links: Array, adj: Map}}
+ */
 function buildGraphData() {
-  const nodes   = pages.map((p, i) => ({ id: i, label: p.title, ref: p }));
-  const links   = [];
-  const adj     = new Map(nodes.map(n => [n.id, new Set()]));
-  const hierSet = new Set();
+  const nodes = [],
+    links = [],
+    adj = new Map(),
+    hierPairs = new Set();
+  const touch = (a, b) => {
+    (adj.get(a) || adj.set(a, new Set()).get(a)).add(b);
+    (adj.get(b) || adj.set(b, new Set()).get(b)).add(a);
+  };
+  const overlap = (A, B) => {
+    let n = 0;
+    for (const x of A) if (B.has(x)) n++;
+    return n;
+  };
+  const tierOf = n =>
+    n < 3 ? 1 : n < 6 ? 2 : n < 11 ? 3 : n < 21 ? 4 : 5;
 
-  /* Hierarchy links */
   pages.forEach((p, i) => {
     p._i = i;
-    if (!p.parent || (p.isSecondary && p.parent === root)) return;
-    const a = i;
-    const b = p.parent._i;
-    const key = a < b ? `${a}|${b}` : `${b}|${a}`;
-    links.push({ source: a, target: b, shared: 0, kind: 'hier', tier: Math.min(Math.floor(descendants(p) / 3) + 1, 5) });
-    hierSet.add(key);
-    adj.get(a).add(b);
-    adj.get(b).add(a);
+    nodes.push({ id: i, label: p.title, ref: p });
   });
 
-  /* Tag links via index */
-  const tagIdx = new Map();
-  pages.forEach((p, i) => {
-    for (const t of p.tagsSet) {
-      if (!tagIdx.has(t)) tagIdx.set(t, []);
-      tagIdx.get(t).push(i);
-    }
+  pages.forEach(p => {
+    if (!p.parent) return;
+    if (p.isSecondary && p.parent === root) return;
+    const a = p._i,
+      b = p.parent._i;
+    const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+    links.push({
+      source: a,
+      target: b,
+      shared: 0,
+      kind: 'hier',
+      tier: tierOf(descendants(p)),
+    });
+    hierPairs.add(key);
+    touch(a, b);
   });
-  for (const list of tagIdx.values()) {
-    for (let a = 0; a < list.length; a++) {
-      for (let b = a + 1; b < list.length; b++) {
-        const i = list[a], j = list[b];
-        const key = i < j ? `${i}|${j}` : `${j}|${i}`;
-        if (hierSet.has(key)) continue;
-        let link = links.find(l => (l.source === i && l.target === j) || (l.source === j && l.target === i));
-        if (!link) {
-          link = { source: i, target: j, shared: 0, kind: 'tag' };
-          links.push(link);
-        }
-        link.shared++;
-        adj.get(i).add(j);
-        adj.get(j).add(i);
-      }
+
+  for (let i = 0; i < pages.length; i++)
+    for (let j = i + 1; j < pages.length; j++) {
+      const n = overlap(pages[i].tagsSet, pages[j].tagsSet);
+      if (!n) continue;
+      const key = i < j ? `${i}|${j}` : `${j}|${i}`;
+      if (hierPairs.has(key)) continue;
+      links.push({
+        source: i,
+        target: j,
+        shared: n,
+        kind: 'tag',
+      });
+      touch(i, j);
     }
-  }
   return { nodes, links, adj };
 }
 
+/**
+ * Build and initialize the mini-graph.
+ * Loads D3 if needed. Batches DOM operations.
+ */
 async function buildGraph() {
   await KM.ensureD3();
   if (graphs.mini) return;
@@ -662,10 +884,15 @@ async function buildGraph() {
   const { nodes, links, adj } = buildGraphData();
   const svg = KM.d3.select('#mini');
   const { w: W, h: H } = getMiniSize();
-  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
+  svg
+    .attr('viewBox', `0 0 ${W} ${H}`)
+    .attr('width', W)
+    .attr('height', H)
+    .attr('preserveAspectRatio', 'xMidYMid meet');
 
-  const localN = nodes.map(n => ({ ...n }));
-  const localL = links.map(l => ({ ...l }));
+  // Use copy of nodes/links for simulation state
+  const localN = nodes.map(n => ({ ...n })),
+    localL = links.map(l => ({ ...l }));
 
   const sim = KM.d3
     .forceSimulation(localN)
@@ -673,26 +900,39 @@ async function buildGraph() {
     .force('charge', KM.d3.forceManyBody().strength(-240))
     .force('center', KM.d3.forceCenter(W / 2, H / 2));
 
-  const view = svg.append('g').attr('class', 'view').attr('style', 'transition: transform 220ms ease-out');
+  const view = svg
+    .append('g')
+    .attr('class', 'view')
+    .attr('style', 'transition: transform 220ms ease-out');
 
   const link = view
     .append('g')
     .selectAll('line')
     .data(localL)
     .join('line')
-    .attr('id', d => (d.kind === 'hier' ? IDS.hierPRE + d.tier : IDS.tagPRE + Math.min(d.shared, 5)));
+    .attr('id', d =>
+      d.kind === 'hier'
+        ? IDS.hierPRE + d.tier
+        : IDS.tagPRE + Math.min(d.shared, 5)
+    );
 
+  /**
+   * Add event listeners and ARIA affordances to nodes.
+   * @param {object} sel - D3 selection
+   * @returns {object} sel
+   */
   const wireNode = sel =>
     sel
       .attr('r', 6)
-      .attr('id', d => (d.ref.children.length ? IDS.parent : IDS.leaf))
+      .attr('id', d =>
+        d.ref.children.length ? IDS.parent : IDS.leaf
+      )
       .style('cursor', 'pointer')
-      .on('click', (e, d) => nav(d.ref))
+      .on('click', (e, d) => KM.nav(d.ref))
       .on('mouseover', (e, d) => fade(d.id, 0.15))
       .on('mouseout', () => fade(null, 1))
       .call(
-        KM.d3
-          .drag()
+        KM.d3.drag()
           .on('start', (e, d) => {
             d.fx = d.x;
             d.fy = d.y;
@@ -705,7 +945,7 @@ async function buildGraph() {
           .on('end', (e, d) => {
             if (!e.active) sim.alphaTarget(0);
             d.fx = d.fy = null;
-          }),
+          })
       );
 
   const node = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
@@ -720,10 +960,29 @@ async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
+  /**
+   * Fades nodes/links not adjacent to id.
+   * @param {number|null} id
+   * @param {number} o
+   */
   function fade(id, o) {
-    node.style('opacity', d => (id == null || adj.get(id)?.has(d.id) || d.id === id ? 1 : o));
-    label.style('opacity', d => (id == null || adj.get(id)?.has(d.id) || d.id === id ? 1 : o));
-    link.style('opacity', l => (id == null || l.source.id === id || l.target.id === id ? 1 : o));
+    node.style('opacity', d =>
+      id == null ||
+      graphs.mini.adj.get(id)?.has(d.id) ||
+      d.id === id
+        ? 1
+        : o
+    );
+    label.style('opacity', d =>
+      id == null ||
+      graphs.mini.adj.get(id)?.has(d.id) ||
+      d.id === id
+        ? 1
+        : o
+    );
+    link.style('opacity', l =>
+      id == null || l.source.id === id || l.target.id === id ? 1 : o
+    );
   }
 
   sim.on('tick', () => {
@@ -740,27 +999,39 @@ async function buildGraph() {
   observeMiniResize();
 }
 
+/**
+ * Highlights the current page in the mini-graph.
+ * @param {boolean} [force=false]
+ */
 function highlightCurrent(force = false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
-  const pg  = find(seg);
-  const id  = pg?._i ?? -1;
+  const pg = find(seg);
+  const id = pg?._i ?? -1;
   if (id === CURRENT && !force) return;
 
   const g = graphs.mini;
   g.node
-    .attr('id', d => (d.id === id ? IDS.current : d.ref.children.length ? IDS.parent : IDS.leaf))
+    .attr('id', d =>
+      d.id === id
+        ? IDS.current
+        : d.ref.children.length
+        ? IDS.parent
+        : IDS.leaf
+    )
     .attr('r', d => (d.id === id ? 8 : 6));
   g.label.classed('current', d => d.id === id);
 
-  const cx = g.w / 2;
-  const cy = g.h / 2;
+  // Center current node in viewport.
+  const cx = g.w / 2,
+    cy = g.h / 2;
   g.node
     .filter(d => d.id === id)
     .each(d => {
-      const dx = cx - d.x;
-      const dy = cy - d.y;
+      const dx = cx - d.x,
+        dy = cy - d.y;
       g.view.attr('transform', `translate(${dx},${dy})`);
+      // Spring effect
       const k = 0.1;
       d.vx += (cx - d.x) * k;
       d.vy += (cy - d.y) * k;
@@ -771,43 +1042,51 @@ function highlightCurrent(force = false) {
   CURRENT = id;
 }
 
+/**
+ * Observe mini-graph svg resize, update viewport.
+ */
 function observeMiniResize() {
   const elx = $('#mini');
   if (!elx) return;
-  rememberObs(
-    new ResizeObserver(() => {
-      if (!graphs.mini) return;
-      updateMiniViewport();
-      highlightCurrent(true);
-    }),
-  ).observe(elx);
+  new ResizeObserver(() => {
+    if (!graphs.mini) return;
+    updateMiniViewport();
+    highlightCurrent(true);
+  }).observe(elx);
 }
 
-/* ───────────────────────── ROUTER & RENDER  ─────────────────────────── */
-let currentPage = null;
+/* ────────────── Renderer + Router + Init ─────────────── */
 
+/**
+ * Render the current page and all UI affordances.
+ * @param {object} page
+ * @param {string} [anchor]
+ */
 async function render(page, anchor) {
-  clearLiveObservers();
   const { parse } = await KM.ensureMarkdown();
-
   const contentEl = $('#content');
+  if (!contentEl) return;
   contentEl.innerHTML = parse(page.content, { headerIds: false });
 
+  // Image perf: lazy/defer decode, high fetchpriority for main content
   $$('#content img').forEach(img => {
     img.loading = 'lazy';
     img.decoding = 'async';
-    if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority', 'high');
+    if (!img.hasAttribute('fetchpriority'))
+      img.setAttribute('fetchpriority', 'high');
   });
 
   fixFootnoteLinks(page);
   numberHeadings(contentEl);
 
-  if (DOC.querySelector('#content pre code')) {
+  // Highlight code (if any)
+  if (document.querySelector('#content pre code')) {
     await KM.ensureHLJSTheme();
     await KM.ensureHighlight();
     window.hljs.highlightAll();
   }
 
+  // Render math if present
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
     await KM.ensureKatex();
     window.renderMathInElement(contentEl, {
@@ -827,57 +1106,84 @@ async function render(page, anchor) {
   prevNext(page);
   seeAlso(page);
 
-  const prefersReduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (anchor) DOC.getElementById(anchor)?.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth' });
+  if (anchor) {
+    const target = document.getElementById(anchor);
+    target?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
 }
 
-/** Close sidebar & util panels (mobile). */
-function closePanels() {
-  $('#sidebar')?.classList.remove('open');
-  $('#util')?.classList.remove('open');
-}
+let currentPage = null;
 
+/**
+ * Main router: parses hash, loads correct page, updates UI.
+ */
 function route() {
   closePanels();
-  const seg   = location.hash.slice(1).split('#').filter(Boolean);
-  const page  = find(seg);
-  const base  = hashOf(page);
-  const anchor = seg.slice(base ? base.split('#').length : 0).join('#');
+  const seg = location.hash.slice(1).split('#').filter(Boolean);
+  const page = find(seg);
+  const base = hashOf(page);
+  const baseSegs = base ? base.split('#') : [];
+  const anchor = seg.slice(baseSegs.length).join('#');
 
   if (currentPage !== page) {
     currentPage = page;
-    DOC.documentElement.scrollTop = 0;
-    DOC.body.scrollTop            = 0;
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
     breadcrumb(page);
     render(page, anchor);
     highlightCurrent(true);
     highlightSidebar(page);
   } else if (anchor) {
-    const target = DOC.getElementById(anchor);
+    // If re-navigating only to anchor
+    const target = document.getElementById(anchor);
     if (target) {
-      const behavior = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
-      target.scrollIntoView({ behavior });
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const a = $(`#toc li[data-hid="${anchor}"] > a`);
+      if (a) {
+        $('#toc .toc-current')?.classList.remove('toc-current');
+        a.classList.add('toc-current');
+      }
     }
   }
 }
 
-/* ──────────────────────── GLOBAL UI & THEME  ────────────────────────── */
+/* ────────────── Global UI + Theme ─────────────── */
+
+/**
+ * Closes any open slide-out panels (sidebar, utility).
+ */
+function closePanels() {
+  $('#sidebar')?.classList.remove('open');
+  $('#util')?.classList.remove('open');
+}
+
+/**
+ * Initializes main UI and wires all event handlers.
+ */
 function initUI() {
   $('#wiki-title-text').textContent = TITLE;
   document.title = TITLE;
   buildTree();
 
-  /* Theme */
+  // Theme toggler
   (function themeInit() {
-    const btn   = $('#theme-toggle');
-    const root  = DOC.documentElement;
-    const media = matchMedia('(prefers-color-scheme: dark)');
+    const btn = $('#theme-toggle'),
+      rootEl = document.documentElement,
+      media = matchMedia('(prefers-color-scheme: dark)');
     const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
-    const cfg    = DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light' ? DEFAULT_THEME : null;
-    let dark     = stored ? stored === 'dark' : cfg ? cfg === 'dark' : media.matches;
+    const cfg =
+      DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light'
+        ? DEFAULT_THEME
+        : null;
+    let dark = stored
+      ? stored === 'dark'
+      : cfg
+      ? cfg === 'dark'
+      : media.matches;
 
-    if (ACCENT) root.style.setProperty('--color-accent', ACCENT);
-    const metaTheme = $('meta[name="theme-color"]');
+    if (typeof ACCENT === 'string' && ACCENT)
+      rootEl.style.setProperty('--color-accent', ACCENT);
+    const metaTheme = document.querySelector('meta[name="theme-color"]');
 
     apply(dark);
     btn.onclick = () => {
@@ -887,38 +1193,35 @@ function initUI() {
     };
 
     function apply(isDark) {
-      root.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
-      root.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      metaTheme?.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
+      rootEl.style.setProperty(
+        '--color-main',
+        isDark ? 'rgb(29,29,29)' : 'white'
+      );
+      rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
+      metaTheme && metaTheme.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
       KM.ensureHLJSTheme();
     }
   })();
 
   route();
 
-  /* Build graph lazily */
-  rememberObs(
-    new IntersectionObserver((entries, obs) => {
-      if (entries[0].isIntersecting) {
-        buildGraph();
-        obs.disconnect();
-      }
-    }),
-  ).observe($('#mini'));
+  // Lazy-load mini-graph only when it appears in viewport
+  new IntersectionObserver((entries, obs) => {
+    if (entries[0].isIntersecting) {
+      buildGraph();
+      obs.disconnect();
+    }
+  }).observe($('#mini'));
 
-  /* Mini full-screen toggle */
+  const mini = $('#mini');
   $('#expand').onclick = () => {
-    const mini = $('#mini');
     mini.classList.toggle('fullscreen');
     updateMiniViewport();
     requestAnimationFrame(() => highlightCurrent(true));
-    const running = !mini.classList.contains('fullscreen') || $('#util')?.classList.contains('open');
-    graphs.mini?.sim.alphaTarget(running ? 0.15 : 0);
   };
 
-  /* Search */
-  const searchInput  = $('#search');
-  const searchClear  = $('#search-clear');
+  const searchInput = $('#search'),
+    searchClear = $('#search-clear');
   let debounce = 0;
   searchInput.oninput = e => {
     clearTimeout(debounce);
@@ -933,37 +1236,49 @@ function initUI() {
     searchInput.focus();
   };
 
-  /* Responsive panel toggles */
+  /**
+   * Slide-out panel toggle logic for sidebar/util.
+   */
   const togglePanel = sel => {
     const elx = $(sel);
+    if (!elx) return;
     const wasOpen = elx.classList.contains('open');
     closePanels();
     if (!wasOpen) {
       elx.classList.add('open');
-      if (!elx.querySelector('.panel-close')) {
-        elx.append(el('button', { class: 'panel-close', textContent: '✕', onclick: closePanels }));
-      }
+      if (!elx.querySelector('.panel-close'))
+        elx.append(
+          el('button', {
+            class: 'panel-close',
+            textContent: '✕',
+            onclick: closePanels,
+          })
+        );
     }
   };
   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
-  $('#burger-util').onclick    = () => togglePanel('#util');
+  $('#burger-util').onclick = () => togglePanel('#util');
 
-  addEventListener('resize', () => {
-    if (matchMedia('(min-width:1001px)').matches) closePanels();
-    if ($('#mini')?.classList.contains('fullscreen')) {
-      updateMiniViewport();
-      highlightCurrent(true);
-    }
-  }, { passive: true });
+  addEventListener(
+    'resize',
+    () => {
+      if (matchMedia('(min-width:1001px)').matches) closePanels();
+      if ($('#mini')?.classList.contains('fullscreen')) {
+        updateMiniViewport();
+        highlightCurrent(true);
+      }
+    },
+    { passive: true }
+  );
 
-  /* Sidebar tree interactions */
-  $('#tree').addEventListener(
+  // Sidebar caret toggle (tree expand/collapse)
+  $('#tree')?.addEventListener(
     'click',
     e => {
       const caret = e.target.closest('button.caret');
       if (caret) {
-        const li  = caret.closest('li.folder');
-        const sub = li.querySelector('ul');
+        const li = caret.closest('li.folder'),
+          sub = li.querySelector('ul');
         const open = !li.classList.contains('open');
         li.classList.toggle('open', open);
         caret.setAttribute('aria-expanded', String(open));
@@ -972,24 +1287,31 @@ function initUI() {
       }
       if (e.target.closest('a')) closePanels();
     },
-    { passive: true },
+    { passive: true }
   );
 
-  $('#results').addEventListener('click', e => {
-    if (e.target.closest('a')) closePanels();
-  });
+  // Search results close panels on navigation
+  $('#results')?.addEventListener(
+    'click',
+    e => {
+      if (e.target.closest('a')) closePanels();
+    },
+    { passive: true }
+  );
 
   addEventListener('hashchange', route, { passive: true });
 
-  whenIdle(() => KM.ensureHighlight());
+  whenIdle(() => {
+    KM.ensureHighlight();
+  });
 }
 
-/* ─────────────────────────────── BOOT  ───────────────────────────────── */
+/* ────────────── Boot ─────────────── */
 (async () => {
   try {
     if (!MD) throw new Error('CONFIG.MD is empty.');
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort('fetch-timeout'), 20000);
+    const ctrl = new AbortController(),
+      t = setTimeout(() => ctrl.abort('fetch-timeout'), 20000);
     const r = await fetch(MD, { cache: 'reload', signal: ctrl.signal });
     clearTimeout(t);
     if (!r.ok) throw new Error(`Failed to fetch MD (${r.status})`);
@@ -1002,13 +1324,15 @@ function initUI() {
     await domReady();
     initUI();
 
-    /* Initial graph highlight */
-    await new Promise(res => requestAnimationFrame(res));
+    // Ensure current node is highlighted on first paint.
+    await new Promise(res => setTimeout(res, 120));
     highlightCurrent(true);
   } catch (err) {
     console.warn('Markdown load failed:', err);
-    $('#content').innerHTML = `<h1>Content failed to load</h1>
-                               <p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p>
-                               <pre>${String(err?.message || err)}</pre>`;
+    const elc = $('#content');
+    if (elc)
+      elc.innerHTML = `<h1>Content failed to load</h1>
+<p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p>
+<pre>${String(err?.message || err)}</pre>`;
   }
 })();
