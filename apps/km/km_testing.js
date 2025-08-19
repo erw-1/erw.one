@@ -8,19 +8,9 @@ window.KM = window.KM || {};
 const KM = window.KM;
 
 /* ─────────────────────────────── DOM helpers ───────────────────────────── */
-/** Shorthand for document node. */
 const DOC = document;
-/** Query single element. */
 const $   = (sel, c = DOC) => c.querySelector(sel);
-/** Query list as array. */
 const $$  = (sel, c = DOC) => [...c.querySelectorAll(sel)];
-/**
- * Create element with properties and children.
- * Properties map:
- *  - "class"/"className" → className
- *  - "dataset" → merged into dataset
- *  - if key in element, set as property; else setAttribute
- */
 const el  = (tag, props = {}, children = []) => {
   const n = DOC.createElement(tag);
   for (const k in props) {
@@ -40,98 +30,42 @@ const CFG = window.CONFIG || {};
 const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT } = CFG;
 
 /* ─────────────────────────────── small utils ───────────────────────────── */
-/**
- * Run work when the main thread is idle (falls back to setTimeout).
- */
 const whenIdle = (cb, timeout = 1500) =>
   'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 0);
 
-/** Resolve once DOM is interactive. */
 const domReady = () =>
   DOC.readyState !== 'loading'
     ? Promise.resolve()
     : new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
 
-/** Prefer reduced motion if the user asked for it. */
-const PREFERS_REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
-/** Smooth-scroll helper honoring reduced-motion preferences. */
-const smoothScrollIntoView = (node) => {
-  if (!node) return;
-  node.scrollIntoView({ behavior: PREFERS_REDUCED ? 'auto' : 'smooth' });
-};
-
 /* ───────────────────────────── data model ──────────────────────────────── */
-const pages = [];           // Flat list of all pages
-const byId  = new Map();    // id → page
-let root    = null;         // Root page (home)
-const descMemo = new Map(); // memo for descendant counts
+const pages = [];
+const byId  = new Map();
+let root    = null;
+const descMemo = new Map();
 
-/**
- * Parse the Markdown bundle containing repeated blocks of:
- * <!-- id:"foo" title:"Bar" parent:"baz" tags:"x,y" ... -->\n
- * <markdown body...>
- *
- * The header parser is tolerant of:
- * - single/double quotes, optional whitespace
- * - unquoted tokens w/o spaces (id:home)
- * Missing id/title are auto-filled defensively to keep the runtime alive.
- * @param {string} txt - The fetched bundle text.
- */
 function parseMarkdownBundle(txt) {
-  const blockRE = /<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g;
-  let match;
-  while ((match = blockRE.exec(txt))) {
-    const [, hdrRaw, body] = match;
+  const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
+  for (const [, hdr, body] of m) {
     const meta = {};
-    // Extract k:v pairs; supports k:"v", k:'v', k:v (no spaces in v)
-    const pairRE = /\b([\w-]+)\s*:\s*(?:"([^"]*)"|'([^']*)'|([^\s"']+))/g;
-    let m;
-    while ((m = pairRE.exec(hdrRaw))) {
-      const [, k, v1, v2, v3] = m;
-      meta[k] = (v1 ?? v2 ?? v3 ?? '').trim();
-    }
-
-    // Defensive defaults to avoid runtime crashes on malformed headers.
-    if (!meta.id) {
-      const base = String(meta.title || 'page').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'page';
-      let uid = base, i = 2;
-      while (byId.has(uid)) uid = `${base}-${i++}`;
-      meta.id = uid;
-    }
-    if (!meta.title) meta.title = meta.id;
-
+    hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
     const page = { ...meta, content: (body || '').trim(), children: [] };
-    pages.push(page);
-    // If duplicate id is encountered, keep the first, suffix the newcomer to avoid overwriting map.
-    if (byId.has(page.id)) {
-      let i = 2, nid = `${page.id}-${i}`;
-      while (byId.has(nid)) nid = `${page.id}-${++i}`;
-      page.id = nid;
-    }
-    byId.set(page.id, page);
+    pages.push(page); byId.set(page.id, page);
   }
-
   if (!pages.length) throw new Error('No pages parsed from MD bundle.');
-
-  // Determine root: prefer explicit 'home', else first page.
   root = byId.get('home') || pages[0];
 
-  // Wire parents/children, tag sets, and page-level search strings.
   pages.forEach(p => {
     if (p !== root) {
-      const parent = p.parent ? byId.get(String(p.parent).trim()) : null;
+      const parent = byId.get((p.parent || '').trim());
       p.parent = parent || null;
-      if (parent) parent.children.push(p);
-    } else {
-      p.parent = null;
+      parent && parent.children.push(p);
     }
-    // Tags as a canonical Set
-    p.tagsSet   = new Set(String(p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
-    // Lowercased search string: title + tags + raw body (O(n) memory)
+    p.tagsSet   = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
   });
 
-  // Extract heading sections for deep search (ignores fenced code blocks).
+  // Fence-aware heading sections for deep search.
   pages.forEach(p => {
     const counters = [0,0,0,0,0,0];
     const sections = [];
@@ -165,7 +99,6 @@ function parseMarkdownBundle(txt) {
   });
 }
 
-/** Count descendants for a page (memoized). O(n) across a tree, amortized via memo. */
 function descendants(page) {
   if (descMemo.has(page)) return descMemo.get(page);
   let n = 0;
@@ -174,19 +107,13 @@ function descendants(page) {
   return n;
 }
 
-/**
- * Attach "secondary homes" (top-level clusters not under root) to root
- * by picking the largest representative page. This preserves user-visible
- * content while keeping the tree navigable from the single root.
- */
 function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
-  const clusters = new Map(); // top → members[]
+  const clusters = new Map();
   for (const p of pages) {
     const top = topOf(p);
     if (top === root) continue;
-    if (!clusters.has(top)) clusters.set(top, []);
-    clusters.get(top).push(p);
+    (clusters.get(top) || clusters.set(top, []).get(top)).push(p);
   }
   let cid = 0;
   for (const [, members] of clusters) {
@@ -198,16 +125,14 @@ function attachSecondaryHomes() {
   }
 }
 
-/** Compute URL hash segments (#a#b#c) for each page by walking its parent chain. */
 function computeHashes() {
   pages.forEach(p => {
     const segs = [];
     for (let n = p; n && n.parent; n = n.parent) segs.unshift(n.id);
-    p.hash = segs.join('#'); // root has empty hash
+    p.hash = segs.join('#');
   });
 }
 const hashOf = page => page?.hash ?? '';
-/** Resolve a page from hash segments, walking from root down. */
 const find = segs => {
   let n = root;
   for (const id of segs) {
@@ -217,7 +142,6 @@ const find = segs => {
   }
   return n;
 };
-/** Public navigation helper (preserves global name). */
 function nav(page) { location.hash = '#' + hashOf(page); }
 KM.nav = nav;
 
@@ -245,7 +169,7 @@ KM.ensureHighlight = ensureOnce(async () => {
       try {
         const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
         hljs.registerLanguage(lang, mod.default);
-      } catch (_) { /* ignore unknown langs to keep boot resilient */ }
+      } catch (_) {}
     }));
   }
   window.hljs = hljs;
@@ -258,17 +182,12 @@ KM.ensureHLJSTheme = ensureOnce(() => new Promise(res => {
   };
   const mode = DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
   let l = DOC.querySelector('link[data-hljs-theme]');
-  if (!l) {
-    l = DOC.createElement('link');
-    l.rel = 'stylesheet'; l.setAttribute('data-hljs-theme','');
-    DOC.head.appendChild(l);
-  }
+  if (!l) { l = DOC.createElement('link'); l.rel = 'stylesheet'; l.setAttribute('data-hljs-theme',''); DOC.head.appendChild(l); }
   if (l.getAttribute('href') === THEME[mode]) return res();
   l.onload = l.onerror = res; l.href = THEME[mode];
 }));
 
 let mdReady = null;
-/** Lazy-load marked + plugins and expose a stable parse() surface. */
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
   mdReady = Promise.all([
@@ -298,32 +217,13 @@ KM.ensureKatex = ensureOnce(async () => {
 
 /* ───────────────────────── UI decorations & utils ──────────────────────── */
 const sortByTitle = (a, b) => a.title.localeCompare(b.title);
-
-/**
- * Copy text to clipboard with a visual flash on the trigger node.
- * Uses Clipboard API when available, else falls back to a hidden textarea.
- */
 async function copyText(txt, node) {
   try {
     await navigator.clipboard.writeText(txt);
-  } catch (_) {
-    try {
-      const ta = el('textarea', { style:'position:fixed;inset:-1000px;opacity:0' });
-      ta.value = txt; DOC.body.appendChild(ta); ta.select();
-      document.execCommand('copy');
-      ta.remove();
-    } catch (e) {
-      if (KM.DEBUG) console.warn('Clipboard copy failed', e);
-    }
-  } finally {
-    if (node) { node.classList.add('flash'); setTimeout(() => node.classList.remove('flash'), 300); }
-  }
+    node?.classList.add('flash'); setTimeout(() => node?.classList.remove('flash'), 300);
+  } catch(e) { if (KM.DEBUG) console.warn('Clipboard API unavailable', e); }
 }
 
-/**
- * Assign deterministic numeric IDs to headings (1_2_3) for deep-linking.
- * Rendering of visible numbering (if any) is handled via CSS in the theme.
- */
 function numberHeadings(elm) {
   const counters = [0,0,0,0,0,0];
   $$('h1,h2,h3,h4,h5', elm).forEach(h => {
@@ -334,10 +234,6 @@ function numberHeadings(elm) {
 }
 
 let tocObserver = null;
-/**
- * Build the right-hand ToC based on headings inside #content.
- * Highlights the currently visible section using IntersectionObserver.
- */
 function buildToc(page) {
   const nav = $('#toc'); if (!nav) return;
   nav.innerHTML = '';
@@ -373,7 +269,6 @@ function prevNext(page) {
   $('#content').append(wrap);
 }
 
-/** "See also" related pages by tag overlap (descending). */
 function seeAlso(page) {
   $('#see-also')?.remove();
   if (!page.tagsSet?.size) return;
@@ -391,7 +286,6 @@ function seeAlso(page) {
   content.insertBefore(wrap, pn ?? null);
 }
 
-/** Prefix same-page footnote anchors with the current page hash so links keep working after routing. */
 function fixFootnoteLinks(page) {
   const base = hashOf(page); if (!base) return;
   $$('#content a[href^="#"]').forEach(a => {
@@ -404,12 +298,10 @@ const ICONS = {
   link: 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
   code: 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c1.1,0,2-0.9,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
 };
-/** Small helper to build icon-only buttons. */
 const iconBtn = (title, path, cls, onClick) =>
-  el('button', { class: cls, title, 'aria-label': title, onclick:onClick, innerHTML:
+  el('button', { class: cls, title, onclick:onClick, innerHTML:
     `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>` });
 
-/** Add anchor-copy buttons to headings and make the whole heading clickable to copy. */
 function decorateHeadings(page) {
   const base = hashOf(page);
   $$('#content h1,h2,h3,h4,h5').forEach(h => {
@@ -424,7 +316,6 @@ function decorateHeadings(page) {
   });
 }
 
-/** Add copy buttons to code blocks. */
 function decorateCodeBlocks() {
   $$('#content pre').forEach(pre => {
     if (pre.querySelector('button.code-copy')) return;
@@ -433,7 +324,6 @@ function decorateCodeBlocks() {
 }
 
 /* ─────────────────────────── sidebar / search ──────────────────────────── */
-/** Build the left navigation tree (root children first, then secondary clusters). */
 function buildTree() {
   const ul = $('#tree'); if (!ul) return;
   ul.innerHTML = '';
@@ -446,7 +336,7 @@ function buildTree() {
       if (p.children.length) {
         const open = depth < 2;
         li.className = 'folder' + (open ? ' open' : '');
-        const caret = el('button', { class:'caret', 'aria-expanded': String(open), 'aria-label': (open?'Collapse ':'Expand ') + p.title });
+        const caret = el('button', { class:'caret', 'aria-expanded': String(open) });
         const lbl   = el('a', { class:'lbl', dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title });
         const sub   = el('ul', { style:`display:${open?'block':'none'}` });
         li.append(caret, lbl, sub);
@@ -466,16 +356,11 @@ function buildTree() {
   ul.append(frag);
 }
 
-/** Highlight the current page in the sidebar. */
 function highlightSidebar(page) {
   $('#tree .sidebar-current')?.classList.remove('sidebar-current');
   $(`#tree a[data-page="${page.id}"]`)?.classList.add('sidebar-current');
 }
 
-/**
- * Simple multi-token AND search across pages and sections.
- * Complexity: O(P + matches) where P is number of pages (thousands are fine).
- */
 function search(q) {
   const resUL = $('#results'), treeUL = $('#tree'); if (!resUL || !treeUL) return;
   const val = q.trim().toLowerCase();
@@ -503,7 +388,6 @@ function search(q) {
 }
 
 /* ─────────────────────────── breadcrumb / crumb ────────────────────────── */
-/** Build breadcrumb with sibling dropdowns and child menu. */
 function breadcrumb(page) {
   const dyn = $('#crumb-dyn'); if (!dyn) return;
   dyn.innerHTML = '';
@@ -518,27 +402,19 @@ function breadcrumb(page) {
 
     const siblings = n.parent.children.filter(s => s !== n);
     if (siblings.length) {
-      const ul = el('ul', { role:'menu', 'aria-label': 'Sibling pages' });
-      siblings.forEach(s => ul.append(el('li', { role:'menuitem', tabIndex:0, textContent:s.title, onclick: () => nav(s) })));
+      const ul = el('ul');
+      siblings.forEach(s => ul.append(el('li', { textContent:s.title, onclick: () => nav(s) })));
       wrap.append(ul);
     }
     dyn.append(wrap);
   });
 
   if (page.children.length) {
-    const box = el('span', { class:'childbox' }, [ el('span', { class:'toggle', textContent:'▾', title:'Children' }), el('ul', { role:'menu', 'aria-label': 'Child pages' }) ]);
+    const box = el('span', { class:'childbox' }, [ el('span', { class:'toggle', textContent:'▾' }), el('ul') ]);
     const ul = box.querySelector('ul');
-    page.children.sort(sortByTitle).forEach(ch => ul.append(el('li', { role:'menuitem', tabIndex:0, textContent:ch.title, onclick: () => nav(ch) })));
+    page.children.sort(sortByTitle).forEach(ch => ul.append(el('li', { textContent:ch.title, onclick: () => nav(ch) })));
     dyn.append(box);
   }
-
-  // Keyboard activation for menuitems
-  dyn.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      const li = e.target.closest('li[role="menuitem"]');
-      if (li && typeof li.onclick === 'function') { e.preventDefault(); li.onclick(); }
-    }
-  }, { once: true });
 }
 
 /* ───────────────────────────── mini graph (D3) ─────────────────────────── */
@@ -546,7 +422,6 @@ const IDS = { current:'node_current', parent:'node_parent', leaf:'node_leaf', hi
 const graphs = {};
 let CURRENT = -1;
 
-/** Get the current size of the mini-graph SVG. */
 function getMiniSize() {
   const svg = $('#mini'); if (!svg) return { w: 400, h: 300 };
   if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
@@ -564,12 +439,6 @@ function updateMiniViewport() {
   sim.alpha(0.2).restart();
 }
 
-/**
- * Build graph nodes/links.
- * - Hierarchical parent/child links (tiered by subtree size)
- * - Tag-overlap links (skip if already hierarchically linked)
- * Complexity: O(P^2) for tag overlap pairs in the worst case; acceptable for a few thousand pages.
- */
 function buildGraphData() {
   const nodes = [], links = [], adj = new Map(), hierPairs = new Set();
   const touch = (a,b) => { (adj.get(a) || adj.set(a, new Set()).get(a)).add(b); (adj.get(b) || adj.set(b, new Set()).get(b)).add(a); };
@@ -595,14 +464,8 @@ function buildGraphData() {
   return { nodes, links, adj };
 }
 
-/** Lazy-build the mini force-directed graph once the SVG is visible. */
 async function buildGraph() {
-  try {
-    await KM.ensureD3();
-  } catch (e) {
-    if (KM.DEBUG) console.warn('D3 failed to load, mini-graph disabled.', e);
-    return;
-  }
+  await KM.ensureD3();
   if (graphs.mini) return;
 
   const { nodes, links, adj } = buildGraphData();
@@ -660,7 +523,6 @@ async function buildGraph() {
   observeMiniResize();
 }
 
-/** Update highlight for the current page node in the mini-graph and nudge it to center. */
 function highlightCurrent(force=false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -685,40 +547,29 @@ function highlightCurrent(force=false) {
   CURRENT = id;
 }
 
-/** Observe resize of the mini-graph container and keep the simulation centered. */
 function observeMiniResize() {
   const elx = $('#mini'); if (!elx) return;
   new ResizeObserver(() => { if (!graphs.mini) return; updateMiniViewport(); highlightCurrent(true); }).observe(elx);
 }
 
 /* ───────────────────────── renderer + router + init ────────────────────── */
-/**
- * Render a page into #content and progressively enhance:
- * - footnotes, heading IDs, ToC, code highlight, KaTeX
- * - copy buttons, prev/next, see also
- * - smooth scroll to an optional anchor
- */
 async function render(page, anchor) {
   const { parse } = await KM.ensureMarkdown();
   const contentEl = $('#content');
   contentEl.innerHTML = parse(page.content, { headerIds:false });
 
-  // Progressive image loading hints
-  const imgs = $$('#content img');
-  imgs.forEach(img => {
+  $$('#content img').forEach(img => {
     img.loading = 'lazy'; img.decoding = 'async';
-    if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','low');
+    if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','high');
   });
 
   fixFootnoteLinks(page);
   numberHeadings(contentEl);
 
-  // Syntax highlighting (theme CSS + core + all languages requested)
   if (DOC.querySelector('#content pre code')) {
     await KM.ensureHLJSTheme(); await KM.ensureHighlight(); window.hljs.highlightAll();
   }
 
-  // Math rendering (triggered only when math markers are present)
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
     await KM.ensureKatex();
     window.renderMathInElement(contentEl, {
@@ -738,24 +589,11 @@ async function render(page, anchor) {
   prevNext(page);
   seeAlso(page);
 
-  // Anchor scroll + focus target for accessibility
-  if (anchor) {
-    const node = DOC.getElementById(anchor);
-    if (node) {
-      node.tabIndex = -1; // make it programmatically focusable
-      node.setAttribute('data-focus-anchor','');
-      smoothScrollIntoView(node);
-      node.focus({ preventScroll:true });
-    }
-  } else {
-    const h1 = $('#content h1') || $('#content');
-    if (h1) { h1.tabIndex = -1; h1.setAttribute('data-focus-anchor',''); h1.focus({ preventScroll:true }); }
-  }
+  if (anchor) DOC.getElementById(anchor)?.scrollIntoView({ behavior:'smooth' });
 }
 
 let currentPage = null;
 
-/** Router for #<path>#<headingId> hash-based navigation. */
 function route() {
   closePanels();
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -771,27 +609,23 @@ function route() {
   } else if (anchor) {
     const target = DOC.getElementById(anchor);
     if (target) {
-      smoothScrollIntoView(target);
+      target.scrollIntoView({ behavior: 'smooth' });
       const a = $(`#toc li[data-hid="${anchor}"] > a`);
       if (a) { $('#toc .toc-current')?.classList.remove('toc-current'); a.classList.add('toc-current'); }
-      target.tabIndex = -1; target.focus({ preventScroll:true });
     }
   }
 }
 
 /* ─────────────────────────── global UI + theme ─────────────────────────── */
-/** Close any temporary panels (sidebar/util) on small screens. */
 function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
 }
 
-/** Initial UI wiring: titles, theme, tree, search, mini-graph, routing. */
 function initUI() {
   $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
   buildTree();
 
-  // Theme toggle + meta/theme-color + accent
   (function themeInit() {
     const btn = $('#theme-toggle'), rootEl = DOC.documentElement, media = matchMedia('(prefers-color-scheme: dark)');
     const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
@@ -814,19 +648,11 @@ function initUI() {
 
   route();
 
-  // Lazy-init mini graph when visible
-  const miniEl = $('#mini');
-  new IntersectionObserver((entries, obs) => {
-    if (entries[0]?.isIntersecting) { buildGraph(); obs.disconnect(); }
-  }).observe(miniEl);
+  new IntersectionObserver((entries, obs) => { if (entries[0].isIntersecting) { buildGraph(); obs.disconnect(); } }).observe($('#mini'));
 
-  $('#expand').onclick = () => {
-    miniEl.classList.toggle('fullscreen');
-    updateMiniViewport();
-    requestAnimationFrame(() => highlightCurrent(true));
-  };
+  const mini = $('#mini');
+  $('#expand').onclick = () => { mini.classList.toggle('fullscreen'); updateMiniViewport(); requestAnimationFrame(() => highlightCurrent(true)); };
 
-  // Search box
   const searchInput = $('#search'), searchClear = $('#search-clear');
   let debounce = 0;
   searchInput.oninput = e => {
@@ -836,27 +662,18 @@ function initUI() {
   };
   searchClear.onclick = () => { searchInput.value=''; searchClear.style.display='none'; search(''); searchInput.focus(); };
 
-  // Panel toggles for small screens
   const togglePanel = sel => {
     const elx = $(sel); const wasOpen = elx.classList.contains('open');
-    closePanels();
-    if (!wasOpen) {
-      elx.classList.add('open');
-      if (!elx.querySelector('.panel-close')) {
-        elx.append(el('button', { class:'panel-close', textContent:'✕', 'aria-label':'Close panel', onclick: closePanels }));
-      }
-    }
+    closePanels(); if (!wasOpen) { elx.classList.add('open'); if (!elx.querySelector('.panel-close')) elx.append(el('button', { class:'panel-close', textContent:'✕', onclick: closePanels })); }
   };
   $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
   $('#burger-util').onclick    = () => togglePanel('#util');
 
-  // Resize reactions
   addEventListener('resize', () => {
     if (matchMedia('(min-width:1001px)').matches) closePanels();
     if ($('#mini')?.classList.contains('fullscreen')) { updateMiniViewport(); highlightCurrent(true); }
   }, { passive: true });
 
-  // Sidebar interactions
   $('#tree').addEventListener('click', e => {
     const caret = e.target.closest('button.caret');
     if (caret) {
@@ -869,12 +686,10 @@ function initUI() {
     if (e.target.closest('a')) closePanels();
   }, { passive: true });
 
-  // Close panels when clicking search results
   $('#results').addEventListener('click', e => { if (e.target.closest('a')) closePanels(); }, { passive: true });
 
   addEventListener('hashchange', route, { passive: true });
 
-  // Warm up highlight.js in idle time for snappier first code page
   whenIdle(() => { KM.ensureHighlight(); });
 }
 
@@ -882,9 +697,8 @@ function initUI() {
 (async () => {
   try {
     if (!MD) throw new Error('CONFIG.MD is empty.');
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => { try { ctrl.abort('fetch-timeout'); } catch(_){} }, 20000);
-    const r = await fetch(MD, { cache: 'reload', signal: ctrl.signal }); clearTimeout(timer);
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort('fetch-timeout'), 20000);
+    const r = await fetch(MD, { cache: 'reload', signal: ctrl.signal }); clearTimeout(t);
     if (!r.ok) throw new Error(`Failed to fetch MD (${r.status})`);
     const txt = await r.text();
 
@@ -895,7 +709,6 @@ function initUI() {
     await domReady();
     initUI();
 
-    // Ensure graph highlight aligns with initial route after initial paint.
     await new Promise(res => setTimeout(res, 120));
     highlightCurrent(true);
   } catch (err) {
