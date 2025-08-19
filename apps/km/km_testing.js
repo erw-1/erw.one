@@ -469,7 +469,6 @@ function decorateHeadings(page) {
         e.stopPropagation();
         copyText(url, h.querySelector('button.heading-copy'));
       }));
-    h.style.cursor = 'pointer';
     h.onclick = () => {
       // Do not hijack when the user is actively selecting text inside the h*.
       if (window.getSelection && String(window.getSelection()).length) return;
@@ -693,7 +692,7 @@ async function buildGraph() {
     .force('charge', KM.d3.forceManyBody().strength(-240))
     .force('center', KM.d3.forceCenter(W/2, H/2));
 
-  const view = svg.append('g').attr('class','view').attr('style','transition: transform 220ms ease-out');
+  const view = svg.append('g').attr('class','view');
 
   const link = view.append('g').selectAll('line')
     .data(localL).join('line')
@@ -703,7 +702,6 @@ async function buildGraph() {
   const wireNode = sel => sel
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
-    .style('cursor','pointer')
     .on('click', (e,d) => KM.nav(d.ref))
     .on('mouseover', (e,d) => fade(d.id, 0.15))
     .on('mouseout', () => fade(null, 1))
