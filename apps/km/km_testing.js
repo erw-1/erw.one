@@ -4,11 +4,12 @@
 'use strict';
 
 /* ─────────────────────────────── Public API ────────────────────────────── */
+// Expose a small namespace for interop. Avoid global pollution.
 window.KM = window.KM || {};
 const KM = window.KM;
 
 /* ─────────────────────────────── DOM helpers ───────────────────────────── */
-/** Shorthands to keep DOM code tidy and fast */
+// Tiny, focused DOM helpers keep the rest of the code compact and legible.
 const DOC = document;
 const $   = (sel, c = DOC) => c.querySelector(sel);
 const $$  = (sel, c = DOC) => [...c.querySelectorAll(sel)];
@@ -18,7 +19,7 @@ const el  = (tag, props = {}, children = []) => {
     const v = props[k];
     if (k === 'class' || k === 'className') n.className = v;
     else if (k === 'dataset') Object.assign(n.dataset, v);
-    else if (k in n) n[k] = v;                           // prefer property when available
+    else if (k in n) n[k] = v;                           // prefer properties when available
     else n.setAttribute(k, v);
   }
   for (const ch of children) n.append(ch);
@@ -27,31 +28,33 @@ const el  = (tag, props = {}, children = []) => {
 Object.assign(KM, { $, $$, DEBUG:false });
 
 /* ────────────────────────────── Config access ──────────────────────────── */
+// Configuration comes from a small inline script in index.html
 const CFG = window.CONFIG || {};
 const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT } = CFG;
 
-/* ─────────────────────────────── small utils ───────────────────────────── */
-/** Defer work without blocking interactivity */
+/* ───────────────────────────── small utils ─────────────────────────────── */
+/** Defer non-urgent work without blocking interactivity */
 const whenIdle = (cb, timeout = 1500) =>
   'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 0);
 
-/** Promise resolves once DOM is ready for safe reads/writes */
+/** Resolves once DOM is ready for safe reads/writes */
 const domReady = () =>
   DOC.readyState !== 'loading'
     ? Promise.resolve()
     : new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
 
 /* ───────────────────────────── data model ──────────────────────────────── */
+// In-memory page graph extracted from a concatenated Markdown bundle.
 const pages = [];
 const byId  = new Map();
 let root    = null;
 const descMemo = new Map();
 
 /**
- * Parses a concatenated Markdown bundle:
- *   <!--id:"home" title:"Title" parent:"" tags:"foo,bar"-->   (header)
+ * Parse a concatenated Markdown bundle:
+ *   <!--id:"home" title:"Title" parent:"" tags:"foo,bar"-->
  *   ...markdown body...
- * Repeats for each page.
+ * Repeated for each page.
  */
 function parseMarkdownBundle(txt) {
   const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
@@ -64,6 +67,7 @@ function parseMarkdownBundle(txt) {
   if (!pages.length) throw new Error('No pages parsed from MD bundle.');
   root = byId.get('home') || pages[0];
 
+  // Link parents/children and prepare searchable strings
   pages.forEach(p => {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
@@ -108,10 +112,10 @@ function parseMarkdownBundle(txt) {
   });
 }
 
+/** Count all descendants of a page (memoized) */
 function descendants(page) {
   if (descMemo.has(page)) return descMemo.get(page);
-  let n = 0;
-  (function rec(x) { x.children.forEach(c => { n++; rec(c); }); })(page);
+  let n = 0; (function rec(x) { x.children.forEach(c => { n++; rec(c); }); })(page);
   descMemo.set(page, n);
   return n;
 }
@@ -135,12 +139,12 @@ function attachSecondaryHomes() {
   }
 }
 
-/** Precompute URL hashes from page hierarchy */
+/** Precompute hash fragments from hierarchy */
 function computeHashes() {
   pages.forEach(p => {
     const segs = [];
     for (let n = p; n && n.parent; n = n.parent) segs.unshift(n.id);
-    p.hash = segs.join('#');
+    p.hash = segs.join('#'); // empty for root
   });
 }
 const hashOf = page => page?.hash ?? '';
@@ -188,8 +192,8 @@ KM.ensureHighlight = ensureOnce(async () => {
 });
 
 /**
- * IMPORTANT: This must run on every theme change.
- * Not memoized on purpose—unlike loaders—because it needs to swap the CSS href.
+ * IMPORTANT: Must run on every theme change.
+ * Not memoized on purpose—needs to swap the CSS href.
  */
 KM.ensureHLJSTheme = () => new Promise(res => {
   const THEME = {
@@ -298,7 +302,7 @@ function seeAlso(page) {
     .filter(p => p !== page)
     .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
     .filter(r => r.shared > 0)
-    .sort((a,b)=> b.shared - a.shared || sortByTitle(a.p, a.p));
+    .sort((a,b)=> b.shared - a.shared || sortByTitle(a.p, b.p)); // fixed comparator
   if (!related.length) return;
 
   const wrap = el('div', { id:'see-also' }, [ el('h2', { textContent:'See also' }), el('ul') ]);
@@ -348,6 +352,7 @@ function decorateCodeBlocks() {
 }
 
 /* ─────────────────────────── sidebar / search ──────────────────────────── */
+/** Build the tree sidebar from the in-memory page graph */
 function buildTree() {
   const ul = $('#tree'); if (!ul) return;
   ul.innerHTML = '';
@@ -450,7 +455,6 @@ function getMiniSize() {
   const svg = $('#mini'); if (!svg) return { w: 400, h: 300 };
   if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
   const r = svg.getBoundingClientRect();
-  // ensure >=1 to avoid invalid viewBox
   return { w: Math.max(1, r.width|0), h: Math.max(1, r.height|0) };
 }
 
@@ -586,10 +590,11 @@ async function render(page, anchor) {
   const contentEl = $('#content');
   contentEl.innerHTML = parse(page.content, { headerIds:false });
 
-  // Progressive image hints
-  $$('#content img').forEach(img => {
+  // Progressive image hints: lazy + async by default; only a couple "high" to avoid starving text/css
+  const imgs = $$('#content img');
+  imgs.forEach((img, i) => {
     img.loading = 'lazy'; img.decoding = 'async';
-    if (!img.hasAttribute('fetchpriority')) img.setAttribute('fetchpriority','high');
+    if (!img.hasAttribute('fetchpriority') && i < 2) img.setAttribute('fetchpriority','high');
   });
 
   fixFootnoteLinks(page);
@@ -656,6 +661,7 @@ function closePanels() {
 }
 
 function initUI() {
+  // Title & sidebar
   $('#wiki-title-text').textContent = TITLE; document.title = TITLE;
   buildTree();
 
@@ -672,7 +678,7 @@ function initUI() {
     apply(dark);
     btn.onclick = () => { dark = !dark; apply(dark); localStorage.setItem('km-theme', dark ? 'dark' : 'light'); };
 
-    // If user hasn’t explicitly chosen and config doesn’t force, follow OS changes.
+    // Follow OS changes only when there is no explicit user or config preference
     media.addEventListener?.('change', (e) => {
       const hasUserPref = !!localStorage.getItem('km-theme');
       if (!hasUserPref && !cfg) { dark = e.matches; apply(dark); }
@@ -687,8 +693,7 @@ function initUI() {
       rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
       rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
       metaTheme && metaTheme.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
-      // ensure the correct HLJS stylesheet is active for the current theme
-      KM.ensureHLJSTheme();
+      KM.ensureHLJSTheme(); // swap HLJS stylesheet to match theme
     }
   })();
 
