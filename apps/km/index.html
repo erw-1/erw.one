@@ -10,6 +10,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="color-scheme"      content="light dark">
+  <meta name="referrer" content="no-referrer">
 
   <!-- ——— Perf ——— -->
   <link rel="preconnect"    href="https://cdn.jsdelivr.net" crossorigin>
@@ -38,7 +39,7 @@
   Replace example values. Uncomment what you need. Delete what you don't want.
   ======================================================================== --> 
 
-    <!-- Two additional things to change in the body: line 265, logo file name if you change it ; line 325  -->
+    <!-- Two additional things to change in the body: line 266, logo file name if you change it ; line 320  -->
 
     <link rel="preload"   as="image" href="logo.webp" fetchpriority="low">
     <link id="favicon-el" rel="icon" href="logo.webp">
@@ -51,16 +52,16 @@
 
     <meta name="description" content="Short description of this wiki/docs/etc.">
     <link  rel="canonical"   href="https://example.com/"> <!-- Your URL -->
-
-    <script>
-      // JS configuration for the content / theme / supported syntax highlighting
-      window.CONFIG = {
+  
+    <!-- JS configuration for the content / theme / supported syntax highlighting -->
+    <script type="application/json" id="km-config">     
+      {
         TITLE:         'Title of your wiki',
         MD   :         'https://hackmd.io/@h-s-n/doc_test/download',  // Can also be a file eg. 'content.md'
         DEFAULT_THEME: 'light',                                       // (optional) 'dark' | 'light' 
         ACCENT:        '#3fabd1',                                     // (optional) CSS color string '#3fabd1', 'red', etc. (optional)
         LANGS:         ['javascript', 'bash', 'markdown', 'python']   // (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
-      };
+      }
     </script>
   
     <!-- ===== SEO block =============================================================
@@ -260,7 +261,7 @@
        SIDEBAR • TREE + SEARCH
   ====================================================================== -->
   <aside id="sidebar" role="navigation" aria-label="Site navigation">
-    <a href="#" title="Home">
+    <a href="#" title="Home" aria-label="Home">
       <h1 id="wiki-title" tabindex="0">
         <img src="logo.webp" width="32" height="32" alt="" loading="lazy" decoding="async">            <!-- IF YOU RENAMED YOUR ICON/LOGO, EDIT THIS -->
         <span id="wiki-title-text"></span>
@@ -270,12 +271,12 @@
     <!-- ——— SEARCH BOX ——— -->
     <div id="search-box">
       <input id="search" type="search" placeholder="Search…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search">
-      <button id="search-clear" aria-label="Clear search" title="Clear search" style="display:none">✕</button>
+      <button id="search-clear" aria-label="Clear search" title="Clear search" hidden>✕</button>
     </div>
 
     <!-- ——— DYNAMIC NAVIGATION TREES ——— -->
-    <ul id="tree"></ul>
-    <ul id="results"></ul>
+    <ul id="tree" role="tree"></ul>
+    <ul id="results" role="list" aria-live="polite"></ul>
   </aside>
 
   <!-- ======================================================================
@@ -284,32 +285,26 @@
   <main>
     <!-- ——— BREADCRUMB / TOP BAR ——— -->
     <header id="crumb" role="navigation" aria-label="Breadcrumb">
-      <button id="burger-sidebar" class="burger" aria-label="Open sidebar">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="grey"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+      <button id="burger-sidebar" class="burger" aria-label="Open sidebar" aria-controls="sidebar" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
       </button>
 
       <a id="home-link" href="#" title="Home">
-        <svg width="20" height="20" viewBox="0 0 24 16" fill="grey"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 16"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       </a>
       <span id="crumb-dyn"></span>
 
-      <button id="burger-util" class="burger" aria-label="Open utility panel">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="grey"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
+      <button id="burger-util" class="burger" aria-label="Open utility panel" aria-controls="util" aria-expanded="false">
+        <svg width="24" height="24" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
       </button>
 
-      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle light / dark">
+      <button id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle light / dark">
         <!-- sun -->
         <svg class="sun" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="5"></circle>
           <g stroke-linecap="round" stroke-width="2">
-            <line x1="12" y1="1"  x2="12" y2="4"></line>
-            <line x1="12" y1="20" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="6.34" y2="6.34"></line>
-            <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"></line>
-            <line x1="1"  y1="12" x2="4"  y2="12"></line>
-            <line x1="20" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="6.34" y2="17.66"></line>
-            <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"></line>
+            <line x1="12" y1="1"  x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"></line><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"></line>
+            <line x1="1"  y1="12" x2="4"  y2="12"></line><line x1="20" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"></line>
           </g>
         </svg>
         <!-- moon -->
@@ -326,15 +321,15 @@
           <h1>Title of the Wiki</h1>
           <p>Add all the static content you want for SEO</p>
         </div>                                                    <!-- SEO end -->
-        <h2 id="loading">Knowledge is loading...</h2>
+        <h2 id="loading" role="status" aria-live="polite">Knowledge is loading...</h2>
         <noscript>This site requires JavaScript to load content.</noscript>
       </article>
 
       <!-- ——— RIGHT UTILITY PANE (mini-graph + ToC) ——— -->
-      <section id="util">
+      <section id="util" aria-labelledby="util-heading">
         <div id="graph-box">
-          <svg id="mini"></svg>
-          <button id="expand" title="Full-screen">⛶</button>
+          <svg id="mini" role="img" aria-label="Document graph"></svg>
+          <button id="expand" type="button" aria-controls="mini" aria-expanded="false" aria-label="Expand graph">⛶</button>
         </div>
 
         <a class="watermark" href="https://github.com/erw-1/km" target="_blank" rel="noopener noreferrer">Powered by KM</a>
