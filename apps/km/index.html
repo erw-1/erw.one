@@ -9,7 +9,7 @@
   <!-- ——— Core meta ——— -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme"      content="light dark">
+  <meta name="color-scheme" content="light dark">
   <meta name="referrer" content="no-referrer">
 
   <!-- ——— Perf ——— -->
@@ -39,9 +39,24 @@
   Replace example values. Uncomment what you need. Delete what you don't want.
   ======================================================================== --> 
 
+     <!-- JS configuration for the content / theme / supported syntax highlighting
+      "MD" - Can also be a file eg. 'content.md'
+      "DEFAULT_THEME" - (optional) 'dark' | 'light' 
+      "ACCENT" - (optional) CSS color string '#3fabd1', 'red', etc. (optional)
+      "LANGS" - (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
+    -->
+    <script type="application/json" id="km-config">     
+      {
+        "TITLE":          "Title of your wiki",
+        "MD":             "https://hackmd.io/@h-s-n/doc_test/download",
+        "DEFAULT_THEME":  "dark",
+        "ACCENT":         "#3fabd1",
+        "LANGS":          ["javascript", "bash", "markdown", "python"]
+      }
+    </script>  
+  
     <!-- Two additional things to change in the body: line 266, logo file name if you change it ; line 320  -->
-
-    <link rel="preload"   as="image" href="logo.webp" fetchpriority="low">
+    <link rel="preload"   as="image" href="logo.webp" fetchpriority="high">
     <link id="favicon-el" rel="icon" href="logo.webp">
     <!-- <link rel="icon" href="/favicon.ico" sizes="any"> -->
     <!-- <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"> -->
@@ -53,21 +68,6 @@
     <meta name="description" content="Short description of this wiki/docs/etc.">
     <link  rel="canonical"   href="https://example.com/"> <!-- Your URL -->
   
-    <!-- JS configuration for the content / theme / supported syntax highlighting
-      "MD" - Can also be a file eg. 'content.md'
-      "DEFAULT_THEME" - (optional) 'dark' | 'light' 
-      "ACCENT" - (optional) CSS color string '#3fabd1', 'red', etc. (optional)
-      "LANGS" - (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
-    -->
-    <script type="application/json" id="km-config">     
-      {
-        "TITLE":          "Title of your wiki",
-        "MD":             "https://hackmd.io/@h-s-n/doc_test/download",
-        "DEFAULT_THEME":  "light",
-        "ACCENT":         "#3fabd1",
-        "LANGS":          ["javascript", "bash", "markdown", "python"]
-      }
-    </script>
   
     <!-- ===== SEO block =============================================================
           Replace example values. Uncomment what you need. Delete what you don't want.  
