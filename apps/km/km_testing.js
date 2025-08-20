@@ -71,7 +71,7 @@ Object.assign(KM, { $, $$, DEBUG:false });
 
 /* ────────────────────────────── Config access ──────────────────────────── */
 // Configuration is defined inline in index.html to keep the site portable.
-const CFG = window.CONFIG || {};
+const CFG = JSON.parse(document.getElementById('km-config').textContent) || {};
 const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT } = CFG;
 
 /* ───────────────────────────── small utils ─────────────────────────────── */
