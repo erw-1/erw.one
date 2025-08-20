@@ -53,14 +53,19 @@
     <meta name="description" content="Short description of this wiki/docs/etc.">
     <link  rel="canonical"   href="https://example.com/"> <!-- Your URL -->
   
-    <!-- JS configuration for the content / theme / supported syntax highlighting -->
+    <!-- JS configuration for the content / theme / supported syntax highlighting
+      "MD" - Can also be a file eg. 'content.md'
+      "DEFAULT_THEME" - (optional) 'dark' | 'light' 
+      "ACCENT" - (optional) CSS color string '#3fabd1', 'red', etc. (optional)
+      "LANGS" - (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
+    -->
     <script type="application/json" id="km-config">     
       {
-        TITLE:         'Title of your wiki',
-        MD   :         'https://hackmd.io/@h-s-n/doc_test/download',  // Can also be a file eg. 'content.md'
-        DEFAULT_THEME: 'light',                                       // (optional) 'dark' | 'light' 
-        ACCENT:        '#3fabd1',                                     // (optional) CSS color string '#3fabd1', 'red', etc. (optional)
-        LANGS:         ['javascript', 'bash', 'markdown', 'python']   // (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
+        "TITLE":          "Title of your wiki",
+        "MD":             "https://hackmd.io/@h-s-n/doc_test/download",
+        "DEFAULT_THEME":  "light",
+        "ACCENT":         "#3fabd1",
+        "LANGS":          ["javascript", "bash", "markdown", "python"]
       }
     </script>
   
