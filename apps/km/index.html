@@ -9,15 +9,16 @@
   <!-- ——— Core meta ——— -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme"      content="light dark">
 
   <!-- ——— Perf ——— -->
-  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
-  <link rel="preconnect" href="https://hackmd.io" crossorigin>
-  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
-  <link rel="dns-prefetch" href="https://hackmd.io">
+  <link rel="preconnect"    href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect"    href="https://hackmd.io" crossorigin>
+  <link rel="dns-prefetch"  href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch"  href="https://hackmd.io">
   
   <link rel="modulepreload" href="km_testing.js">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
+  <link rel="stylesheet"    href="https://cdn.jsdelivr.net/gh/erw-1/km@main/dist/km.min.css">
   
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm" crossorigin>
@@ -33,12 +34,26 @@
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm" crossorigin>
   
   <!-- =====================================================================
-  Configuration - Edit this !
+  Configuration - Edit all this !
+  Replace example values. Uncomment what you need. Delete what you don't want.
   ======================================================================== --> 
-  <link rel="preload" as="image" href="logo.webp" fetchpriority="low">
-  
+
+    <!-- Two additional things to change in the body: line 265, logo file name if you change it ; line 325  -->
+
+    <link rel="preload"   as="image" href="logo.webp" fetchpriority="low">
+    <link id="favicon-el" rel="icon" href="logo.webp">
+    <!-- <link rel="icon" href="/favicon.ico" sizes="any"> -->
+    <!-- <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32"> -->
+    <!-- <link rel="icon" type="image/webp" href="/favicon.webp" sizes="32x32"> -->
+    <meta name="theme-color"       content="#1e1e1e">
+
+    <title>km - Static Wiki</title>
+
+    <meta name="description" content="Short description of this wiki/docs/etc.">
+    <link  rel="canonical"   href="https://example.com/"> <!-- Your URL -->
+
     <script>
-      // JS configuration
+      // JS configuration for the content / theme / supported syntax highlighting
       window.CONFIG = {
         TITLE:         'Title of your wiki',
         MD   :         'https://hackmd.io/@h-s-n/doc_test/download',  // Can also be a file eg. 'content.md'
@@ -48,54 +63,197 @@
       };
     </script>
   
-    <title>km - Static Wiki</title>
-    <link id="favicon-el" rel="icon" href="logo.webp">
-    <meta name="theme-color"         content="#1e1e1e">
+    <!-- ===== SEO block =============================================================
+          Replace example values. Uncomment what you need. Delete what you don't want.  
+    ================================================================================ -->
+
+      <!-- if you want search engines to index/follow & show big previews → robots -->
+      <!-- <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"> -->
+
+      <!-- if you want to add meta keywords: don't, major search engines ignore it in 2025 -->
+      <!-- <meta name="keywords" content="ignore,this,tag"> -->
+
+      <!-- if you want the canonical to consolidate duplicates → canonical -->
+      <!-- <link rel="canonical" href="https://example.com/current-page"> -->
+
+      <!-- if you want international versions (intl SEO) → hreflang alternates -->
+      <!-- <link rel="alternate" href="https://example.com/page"    hreflang="x-default"> -->
+      <!-- <link rel="alternate" href="https://example.com/page"    hreflang="en"> -->
+      <!-- <link rel="alternate" href="https://example.com/fr/page" hreflang="fr"> -->
+      <!-- <link rel="alternate" href="https://example.com/es/page" hreflang="es"> -->
+
+      <!-- if you want embedded-only pages to be indexable → indexifembedded -->
+      <!-- use together with noindex on the canonical page that only loads in an <iframe> -->
+      <!-- <meta name="robots" content="noindex,indexifembedded"> -->
+
+      <!-- if you want to prevent Google translations for this page -->
+      <!-- <meta name="robots" content="notranslate"> -->
+      
+      <!-- if you want to control snippets/images/videos on this page (legal/privacy) -->
+      <!-- Examples (UNCOMMENT ONE PER NEED): -->
+      <!-- <meta name="robots"    content="nosnippet"> -->
+      <!-- <meta name="googlebot" content="noimageindex"> -->
+      <!-- <meta name="robots"    content="max-snippet:0"> -->
+      <!-- <meta name="robots"    content="max-image-preview:standard"> -->
+      <!-- <meta name="robots"    content="max-video-preview:0"> -->
+
+      <!-- if you want to verify ownership → search engine verifications -->
+      <!-- <meta name="google-site-verification" content="GOOGLE_TOKEN"> -->
+      <!-- <meta name="msvalidate.01"            content="BING_TOKEN"> -->
+      <!-- <meta name="yandex-verification"      content="YANDEX_TOKEN"> -->
+      <!-- <meta name="p:domain_verify"          content="PINTEREST_TOKEN"> -->
+
+      <!-- if you want rich sharing on Facebook/LinkedIn/X → Open Graph -->
+      <!-- <meta property="og:type"        content="website">
+      <meta property="og:site_name"   content="Your Wiki Name">
+      <meta property="og:title"       content="Page Title (≈60 chars)">
+      <meta property="og:description" content="Compelling description (≤200 chars)">
+      <meta property="og:url"         content="https://example.com/current-page">
+      <meta property="og:image"       content="https://example.com/social/cover.jpg">
+      <meta property="og:image:alt"   content="Accessible alt text for the cover image"> -->
+
+      <!-- if you want rich sharing on X (Twitter) → Twitter cards -->
+      <!-- <meta name="twitter:card"        content="summary_large_image">
+      <meta name="twitter:title"       content="Page Title">
+      <meta name="twitter:description" content="Same as meta description">
+      <meta name="twitter:image"       content="https://example.com/social/cover.jpg"> -->
+
+      <!-- if you want automatic embeds on other sites → oEmbed discovery -->
+      <!-- <link rel="alternate" type="application/json+oembed" href="https://example.com/oembed.json?url={encoded_page_url}" title="oEmbed">
+      <link rel="alternate" type="text/xml+oembed"         href="https://example.com/oembed.xml?url={encoded_page_url}"  title="oEmbed"> -->
+
+      <!-- if you want AI & search to understand your site → Organization JSON-LD -->
+      <!-- <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "Your Org",
+        "url": "https://example.com/",
+        "logo": "https://example.com/logo.png",
+        "sameAs": ["https://github.com/your-handle","https://www.linkedin.com/company/your-org"]
+      }
+      </script> -->
+
+      <!-- if you want a site searchbox & sitename eligibility → WebSite JSON-LD -->
+      <!-- <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Your Wiki",
+        "url": "https://example.com/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://example.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      }
+      </script> -->
+
+      <!-- if you want breadcrumbs in rich results → BreadcrumbList JSON-LD -->
+      <!-- <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {"@type": "ListItem","position": 1,"name": "Home","item": "https://example.com/"},
+          {"@type": "ListItem","position": 2,"name": "Topic","item": "https://example.com/topic/"},
+          {"@type": "ListItem","position": 3,"name": "Current Page","item": "https://example.com/topic/current-page"}
+        ]
+      }
+      </script> -->
+
+      <!-- if you want a person/bio page → Person/ProfilePage JSON-LD -->
+      <!-- <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "mainEntity": {
+          "@type": "Person",
+          "name": "Jane Doe",
+          "url": "https://example.com/jane-doe",
+          "image": "https://example.com/people/jane.jpg",
+          "jobTitle": "Researcher",
+          "affiliation": {"@type":"Organization","name":"Your Org"},
+          "sameAs": ["https://x.com/janedoe","https://www.wikidata.org/wiki/Q123"]
+        }
+      }
+      </script> -->
+
+      <!-- if you want to mark up articles/posts → Article JSON-LD -->
+      <!-- <script type="application/ld+json">
+      {
+        "@context":"https://schema.org",
+        "@type":"Article",
+        "headline":"Article Title",
+        "description":"One‑sentence summary.",
+        "author":{"@type":"Person","name":"Jane Doe"},
+        "datePublished":"2025-01-15",
+        "dateModified":"2025-01-15",
+        "image":["https://example.com/social/cover.jpg"],
+        "mainEntityOfPage":{"@type":"WebPage","@id":"https://example.com/current-page"}
+      }
+      </script> -->
+
+      <!-- if you want FAQs (limited rich result) → FAQPage JSON-LD -->
+      <!-- <script type="application/ld+json">
+      {
+        "@context":"https://schema.org",
+        "@type":"FAQPage",
+        "mainEntity":[
+          {"@type":"Question","name":"Question 1?","acceptedAnswer":{"@type":"Answer","text":"Answer 1."}},
+          {"@type":"Question","name":"Question 2?","acceptedAnswer":{"@type":"Answer","text":"Answer 2."}}
+        ]
+      }
+      </script> -->
+
+      <!-- if you want video eligibility → VideoObject JSON-LD -->
+      <!-- <script type="application/ld+json">
+      {
+        "@context":"https://schema.org",
+        "@type":"VideoObject",
+        "name":"Demo video",
+        "description":"What this page covers.",
+        "thumbnailUrl":["https://example.com/video/thumbnail.jpg"],
+        "uploadDate":"2025-01-15",
+        "duration":"PT2M10S",
+        "contentUrl":"https://cdn.example.com/video.mp4",
+        "embedUrl":"https://example.com/embed/video"
+      }
+      </script> -->
+
+      <!-- if you want software/app listing → SoftwareApplication JSON-LD -->
+      <!-- <script type="application/ld+json">
+      {
+        "@context":"https://schema.org",
+        "@type":"SoftwareApplication",
+        "name":"KM Static Wiki",
+        "operatingSystem":"Web",
+        "applicationCategory":"DeveloperApplication",
+        "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
+      }
+      </script> -->
+
+      <!-- if you want PWA install & better SERP icons → manifest & icons -->
+      <!-- <link rel="manifest" href="/site.webmanifest">
+      <link rel="icon" href="/favicon.ico" sizes="any">
+      <link rel="icon" href="/icon.svg" type="image/svg+xml">
+      <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+      <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#111111">
+      <meta name="theme-color" content="#111111"> -->
+
+      <!-- if you want Mastodon/identity verification → rel=me (not SEO, but useful) -->
+      <!-- <link rel="me" href="https://mastodon.social/@yourhandle"> -->
+
+    <!-- ===== End of SEO block ========================================= -->
     
-    <!-- ——— You can remove all this if you don't want to be referenced on the internet: SEO block / Open Graph / Twitter / JSON-LD ——— -->
-  
-    <!--<meta name="description"         content="Concise one-sentence pitch (≤160 chars)">
-        <meta name="keywords"            content="knowledge management,wiki,static site,…">
-        <meta name="author"              content="Your Name / Organisation">
-        <meta name="robots"              content="index,follow">
-        <link rel="canonical"               href="https://example.com/">
-      
-        <meta property="og:type"         content="website">
-        <meta property="og:site_name"    content="KM Static Wiki">
-        <meta property="og:title"        content="Same as <title> (60–65 chars)">
-        <meta property="og:description"  content="Same as meta description (≤200 chars)">
-        <meta property="og:url"          content="https://example.com/">
-        <meta property="og:image"        content="https://example.com/cover.png">
-        <meta property="og:image:alt"    content="Alt text for the social image">
-      
-        <meta name="twitter:card"        content="summary_large_image">
-        <meta name="twitter:title"       content="Same as <title>">
-        <meta name="twitter:description" content="Same as meta description">
-        <meta name="twitter:image"       content="https://example.com/cover.png">
-      
-        <script type="application/ld+json">
-        {"@context":"https://schema.org","@type":"TechArticle","headline":"Headline for Article or Wiki","about":["Knowledge Management","Static Wiki","Documentation"],"author":{"@type":"Person","name":"Your Name"},"publisher":{"@type":"Organization","name":"Org / Project"},"url":"https://example.com/","inLanguage":"en"}
-        </script>
-        <script type="application/ld+json">
-        {"@context":"https://schema.org","@type":"WebSite","name":"KM – Static Wiki Template","url":"https://example.com/","potentialAction":{"@type":"SearchAction","target":"https://example.com/?q={search_term_string}","query-input":"required name=search_term_string"}}
-        </script>
-        <script type="application/ld+json">
-        {"@context":"https://schema.org","@type":"Organization","name":"Example Org","url":"https://example.com/","logo":"https://example.com/logo.png","sameAs":["https://www.linkedin.com/company/example","https://github.com/example"]}
-        </script>
-        <script type="application/ld+json">
-        {"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://example.com/"},{"@type":"ListItem","position":2,"name":"Section","item":"https://example.com/section"}]}
-        </script>
-        <script type="application/ld+json">
-        {"@context":"https://schema.org","@type":"ImageObject","contentUrl":"https://example.com/cover.png","license":"https://example.com/licence","creator":{"@type":"Organization","name":"Example Org"},"creditText":"© Example Org"}
-        </script> -->
-  
   <!-- =====================================================================
   End of configuration
   ======================================================================== -->  
-  
+
+  <!-- Start the markdown fetch ASAP -->
+  <script type="module" src="km_testing.js"></script>  
+
 </head>
-<!-- Keep the module script early to start the markdown fetch ASAP (behavior preserved) -->
-<script type="module" src="km_testing.js"></script>
 
 <body>
   <!-- ======================================================================
@@ -104,7 +262,7 @@
   <aside id="sidebar" role="navigation" aria-label="Site navigation">
     <a href="#" title="Home">
       <h1 id="wiki-title" tabindex="0">
-        <img src="logo.webp" width="32" height="32" alt="" loading="lazy" decoding="async">
+        <img src="logo.webp" width="32" height="32" alt="" loading="lazy" decoding="async">            <!-- IF YOU RENAMED YOUR ICON/LOGO, EDIT THIS -->
         <span id="wiki-title-text"></span>
       </h1>
     </a>
@@ -133,7 +291,6 @@
       <a id="home-link" href="#" title="Home">
         <svg width="20" height="20" viewBox="0 0 24 16" fill="grey"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
       </a>
-
       <span id="crumb-dyn"></span>
 
       <button id="burger-util" class="burger" aria-label="Open utility panel">
@@ -165,7 +322,11 @@
     <!-- ——— MAIN CONTENT / ARTICLE AREA ——— -->
     <div id="content-area">
       <article id="content">
-        <h1 id="loading">Knowledge is loading...</h1>
+        <div style="position:absolute; left:-9999px">             <!-- For SEO, Static content for search engines that don't render JS, not visible and optional-->
+          <h1>Title of the Wiki</h1>
+          <p>Add all the static content you want for SEO</p>
+        </div>                                                    <!-- SEO end -->
+        <h2 id="loading">Knowledge is loading...</h2>
         <noscript>This site requires JavaScript to load content.</noscript>
       </article>
 
