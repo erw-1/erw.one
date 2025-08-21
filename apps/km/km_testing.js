@@ -959,7 +959,6 @@ function initUI() {
   const onWideChange = e => { if (e.matches) { closePanels(); highlightCurrent(true); } };
   mqWide.addEventListener?.('change', onWideChange) || mqWide.addListener(onWideChange);
 
-
   // Close panels upon navigation clicks inside the lists.
   $('#tree').addEventListener('click', e => {
     const caret = e.target.closest('button.caret');
