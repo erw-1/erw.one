@@ -495,7 +495,7 @@ function decorateCodeBlocks() {
  */
 function buildTree() {
   const ul = $('#tree'); if (!ul) return;
-ul.setAttribute('role','tree');
+  ul.setAttribute('role','tree');
   ul.innerHTML = '';
   const prim = root.children.filter(c => !c.isSecondary).sort(sortByTitle);
   const secs = root.children.filter(c => c.isSecondary).sort((a,b)=> a.clusterId - b.clusterId);
