@@ -527,7 +527,7 @@ function buildTree() {
   const frag = DOC.createDocumentFragment();
   rec(prim, frag);
   // Secondary clusters are separated visually and rendered one by one.
-  secs.forEach(r => { frag.append(el('li', { class:'group-sep', innerHTML:'<hr>' })); rec([r], frag); });
+  secs.forEach(r => { frag.append(el('div', { class:'group-sep', innerHTML:'<hr>' })); rec([r], frag); });
   ul.append(frag);
 }
 /** Highlight the current page in the sidebar tree. */
