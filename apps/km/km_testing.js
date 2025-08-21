@@ -956,7 +956,7 @@ function initUI() {
 
   // Keep layout stable on resize and recompute fullscreen graph viewport.
   addEventListener('resize', () => {
-    if (matchMedia('(min-width:1001px)').matches) closePanels();
+    if (matchMedia('(min-width:1001px)').matches) { closePanels(); highlightCurrent(true); }
     if ($('#mini')?.classList.contains('fullscreen')) { updateMiniViewport(); highlightCurrent(true); }
   }, { passive: true });
 
