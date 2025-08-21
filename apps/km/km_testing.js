@@ -495,6 +495,7 @@ function decorateCodeBlocks() {
  */
 function buildTree() {
   const ul = $('#tree'); if (!ul) return;
+ul.setAttribute('role','tree');
   ul.innerHTML = '';
   const prim = root.children.filter(c => !c.isSecondary).sort(sortByTitle);
   const secs = root.children.filter(c => c.isSecondary).sort((a,b)=> a.clusterId - b.clusterId);
@@ -505,14 +506,18 @@ function buildTree() {
       if (p.children.length) {
         const open = depth < 2;                      // auto‑open top levels
         li.className = 'folder' + (open ? ' open' : '');
-        const caret = el('button', { class:'caret', 'aria-expanded': String(open) });
+        const groupId = `group-${p.id}`;
+        const caret = el('button', { class:'caret', 'aria-expanded': String(open), 'aria-controls': groupId, 'aria-label': open ? 'Collapse' : 'Expand' });
         const lbl   = el('a', { class:'lbl', dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title });
-        const sub   = el('ul', { style:`display:${open?'block':'none'}` });
+        const sub   = el('ul', { id: groupId, role:'group', style:`display:${open?'block':'none'}` });
+        li.setAttribute('role','treeitem');
+        li.setAttribute('aria-expanded', String(open));
         li.append(caret, lbl, sub);
         container.append(li);
         rec(p.children.sort(sortByTitle), sub, depth+1);
       } else {
         li.className = 'article';
+        li.setAttribute('role','treeitem');
         li.append(el('a', { dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title }));
         container.append(li);
       }
@@ -955,7 +960,10 @@ function initUI() {
     if (caret) {
       const li = caret.closest('li.folder'), sub = li.querySelector('ul');
       const open = !li.classList.contains('open');
-      li.classList.toggle('open', open); caret.setAttribute('aria-expanded', String(open));
+      li.classList.toggle('open', open);
+      caret.setAttribute('aria-expanded', String(open));
+      caret.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
+      li.setAttribute('aria-expanded', String(open));
       if (sub) sub.style.display = open ? 'block' : 'none';
       return;
     }
