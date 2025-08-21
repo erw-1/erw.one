@@ -955,9 +955,10 @@ function initUI() {
   $('#burger-util').onclick    = () => togglePanel('#util');
 
   // Keep layout stable on resize and recompute fullscreen graph viewport.
-  const mqWide = matchMedia('(min-width:1001px)');
-  const onWideChange = e => { if (e.matches) { closePanels(); highlightCurrent(true); } };
-  mqWide.addEventListener?.('change', onWideChange) || mqWide.addListener(onWideChange);
+  addEventListener('resize', () => {
+    if (matchMedia('(min-width:1001px)').matches) { closePanels(); highlightCurrent(true); }
+    if ($('#mini')?.classList.contains('fullscreen')) { updateMiniViewport(); highlightCurrent(true); }
+  }, { passive: true });
 
   // Close panels upon navigation clicks inside the lists.
   $('#tree').addEventListener('click', e => {
