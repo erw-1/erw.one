@@ -74,7 +74,6 @@
     line-height: 1.5;
   }
     
-  body {  }
   a { text-decoration: none; }
     
              h6 { font-size: clamp(1rem,    0.98rem + 0.20vw, 1.125rem); }      /* 16    → ~18px */
