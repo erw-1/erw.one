@@ -80,7 +80,7 @@
     h6 { font-size: clamp(1rem, 0.98rem + 0.20vw, 1.125rem); }  /* 16 → ~18px */
     h5 { font-size: clamp(1.08rem, 1.00rem + 0.30vw, 1.25rem); } /* ~17.3 → 20px */
     h4 { font-size: clamp(1.16rem, 1.05rem + 0.40vw, 1.375rem);} /* ~18.6 → 22px */
-    nav h1, h3 { font-size: clamp(1.28rem, 1.10rem + 0.55vw, 1.5rem); }  /* ~20.5 → 24px */
+    h3 { font-size: clamp(1.28rem, 1.10rem + 0.55vw, 1.5rem); }  /* ~20.5 → 24px */
     h2 { font-size: clamp(1.44rem, 1.20rem + 0.75vw, 1.75rem); } /* ~23 → 28px */
     #content h1 { font-size: clamp(1.6rem, 1.30rem + 1vw, 2rem); }        /* 25.6 → 32px */
 
