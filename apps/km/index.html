@@ -260,6 +260,8 @@
 
   <!-- Start the markdown fetch ASAP -->
   <script type="module" src="km_testing.js"></script>
+  
+  <!-- Lighthouse good practice -->
   <style>
     :where(section, article, nav, aside) h1 { font-size: clamp(1.28rem, 1.10rem + 0.55vw, 1.5rem); }
   </style>
@@ -281,7 +283,7 @@
     <!-- ——— SEARCH BOX ——— -->
     <div id="search-box">
       <input id="search" type="search" placeholder="Search…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search">
-      <button id="search-clear" aria-label="Clear search" title="Clear search">✕</button>
+      <button id="search-clear" aria-label="Clear search" title="Clear search" style="display: none;">✕</button>
     </div>
 
     <!-- ——— DYNAMIC NAVIGATION TREES ——— -->
