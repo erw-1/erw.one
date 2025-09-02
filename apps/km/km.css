@@ -629,7 +629,10 @@
 
   #content h1,
   #content h2,
-  #content h3 {
+  #content h3,
+  #content h4,
+  #content h5,
+  #content h6,{
     scroll-margin-top: calc(var(--g-lg) * 2);
   }
 
@@ -882,6 +885,7 @@ pre:has(code)::after {
   h3:hover .heading-copy,
   h4:hover .heading-copy,
   h5:hover .heading-copy,
+  h6:hover .heading-copy, 
   pre:hover .code-copy {
     opacity: 1;
   }
