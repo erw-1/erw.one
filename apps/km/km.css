@@ -185,8 +185,7 @@
     margin: 0;
   }
   #sidebar li {
-    margin: var(--g-sm) 0;
-    cursor: pointer;
+    margin: var(--g-xs) 0;
   }
   #sidebar .article {
     padding-left: var(--g-sm);
@@ -234,12 +233,16 @@
     position: absolute;
     top: var(--g-xs);
     bottom: 0;
-    left: calc(var(--g-sm) * 1.45);
+    left: calc(var(--g-md) * 1.26);
     width: 3px;
     background: var(--color-mid-contrast);
     opacity: 0.6;
     border-radius: var(--r-sm);
   }
+  
+ blockquote::before {
+    left: var(--g-xs);
+  }  
     
   #tree,
   #results {
@@ -497,7 +500,11 @@
     
    #content h1, #content h2, #content h3, #content h4, #content h5, #content h6 {
     cursor: pointer;        
-  }  
+  }
+  
+  #see-also h2 {
+        cursor: unset
+  }
     
   /* ─── graph colour theme (SVG) ─── */
   #node_current {
@@ -765,7 +772,7 @@ pre:has(code)::after {
     position: absolute;
     top: calc(var(--g-sm));
     right: var(--g-xs);
-      z-index: var(--z-mid);
+    z-index: var(--z-mid);
   }
 
   /* quick “flash” feedback when something was copied */
@@ -866,11 +873,6 @@ pre:has(code)::after {
     border: none;
   }
 
-  /* will change if I want to make codeblocks themes */
-  .code-copy {
-    color: rgb(207, 207, 207);
-  }
-
   h1:hover .heading-copy,
   h2:hover .heading-copy,
   h3:hover .heading-copy,
@@ -901,6 +903,13 @@ pre:has(code)::after {
   ::-webkit-scrollbar-thumb:hover, code::-webkit-scrollbar-thumb:hover {
     background: var(--color-quarter-contrast);
   }
+    
+    input[type="search"]::-webkit-search-decoration,
+    input[type="search"]::-webkit-search-cancel-button,
+    input[type="search"]::-webkit-search-results-button,
+    input[type="search"]::-webkit-search-results-decoration {
+      -webkit-appearance:none;
+    }  
 
   code::-webkit-scrollbar-thumb {
     border: 5px solid transparent;
@@ -931,7 +940,7 @@ pre:has(code)::after {
      6. RESPONSIVE: burgers & slide-in panels (≤1000 px or portrait)
      ------------------------------------------------------------------------ */
 @layer responsive {
-  .theme-toggle {
+  .theme-toggle, li.folder  {
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -971,10 +980,12 @@ pre:has(code)::after {
   }
 
   @media (max-width: 1000px), (orientation: portrait) {
-  }
-
-  @media (max-width: 1000px), (orientation: portrait) {
-    /* Show burgers */
+    
+      iframe {
+        width: 100%;
+      }
+      
+     /* Show burgers */
     .burger {
       display: inline-flex;
       align-items: center;
