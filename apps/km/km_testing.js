@@ -352,11 +352,11 @@ async function copyText(txt, node) {
 
 /** Number headings (h1–h5) deterministically for deep‑linking. */
 function numberHeadings(elm) {
-  const counters = [0,0,0,0,0,0];
-  $$('#h1,h2,h3,h4,h5', elm).forEach(h => {
-    const level = +h.tagName[1] - 1;           // H1→0, H2→1, ...
-    counters[level]++;                          // bump current level
-    for (let i = level + 1; i < 6; i++) counters[i] = 0; // reset deeper
+  const counters = [0,0,0,0,0,0,0];
+  $$('h1,h2,h3,h4,h5,h6', elm).forEach(h => {
+    const level = +h.tagName[1] - 1;                      // H1→0, H2→1, ...
+    counters[level]++;                                    // bump current level
+    for (let i = level + 1; i < 7; i++) counters[i] = 0;  // reset deeper
     h.id = counters.slice(0, level+1).filter(Boolean).join('_');
   });
 }
@@ -462,7 +462,7 @@ const iconBtn = (title, path, cls, onClick) =>
 function decorateHeadings(page) {
   const base = hashOf(page);
   const prefix = baseURLNoHash() + '#' + (base ? base + '#' : '');
-  $$('#content h1,h2,h3,h4,h5').forEach(h => {
+  $$('#content h1,h2,h3,h4,h5,h6').forEach(h => {
     const url = `${prefix}${h.id}`;
     const btn = h.querySelector('button.heading-copy') ||
       h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy', e => {
@@ -894,7 +894,12 @@ function initUI() {
     const metaTheme = DOC.querySelector('meta[name="theme-color"]');
 
     apply(dark);
-    btn.onclick = () => { dark = !dark; apply(dark); localStorage.setItem('km-theme', dark ? 'dark' : 'light'); };
+    btn.onclick = () => { 
+      dark = !dark; 
+      apply(dark); 
+      btn.setAttribute('aria-pressed', String(dark));
+      localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+    };
 
     // Follow OS changes only when there is no explicit user or config preference.
     media.addEventListener?.('change', (e) => {
