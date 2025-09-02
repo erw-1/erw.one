@@ -226,6 +226,10 @@
     position: relative;
     padding-left: var(--g-lg);
   }
+    
+    .sidebar-current {
+        cursor: unset;
+    }  
 
   #sidebar ul ul::before,
   blockquote::before {
@@ -984,6 +988,13 @@ pre:has(code)::after {
       iframe {
         width: 100%;
       }
+     
+     div#prev-next {
+        display: flex;
+         flex-direction: column;
+        align-items: center;
+        gap: var(--g-md);
+    } 
       
      /* Show burgers */
     .burger {
