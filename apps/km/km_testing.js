@@ -159,14 +159,14 @@ function parseMarkdownBundle(txt) {
 
     for (const line of p.content.split(/\r?\n/)) {
       if (/^(?:```|~~~)/.test(line)) inFence = !inFence;  // toggle on fences
-      if (!inFence && /^(#{1,5})\s+/.test(line)) {
+      if (!inFence && /^(#{1,6})\s+/.test(line)) {
         if (prev) {
           // Commit previous heading section body and index text for search.
           prev.body = p.content.slice(prev.bodyStart, offset).trim();
           prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
           sections.push(prev);
         }
-        const [, hashes, txt] = line.match(/^(#{1,5})\s+(.+)/);
+        const [, hashes, txt] = line.match(/^(#{1,6})\s+(.+)/);
         const level = hashes.length - 1;   // 0‑based depth (H1→0, H2→1, ...)
         counters[level]++;                 // increment current level
         for (let i = level + 1; i < 6; i++) counters[i] = 0; // reset deeper
