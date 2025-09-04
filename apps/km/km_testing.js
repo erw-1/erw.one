@@ -497,6 +497,7 @@ function decorateHeadings(page) {
     };
   });
 }
+
 function decorateCodeBlocks() {
   $$('#content pre').forEach(pre => {
     if (pre.querySelector('button.code-copy')) return; // idempotent
@@ -504,6 +505,25 @@ function decorateCodeBlocks() {
       const code = pre.querySelector('code');
       copyText(code ? code.innerText : pre.innerText, pre.querySelector('button.code-copy'));
     }));
+  });
+}
+
+/** For markdown content: open external http(s) links in a new tab, safely. */
+function decorateExternalLinks() {
+  $$('#content a[href]').forEach(a => {
+    const href = a.getAttribute('href') || '';
+    if (!href || href.startsWith('#')) return; // in-page / app links → ignore
+    let url;
+    try { url = new URL(href, baseURLNoHash()); } catch { return; } // tolerate weird hrefs
+    const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
+    const isExternal = isHttp && url.origin !== location.origin;
+    if (isExternal) {
+      a.setAttribute('target', '_blank');
+      // preserve any existing rel values, add safety flags
+      const rel = new Set((a.getAttribute('rel') || '').split(/\s+/).filter(Boolean));
+      rel.add('noopener'); rel.add('noreferrer'); rel.add('external');
+      a.setAttribute('rel', Array.from(rel).join(' '));
+    }
   });
 }
 
@@ -814,6 +834,7 @@ async function render(page, anchor) {
   const contentEl = $('#content'); if (!contentEl) return;
   const { parse } = await KM.ensureMarkdown();
   contentEl.innerHTML = parse(page.content, { headerIds:false });
+  decorateExternalLinks();
 
   // Progressive image hints to reduce LCP impact and avoid network contention.
   const imgs = $$('#content img');
