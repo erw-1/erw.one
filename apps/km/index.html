@@ -19,7 +19,7 @@
   <link rel="dns-prefetch"  href="https://hackmd.io">
   
   <script async type="module" src="km_testing.js"></script>
-  <link rel="stylesheet"    href="km.css">
+  <link rel="stylesheet"      href="km.css">
   
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm" crossorigin>
@@ -42,9 +42,9 @@
      <!-- JS configuration for the content / theme / supported syntax highlighting
       "MD" - Can also be a file eg. 'content.md'
       "DEFAULT_THEME" - (optional) 'dark' | 'light' 
-      "ACCENT" - (optional) CSS color string '#3fabd1', 'red', etc. (optional)
-      "LANGS" - (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
-      "CACHE_MD" - (optional) For codeblocks   (optional) Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
+      "ACCENT"    -     (optional) CSS color string '#3fabd1', 'red', etc. (optional)
+      "LANGS"     -     (optional) For codeblocks highlighting - Supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/
+      "CACHE_MD"    -   (optional) Caching time (minutes) for the MD, set to "0" or blank to refresh content every reload
     -->
     <script type="application/json" id="km-config">     
       {
@@ -53,7 +53,7 @@
         "DEFAULT_THEME":  "dark",
         "ACCENT":         "#3fabd1",
         "LANGS":          ["javascript", "bash", "markdown", "python", "css"],
-        "CACHE_MD":       "3"
+        "CACHE_MD":       "0"
       }
     </script>  
   
