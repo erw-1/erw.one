@@ -448,9 +448,9 @@ function seeAlso(page) {
  * article itself lives behind a base hash (#a#b), make links robust by
  * prefixing the base hash for intra‑article anchors.
  */
-function fixFootnoteLinks(page) {
+function fixFootnoteLinks(page, container = $('#content')) {
   const base = hashOf(page); if (!base) return;
-  $$('#content a[href^="#"]').forEach(a => {
+  $$('a[href^="#"]', container).forEach(a => {
     const href = a.getAttribute('href');
     if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) a.setAttribute('href', `#${base}${href}`);
   });
@@ -479,10 +479,10 @@ const iconBtn = (title, path, cls, onClick) =>
  * ‑ Click on heading copies a ready‑to‑share URL to that section.
  * ‑ Each code block gets a "Copy" affordance targeting code content.
  */
-function decorateHeadings(page) {
+function decorateHeadings(page, container = $('#content')) {
   const base = hashOf(page);
   const prefix = baseURLNoHash() + '#' + (base ? base + '#' : '');
-  $$('#content h1,h2,h3,h4,h5,h6').forEach(h => {
+  $$('h1,h2,h3,h4,h5,h6', container).forEach(h => {
     const url = `${prefix}${h.id}`;
     const btn = h.querySelector('button.heading-copy') ||
       h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy', e => {
@@ -498,8 +498,8 @@ function decorateHeadings(page) {
   });
 }
 
-function decorateCodeBlocks() {
-  $$('#content pre').forEach(pre => {
+function decorateCodeBlocks(container = $('#content')) {
+  $$('pre', container).forEach(pre => {
     if (pre.querySelector('button.code-copy')) return; // idempotent
     pre.append(iconBtn('Copy code', ICONS.code, 'code-copy', () => {
       const code = pre.querySelector('code');
@@ -1003,18 +1003,18 @@ let uiInited = false;           // guard against duplicate initialization
     if (document.getElementById('km-preview-style')) return;
     const css = `
     .km-link-preview pre{position:relative}
-    .km-link-preview .km-copy-btn{position:absolute; top:8px; right:8px; font:inherit; font-size:.8rem;
+    .km-link-preview .km-copy-btn /* removed; using site styles */{position:absolute; top:8px; right:8px; font:inherit; font-size:.8rem;
        border:1px solid rgba(127,127,127,.25); background:rgba(255,255,255,.06); padding:3px 6px;
        border-radius:8px; cursor:pointer}
-    .km-link-preview .km-copy-btn:hover{background:rgba(255,255,255,.12)}
-    .km-link-preview .km-header-link{margin-left:.5rem; opacity:.25; text-decoration:none}
+    .km-link-preview .km-copy-btn /* removed; using site styles */:hover{background:rgba(255,255,255,.12)}
+    .km-link-preview .km-header-link /* removed; using site styles */{margin-left:.5rem; opacity:.25; text-decoration:none}
     .km-link-preview h1:hover .km-header-link,
     .km-link-preview h2:hover .km-header-link,
     .km-link-preview h3:hover .km-header-link,
     .km-link-preview h4:hover .km-header-link,
     .km-link-preview h5:hover .km-header-link,
     .km-link-preview h6:hover .km-header-link{opacity:.85}
-    .km-link-preview .km-header-link-copied{opacity:1}
+    .km-link-preview .km-header-link /* removed; using site styles */-copied{opacity:1}
 
       .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
         overflow:auto;z-index:2147483000;padding:12px 14px;border-radius:12px;
@@ -1101,60 +1101,10 @@ let uiInited = false;           // guard against duplicate initialization
       });
     } catch {}
   }
-
-
-  function addCopyButtons(panel) {
-    const codes = panel.body.querySelectorAll('pre > code');
-    codes.forEach(codeEl => {
-      const pre = codeEl.closest('pre');
-      if (!pre || pre.querySelector('.km-copy-btn')) return;
-      pre.style.position = pre.style.position || 'relative';
-      const btn = el('button', {
-        class: 'km-copy-btn',
-        type: 'button',
-        title: 'Copy code',
-        'aria-label': 'Copy code to clipboard'
-      });
-      btn.textContent = 'Copy';
-      btn.addEventListener('click', async (ev) => {
-        ev.preventDefault(); ev.stopPropagation();
-        try {
-          await navigator.clipboard.writeText(codeEl.innerText);
-          const old = btn.textContent;
-          btn.textContent = 'Copied!';
-          setTimeout(() => { btn.textContent = old; }, 900);
-        } catch (e) {
-          btn.textContent = 'Failed';
-          setTimeout(() => { btn.textContent = 'Copy'; }, 900);
-        }
       });
       pre.appendChild(btn);
     });
   }
-
-  function addHeaderPermalinks(panel, page) {
-    const base = hashOf(page);
-    panel.body.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]').forEach(h => {
-      if (h.querySelector('.km-header-link')) return;
-      const id = h.id;
-      const a = el('a', {
-        class: 'km-header-link',
-        href: '#' + base + '#' + id,
-        'aria-label': 'Copy link to this section',
-        title: 'Copy link'
-      });
-      a.textContent = '¶';
-      a.addEventListener('click', async (ev) => {
-        ev.preventDefault(); ev.stopPropagation();
-        const url = location.origin + location.pathname + '#' + base + '#' + id;
-        try {
-          await navigator.clipboard.writeText(url);
-          a.classList.add('km-header-link-copied');
-          setTimeout(() => a.classList.remove('km-header-link-copied'), 900);
-        } catch (_e) {
-          // Fallback: navigate if copy failed
-          location.hash = '#' + base + '#' + id;
-        }
       });
       h.appendChild(a);
     });
@@ -1227,8 +1177,8 @@ let uiInited = false;           // guard against duplicate initialization
     await ensureKaTeX();
     renderMathInPreview(panel.body);
 
-    addCopyButtons(panel);
-    addHeaderPermalinks(panel, page);
+    decorateCodeBlocks(panel.body);
+    decorateHeadings(page, panel.body);
 
     // Auto scroll to anchor if provided
     if (anchor) {
