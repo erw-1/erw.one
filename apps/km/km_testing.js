@@ -1038,6 +1038,20 @@ let uiInited = false;           // guard against duplicate initialization
     return { page, anchor };
   }
 
+  
+  function rewriteRelativeAnchorsIn(panel, page) {
+    const base = hashOf(page); // e.g. "stresstest"
+    panel.body.querySelectorAll('a[href^="#"]').forEach(a => {
+      const h = a.getAttribute('href') || '';
+      // Already a full page link? leave it
+      const isFull = !!resolveTarget(h);
+      if (isFull) return;
+      // Make it "#<page>#<fragment>"
+      const frag = h.length > 1 ? ('#' + h.slice(1)) : '';
+      a.setAttribute('href', '#' + base + frag);
+    });
+  }
+
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
     const vw = window.innerWidth, vh = window.innerHeight;
@@ -1094,6 +1108,7 @@ let uiInited = false;           // guard against duplicate initialization
       previewHTMLCache.set(page.id, html);
     }
     panel.body.innerHTML = html;
+    rewriteRelativeAnchorsIn(panel, page);
 
     // Highlight code inside the preview
     await KM.ensureHighlight();
