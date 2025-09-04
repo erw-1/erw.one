@@ -1052,6 +1052,42 @@ let uiInited = false;           // guard against duplicate initialization
     });
   }
 
+
+  async function ensureKaTeX() {
+    if ((window.katex && window.renderMathInElement) || (window.katex && KM?.renderMathInElement)) return;
+    if (KM && typeof KM.ensureKatex === 'function') { await KM.ensureKatex(); return; }
+    if (KM && typeof KM.ensureMath === 'function')  { await KM.ensureMath();  return; }
+    await new Promise((resolve, reject) => {
+      const exist = document.querySelector('link[data-km-katex]');
+      if (!exist) {
+        const link = el('link', { rel:'stylesheet', href:'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css' });
+        link.setAttribute('data-km-katex','1');
+        document.head.appendChild(link);
+      }
+      const s1 = el('script', { src:'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js' });
+      const s2 = el('script', { src:'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js' });
+      let done=0; const ok=()=>{ if(++done===2) resolve(); };
+      s1.onload=ok; s2.onload=ok;
+      s1.onerror=reject; s2.onerror=reject;
+      document.head.append(s1, s2);
+    });
+  }
+  function renderMathInPreview(container) {
+    try {
+      const render = (window.renderMathInElement || (KM && KM.renderMathInElement));
+      if (!render) return;
+      render(container, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\\\[', right: '\\\\]', display: true},
+          {left: '\\\\(', right: '\\\\)', display: false},
+          {left: '$', right: '$', display: false},
+        ],
+        throwOnError: false,
+      });
+    } catch {}
+  }
+
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
     const vw = window.innerWidth, vh = window.innerHeight;
@@ -1115,11 +1151,16 @@ let uiInited = false;           // guard against duplicate initialization
     await KM.ensureHLJSTheme();
     panel.body.querySelectorAll('pre code').forEach(c => window.hljs.highlightElement(c));
 
+    // Render math (KaTeX)
+    await ensureKaTeX();
+    renderMathInPreview(panel.body);
+
     // Auto scroll to anchor if provided
     if (anchor) {
+      const container = panel.el;
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
       const t = panel.body.querySelector('#' + CSS.escape(anchor));
       if (t) {
-        const container = panel.el;
         const header = container.querySelector('header');
         const headerH = header ? header.offsetHeight : 0;
         const cRect = container.getBoundingClientRect();
