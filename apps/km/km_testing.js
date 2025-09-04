@@ -583,8 +583,11 @@ function highlightSidebar(page) {
 }
 
 /**
- * Simple tokenized search over page titles, tags, and per‑heading sections.
- * Hides the tree while showing results to reduce clutter.
+ * Ranked search over titles, tags, and per-heading sections.
+ * Heuristics:
+ *  - Title hits weigh most, then tags, then body.
+ *  - Section heading hits boost both the page and the sub-results.
+ *  - Exact phrase (multi-word) match adds a small bonus.
  */
 function search(q) {
   const resUL = $('#results'), treeUL = $('#tree'); if (!resUL || !treeUL) return;
@@ -592,22 +595,90 @@ function search(q) {
 
   if (!val) { resUL.style.display='none'; resUL.innerHTML=''; treeUL.style.display=''; return; }
 
-  const tokens = val.split(/\s+/).filter(t => t.length >= 2); // ignore 1‑char noise
+  const tokens = val.split(/\s+/).filter(t => t.length >= 2); // ignore 1-char noise
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
+  // ——— weights (tweak to taste) ———
+  const W = { title: 5, tag: 3, body: 1, secTitle: 3, secBody: 1, phraseTitle: 5, phraseBody: 2, secCountCap: 4 };
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const phrase = tokens.length > 1 ? val : null;
+
+  const scored = [];
+
+  for (const p of pages) {
+    // Fast prefilter: require all tokens somewhere in the page’s searchable string.
+    if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
+
+    // Lowercased fields (kept local to avoid mutating your page objects)
+    const titleL = p.title.toLowerCase();
+    const tagsL  = [...p.tagsSet].join(' ').toLowerCase();
+    const bodyL  = p.content.toLowerCase();
+
+    let score = 0;
+
+    // Per-token weighting (word-boundary to avoid partials)
+    for (const tok of tokens) {
+      const r = new RegExp('\\b' + esc(tok) + '\\b', 'g');
+      if (r.test(titleL)) score += W.title;
+      if (r.test(tagsL))  score += W.tag;
+      if (r.test(bodyL))  score += W.body;
+    }
+
+    // Phrase bonus for multi-word queries
+    if (phrase) {
+      if (titleL.includes(phrase)) score += W.phraseTitle;
+      else if (bodyL.includes(phrase)) score += W.phraseBody;
+    }
+
+    // Rank section sub-results (and give the page a small boost for having many)
+    const matchedSecs = [];
+    for (const sec of p.sections) {
+      if (!tokens.every(tok => sec.search.includes(tok))) continue;
+
+      const secTitle = sec.txt.toLowerCase();
+      const secBody  = sec.body.toLowerCase();
+      let s = 0;
+
+      for (const tok of tokens) {
+        const r = new RegExp('\\b' + esc(tok) + '\\b', 'g');
+        if (r.test(secTitle)) s += W.secTitle;
+        if (r.test(secBody))  s += W.secBody;
+      }
+      if (phrase && (secTitle.includes(phrase) || secBody.includes(phrase))) s += 1;
+
+      matchedSecs.push({ sec, s });
+    }
+
+    matchedSecs.sort((a, b) => b.s - a.s);
+    score += Math.min(W.secCountCap, matchedSecs.length); // modest page boost
+
+    scored.push({ p, score, matchedSecs });
+  }
+
+  // Final ordering: score desc, then title alphabetically for stability
+  scored.sort((a, b) => b.score - a.score || a.p.title.localeCompare(b.p.title));
+
+  // Render
   const frag = DOC.createDocumentFragment();
-  pages.filter(p => tokens.every(tok => p.searchStr.includes(tok))).forEach(p => {
-    const li = el('li', { class:'page-result' }, [ el('a', { href:'#'+hashOf(p), textContent:p.title }) ]);
-    const matches = p.sections.filter(sec => tokens.every(tok => sec.search.includes(tok)));
-    if (matches.length) {
-      const base = hashOf(p), sub = el('ul', { class:'sub-results' });
-      matches.forEach(sec => sub.append(el('li', { class:'heading-result' }, [
-        el('a', { href:'#'+(base ? base+'#' : '')+sec.id, textContent:sec.txt })
-      ])));
+  for (const { p, matchedSecs } of scored) {
+    const li = el('li', { class:'page-result' }, [
+      el('a', { href:'#' + hashOf(p), textContent: p.title })
+    ]);
+
+    if (matchedSecs.length) {
+      const base = hashOf(p);
+      const sub = el('ul', { class:'sub-results' });
+      matchedSecs.forEach(({ sec }) => {
+        sub.append(el('li', { class:'heading-result' }, [
+          el('a', { href:'#' + (base ? base + '#' : '') + sec.id, textContent: sec.txt })
+        ]));
+      });
       li.append(sub);
     }
+
     frag.append(li);
-  });
+  }
+
   resUL.append(frag);
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
 }
