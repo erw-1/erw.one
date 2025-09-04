@@ -888,123 +888,6 @@ function observeMiniResize() {
   new ResizeObserver(() => { if (!graphs.mini) return; updateMiniViewport(); highlightCurrent(true); }).observe(elx);
 }
 
-/* ───────────────────────────── link preview ────────────────────────────── */
-/**
- * Lightweight hover preview for internal page links (hash-based app links).
- * - Shows a small scrollable panel rendered from the target page markdown.
- * - If the link contains a heading fragment, the preview scrolls to it.
- * - Appears beside (not on top of) the hovered link; closes when mouse leaves
- *   the link/preview or when the close button is clicked.
- */
-let previewEl = null;
-let previewBody = null;
-let previewHover = false;
-let previewTimer = null;
-const previewHTMLCache = new Map();
-
-function closePreview() {
-  clearTimeout(previewTimer); previewTimer = null;
-  previewEl?.remove(); previewEl = previewBody = null; previewHover = false;
-}
-function scheduleMaybeClose() {
-  clearTimeout(previewTimer);
-  previewTimer = setTimeout(() => { if (!previewHover) closePreview(); }, 180);
-}
-
-/** Resolve a hash href (e.g. '#a#b#3_1') to a concrete page + heading id. */
-function resolveTarget(href) {
-  if (!href || !href.startsWith('#')) return null;
-  const seg = href.slice(1).split('#').filter(Boolean);
-  if (!seg.length) return null;
-  const page = find(seg);
-  const base = hashOf(page);
-  const baseSegs = base ? base.split('#') : [];
-  if (baseSegs.length === 0) return null;            // not a link to a page → ignore
-  const anchor = seg.slice(baseSegs.length).join('#');
-  return { page, anchor };
-}
-
-async function openPreviewForLink(a) {
-  const href = a.getAttribute('href') || '';
-  const target = resolveTarget(href);
-  if (!target) return;
-
-  // Lazy-create container
-  if (!previewEl) {
-    previewEl = el('div', { class:'km-link-preview', role:'dialog', 'aria-label':'Preview' },
-      [ el('header', {}, [
-          el('button', { class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕', onclick: closePreview })
-        ]),
-        (previewBody = el('div'))
-      ]);
-    previewEl.addEventListener('mouseenter', () => { previewHover = true; clearTimeout(previewTimer); }, { passive:true });
-    previewEl.addEventListener('mouseleave', () => { previewHover = false; scheduleMaybeClose(); }, { passive:true });
-    document.body.appendChild(previewEl);
-  }
-
-  // Position beside the link, keeping it clickable
-  const rect = a.getBoundingClientRect();
-  const vw = window.innerWidth, vh = window.innerHeight;
-  const gap = 8;
-  const W = Math.min(480, vw * 0.48);
-  const H = Math.min(420, vh * 0.70);
-  const preferRight = rect.right + gap + W <= vw;
-  const left = preferRight ? Math.min(rect.right + gap, vw - W - gap)
-                           : Math.max(gap, rect.left - gap - W);
-  const top  = Math.min(Math.max(gap, rect.top), vh - H - gap);
-  Object.assign(previewEl.style, { width: W + 'px', height: H + 'px', left: left + 'px', top: top + 'px' });
-
-  // Content: cached HTML (markdown→HTML + numbered headings) per page.
-  const { page, anchor } = target;
-  let html = previewHTMLCache.get(page.id);
-  if (!html) {
-    const { parse } = await KM.ensureMarkdown();
-    const tmp = el('div');
-    tmp.innerHTML = parse(page.content, { headerIds:false });
-    numberHeadings(tmp);                             // give headings the same ids as the main view
-    html = tmp.innerHTML;
-    previewHTMLCache.set(page.id, html);
-  }
-  previewBody.innerHTML = html;
-
-  // Scroll to heading when an anchor is present
-  if (anchor) {
-    const t = previewBody.querySelector('#' + CSS.escape(anchor));
-    if (t) { t.classList.add('km-preview-focus'); previewBody.scrollTop = Math.max(0, t.offsetTop - 8); }
-  }
-
-  previewEl.style.display = 'block';
-}
-
-function attachLinkPreviews() {
-  // Delegate from #content so it works across renders.
-  const root = $('#content'); if (!root) return;
-  let overA = null, hoverDelay = null;
-
-  root.addEventListener('mouseover', e => {
-    const a = e.target.closest('a[href^="#"]');
-    if (!a || !root.contains(a)) return;
-    // Only for links that actually point to another page.
-    if (!resolveTarget(a.getAttribute('href') || '')) return;
-    overA = a; clearTimeout(hoverDelay);
-    hoverDelay = setTimeout(() => {
-      if (overA === a) openPreviewForLink(a);
-    }, 220);
-  }, true);
-
-  root.addEventListener('mouseout', e => {
-    const a = e.target.closest('a[href^="#"]');
-    if (!a || !root.contains(a)) return;
-    if (a === overA) overA = null;
-    scheduleMaybeClose();
-  }, true);
-
-  // Also close on page navigation.
-  addEventListener('hashchange', () => closePreview(), { passive:true });
-  // Optional: close on page scroll
-  addEventListener('scroll', () => { if (previewEl && !previewHover) closePreview(); }, { passive:true });
-}
-
 /* ───────────────────────── renderer + router + init ────────────────────── */
 /** Scroll to an in‑page anchor if present. Smooth for user comfort. */
 function scrollToAnchor(anchor) {
@@ -1103,7 +986,192 @@ function closePanels() {
 }
 
 let uiInited = false;           // guard against duplicate initialization
+
+/* ───────────────────────────── link previews ─────────────────────────────
+   - Hover/focus an internal link → show small scrollable preview of the target page
+   - If the URL includes a heading anchor, auto-scroll to that heading
+   - Code blocks inside previews are highlighted (highlight.js)
+   - Hovering links *inside previews* opens nested previews in a stack
+   - Mouse leaving or clicking ✕ closes the relevant preview
+*/
+(() => {
+  const previewHTMLCache = new Map();     // page.id -> parsed HTML string
+  const previewStack = [];                // stack of { el, body, link, hover, timer }
+  let hoverDelay = null;
+
+  function injectPreviewCSS() {
+    if (document.getElementById('km-preview-style')) return;
+    const css = `
+      .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
+        overflow:auto;z-index:2147483000;padding:12px 14px;border-radius:12px;
+        background:var(--panel-bg, rgba(24,24,28,.98)); color:inherit;
+        border:1px solid rgba(127,127,127,.25); box-shadow:0 10px 30px rgba(0,0,0,.35)}
+      .km-link-preview header{position:sticky;top:0;display:flex;justify-content:flex-end;align-items:center;
+        background:inherit;padding:4px 0 8px 0; z-index:2}
+      .km-link-preview button.km-preview-close{font:inherit;line-height:1;border:0;background:transparent;cursor:pointer;
+        padding:4px 6px;border-radius:8px}
+      .km-link-preview button.km-preview-close:hover{background:rgba(127,127,127,.15)}
+      .km-link-preview .km-preview-focus{outline:2px dashed var(--color-accent, #3fabd1);outline-offset:2px}
+      .km-link-preview h1{font-size:1.05rem}
+      .km-link-preview h2{font-size:1rem}
+      .km-link-preview h3{font-size:0.95rem}
+      .km-link-preview img{max-width:100%}
+    `;
+    document.head.appendChild(el('style', { id:'km-preview-style', textContent:css }));
+  }
+
+  function computeOffsetWithin(elm, container) {
+    let y = 0, e = elm;
+    while (e && e !== container) { y += e.offsetTop || 0; e = e.offsetParent; }
+    return y;
+  }
+
+  function resolveTarget(href) {
+    if (!href || !href.startsWith('#')) return null;
+    const seg = href.slice(1).split('#').filter(Boolean);
+    if (!seg.length) return null;
+    const page = find(seg);
+    const base = hashOf(page);
+    const baseSegs = base ? base.split('#') : [];
+    if (!baseSegs.length) return null;           // not a link to a page → ignore
+    const anchor = seg.slice(baseSegs.length).join('#');
+    return { page, anchor };
+  }
+
+  function positionPreview(panel, linkEl) {
+    const rect = linkEl.getBoundingClientRect();
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const gap = 8;
+    const W = Math.min(520, vw * 0.48);
+    const H = Math.min(480, vh * 0.72);
+    const preferRight = rect.right + gap + W <= vw;
+    const left = preferRight ? Math.min(rect.right + gap, vw - W - gap)
+                             : Math.max(gap, rect.left - gap - W);
+    const top  = Math.min(Math.max(gap, rect.top), vh - H - gap);
+    Object.assign(panel.el.style, { width: W + 'px', height: H + 'px', left: left + 'px', top: top + 'px' });
+  }
+
+  function closeFrom(indexInclusive=0) {
+    for (let i = previewStack.length - 1; i >= indexInclusive; i--) {
+      const p = previewStack[i];
+      clearTimeout(p.timer);
+      p.el.remove();
+      previewStack.pop();
+    }
+  }
+
+  function scheduleTrim() {
+    // Close any trailing previews that aren't hovered.
+    clearTimeout(scheduleTrim._t);
+    scheduleTrim._t = setTimeout(() => {
+      while (previewStack.length && !previewStack[previewStack.length - 1].hover) {
+        closeFrom(previewStack.length - 1);
+      }
+    }, 180);
+  }
+
+  async function fillPanel(panel, page, anchor) {
+    // Parse + cache HTML for the page
+    let html = previewHTMLCache.get(page.id);
+    if (!html) {
+      const { parse } = await KM.ensureMarkdown();
+      const tmp = el('div');
+      tmp.innerHTML = parse(page.content, { headerIds:false });
+      numberHeadings(tmp); // ensure same heading IDs as main view
+      html = tmp.innerHTML;
+      previewHTMLCache.set(page.id, html);
+    }
+    panel.body.innerHTML = html;
+
+    // Highlight code inside the preview
+    await KM.ensureHighlight();
+    await KM.ensureHLJSTheme();
+    panel.body.querySelectorAll('pre code').forEach(c => window.hljs.highlightElement(c));
+
+    // Auto scroll to anchor if provided
+    if (anchor) {
+      const t = panel.body.querySelector('#' + CSS.escape(anchor));
+      if (t) {
+        const y = computeOffsetWithin(t, panel.body);
+        panel.body.scrollTo({ top: Math.max(0, y - 8), behavior: 'instant' });
+        t.classList.add('km-preview-focus');
+      }
+    }
+  }
+
+  function createPanel(linkEl) {
+    injectPreviewCSS();
+    const container = el('div', { class:'km-link-preview', role:'dialog', 'aria-label':'Preview' });
+    const header = el('header', {}, [
+      el('button', { class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕' })
+    ]);
+    const body = el('div');
+    container.append(header, body);
+    document.body.appendChild(container);
+
+    const panel = { el: container, body, link: linkEl, hover:false, timer:null };
+    const idx = previewStack.push(panel) - 1;
+
+    // Hover handling for close lifecycle
+    container.addEventListener('mouseenter', () => { panel.hover = true; clearTimeout(panel.timer); clearTimeout(scheduleTrim._t); }, { passive:true });
+    container.addEventListener('mouseleave', () => { panel.hover = false; panel.timer = setTimeout(() => { closeFrom(idx); }, 220); }, { passive:true });
+    header.querySelector('button').addEventListener('click', () => closeFrom(idx));
+
+    // Open links INSIDE previews → spawn another panel on top
+    container.addEventListener('mouseover', (e) => maybeOpenFromEvent(e), true);
+    container.addEventListener('focusin',  (e) => maybeOpenFromEvent(e), true);
+
+    positionPreview(panel, linkEl);
+    return panel;
+  }
+
+  async function openPreviewForLink(linkEl) {
+    const href = linkEl.getAttribute('href') || '';
+    const target = resolveTarget(href);
+    if (!target) return;
+
+    const panel = createPanel(linkEl);
+    await fillPanel(panel, target.page, target.anchor);
+  }
+
+  function isInternalPageLink(a) {
+    const href = a?.getAttribute('href') || '';
+    return !!resolveTarget(href);
+  }
+
+  function maybeOpenFromEvent(e) {
+    const a = e.target && e.target.closest && e.target.closest('a[href^="#"]');
+    if (!a || !isInternalPageLink(a)) return;
+    clearTimeout(hoverDelay);
+    const openNow = e.type === 'focusin';
+    if (openNow) {
+      openPreviewForLink(a);
+    } else {
+      hoverDelay = setTimeout(() => openPreviewForLink(a), 220);
+    }
+  }
+
+  // Global listeners: main content + previews (delegated)
+  function attachLinkPreviewsV2() {
+    const root = $('#content');
+    if (!root) return;
+    root.addEventListener('mouseover', maybeOpenFromEvent, true);
+    root.addEventListener('focusin',  maybeOpenFromEvent, true);
+    root.addEventListener('mouseout', () => scheduleTrim(), true);
+    root.addEventListener('focusout', () => scheduleTrim(), true);
+
+    addEventListener('hashchange', () => closeFrom(0), { passive:true });
+    addEventListener('scroll', () => scheduleTrim(), { passive:true }); // close trailing when scrolling
+  }
+
+  // Expose for initUI()
+  KM.attachLinkPreviewsV2 = attachLinkPreviewsV2;
+})();
+
+
 function initUI() {
+  try { KM.attachLinkPreviewsV2(); } catch (_) {}
+
   if (uiInited) return; // idempotent safety
   uiInited = true;
 
@@ -1111,9 +1179,6 @@ function initUI() {
   $('#wiki-title-text').textContent = TITLE;
   document.title = TITLE;
   buildTree();
-  
-  // Build page previews
-  attachLinkPreviews();
 
   // THEME: persists preference, respects config, reacts to system & storage.
   (function themeInit() {
