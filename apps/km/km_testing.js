@@ -72,7 +72,25 @@ Object.assign(KM, { $, $$, DEBUG:false });
 /* ────────────────────────────── Config access ──────────────────────────── */
 // Configuration is defined inline in index.html to keep the site portable.
 const CFG = JSON.parse(document.getElementById('km-config').textContent) || {};
-const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT } = CFG;
+const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT, CACHE_MD } = CFG;
+
+// cache_md: time-to-live in minutes (empty / 0 / NaN → disabled)
+const CACHE_MIN = Number(CACHE_MD) || 0;
+const CACHE_KEY = (url) => `km:md:v1:${url}`;
+
+function readCache(url) {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY(url));
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (!obj || typeof obj.ts !== 'number' || typeof obj.txt !== 'string') return null;
+    return obj;
+  } catch (_) { return null; }
+}
+function writeCache(url, txt) {
+  try { localStorage.setItem(CACHE_KEY(url), JSON.stringify({ ts: Date.now(), txt })); } catch (_) {}
+}
+
 
 /* ───────────────────────────── small utils ─────────────────────────────── */
 /**
@@ -1012,10 +1030,34 @@ function initUI() {
   try {
     if (!MD) throw new Error('CONFIG.MD is empty.');
     // Abort fetch on slow networks to avoid hanging the UI.
-    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort('fetch-timeout'), 20000);
-    const r = await fetch(MD, { cache: 'reload', signal: ctrl.signal }); clearTimeout(t);
-    if (!r.ok) throw new Error(`Failed to fetch MD (${r.status})`);
-    const txt = await r.text();
+    let txt;
+    const ctrl = new AbortController();
+    const timeout = setTimeout(() => ctrl.abort('fetch-timeout'), 20000);
+   
+    const cached = CACHE_MIN > 0 ? readCache(MD) : null;
+    const freshEnough = cached && (Date.now() - cached.ts) <= CACHE_MIN * 60_000;
+    
+    // Use cached content if within TTL; otherwise fetch and update cache.
+    // If fetch fails but we have *any* cached copy (even stale), fall back to it.
+    try {
+      if (freshEnough) {
+        txt = cached.txt;
+      } else {
+        const r = await fetch(MD, { cache: 'no-cache', signal: ctrl.signal });
+        clearTimeout(timeout);
+        if (!r.ok) throw new Error(`Failed to fetch MD (${r.status})`);
+        txt = await r.text();
+        if (CACHE_MIN > 0) writeCache(MD, txt);
+      }
+    } catch (err) {
+      clearTimeout(timeout);
+      if (cached?.txt) {
+        console.warn('Network failed; using stale cached Markdown');
+        txt = cached.txt;
+      } else {
+        throw err; // no cache to fall back to → bubble up to error UI
+      }
+    }
 
     parseMarkdownBundle(txt);
     attachSecondaryHomes();
