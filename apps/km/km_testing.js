@@ -1101,14 +1101,6 @@ let uiInited = false;           // guard against duplicate initialization
       });
     } catch {}
   }
-      });
-      pre.appendChild(btn);
-    });
-  }
-      });
-      h.appendChild(a);
-    });
-  }
 
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
