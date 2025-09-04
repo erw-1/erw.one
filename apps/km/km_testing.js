@@ -1111,6 +1111,9 @@ function initUI() {
   $('#wiki-title-text').textContent = TITLE;
   document.title = TITLE;
   buildTree();
+  
+  // Build page previews
+  attachLinkPreviews();
 
   // THEME: persists preference, respects config, reacts to system & storage.
   (function themeInit() {
@@ -1213,9 +1216,6 @@ function initUI() {
 
   // Hash router wiring.
   addEventListener('hashchange', route, { passive: true });
-
-  // Build page previews
-  attachLinkPreviews();
 
   // ESC: close panels or exit graph fullscreen.
   addEventListener('keydown', (e) => {
