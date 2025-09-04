@@ -1002,6 +1002,20 @@ let uiInited = false;           // guard against duplicate initialization
   function injectPreviewCSS() {
     if (document.getElementById('km-preview-style')) return;
     const css = `
+    .km-link-preview pre{position:relative}
+    .km-link-preview .km-copy-btn{position:absolute; top:8px; right:8px; font:inherit; font-size:.8rem;
+       border:1px solid rgba(127,127,127,.25); background:rgba(255,255,255,.06); padding:3px 6px;
+       border-radius:8px; cursor:pointer}
+    .km-link-preview .km-copy-btn:hover{background:rgba(255,255,255,.12)}
+    .km-link-preview .km-header-link{margin-left:.5rem; opacity:.25; text-decoration:none}
+    .km-link-preview h1:hover .km-header-link,
+    .km-link-preview h2:hover .km-header-link,
+    .km-link-preview h3:hover .km-header-link,
+    .km-link-preview h4:hover .km-header-link,
+    .km-link-preview h5:hover .km-header-link,
+    .km-link-preview h6:hover .km-header-link{opacity:.85}
+    .km-link-preview .km-header-link-copied{opacity:1}
+
       .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
         overflow:auto;z-index:2147483000;padding:12px 14px;border-radius:12px;
         background:var(--panel-bg, rgba(24,24,28,.98)); color:inherit; scroll-padding-top: var(--km-preview-pad, 40px);
@@ -1088,6 +1102,64 @@ let uiInited = false;           // guard against duplicate initialization
     } catch {}
   }
 
+
+  function addCopyButtons(panel) {
+    const codes = panel.body.querySelectorAll('pre > code');
+    codes.forEach(codeEl => {
+      const pre = codeEl.closest('pre');
+      if (!pre || pre.querySelector('.km-copy-btn')) return;
+      pre.style.position = pre.style.position || 'relative';
+      const btn = el('button', {
+        class: 'km-copy-btn',
+        type: 'button',
+        title: 'Copy code',
+        'aria-label': 'Copy code to clipboard'
+      });
+      btn.textContent = 'Copy';
+      btn.addEventListener('click', async (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        try {
+          await navigator.clipboard.writeText(codeEl.innerText);
+          const old = btn.textContent;
+          btn.textContent = 'Copied!';
+          setTimeout(() => { btn.textContent = old; }, 900);
+        } catch (e) {
+          btn.textContent = 'Failed';
+          setTimeout(() => { btn.textContent = 'Copy'; }, 900);
+        }
+      });
+      pre.appendChild(btn);
+    });
+  }
+
+  function addHeaderPermalinks(panel, page) {
+    const base = hashOf(page);
+    panel.body.querySelectorAll('h1[id], h2[id], h3[id], h4[id], h5[id], h6[id]').forEach(h => {
+      if (h.querySelector('.km-header-link')) return;
+      const id = h.id;
+      const a = el('a', {
+        class: 'km-header-link',
+        href: '#' + base + '#' + id,
+        'aria-label': 'Copy link to this section',
+        title: 'Copy link'
+      });
+      a.textContent = '¶';
+      a.addEventListener('click', async (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        const url = location.origin + location.pathname + '#' + base + '#' + id;
+        try {
+          await navigator.clipboard.writeText(url);
+          a.classList.add('km-header-link-copied');
+          setTimeout(() => a.classList.remove('km-header-link-copied'), 900);
+        } catch (_e) {
+          // Fallback: navigate if copy failed
+          location.hash = '#' + base + '#' + id;
+        }
+      });
+      h.appendChild(a);
+    });
+  }
+
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
     const vw = window.innerWidth, vh = window.innerHeight;
@@ -1154,6 +1226,9 @@ let uiInited = false;           // guard against duplicate initialization
     // Render math (KaTeX)
     await ensureKaTeX();
     renderMathInPreview(panel.body);
+
+    addCopyButtons(panel);
+    addHeaderPermalinks(panel, page);
 
     // Auto scroll to anchor if provided
     if (anchor) {
