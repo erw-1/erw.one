@@ -888,6 +888,123 @@ function observeMiniResize() {
   new ResizeObserver(() => { if (!graphs.mini) return; updateMiniViewport(); highlightCurrent(true); }).observe(elx);
 }
 
+/* ───────────────────────────── link preview ────────────────────────────── */
+/**
+ * Lightweight hover preview for internal page links (hash-based app links).
+ * - Shows a small scrollable panel rendered from the target page markdown.
+ * - If the link contains a heading fragment, the preview scrolls to it.
+ * - Appears beside (not on top of) the hovered link; closes when mouse leaves
+ *   the link/preview or when the close button is clicked.
+ */
+let previewEl = null;
+let previewBody = null;
+let previewHover = false;
+let previewTimer = null;
+const previewHTMLCache = new Map();
+
+function closePreview() {
+  clearTimeout(previewTimer); previewTimer = null;
+  previewEl?.remove(); previewEl = previewBody = null; previewHover = false;
+}
+function scheduleMaybeClose() {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(() => { if (!previewHover) closePreview(); }, 180);
+}
+
+/** Resolve a hash href (e.g. '#a#b#3_1') to a concrete page + heading id. */
+function resolveTarget(href) {
+  if (!href || !href.startsWith('#')) return null;
+  const seg = href.slice(1).split('#').filter(Boolean);
+  if (!seg.length) return null;
+  const page = find(seg);
+  const base = hashOf(page);
+  const baseSegs = base ? base.split('#') : [];
+  if (baseSegs.length === 0) return null;            // not a link to a page → ignore
+  const anchor = seg.slice(baseSegs.length).join('#');
+  return { page, anchor };
+}
+
+async function openPreviewForLink(a) {
+  const href = a.getAttribute('href') || '';
+  const target = resolveTarget(href);
+  if (!target) return;
+
+  // Lazy-create container
+  if (!previewEl) {
+    previewEl = el('div', { class:'km-link-preview', role:'dialog', 'aria-label':'Preview' },
+      [ el('header', {}, [
+          el('button', { class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕', onclick: closePreview })
+        ]),
+        (previewBody = el('div'))
+      ]);
+    previewEl.addEventListener('mouseenter', () => { previewHover = true; clearTimeout(previewTimer); }, { passive:true });
+    previewEl.addEventListener('mouseleave', () => { previewHover = false; scheduleMaybeClose(); }, { passive:true });
+    document.body.appendChild(previewEl);
+  }
+
+  // Position beside the link, keeping it clickable
+  const rect = a.getBoundingClientRect();
+  const vw = window.innerWidth, vh = window.innerHeight;
+  const gap = 8;
+  const W = Math.min(480, vw * 0.48);
+  const H = Math.min(420, vh * 0.70);
+  const preferRight = rect.right + gap + W <= vw;
+  const left = preferRight ? Math.min(rect.right + gap, vw - W - gap)
+                           : Math.max(gap, rect.left - gap - W);
+  const top  = Math.min(Math.max(gap, rect.top), vh - H - gap);
+  Object.assign(previewEl.style, { width: W + 'px', height: H + 'px', left: left + 'px', top: top + 'px' });
+
+  // Content: cached HTML (markdown→HTML + numbered headings) per page.
+  const { page, anchor } = target;
+  let html = previewHTMLCache.get(page.id);
+  if (!html) {
+    const { parse } = await KM.ensureMarkdown();
+    const tmp = el('div');
+    tmp.innerHTML = parse(page.content, { headerIds:false });
+    numberHeadings(tmp);                             // give headings the same ids as the main view
+    html = tmp.innerHTML;
+    previewHTMLCache.set(page.id, html);
+  }
+  previewBody.innerHTML = html;
+
+  // Scroll to heading when an anchor is present
+  if (anchor) {
+    const t = previewBody.querySelector('#' + CSS.escape(anchor));
+    if (t) { t.classList.add('km-preview-focus'); previewBody.scrollTop = Math.max(0, t.offsetTop - 8); }
+  }
+
+  previewEl.style.display = 'block';
+}
+
+function attachLinkPreviews() {
+  // Delegate from #content so it works across renders.
+  const root = $('#content'); if (!root) return;
+  let overA = null, hoverDelay = null;
+
+  root.addEventListener('mouseover', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || !root.contains(a)) return;
+    // Only for links that actually point to another page.
+    if (!resolveTarget(a.getAttribute('href') || '')) return;
+    overA = a; clearTimeout(hoverDelay);
+    hoverDelay = setTimeout(() => {
+      if (overA === a) openPreviewForLink(a);
+    }, 220);
+  }, true);
+
+  root.addEventListener('mouseout', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a || !root.contains(a)) return;
+    if (a === overA) overA = null;
+    scheduleMaybeClose();
+  }, true);
+
+  // Also close on page navigation.
+  addEventListener('hashchange', () => closePreview(), { passive:true });
+  // Optional: close on page scroll
+  addEventListener('scroll', () => { if (previewEl && !previewHover) closePreview(); }, { passive:true });
+}
+
 /* ───────────────────────── renderer + router + init ────────────────────── */
 /** Scroll to an in‑page anchor if present. Smooth for user comfort. */
 function scrollToAnchor(anchor) {
@@ -1096,6 +1213,9 @@ function initUI() {
 
   // Hash router wiring.
   addEventListener('hashchange', route, { passive: true });
+
+  // Build page previews
+  attachLinkPreviews();
 
   // ESC: close panels or exit graph fullscreen.
   addEventListener('keydown', (e) => {
