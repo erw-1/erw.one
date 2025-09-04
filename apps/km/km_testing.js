@@ -987,7 +987,7 @@ function closePanels() {
 
 let uiInited = false;           // guard against duplicate initialization
 
-/* ───────────────────────────── link previews ─────────────────────────────
+/* ───────────────────────────── link previews (v2) ─────────────────────────────
    - Hover/focus an internal link → show small scrollable preview of the target page
    - If the URL includes a heading anchor, auto-scroll to that heading
    - Code blocks inside previews are highlighted (highlight.js)
@@ -1060,15 +1060,27 @@ let uiInited = false;           // guard against duplicate initialization
     }
   }
 
+  
+  function anyPreviewOrTriggerActive() {
+    // Keep previews if: any preview is hovered, or the currently focused/hovered
+    // element is (or contains) a trigger link.
+    const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview'))
+      .some(p => p.matches(':hover'));
+    if (anyHoverPreview) return true;
+    const active = document.activeElement;
+    const activeIsTrigger = !!(active && active.closest && isInternalPageLink(active.closest('a[href^="#"]')));
+    if (activeIsTrigger) return true;
+    // Any hovered trigger link?
+    const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
+    return hoveringTrigger;
+  }
   function scheduleTrim() {
-    // Close any trailing previews that aren't hovered.
     clearTimeout(scheduleTrim._t);
     scheduleTrim._t = setTimeout(() => {
-      while (previewStack.length && !previewStack[previewStack.length - 1].hover) {
-        closeFrom(previewStack.length - 1);
-      }
-    }, 180);
+      if (!anyPreviewOrTriggerActive()) closeFrom(0);
+    }, 220);
   }
+    
 
   async function fillPanel(panel, page, anchor) {
     // Parse + cache HTML for the page
@@ -1093,7 +1105,7 @@ let uiInited = false;           // guard against duplicate initialization
       const t = panel.body.querySelector('#' + CSS.escape(anchor));
       if (t) {
         const y = computeOffsetWithin(t, panel.body);
-        panel.body.scrollTo({ top: Math.max(0, y - 8), behavior: 'instant' });
+        panel.el.scrollTo({ top: Math.max(0, y - 8), behavior: 'instant' });
         t.classList.add('km-preview-focus');
       }
     }
@@ -1114,7 +1126,12 @@ let uiInited = false;           // guard against duplicate initialization
 
     // Hover handling for close lifecycle
     container.addEventListener('mouseenter', () => { panel.hover = true; clearTimeout(panel.timer); clearTimeout(scheduleTrim._t); }, { passive:true });
-    container.addEventListener('mouseleave', () => { panel.hover = false; panel.timer = setTimeout(() => { closeFrom(idx); }, 220); }, { passive:true });
+    container.addEventListener('mouseleave', (e) => {
+      panel.hover = false;
+      const to = e.relatedTarget;
+      if (to && (to.closest && to.closest('.km-link-preview'))) return; // still inside previews stack
+      panel.timer = setTimeout(() => { closeFrom(idx); }, 240);
+    }, { passive:true });
     header.querySelector('button').addEventListener('click', () => closeFrom(idx));
 
     // Open links INSIDE previews → spawn another panel on top
@@ -1131,6 +1148,8 @@ let uiInited = false;           // guard against duplicate initialization
     if (!target) return;
 
     const panel = createPanel(linkEl);
+    // Cancel any close timers on existing panels when a child opens
+    previewStack.forEach(p => clearTimeout(p.timer));
     await fillPanel(panel, target.page, target.anchor);
   }
 
@@ -1157,9 +1176,12 @@ let uiInited = false;           // guard against duplicate initialization
     if (!root) return;
     root.addEventListener('mouseover', maybeOpenFromEvent, true);
     root.addEventListener('focusin',  maybeOpenFromEvent, true);
-    root.addEventListener('mouseout', () => scheduleTrim(), true);
-    root.addEventListener('focusout', () => scheduleTrim(), true);
-
+    root.addEventListener('mouseout', (e) => {
+      const to = e.relatedTarget;
+      if (to && (to.closest && to.closest('.km-link-preview'))) return; // moving into a preview
+      scheduleTrim();
+    }, true);
+    
     addEventListener('hashchange', () => closeFrom(0), { passive:true });
     addEventListener('scroll', () => scheduleTrim(), { passive:true }); // close trailing when scrolling
   }
