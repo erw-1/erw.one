@@ -412,8 +412,8 @@ function buildToc(page) {
 /** Previous/next sibling navigation pills at the bottom of the article. */
 function prevNext(page) {
   $('#prev-next')?.remove();
-  if (!page.parent) return;                 // root has no siblings
-  if (page.parent === root) return;         // avoid cross-section paging at top level
+  if (!page.parent) return;                                 // root has no siblings
+  if (page.parent === root && page.isSecondary) return;     // avoid cross-section paging at top level
  
   const sib = page.parent.children;
   if (sib.length < 2) return;               // nothing to paginate
