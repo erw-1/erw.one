@@ -1004,7 +1004,7 @@ let uiInited = false;           // guard against duplicate initialization
     const css = `
       .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
         overflow:auto;z-index:2147483000;padding:12px 14px;border-radius:12px;
-        background:var(--panel-bg, rgba(24,24,28,.98)); color:inherit;
+        background:var(--panel-bg, rgba(24,24,28,.98)); color:inherit; scroll-padding-top: var(--km-preview-pad, 40px);
         border:1px solid rgba(127,127,127,.25); box-shadow:0 10px 30px rgba(0,0,0,.35)}
       .km-link-preview header{position:sticky;top:0;display:flex;justify-content:flex-end;align-items:center;
         background:inherit;padding:4px 0 8px 0; z-index:2}
@@ -1104,8 +1104,14 @@ let uiInited = false;           // guard against duplicate initialization
     if (anchor) {
       const t = panel.body.querySelector('#' + CSS.escape(anchor));
       if (t) {
-        const y = computeOffsetWithin(t, panel.body);
-        panel.el.scrollTo({ top: Math.max(0, y - 8), behavior: 'instant' });
+        const container = panel.el;
+        const header = container.querySelector('header');
+        const headerH = header ? header.offsetHeight : 0;
+        const cRect = container.getBoundingClientRect();
+        const tRect = t.getBoundingClientRect();
+        const y = tRect.top - cRect.top + container.scrollTop;
+        const top = Math.max(0, y - headerH - 6);
+        container.scrollTo({ top, behavior: 'instant' });
         t.classList.add('km-preview-focus');
       }
     }
