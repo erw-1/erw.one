@@ -617,6 +617,62 @@
   #toc a:hover {
     color: var(--color-accent) !important;
   }
+
+  /* ===== Keyboard Shortcuts Overlay ===== */
+   #kb-help[hidden] { display: none; }
+   #kb-help {
+     position: fixed; inset: 0;
+     display: flex; align-items: center; justify-content: center;
+     background: var(--color-backdrop);
+     z-index: calc(var(--z-sky) + 1);
+   }
+   #kb-help .panel {
+     background: var(--color-main);
+     color: var(--color-text);
+     border-radius: var(--r-md);
+     box-shadow: 0 10px 30px color-mix(in srgb, var(--color-shadow) 60%, transparent);
+     padding: calc(var(--g-lg) * 2);
+     width: min(640px, 92dvw);
+     max-height: 80dvh; overflow: auto;
+   }
+   #kb-help header {
+     display: flex; align-items: center; gap: var(--g-md);
+     margin-bottom: var(--g-lg);
+   }
+   #kb-help h2 { margin: 0; font-size: 1.1rem; }
+   #kb-help .close {
+     margin-left: auto; border: 0; background: none; cursor: pointer;
+     color: var(--color-text); font-size: 1.25rem; line-height: 1;
+   }
+   #kb-help ul { margin: 0; padding-left: 0; list-style: none; }
+   #kb-help li {
+     display: grid; grid-template-columns: 1fr auto; gap: var(--g-md);
+     padding: var(--g-sm) 0; border-bottom: 1px solid var(--color-lowest-contrast);
+   }
+   #kb-help li:last-child { border-bottom: 0; }
+   #kb-help .desc { opacity: 0.9; }
+   #kb-help kbd {
+     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+     font-size: 0.9rem;
+     border: 1px solid var(--color-low-contrast);
+     border-bottom-width: 2px;
+     padding: 0.1rem 0.45rem;
+     border-radius: var(--r-sm);
+     background: var(--color-lowest-contrast);
+     white-space: nowrap;
+   }
+   
+   /* --- "?" keycap icon next to theme toggle --- */
+   .kb-keycap {
+       display: inline-flex;
+       border: 0;
+       background: var(--color-lowest-contrast);
+       cursor: pointer;
+   }
+   .kb-keycap svg {
+     width: 22px;
+     height: 22px;
+   } 
 }
 
 /* ---------------------------------------------------------------------------
@@ -997,7 +1053,6 @@ pre:has(code)::after {
   .theme-toggle:focus:not(:focus-visible) {
     outline: none;
   }
-
   /* Burgers hidden on wide viewports */
   .burger {
     display: none;
@@ -1033,6 +1088,10 @@ pre:has(code)::after {
     
       iframe {
         width: 100%;
+      }
+
+      .kb-keycap {
+      display:none;
       }
      
      div#prev-next {
@@ -1295,114 +1354,8 @@ pre:has(code)::after {
   }
 }
 
-
 /* ===== A11Y additions ===== */
 :where(button, a, [role="button"], .caret, .theme-toggle):focus-visible {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
-
-/* Respect users who prefer reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-
-/* ===== Keyboard Shortcuts Overlay ===== */
-#kb-help[hidden] { display: none; }
-#kb-help {
-  position: fixed; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  background: var(--color-backdrop);
-  z-index: calc(var(--z-sky) + 1);
-}
-#kb-help .panel {
-  background: var(--color-main);
-  color: var(--color-text);
-  border-radius: var(--r-md);
-  box-shadow: 0 10px 30px color-mix(in srgb, var(--color-shadow) 60%, transparent);
-  padding: calc(var(--g-lg) * 2);
-  width: min(640px, 92dvw);
-  max-height: 80dvh; overflow: auto;
-}
-#kb-help header {
-  display: flex; align-items: center; gap: var(--g-md);
-  margin-bottom: var(--g-lg);
-}
-#kb-help h2 { margin: 0; font-size: 1.1rem; }
-#kb-help .close {
-  margin-left: auto; border: 0; background: none; cursor: pointer;
-  color: var(--color-text); font-size: 1.25rem; line-height: 1;
-}
-#kb-help ul { margin: 0; padding-left: 0; list-style: none; }
-#kb-help li {
-  display: grid; grid-template-columns: 1fr auto; gap: var(--g-md);
-  padding: var(--g-sm) 0; border-bottom: 1px solid var(--color-lowest-contrast);
-}
-#kb-help li:last-child { border-bottom: 0; }
-#kb-help .desc { opacity: 0.9; }
-#kb-help kbd {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 0.9rem;
-  border: 1px solid var(--color-low-contrast);
-  border-bottom-width: 2px;
-  padding: 0.1rem 0.45rem;
-  border-radius: var(--r-sm);
-  background: var(--color-lowest-contrast);
-  white-space: nowrap;
-}
-
-
-/* --- watermark + shortcut button --- */
-.wm-wrap { display:inline-flex; align-items:center; gap: var(--g-sm); }
-.kb-help-btn {
-  font: inherit;
-  border: 1px solid var(--color-low-contrast);
-  background: transparent;
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--r-sm);
-  cursor: pointer;
-}
-.kb-help-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
-
-/* Desktop-only hide toggles */
-@media (min-width: 1000px) {
-  body.hide-sidebar #sidebar { display: none !important; }
-  body.hide-util #util { display: none !important; }
-  body.hide-crumb #crumb { display: none !important; }
-}
-
-
-
-/* --- "?" keycap icon next to theme toggle --- */
-.kb-keycap {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--g-md) var(--g-md);
-  margin-left: .25rem;
-  border: 0;
-  outline: none;
-  background: linear-gradient(
-    to right,
-    transparent 0,
-    var(--color-lowest-contrast) var(--g-md)
-  );
-  cursor: pointer;
-  transition: 0.3s ease !important;
-}
-.kb-keycap svg {
-  width: 22px;
-  height: 22px;
-  transition: 0.3s ease !important;
-}
-.kb-keycap:hover, .kb-keycap:focus-visible {
-  outline: none;
-  filter: brightness(1.05);
-}
-.kb-keycap:focus-visible{ outline: none !important; }
