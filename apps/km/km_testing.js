@@ -71,7 +71,8 @@ Object.assign(KM, { $, $$, DEBUG:false });
 
 /* ────────────────────────────── Config access ──────────────────────────── */
 // Configuration is defined inline in index.html to keep the site portable.
-const CFG = JSON.parse(document.getElementById('km-config').textContent) || {};
+const CFG_EL = document.getElementById('km-config');
+const CFG = CFG_EL ? (JSON.parse(CFG_EL.textContent || '{}') || {}) : {};
 const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT, CACHE_MD } = CFG;
 
 // cache_md: time-to-live in minutes (empty / 0 / NaN → disabled)
@@ -691,7 +692,7 @@ function search(q) {
 function breadcrumb(page) {
   const dyn = $('#crumb-dyn'); if (!dyn) return;
   dyn.innerHTML = '';
-  const chain = []; for (let n = page; n; n = n.parent) chain.unshift(n); chain.shift(); // drop root label
+  const chain = []; for (let n = page; n; n = n.parent) chain.unshift(n); if (chain.length) chain.shift(); // drop root label when present
 
   chain.forEach(n => {
     dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
@@ -1229,12 +1230,15 @@ function initUI() {
     const metaTheme = DOC.querySelector('meta[name="theme-color"]');
 
     apply(dark);
-    btn.onclick = () => { 
-      dark = !dark; 
-      apply(dark); 
+    if (btn) {
       btn.setAttribute('aria-pressed', String(dark));
-      localStorage.setItem('km-theme', dark ? 'dark' : 'light');
-    };
+      btn.onclick = () => {
+        dark = !dark;
+        apply(dark);
+        btn.setAttribute('aria-pressed', String(dark));
+        localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+      };
+    }
 
     // Follow OS changes only when there is no explicit user or config preference.
     media.addEventListener?.('change', (e) => {
@@ -1260,39 +1264,52 @@ function initUI() {
   route();
 
   // Lazy‑build the mini‑graph on first visibility to avoid upfront cost.
-  new IntersectionObserver((entries, obs) => { if (entries[0]?.isIntersecting) { buildGraph(); obs.disconnect(); } }).observe($('#mini'));
+  const miniElForObserver = $('#mini');
+  if (miniElForObserver) {
+    new IntersectionObserver((entries, obs) => {
+      if (entries[0]?.isIntersecting) { buildGraph(); obs.disconnect(); }
+    }).observe(miniElForObserver);
+  }
 
   // Graph fullscreen toggle with aria‑pressed state for a11y.
   const mini = $('#mini');
   const expandBtn = $('#expand');
-  expandBtn.onclick = () => {
-    const full = mini.classList.toggle('fullscreen');
-    expandBtn.setAttribute('aria-pressed', String(full));
-    updateMiniViewport();
-    requestAnimationFrame(() => highlightCurrent(true));
-  };
+  if (expandBtn && mini) {
+    expandBtn.onclick = () => {
+      const full = mini.classList.toggle('fullscreen');
+      expandBtn.setAttribute('aria-pressed', String(full));
+      updateMiniViewport();
+      requestAnimationFrame(() => highlightCurrent(true));
+    };
+  }
 
   // Search box: debounce keystrokes; show a clear button when non‑empty.
   const searchInput = $('#search'), searchClear = $('#search-clear');
   let debounce = 0;
-  searchInput.oninput = e => {
-    clearTimeout(debounce);
-    const val = e.target.value; searchClear.style.display = val ? '' : 'none';
-    debounce = setTimeout(() => search(val), 150);
-  };
-  searchClear.onclick = () => { searchInput.value=''; searchClear.style.display='none'; search(''); searchInput.focus(); };
+  if (searchInput && searchClear) {
+    searchInput.oninput = e => {
+      clearTimeout(debounce);
+      const val = e.target.value; searchClear.style.display = val ? '' : 'none';
+      debounce = setTimeout(() => search(val), 150);
+    };
+    searchClear.onclick = () => { searchInput.value=''; searchClear.style.display='none'; search(''); searchInput.focus(); };
+  }
 
   // Panels: toggle one at a time, each with its own close button once opened.
   const togglePanel = sel => {
-    const elx = $(sel); const wasOpen = elx.classList.contains('open');
+    const elx = $(sel);
+    if (!elx) return;
+    const wasOpen = elx.classList.contains('open');
     closePanels();
     if (!wasOpen) {
       elx.classList.add('open');
       if (!elx.querySelector('.panel-close')) elx.append(el('button', { class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels }));
     }
   };
-  $('#burger-sidebar').onclick = () => togglePanel('#sidebar');
-  $('#burger-util').onclick    = () => togglePanel('#util');
+  const burgerSidebar = $('#burger-sidebar');
+  const burgerUtil = $('#burger-util');
+  if (burgerSidebar) burgerSidebar.onclick = () => togglePanel('#sidebar');
+  if (burgerUtil)    burgerUtil.onclick    = () => togglePanel('#util');
 
   // Keep layout stable on resize and recompute fullscreen graph viewport.
   addEventListener('resize', () => {
@@ -1327,9 +1344,9 @@ function initUI() {
     const sidebarOpen = $('#sidebar')?.classList.contains('open');
     const utilOpen    = $('#util')?.classList.contains('open');
     if (sidebarOpen || utilOpen) { closePanels(); acted = true; }
-    if (mini.classList.contains('fullscreen')) {
+    if (mini && mini.classList.contains('fullscreen')) {
       mini.classList.remove('fullscreen');
-      expandBtn.setAttribute('aria-pressed', 'false');
+      if (expandBtn) expandBtn.setAttribute('aria-pressed', 'false');
       updateMiniViewport();
       requestAnimationFrame(() => highlightCurrent(true));
       acted = true;
