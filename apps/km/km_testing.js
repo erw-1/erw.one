@@ -1491,13 +1491,20 @@ function initUI() {
         e.preventDefault(); themeBtn?.click(); return;
       }
       if (lower === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault(); toggle(sidebarEl); return;
+        e.preventDefault(); (window.__kmToggleSidebar||(()=>{}))(); return;
       }
       if (lower === 'u' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-        e.preventDefault(); toggle(utilEl); return;
+        e.preventDefault(); (window.__kmToggleUtil||(()=>{}))(); return;
       }
       if (lower === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
         e.preventDefault(); expandBtn?.click(); return;
+      }
+      
+      if (lower === 'c' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault(); (window.__kmToggleCrumb||(()=>{}))(); return;
+      }
+      if (key === 'Escape') {
+        const host = $('#kb-help'); if (host && !host.hidden) { e.preventDefault(); host.hidden = true; return; }
       }
       if (key === '?' || (e.shiftKey && key === '/')) {
         e.preventDefault(); openHelp(); return;
@@ -1510,6 +1517,51 @@ function initUI() {
       if (!host || host.hidden) return;
       if (e.target === host) closeHelp();
     });
+  })();
+
+  
+  // ===== Desktop-only panel toggles and condensed reset =====
+  (function desktopPanelToggles(){
+    const MQ_DESKTOP = window.matchMedia('(min-width: 1000px), (orientation: landscape)');
+    const ROOT = document.body;
+
+    function isCondensed(){ return !MQ_DESKTOP.matches; }
+
+    function setHidden(flag, cls, region){
+      ROOT.classList.toggle(cls, !!flag);
+      if (region) {
+        region.setAttribute('aria-hidden', flag ? 'true' : 'false');
+      }
+    }
+
+    // Hooks for shortcuts
+    window.__kmToggleSidebar = () => setHidden(!ROOT.classList.contains('hide-sidebar'), 'hide-sidebar', $('#sidebar'));
+    window.__kmToggleUtil    = () => setHidden(!ROOT.classList.contains('hide-util'), 'hide-util', $('#util'));
+    window.__kmToggleCrumb   = () => setHidden(!ROOT.classList.contains('hide-crumb'), 'hide-crumb', $('#crumb'));
+
+    // Reset when entering condensed view to avoid conflicts
+    function resetForCondensed(){
+      ROOT.classList.remove('hide-sidebar', 'hide-util', 'hide-crumb');
+      $('#sidebar')?.setAttribute('aria-hidden','false');
+      $('#util')?.setAttribute('aria-hidden','false');
+      $('#crumb')?.setAttribute('aria-hidden','false');
+    }
+
+    // Observe viewport changes
+    MQ_DESKTOP.addEventListener('change', () => {
+      if (isCondensed()) resetForCondensed();
+    });
+
+    // Button next to watermark opens help
+    $('#kb-btn')?.addEventListener('click', (e)=>{
+      e.preventDefault();
+      const open = (window.openHelp || (()=>{}));
+      open();
+    });
+
+    // Expose for other modules if needed
+    window.__kmIsCondensed = isCondensed;
+    window.__kmResetForCondensed = resetForCondensed;
   })();
 
   // Preload HLJS core when the main thread is likely idle to improve UX later.
