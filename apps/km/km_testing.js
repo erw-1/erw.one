@@ -63,7 +63,10 @@ const el  = (tag, props = {}, children = []) => {
     else if (k in n) n[k] = v;              // prefer properties when present
     else n.setAttribute(k, v);               // fallback to attribute
   }
-  for (const ch of children) n.append(ch);
+  if (children != null) {
+    const arr = Array.isArray(children) ? children : [children]
+    if (arr.length) n.append(...arr)
+  }
   return n;
 };
 // Expose a couple of helpers and a DEBUG flag for quick diagnostics.
@@ -71,7 +74,7 @@ Object.assign(KM, { $, $$, DEBUG:false });
 
 /* ────────────────────────────── Config access ──────────────────────────── */
 // Configuration is defined inline in index.html to keep the site portable.
-const CFG_EL = document.getElementById('km-config');
+const CFG_EL = DOC.getElementById('km-config');
 const CFG = CFG_EL ? (JSON.parse(CFG_EL.textContent || '{}') || {}) : {};
 const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT, CACHE_MD } = CFG;
 
@@ -386,8 +389,8 @@ let tocObserver = null;         // re‑created per page render
  * Uses IntersectionObserver to mark the current heading in view.
  */
 function buildToc(page) {
-  const nav = $('#toc'); if (!nav) return;
-  nav.innerHTML = '';
+  const tocEl = $('#toc'); if (!tocEl) return;
+  tocEl.innerHTML = '';
   const heads = $$('#content h1,#content h2,#content h3');
   if (!heads.length) { tocObserver?.disconnect(); tocObserver = null; return; }
 
@@ -397,7 +400,7 @@ function buildToc(page) {
       el('a', { href: '#' + (base ? base + '#' : '') + h.id, textContent: h.textContent })
     ]));
   }
-  ulEl.append(frag); nav.append(ulEl);
+  ulEl.append(frag); tocEl.append(ulEl);
 
   // Reset any previous observer; prevents duplicate callbacks on re‑render.
   tocObserver?.disconnect();
@@ -425,8 +428,8 @@ function prevNext(page) {
   if (page.parent === root && !page.isSecondary) sib = sib.filter(p => !p.isSecondary);
   if (sib.length < 2) return;               // nothing to paginate
   const i = sib.indexOf(page), wrap = el('div', { id:'prev-next' });
-  if (i > 0) wrap.append(el('a', { href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title }));
-  if (i < sib.length-1) wrap.append(el('a', { href:'#'+hashOf(sib[i+1]), textContent:sib[i+1].title+' →' }));
+  if (i > 0) wrap.append(el('a', { href:'#' + hashOf(sib[i-1]), textContent:'← '+sib[i-1].title }));
+  if (i < sib.length-1) wrap.append(el('a', { href:'#' + hashOf(sib[i+1]), textContent:sib[i+1].title+' →' }));
   $('#content').append(wrap);
 }
 
@@ -445,7 +448,7 @@ function seeAlso(page) {
 
   const wrap = el('div', { id:'see-also' }, [ el('h2', { textContent:'See also' }), el('ul') ]);
   const ulEl = wrap.querySelector('ul');
-  related.forEach(({p}) => ulEl.append(el('li', {}, [ el('a', { href:'#'+hashOf(p), textContent:p.title }) ])));
+  related.forEach(({p}) => ulEl.append(el('li', {}, [ el('a', { href:'#' + hashOf(p), textContent:p.title }) ])));
   const content = $('#content'), pn = $('#prev-next');
   content.insertBefore(wrap, pn ?? null);   // insert before prev/next if present
 }
@@ -518,7 +521,7 @@ function decorateCodeBlocks(container = $('#content')) {
 /** For markdown content: open external http(s) links in a new tab, safely. */
 function decorateExternalLinks() {
   $$('#content a[href]').forEach(a => {
-    const href = a.getAttribute('href') || '';
+    const href = a.getAttribute('href'); if (!href) return;
     if (!href || href.startsWith('#')) return; // in-page / app links → ignore
     let url;
     try { url = new URL(href, baseURLNoHash()); } catch { return; } // tolerate weird hrefs
@@ -556,7 +559,7 @@ function buildTree() {
         li.className = 'folder' + (open ? ' open' : '');
         const groupId = `group-${p.id}`;
         const caret = el('button', { class:'caret', 'aria-expanded': String(open), 'aria-controls': groupId, 'aria-label': open ? 'Collapse' : 'Expand' });
-        const lbl   = el('a', { class:'lbl', dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title });
+        const lbl   = el('a', { class:'lbl', dataset:{ page:p.id }, href:'#' + hashOf(p), textContent:p.title });
         const sub   = el('ul', { id: groupId, role:'group', style:`display:${open?'block':'none'}` });
         li.setAttribute('role','treeitem');
         li.setAttribute('aria-expanded', String(open));
@@ -567,7 +570,7 @@ function buildTree() {
       } else {
         li.className = 'article';
         li.setAttribute('role','treeitem');
-        li.append(el('a', { dataset:{ page:p.id }, href:'#'+hashOf(p), textContent:p.title }));
+        li.append(el('a', { dataset:{ page:p.id }, href:'#' + hashOf(p), textContent:p.title }));
         container.append(li);
       }
     });
@@ -704,7 +707,7 @@ function search(q) {
       const sub = el('ul', { class:'sub-results' });
       matchedSecs.forEach(({ sec }) => {
         sub.append(el('li', { class:'heading-result' }, [
-          el('a', { href:'#' + (base ? base + '#' : '') + sec.id, textContent: sec.txt })
+          el('a', { href:`#${base ? base + '#' : ''}${sec.id}`, textContent: sec.txt })
         ]));
       });
       li.append(sub);
