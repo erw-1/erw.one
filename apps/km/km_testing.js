@@ -852,7 +852,7 @@ async function buildGraph() {
 
   const link = view.append('g').selectAll('line')
     .data(localL).join('line')
-    .attr('id', d => d.kind === 'hier' ? IDS.hierPRE + d.tier : IDS.tagPRE + Math.min(d.shared,5));
+    .attr('id', d => d.kind === 'hier' ? IDS.hierPRE + d.tier : IDS.tagPRE + Math.min(d.shared,10)); // 10 = max visible links per node
 
   // DRY: behaviour shared by both initial and future nodes.
   const wireNode = sel => sel
