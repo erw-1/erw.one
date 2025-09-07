@@ -998,34 +998,8 @@ let uiInited = false;           // guard against duplicate initialization
   const previewHTMLCache = new Map();     // page.id -> parsed HTML string
   const previewStack = [];                // stack of { el, body, link, hover, timer }
   let hoverDelay = null;
-
-  function injectPreviewCSS() {
-    if (document.getElementById('km-preview-style')) return;
-    const css = `
-
-    .km-link-preview pre{position:relative}
-       border:1px solid rgba(127,127,127,.25); background:rgba(255,255,255,.06); padding:3px 6px;
-       border-radius:8px; cursor:pointer}
-
-      .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
-        overflow:auto;z-index:2147483000;padding:12px 14px;border-radius:12px;
-        background:var(--panel-bg, rgba(24,24,28,.98)); color:inherit; scroll-padding-top: var(--km-preview-pad, 40px);
-        border:1px solid rgba(127,127,127,.25); box-shadow:0 10px 30px rgba(0,0,0,.35)}
-      .km-link-preview header{position:sticky;top:0;display:flex;justify-content:flex-end;align-items:center;
-        background:inherit;padding:4px 0 8px 0; z-index:2}
-      .km-link-preview button.km-preview-close{font:inherit;line-height:1;border:0;background:transparent;cursor:pointer;
-        padding:4px 6px;border-radius:8px}
-      .km-link-preview button.km-preview-close:hover{background:rgba(127,127,127,.15)}
-      .km-link-preview .km-preview-focus{outline:2px dashed var(--color-accent, #3fabd1);outline-offset:2px}
-      .km-link-preview h1{font-size:1.05rem}
-      .km-link-preview h2{font-size:1rem}
-      .km-link-preview h3{font-size:0.95rem}
-      .km-link-preview img{max-width:100%}
-    
-    `;document.head.appendChild(el('style', { id:'km-preview-style', textContent:css }));
-  }
-return y;
-  }
+  return y;
+}
 
   function resolveTarget(href) {
     if (!href || !href.startsWith('#')) return null;
@@ -1173,7 +1147,6 @@ if (KM && typeof KM.ensureMath === 'function')  { await KM.ensureMath();  return
   }
 
   function createPanel(linkEl) {
-    injectPreviewCSS();
     const container = el('div', { class:'km-link-preview', role:'dialog', 'aria-label':'Preview' });
     const header = el('header', {}, [
       el('button', { class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕' })
