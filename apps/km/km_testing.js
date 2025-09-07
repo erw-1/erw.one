@@ -205,7 +205,10 @@ function parseMarkdownBundle(txt) {
             p.parent = null; // root has no parent
         }
         p.tagsSet = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
-        p.searchStr = (p.title + ' ' + [...p.tagsSet].join(' ') + ' ' + p.content).toLowerCase();
+        p._titleL = (p.title || '').toLowerCase();
+        p._tagsL  = ([...p.tagsSet].join(' ')).toLowerCase();
+        p._bodyL  = (p.content || '').toLowerCase();
+        p.searchStr = (p._titleL + ' ' + p._tagsL + ' ' + p._bodyL);
     });
 
     // Extract fenced code and per‑heading sections for deep search.
@@ -222,7 +225,9 @@ function parseMarkdownBundle(txt) {
                 if (prev) {
                     // Commit previous heading section body and index text for search.
                     prev.body = p.content.slice(prev.bodyStart, offset).trim();
-                    prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+                    prev.titleL = (prev.txt || '').toLowerCase();
+                    prev.bodyL  = (prev.body || '').toLowerCase();
+                    prev.search = (prev.titleL + ' ' + prev.bodyL);
                     sections.push(prev);
                 }
                 const [, hashes, txt] = line.match(/^(#{1,6})\s+(.+)/);
@@ -239,7 +244,9 @@ function parseMarkdownBundle(txt) {
         }
         if (prev) { // commit last trailing section
             prev.body = p.content.slice(prev.bodyStart).trim();
-            prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+            prev.titleL = (prev.txt || '').toLowerCase();
+            prev.bodyL  = (prev.body || '').toLowerCase();
+            prev.search = (prev.titleL + ' ' + prev.bodyL);
             sections.push(prev);
         }
         p.sections = sections;
@@ -829,9 +836,9 @@ function search(q) {
         if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
 
         // Lowercased fields (kept local to avoid mutating your page objects)
-        const titleL = p.title.toLowerCase();
-        const tagsL = [...p.tagsSet].join(' ').toLowerCase();
-        const bodyL = p.content.toLowerCase();
+        const titleL = p._titleL;
+        const tagsL = p._tagsL;
+        const bodyL = p._bodyL;
 
         let score = 0;
 
@@ -854,8 +861,8 @@ function search(q) {
         for (const sec of p.sections) {
             if (!tokens.every(tok => sec.search.includes(tok))) continue;
 
-            const secTitle = sec.txt.toLowerCase();
-            const secBody = sec.body.toLowerCase();
+            const secTitle = sec.titleL;
+            const secBody = sec.bodyL;
             let s = 0;
 
             for (const tok of tokens) {
