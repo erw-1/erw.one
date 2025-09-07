@@ -100,6 +100,9 @@ function writeCache(url, txt) {
 
 
 /* ───────────────────────────── small utils ─────────────────────────────── */
+
+/** Escape a string for safe use inside a RegExp. */
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /**
  * Defer non‑urgent side‑effects without blocking interactivity/paint.
  * Uses requestIdleCallback when available, otherwise a 0ms timeout.
@@ -479,7 +482,7 @@ const ICONS = {
 };
 /** Create a compact icon button with a11y title/aria and onClick handler. */
 const iconBtn = (title, path, cls, onClick) =>
-  el('button', {
+  el('button', { type:'button',
     class: cls,
     title,
     'aria-label': title,
@@ -561,7 +564,7 @@ function buildTree() {
         const open = depth < 2;                      // auto‑open top levels
         li.className = 'folder' + (open ? ' open' : '');
         const groupId = `group-${p.id}`;
-        const caret = el('button', { class:'caret', 'aria-expanded': String(open), 'aria-controls': groupId, 'aria-label': open ? 'Collapse' : 'Expand' });
+        const caret = el('button', { type:'button', class:'caret', 'aria-expanded': String(open), 'aria-controls': groupId, 'aria-label': open ? 'Collapse' : 'Expand' });
         const lbl   = el('a', { class:'lbl', dataset:{ page:p.id }, href:'#' + hashOf(p), textContent:p.title });
         const sub   = el('ul', { id: groupId, role:'group', style:`display:${open?'block':'none'}` });
         li.setAttribute('role','treeitem');
@@ -639,7 +642,7 @@ function search(q) {
 
   const tokens = val.split(/\s+/).filter(t => t.length >= 2); // ignore 1-char noise
   const esc2 = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const tokenRegexes = tokens.map(t => new RegExp('\\b' + esc2(t) + '\\b'))
+  const tokenRegexes = tokens.map(t => new RegExp('\b' + escapeRegex(t) + '\b'))
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
   // ——— weights (tweak to taste) ———
@@ -684,7 +687,7 @@ function search(q) {
       let s = 0;
 
       for (const tok of tokens) {
-        const r = new RegExp('\\b' + esc(tok) + '\\b', 'g');
+        const r = new RegExp('\\b' + escapeRegex(tok) + '\\b', 'g');
         if (r.test(secTitle)) s += W.secTitle;
         if (r.test(secBody))  s += W.secBody;
       }
@@ -1177,7 +1180,7 @@ function renderMathInPreview(container) {
   function createPanel(linkEl) {
     const container = el('div', { class:'km-link-preview', role:'dialog', 'aria-label':'Preview' });
     const header = el('header', {}, [
-      el('button', { class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕' })
+      el('button', { type:'button', class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕' )
     ]);
     const body = el('div');
     container.append(header, body);
@@ -1358,7 +1361,7 @@ function initUI() {
     closePanels();
     if (!wasOpen) {
       elx.classList.add('open');
-      if (!elx.querySelector('.panel-close')) elx.append(el('button', { class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels }));
+      if (!elx.querySelector('.panel-close')) elx.append(el('button', { type:'button', class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels ));
     }
   };
   const burgerSidebar = $('#burger-sidebar');
@@ -1427,8 +1430,8 @@ function initUI() {
       host = el('div', { id:'kb-help', role:'dialog', 'aria-modal':'true', 'aria-label':'Keyboard shortcuts', hidden:true });
       const panel = el('div', { class:'panel' });
       const title = el('h2', { textContent:'Keyboard shortcuts' });
-      const close = el('button', { class:'close', title:'Close', 'aria-label':'Close help', textContent:'✕',
-                                   onclick: () => closeHelp() });
+      const close = el('button', { type:'button', class:'close', title:'Close', 'aria-label':'Close help', textContent:'✕',
+                                   onclick: () => closeHelp() );
       const header = el('header', {}, [ title, close ]);
       const list = el('ul', {}, [
         el('li', {}, [ el('span', { class:'desc', textContent:'Focus search' }), el('span', { innerHTML:'<kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd>' }) ]),
@@ -1464,7 +1467,7 @@ function initUI() {
       closePanels();
       if (!wasOpen) {
         el.classList.add('open');
-        if (!el.querySelector('.panel-close')) el.append(el('button', { class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels }));
+        if (!el.querySelector('.panel-close')) el.append(el('button', { type:'button', class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels ));
       }
     }
 
