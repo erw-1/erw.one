@@ -1430,8 +1430,7 @@ function initUI() {
       host = el('div', { id:'kb-help', role:'dialog', 'aria-modal':'true', 'aria-label':'Keyboard shortcuts', hidden:true });
       const panel = el('div', { class:'panel' });
       const title = el('h2', { textContent:'Keyboard shortcuts' });
-      const close = el('button', { type:'button', class:'close', title:'Close', 'aria-label':'Close help', textContent:'✕',
-                                   onclick: () => closeHelp() );
+      const close = el('button', { type:'button', class:'close', title:'Close', 'aria-label':'Close help', textContent:'✕', onclick: () => closeHelp()});
       const header = el('header', {}, [ title, close ]);
       const list = el('ul', {}, [
         el('li', {}, [ el('span', { class:'desc', textContent:'Focus search' }), el('span', { innerHTML:'<kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd>' }) ]),
@@ -1467,7 +1466,7 @@ function initUI() {
       closePanels();
       if (!wasOpen) {
         el.classList.add('open');
-        if (!el.querySelector('.panel-close')) el.append(el('button', { type:'button', class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels ));
+        if (!el.querySelector('.panel-close')) el.append(el('button', { type:'button', class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels )});
       }
     }
 
