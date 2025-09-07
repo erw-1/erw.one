@@ -1180,7 +1180,7 @@ function renderMathInPreview(container) {
   function createPanel(linkEl) {
     const container = el('div', { class:'km-link-preview', role:'dialog', 'aria-label':'Preview' });
     const header = el('header', {}, [
-      el('button', { type:'button', class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕' )
+      el('button', { type:'button', class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕'})
     ]);
     const body = el('div');
     container.append(header, body);
