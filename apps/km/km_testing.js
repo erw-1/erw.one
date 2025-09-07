@@ -1002,14 +1002,12 @@ let uiInited = false;           // guard against duplicate initialization
   function injectPreviewCSS() {
     if (document.getElementById('km-preview-style')) return;
     const css = `
+
     .km-link-preview pre{position:relative}
-    .km-link-preview h1:hover .km-header-link,
-    .km-link-preview h2:hover .km-header-link,
-    .km-link-preview h3:hover .km-header-link,
-    .km-link-preview h4:hover .km-header-link,
-    .km-link-preview h5:hover .km-header-link,
-    .km-link-preview h6:hover .km-header-link{opacity:.85}
-    .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
+       border:1px solid rgba(127,127,127,.25); background:rgba(255,255,255,.06); padding:3px 6px;
+       border-radius:8px; cursor:pointer}
+
+      .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
         overflow:auto;z-index:2147483000;padding:12px 14px;border-radius:12px;
         background:var(--panel-bg, rgba(24,24,28,.98)); color:inherit; scroll-padding-top: var(--km-preview-pad, 40px);
         border:1px solid rgba(127,127,127,.25); box-shadow:0 10px 30px rgba(0,0,0,.35)}
@@ -1023,10 +1021,10 @@ let uiInited = false;           // guard against duplicate initialization
       .km-link-preview h2{font-size:1rem}
       .km-link-preview h3{font-size:0.95rem}
       .km-link-preview img{max-width:100%}
-    `;
-    document.head.appendChild(el('style', { id:'km-preview-style', textContent:css }));
+    
+    `;document.head.appendChild(el('style', { id:'km-preview-style', textContent:css }));
   }
-    return y;
+return y;
   }
 
   function resolveTarget(href) {
@@ -1040,7 +1038,21 @@ let uiInited = false;           // guard against duplicate initialization
     const anchor = seg.slice(baseSegs.length).join('#');
     return { page, anchor };
   }
-    if (KM && typeof KM.ensureMath === 'function')  { await KM.ensureMath();  return; }
+
+  
+  function rewriteRelativeAnchorsIn(panel, page) {
+    const base = hashOf(page); // e.g. "stresstest"
+    panel.body.querySelectorAll('a[href^="#"]').forEach(a => {
+      const h = a.getAttribute('href') || '';
+      // Already a full page link? leave it
+      const isFull = !!resolveTarget(h);
+      if (isFull) return;
+      // Make it "#<page>#<fragment>"
+      const frag = h.length > 1 ? ('#' + h.slice(1)) : '';
+      a.setAttribute('href', '#' + base + frag);
+    });
+  }
+if (KM && typeof KM.ensureMath === 'function')  { await KM.ensureMath();  return; }
     await new Promise((resolve, reject) => {
       const exist = document.querySelector('link[data-km-katex]');
       if (!exist) {
@@ -1056,6 +1068,20 @@ let uiInited = false;           // guard against duplicate initialization
       document.head.append(s1, s2);
     });
   }
+  function renderMathInPreview(container) {
+    try {
+      const render = (window.renderMathInElement || (KM && KM.renderMathInElement));
+      if (!render) return;
+      render(container, {
+        delimiters: [
+          {left: '$$', right: '$$', display: true},
+          {left: '\\\\[', right: '\\\\]', display: true},
+          {left: '\\\\(', right: '\\\\)', display: false},
+          {left: '$', right: '$', display: false},
+        ],
+        throwOnError: false,
+      });
+    } catch {}
   }
 
   function positionPreview(panel, linkEl) {
@@ -1098,7 +1124,7 @@ let uiInited = false;           // guard against duplicate initialization
     clearTimeout(scheduleTrim._t);
     scheduleTrim._t = setTimeout(() => {
       if (!anyPreviewOrTriggerActive()) closeFrom(0);
-    }, 200);
+    }, 220);
   }
     
 
@@ -1114,7 +1140,7 @@ let uiInited = false;           // guard against duplicate initialization
       previewHTMLCache.set(page.id, html);
     }
     panel.body.innerHTML = html;
-    fixFootnoteLinks(page, panel.body);
+    rewriteRelativeAnchorsIn(panel, page);
 
     // Highlight code inside the preview
     await KM.ensureHighlight();
@@ -1123,7 +1149,7 @@ let uiInited = false;           // guard against duplicate initialization
 
     // Render math (KaTeX)
     await KM.ensureKatex();
-    window.renderMathInElement(panel.body, { delimiters: [ { left:'$$', right:'$$', display:true }, { left:'\\[', right:'\\]', display:true }, { left:'$', right:'$', display:false }, { left:'\\(', right:'\\)', display:false } ], throwOnError: false });
+    renderMathInPreview(panel.body);
 
     decorateCodeBlocks(panel.body);
     decorateHeadings(page, panel.body);
@@ -1140,7 +1166,7 @@ let uiInited = false;           // guard against duplicate initialization
         const tRect = t.getBoundingClientRect();
         const y = tRect.top - cRect.top + container.scrollTop;
         const top = Math.max(0, y - headerH - 6);
-        if (container.scrollTo) container.scrollTo({ top, behavior: 'instant' }); else container.scrollTop = top;
+        container.scrollTo({ top, behavior: 'instant' });
         t.classList.add('km-preview-focus');
       }
     }
@@ -1222,12 +1248,12 @@ let uiInited = false;           // guard against duplicate initialization
   }
 
   // Expose for initUI()
-  KM.attachLinkPreviews = attachLinkPreviewsV2; KM.attachLinkPreviewsV2 = KM.attachLinkPreviews;
+  KM.attachLinkPreviewsV2 = attachLinkPreviewsV2;
 })();
 
 
 function initUI() {
-  try { KM.attachLinkPreviews(); } catch (_) {}
+  try { KM.attachLinkPreviewsV2(); } catch (_) {}
 
   if (uiInited) return; // idempotent safety
   uiInited = true;
