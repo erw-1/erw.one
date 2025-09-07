@@ -1466,7 +1466,7 @@ function initUI() {
       closePanels();
       if (!wasOpen) {
         el.classList.add('open');
-        if (!el.querySelector('.panel-close')) el.append(el('button', { type:'button', class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels )});
+        if (!el.querySelector('.panel-close')) el.append(el('button', { type:'button', class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels }));
       }
     }
 
