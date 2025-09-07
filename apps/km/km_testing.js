@@ -42,6 +42,9 @@ window.KM = window.KM || {};
 const KM = window.KM;
 
 /* ─────────────────────────────── DOM helpers ───────────────────────────── */
+// Cached viewport, updated on resize to reduce repeated reads.
+let __VPW = window.innerWidth, __VPH = window.innerHeight;
+addEventListener('resize', () => { __VPW = window.innerWidth; __VPH = window.innerHeight; }, { passive:true });
 // Intentionally small helpers to keep call sites terse and readable.
 const DOC = document;
 /** Query a single element within an optional context (defaults to document) */
@@ -633,6 +636,8 @@ function search(q) {
   if (!val) { resUL.style.display='none'; resUL.innerHTML=''; treeUL.style.display=''; return; }
 
   const tokens = val.split(/\s+/).filter(t => t.length >= 2); // ignore 1-char noise
+  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tokenRegexes = tokens.map(t => new RegExp('\\b' + esc(t) + '\\b'))
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
   // ——— weights (tweak to taste) ———
@@ -654,11 +659,11 @@ function search(q) {
     let score = 0;
 
     // Per-token weighting (word-boundary to avoid partials)
-    for (const tok of tokens) {
-      const r = new RegExp('\\b' + esc(tok) + '\\b', 'g');
+    for (let i = 0; i < tokenRegexes.length; i++) {
+      const r = tokenRegexes[i];
       if (r.test(titleL)) score += W.title;
       if (r.test(tagsL))  score += W.tag;
-      if (r.test(bodyL))  score += W.body;
+      if (r.test(ensureBody()))  score += W.body;
     }
 
     // Phrase bonus for multi-word queries
@@ -1079,7 +1084,7 @@ function renderMathInPreview(container) {
 
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
-    const vw = window.innerWidth, vh = window.innerHeight;
+    const vw = __VPW, vh = __VPH;
     const gap = 8;
     const W = Math.min(520, vw * 0.48);
     const H = Math.min(480, vh * 0.72);
