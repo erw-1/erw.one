@@ -1432,13 +1432,13 @@ function initUI() {
       const header = el('header', {}, [ title, close ]);
       const list = el('ul', {}, [
         el('li', {}, [ el('span', { class:'desc', textContent:'Focus search' }), el('span', { innerHTML:'<kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd>' }) ]),
-        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle theme' }), el('span', { innerHTML:'<kbd>T</kbd>' }) ]),
-        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle sidebar' }), el('span', { innerHTML:'<kbd>B</kbd>' }) ]),
-        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle utilities panel' }), el('span', { innerHTML:'<kbd>U</kbd>' }) ]),
-        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle breadcrumbs' }), el('span', { innerHTML:'<kbd>C</kbd>' }) ]),
-        el('li', {}, [ el('span', { class:'desc', textContent:'Fullscreen mini‑graph' }), el('span', { innerHTML:'<kbd>G</kbd>' }) ]),
-        el('li', {}, [ el('span', { class:'desc', textContent:'Close panels / overlays' }), el('span', { innerHTML:'<kbd>Esc</kbd>' }) ]),
-        el('li', {}, [ el('span', { class:'desc', textContent:'Show this help' }), el('span', { innerHTML:'<kbd>?</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Cycle theme (light / dark)' }), el('span', { innerHTML:'<kbd>T</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle left sidebar (pages & search)' }), el('span', { innerHTML:'<kbd>B</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle right sidebar (graph & ToC)' }), el('span', { innerHTML:'<kbd>U</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle header (breadcrumbs)' }), el('span', { innerHTML:'<kbd>C</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Fullscreen graph' }), el('span', { innerHTML:'<kbd>G</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Close panels & overlays' }), el('span', { innerHTML:'<kbd>Esc</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Show this help panel' }), el('span', { innerHTML:'<kbd>?</kbd>' }) ]),
       ]);
       panel.append(header, list);
       host.append(panel);
