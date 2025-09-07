@@ -588,7 +588,34 @@ function buildTree() {
 /** Highlight the current page in the sidebar tree. */
 function highlightSidebar(page) {
   $('#tree .sidebar-current')?.classList.remove('sidebar-current');
-  $(`#tree a[data-page="${page.id}"]`)?.classList.add('sidebar-current');
+  const link = $(`#tree a[data-page="${page.id}"]`);
+  if (!link) return;
+  link.classList.add('sidebar-current');
+  // Open ancestor folders so the current item is visible
+  let li = link.closest('li');
+  while (li) {
+    if (li.classList.contains('folder')) {
+      li.classList.add('open');
+      li.setAttribute('aria-expanded', 'true');
+      const caret = li.querySelector('button.caret');
+      if (caret) {
+        caret.setAttribute('aria-expanded', 'true');
+        caret.setAttribute('aria-label', 'Collapse');
+      }
+      const sub = li.querySelector('ul[role="group"]');
+      if (sub) sub.style.display = 'block';
+    }
+    li = li.parentElement?.closest('li');
+  }
+  // Try to keep the active item in view without jumping the page scroll
+  const tree = $('#tree');
+  if (tree && link) {
+    const r = link.getBoundingClientRect();
+    const tr = tree.getBoundingClientRect();
+    if (r.top < tr.top || r.bottom > tr.bottom) link.scrollIntoView({ block: 'nearest' });
+  }
+}
+"]`)?.classList.add('sidebar-current');
 }
 
 /**
