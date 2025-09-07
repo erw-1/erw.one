@@ -694,6 +694,12 @@
 
   #content a {
     color: var(--color-accent);
+    /* Wrap text inside links */
+    white-space: normal;
+    word-break: break-word; /* alternative to word-wrap */
+    display: inline-block;
+}
+
   }
   #content a:hover {
     color: var(--color-text);
