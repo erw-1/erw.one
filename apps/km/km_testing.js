@@ -1409,6 +1409,109 @@ function initUI() {
     if (acted) e.preventDefault(); // prevent page‑level ESC behavior when handled
   }, { capture: true });
 
+  
+  // ===== Keyboard Shortcuts =====
+  (function keyboardShortcuts(){
+    const searchInput = $('#search');
+    const themeBtn = $('#theme-toggle');
+    const sidebarEl = $('#sidebar');
+    const utilEl = $('#util');
+    const expandBtn = $('#expand');
+
+    // Create (once) a minimal help panel
+    function ensureKbHelp(){
+      let host = $('#kb-help');
+      if (host) return host;
+      host = el('div', { id:'kb-help', role:'dialog', 'aria-modal':'true', 'aria-label':'Keyboard shortcuts', hidden:true });
+      const panel = el('div', { class:'panel' });
+      const title = el('h2', { textContent:'Keyboard shortcuts' });
+      const close = el('button', { class:'close', title:'Close', 'aria-label':'Close help', textContent:'✕',
+                                   onclick: () => closeHelp() });
+      const header = el('header', {}, [ title, close ]);
+      const list = el('ul', {}, [
+        el('li', {}, [ el('span', { class:'desc', textContent:'Focus search' }), el('span', { innerHTML:'<kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle theme' }), el('span', { innerHTML:'<kbd>T</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle sidebar' }), el('span', { innerHTML:'<kbd>B</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle utilities panel' }), el('span', { innerHTML:'<kbd>U</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Fullscreen mini‑graph' }), el('span', { innerHTML:'<kbd>G</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Close panels / overlays' }), el('span', { innerHTML:'<kbd>Esc</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Show this help' }), el('span', { innerHTML:'<kbd>?</kbd>' }) ]),
+      ]);
+      panel.append(header, list);
+      host.append(panel);
+      document.body.appendChild(host);
+      return host;
+    }
+    function openHelp(){
+      const host = ensureKbHelp();
+      host.hidden = false;
+      host.focus();
+    }
+    function closeHelp(){
+      const host = $('#kb-help');
+      if (host) host.hidden = true;
+    }
+    function isEditable(el){
+      return !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
+    }
+    function toggle(el){
+      if (!el) return;
+      const wasOpen = el.classList.contains('open');
+      closePanels();
+      if (!wasOpen) {
+        el.classList.add('open');
+        if (!el.querySelector('.panel-close')) el.append(el('button', { class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels }));
+      }
+    }
+
+    addEventListener('keydown', (e) => {
+      const key = e.key;
+      const lower = key.toLowerCase();
+      const tgt = e.target;
+
+      // Always allow Esc handling defined elsewhere
+      if (key === 'Escape') return;
+
+      // If typing in an editable control, only allow Ctrl/Cmd+K to focus search.
+      if (isEditable(tgt)) {
+        if ((e.ctrlKey || e.metaKey) && lower === 'k') {
+          e.preventDefault(); searchInput?.focus();
+        }
+        return;
+      }
+
+      // Global shortcuts
+      if ((e.ctrlKey || e.metaKey) && lower === 'k') {
+        e.preventDefault(); searchInput?.focus(); return;
+      }
+      if (key === '/' && !e.shiftKey && !e.altKey) {
+        e.preventDefault(); searchInput?.focus(); return;
+      }
+      if (lower === 't' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault(); themeBtn?.click(); return;
+      }
+      if (lower === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault(); toggle(sidebarEl); return;
+      }
+      if (lower === 'u' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault(); toggle(utilEl); return;
+      }
+      if (lower === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        e.preventDefault(); expandBtn?.click(); return;
+      }
+      if (key === '?' || (e.shiftKey && key === '/')) {
+        e.preventDefault(); openHelp(); return;
+      }
+    }, { capture:true });
+
+    // Close help on click outside panel
+    document.addEventListener('click', (e) => {
+      const host = $('#kb-help');
+      if (!host || host.hidden) return;
+      if (e.target === host) closeHelp();
+    });
+  })();
+
   // Preload HLJS core when the main thread is likely idle to improve UX later.
   whenIdle(() => { KM.ensureHighlight(); });
 }
