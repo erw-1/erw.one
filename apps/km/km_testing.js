@@ -615,8 +615,6 @@ function highlightSidebar(page) {
     if (r.top < tr.top || r.bottom > tr.bottom) link.scrollIntoView({ block: 'nearest' });
   }
 }
-"]`)?.classList.add('sidebar-current');
-}
 
 /**
  * Ranked search over titles, tags, and per-heading sections.
