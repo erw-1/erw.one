@@ -1003,20 +1003,13 @@ let uiInited = false;           // guard against duplicate initialization
     if (document.getElementById('km-preview-style')) return;
     const css = `
     .km-link-preview pre{position:relative}
-    .km-link-preview .km-copy-btn /* removed; using site styles */{position:absolute; top:8px; right:8px; font:inherit; font-size:.8rem;
-       border:1px solid rgba(127,127,127,.25); background:rgba(255,255,255,.06); padding:3px 6px;
-       border-radius:8px; cursor:pointer}
-    .km-link-preview .km-copy-btn /* removed; using site styles */:hover{background:rgba(255,255,255,.12)}
-    .km-link-preview .km-header-link /* removed; using site styles */{margin-left:.5rem; opacity:.25; text-decoration:none}
     .km-link-preview h1:hover .km-header-link,
     .km-link-preview h2:hover .km-header-link,
     .km-link-preview h3:hover .km-header-link,
     .km-link-preview h4:hover .km-header-link,
     .km-link-preview h5:hover .km-header-link,
     .km-link-preview h6:hover .km-header-link{opacity:.85}
-    .km-link-preview .km-header-link /* removed; using site styles */-copied{opacity:1}
-
-      .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
+    .km-link-preview{position:fixed;max-width:min(520px,48vw);max-height:min(480px,72vh);
         overflow:auto;z-index:2147483000;padding:12px 14px;border-radius:12px;
         background:var(--panel-bg, rgba(24,24,28,.98)); color:inherit; scroll-padding-top: var(--km-preview-pad, 40px);
         border:1px solid rgba(127,127,127,.25); box-shadow:0 10px 30px rgba(0,0,0,.35)}
@@ -1033,10 +1026,6 @@ let uiInited = false;           // guard against duplicate initialization
     `;
     document.head.appendChild(el('style', { id:'km-preview-style', textContent:css }));
   }
-
-  function computeOffsetWithin(elm, container) {
-    let y = 0, e = elm;
-    while (e && e !== container) { y += e.offsetTop || 0; e = e.offsetParent; }
     return y;
   }
 
@@ -1051,25 +1040,6 @@ let uiInited = false;           // guard against duplicate initialization
     const anchor = seg.slice(baseSegs.length).join('#');
     return { page, anchor };
   }
-
-  
-  function rewriteRelativeAnchorsIn(panel, page) {
-    const base = hashOf(page); // e.g. "stresstest"
-    panel.body.querySelectorAll('a[href^="#"]').forEach(a => {
-      const h = a.getAttribute('href') || '';
-      // Already a full page link? leave it
-      const isFull = !!resolveTarget(h);
-      if (isFull) return;
-      // Make it "#<page>#<fragment>"
-      const frag = h.length > 1 ? ('#' + h.slice(1)) : '';
-      a.setAttribute('href', '#' + base + frag);
-    });
-  }
-
-
-  async function ensureKaTeX() {
-    if ((window.katex && window.renderMathInElement) || (window.katex && KM?.renderMathInElement)) return;
-    if (KM && typeof KM.ensureKatex === 'function') { await KM.ensureKatex(); return; }
     if (KM && typeof KM.ensureMath === 'function')  { await KM.ensureMath();  return; }
     await new Promise((resolve, reject) => {
       const exist = document.querySelector('link[data-km-katex]');
@@ -1086,20 +1056,6 @@ let uiInited = false;           // guard against duplicate initialization
       document.head.append(s1, s2);
     });
   }
-  function renderMathInPreview(container) {
-    try {
-      const render = (window.renderMathInElement || (KM && KM.renderMathInElement));
-      if (!render) return;
-      render(container, {
-        delimiters: [
-          {left: '$$', right: '$$', display: true},
-          {left: '\\\\[', right: '\\\\]', display: true},
-          {left: '\\\\(', right: '\\\\)', display: false},
-          {left: '$', right: '$', display: false},
-        ],
-        throwOnError: false,
-      });
-    } catch {}
   }
 
   function positionPreview(panel, linkEl) {
@@ -1142,7 +1098,7 @@ let uiInited = false;           // guard against duplicate initialization
     clearTimeout(scheduleTrim._t);
     scheduleTrim._t = setTimeout(() => {
       if (!anyPreviewOrTriggerActive()) closeFrom(0);
-    }, 220);
+    }, 200);
   }
     
 
@@ -1158,7 +1114,7 @@ let uiInited = false;           // guard against duplicate initialization
       previewHTMLCache.set(page.id, html);
     }
     panel.body.innerHTML = html;
-    rewriteRelativeAnchorsIn(panel, page);
+    fixFootnoteLinks(page, panel.body);
 
     // Highlight code inside the preview
     await KM.ensureHighlight();
@@ -1166,8 +1122,8 @@ let uiInited = false;           // guard against duplicate initialization
     panel.body.querySelectorAll('pre code').forEach(c => window.hljs.highlightElement(c));
 
     // Render math (KaTeX)
-    await ensureKaTeX();
-    renderMathInPreview(panel.body);
+    await KM.ensureKatex();
+    window.renderMathInElement(panel.body, { delimiters: [ { left:'$$', right:'$$', display:true }, { left:'\\[', right:'\\]', display:true }, { left:'$', right:'$', display:false }, { left:'\\(', right:'\\)', display:false } ], throwOnError: false });
 
     decorateCodeBlocks(panel.body);
     decorateHeadings(page, panel.body);
@@ -1184,7 +1140,7 @@ let uiInited = false;           // guard against duplicate initialization
         const tRect = t.getBoundingClientRect();
         const y = tRect.top - cRect.top + container.scrollTop;
         const top = Math.max(0, y - headerH - 6);
-        container.scrollTo({ top, behavior: 'instant' });
+        if (container.scrollTo) container.scrollTo({ top, behavior: 'instant' }); else container.scrollTop = top;
         t.classList.add('km-preview-focus');
       }
     }
@@ -1266,12 +1222,12 @@ let uiInited = false;           // guard against duplicate initialization
   }
 
   // Expose for initUI()
-  KM.attachLinkPreviewsV2 = attachLinkPreviewsV2;
+  KM.attachLinkPreviews = attachLinkPreviewsV2; KM.attachLinkPreviewsV2 = KM.attachLinkPreviews;
 })();
 
 
 function initUI() {
-  try { KM.attachLinkPreviewsV2(); } catch (_) {}
+  try { KM.attachLinkPreviews(); } catch (_) {}
 
   if (uiInited) return; // idempotent safety
   uiInited = true;
