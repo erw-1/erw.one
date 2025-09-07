@@ -687,7 +687,7 @@ function search(q) {
       let s = 0;
 
       for (const tok of tokens) {
-        const r = new RegExp('\\b' + escapeRegex(tok) + '\\b', 'g');
+        const r = new RegExp('\b' + escapeRegex(tok) + '\b', 'g');
         if (r.test(secTitle)) s += W.secTitle;
         if (r.test(secBody))  s += W.secBody;
       }
@@ -1180,7 +1180,7 @@ function renderMathInPreview(container) {
   function createPanel(linkEl) {
     const container = el('div', { class:'km-link-preview', role:'dialog', 'aria-label':'Preview' });
     const header = el('header', {}, [
-      el('button', { type:'button', class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕'})
+      el('button', { type:'button', class:'km-preview-close', title:'Close', 'aria-label':'Close', innerHTML:'✕' })
     ]);
     const body = el('div');
     container.append(header, body);
