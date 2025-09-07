@@ -1197,9 +1197,19 @@ function renderMathInPreview(container) {
     const target = resolveTarget(href);
     if (!target) return;
 
+    // Dedupe: if this exact link already has an open preview, just reposition it.
+    const existingIdx = previewStack.findIndex(p => p.link === linkEl);
+    if (existingIdx >= 0) {
+      const existing = previewStack[existingIdx];
+      clearTimeout(existing.timer);
+      positionPreview(existing, linkEl);
+      return;
+    }
+
     const panel = createPanel(linkEl);
     // Cancel any close timers on existing panels when a child opens
     previewStack.forEach(p => clearTimeout(p.timer));
+    panel.targetKey = `${target.page.id}#${target.anchor||''}`;
     await fillPanel(panel, target.page, target.anchor);
   }
 
