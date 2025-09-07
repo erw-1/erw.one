@@ -1396,6 +1396,8 @@ function initUI() {
   addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     let acted = false;
+    const kb = $('#kb-help');
+    if (kb && !kb.hidden) { kb.hidden = true; acted = true; }
     const sidebarOpen = $('#sidebar')?.classList.contains('open');
     const utilOpen    = $('#util')?.classList.contains('open');
     if (sidebarOpen || utilOpen) { closePanels(); acted = true; }

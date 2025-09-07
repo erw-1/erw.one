@@ -1377,20 +1377,32 @@ pre:has(code)::after {
   body.hide-crumb #crumb { display: none !important; }
 }
 
+
+
 /* --- "?" keycap icon next to theme toggle --- */
-.kb-keycap{
-  display:inline-grid;
-  place-items:center;
-  width:28px; height:28px;
+.kb-keycap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--g-md) var(--g-md);
   margin-left: .25rem;
-  border: 1px solid var(--color-low-contrast);
-  border-radius: var(--r-sm);
-  background: transparent;
-  color: var(--color-text);
-  cursor: pointer;
-}
-.kb-keycap:hover, .kb-keycap:focus-visible{
-  border-color: var(--color-accent);
-  color: var(--color-accent);
+  border: 0;
   outline: none;
+  background: linear-gradient(
+    to right,
+    transparent 0,
+    var(--color-lowest-contrast) var(--g-md)
+  );
+  cursor: pointer;
+  transition: 0.3s ease !important;
 }
+.kb-keycap svg {
+  width: 22px;
+  height: 22px;
+  transition: 0.3s ease !important;
+}
+.kb-keycap:hover, .kb-keycap:focus-visible {
+  outline: none;
+  filter: brightness(1.05);
+}
+.kb-keycap:focus-visible{ outline: none !important; }
