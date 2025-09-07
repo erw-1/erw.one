@@ -544,7 +544,8 @@ function buildTree() {
   const ul = $('#tree'); if (!ul) return;
   ul.setAttribute('role','tree');
   ul.innerHTML = '';
-  const prim = root.children.filter(c => !c.isSecondary).sort(sortByTitle);
+  // Preserve MD order for primary (non-secondary) children of root
+  const prim = root.children.filter(c => !c.isSecondary);
   const secs = root.children.filter(c => c.isSecondary).sort((a,b)=> a.clusterId - b.clusterId);
 
   const rec = (nodes, container, depth=0) => {
@@ -561,7 +562,8 @@ function buildTree() {
         li.setAttribute('aria-expanded', String(open));
         li.append(caret, lbl, sub);
         container.append(li);
-        rec(p.children.sort(sortByTitle), sub, depth+1);
+        // Preserve MD order for children as declared in the MD bundle
+        rec(p.children, sub, depth+1);
       } else {
         li.className = 'article';
         li.setAttribute('role','treeitem');
