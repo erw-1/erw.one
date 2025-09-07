@@ -632,6 +632,8 @@ function highlightSidebar(page) {
 function search(q) {
   const resUL = $('#results'), treeUL = $('#tree'); if (!resUL || !treeUL) return;
   const val = q.trim().toLowerCase();
+  resUL.setAttribute('aria-live','polite');
+  resUL.setAttribute('aria-busy','true');
 
   if (!val) { resUL.style.display='none'; resUL.innerHTML=''; treeUL.style.display=''; return; }
 
@@ -663,7 +665,7 @@ function search(q) {
       const r = tokenRegexes[i];
       if (r.test(titleL)) score += W.title;
       if (r.test(tagsL))  score += W.tag;
-      if (r.test(ensureBody()))  score += W.body;
+      if (r.test(bodyL))  score += W.body;
     }
 
     // Phrase bonus for multi-word queries
@@ -723,6 +725,8 @@ function search(q) {
 
   resUL.append(frag);
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
+
+  resUL.setAttribute('aria-busy','false');
 }
 
 /* ─────────────────────────── breadcrumb / crumb ────────────────────────── */
