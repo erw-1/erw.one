@@ -998,8 +998,6 @@ let uiInited = false;           // guard against duplicate initialization
   const previewHTMLCache = new Map();     // page.id -> parsed HTML string
   const previewStack = [];                // stack of { el, body, link, hover, timer }
   let hoverDelay = null;
-  return y;
-}
 
   function resolveTarget(href) {
     if (!href || !href.startsWith('#')) return null;
@@ -1026,23 +1024,7 @@ let uiInited = false;           // guard against duplicate initialization
       a.setAttribute('href', '#' + base + frag);
     });
   }
-if (KM && typeof KM.ensureMath === 'function')  { await KM.ensureMath();  return; }
-    await new Promise((resolve, reject) => {
-      const exist = document.querySelector('link[data-km-katex]');
-      if (!exist) {
-        const link = el('link', { rel:'stylesheet', href:'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css' });
-        link.setAttribute('data-km-katex','1');
-        document.head.appendChild(link);
-      }
-      const s1 = el('script', { src:'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js' });
-      const s2 = el('script', { src:'https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js' });
-      let done=0; const ok=()=>{ if(++done===2) resolve(); };
-      s1.onload=ok; s2.onload=ok;
-      s1.onerror=reject; s2.onerror=reject;
-      document.head.append(s1, s2);
-    });
-  }
-  function renderMathInPreview(container) {
+function renderMathInPreview(container) {
     try {
       const render = (window.renderMathInElement || (KM && KM.renderMathInElement));
       if (!render) return;
