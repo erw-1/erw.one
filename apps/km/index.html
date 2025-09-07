@@ -28,9 +28,6 @@
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm" crossorigin>
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-dispatch@3.0.1/+esm" crossorigin>
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-quadtree@3.0.1/+esm" crossorigin>
-  <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/d3-timer@3.0.1/+esm" crossorigin>
 
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm" crossorigin>
   
@@ -297,7 +294,7 @@
   <main>
     <!-- ——— BREADCRUMB / TOP BAR ——— -->
     <nav id="crumb" role="navigation" aria-label="Breadcrumb">
-      <button id="burger-sidebar" class="burger" aria-label="Open sidebar" aria-controls="sidebar" aria-expanded="false">
+      <button id="burger-sidebar" class="burger" aria-label="Open sidebar" aria-controls="sidebar" aria-expanded="false" type="button">
         <svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
       </button>
 
@@ -306,11 +303,11 @@
       </a>
       <span id="crumb-dyn"></span>
 
-      <button id="burger-util" class="burger" aria-label="Open utility panel" aria-controls="util" aria-expanded="false">
+      <button id="burger-util" class="burger" aria-label="Open utility panel" aria-controls="util" aria-expanded="false" type="button">
         <svg width="24" height="24" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
       </button>
 
-      <button id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle light / dark">
+      <button id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle light / dark" type="button">
         <!-- sun -->
         <svg class="sun" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="5"></circle>
