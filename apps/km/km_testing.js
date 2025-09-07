@@ -636,8 +636,8 @@ function search(q) {
   if (!val) { resUL.style.display='none'; resUL.innerHTML=''; treeUL.style.display=''; return; }
 
   const tokens = val.split(/\s+/).filter(t => t.length >= 2); // ignore 1-char noise
-  const esc = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const tokenRegexes = tokens.map(t => new RegExp('\\b' + esc(t) + '\\b'))
+  const esc2 = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const tokenRegexes = tokens.map(t => new RegExp('\\b' + esc2(t) + '\\b'))
   resUL.innerHTML=''; resUL.style.display=''; treeUL.style.display='none';
 
   // ——— weights (tweak to taste) ———
