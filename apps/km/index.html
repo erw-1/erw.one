@@ -323,7 +323,14 @@
         <svg class="moon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"></path>
         </svg>
-      </button>
+      
+        <button id="kb-icon" class="kb-keycap" type="button" aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-controls="kb-help">
+          <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+            <rect x="2" y="3" width="20" height="18" rx="3" ry="3" fill="currentColor" opacity="0.15"></rect>
+            <rect x="2" y="3" width="20" height="18" rx="3" ry="3" fill="none" stroke="currentColor" stroke-width="1"></rect>
+            <text x="12" y="16" text-anchor="middle" font-size="14" font-family="ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial" fill="currentColor">?</text>
+          </svg>
+        </button>
     </nav>
 
     <!-- ——— MAIN CONTENT / ARTICLE AREA ——— -->
@@ -345,7 +352,7 @@
           <button id="expand" type="button" aria-controls="mini" aria-expanded="false" aria-label="Expand graph">⛶</button>
         </div>
 
-        <div class="wm-wrap"><a class="watermark" href="https://github.com/erw-1/km" target="_blank" rel="noopener noreferrer">Powered by KM</a><button id="kb-btn" class="kb-help-btn" type="button" aria-haspopup="dialog" aria-controls="kb-help">KB shortcuts</button></div>
+        <div class="wm-wrap"><a class="watermark" href="https://github.com/erw-1/km" target="_blank" rel="noopener noreferrer">Powered by KM</a></div>
         <nav id="toc" aria-label="Table of contents"></nav>
       </section>
     </div>

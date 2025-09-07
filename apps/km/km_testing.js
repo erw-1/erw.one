@@ -1433,6 +1433,7 @@ function initUI() {
         el('li', {}, [ el('span', { class:'desc', textContent:'Toggle theme' }), el('span', { innerHTML:'<kbd>T</kbd>' }) ]),
         el('li', {}, [ el('span', { class:'desc', textContent:'Toggle sidebar' }), el('span', { innerHTML:'<kbd>B</kbd>' }) ]),
         el('li', {}, [ el('span', { class:'desc', textContent:'Toggle utilities panel' }), el('span', { innerHTML:'<kbd>U</kbd>' }) ]),
+        el('li', {}, [ el('span', { class:'desc', textContent:'Toggle breadcrumbs' }), el('span', { innerHTML:'<kbd>C</kbd>' }) ]),
         el('li', {}, [ el('span', { class:'desc', textContent:'Fullscreen mini‑graph' }), el('span', { innerHTML:'<kbd>G</kbd>' }) ]),
         el('li', {}, [ el('span', { class:'desc', textContent:'Close panels / overlays' }), el('span', { innerHTML:'<kbd>Esc</kbd>' }) ]),
         el('li', {}, [ el('span', { class:'desc', textContent:'Show this help' }), el('span', { innerHTML:'<kbd>?</kbd>' }) ]),
@@ -1444,6 +1445,7 @@ function initUI() {
     }
     function openHelp(){
       const host = ensureKbHelp();
+      window.openHelp = openHelp;
       host.hidden = false;
       host.focus();
     }
@@ -1510,6 +1512,9 @@ function initUI() {
         e.preventDefault(); openHelp(); return;
       }
     }, { capture:true });
+
+      // Keycap icon opens help
+    $('#kb-icon')?.addEventListener('click', (e)=>{ e.preventDefault(); openHelp(); });
 
     // Close help on click outside panel
     document.addEventListener('click', (e) => {

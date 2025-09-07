@@ -1376,3 +1376,21 @@ pre:has(code)::after {
   body.hide-util #util { display: none !important; }
   body.hide-crumb #crumb { display: none !important; }
 }
+
+/* --- "?" keycap icon next to theme toggle --- */
+.kb-keycap{
+  display:inline-grid;
+  place-items:center;
+  width:28px; height:28px;
+  margin-left: .25rem;
+  border: 1px solid var(--color-low-contrast);
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--color-text);
+  cursor: pointer;
+}
+.kb-keycap:hover, .kb-keycap:focus-visible{
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  outline: none;
+}
