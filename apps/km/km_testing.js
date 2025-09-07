@@ -79,7 +79,11 @@ const el = (tag, props = {}, children = []) => {
     return n;
 };
 // Expose a couple of helpers and a DEBUG flag for quick diagnostics.
-Object.assign(KM, { $, $$, DEBUG: false, resetGraphOnCenter: false });
+Object.assign(KM, {
+    $,
+    $$,
+    DEBUG: false
+});
 
 /* ────────────────────────────── Config access ──────────────────────────── */
 // Configuration is defined inline in index.html to keep the site portable.
@@ -118,7 +122,7 @@ function writeCache(url, txt) {
 /* ───────────────────────────── small utils ─────────────────────────────── */
 
 /** Escape a string for safe use inside a RegExp. */
-const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
+const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 /**
  * Defer non‑urgent side‑effects without blocking interactivity/paint.
  * Uses requestIdleCallback when available, otherwise a 0ms timeout.
@@ -174,11 +178,11 @@ function parseMarkdownBundle(txt) {
     descMemo.clear();
 
     // Greedy match: capture meta block + following body up to the next meta block.
-    const m = txt.matchAll(/<!--([\\s\\S]*?)-->\\s*([\\s\\S]*?)(?=<!--|$)/g);
+    const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
     for (const [, hdr, body] of m) {
         const meta = {};
         // Parse k:"v" pairs with a simple, predictable grammar.
-        hdr.replace(/(\\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
+        hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
         const page = {
             ...meta,
             content: (body || '').trim(),
@@ -212,16 +216,16 @@ function parseMarkdownBundle(txt) {
             offset = 0,
             prev = null;
 
-        for (const line of p.content.split(/\\r?\\n/)) {
+        for (const line of p.content.split(/\r?\n/)) {
             if (/^(?:```|~~~)/.test(line)) inFence = !inFence; // toggle on fences
-            if (!inFence && /^(#{1,6})\\s+/.test(line)) {
+            if (!inFence && /^(#{1,6})\s+/.test(line)) {
                 if (prev) {
                     // Commit previous heading section body and index text for search.
                     prev.body = p.content.slice(prev.bodyStart, offset).trim();
                     prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
                     sections.push(prev);
                 }
-                const [, hashes, txt] = line.match(/^(#{1,6})\\s+(.+)/);
+                const [, hashes, txt] = line.match(/^(#{1,6})\s+(.+)/);
                 const level = hashes.length - 1; // 0‑based depth (H1→0, H2→1, ...)
                 counters[level]++; // increment current level
                 for (let i = level + 1; i < 6; i++) counters[i] = 0; // reset deeper
@@ -423,8 +427,7 @@ KM.ensureKatex = ensureOnce(async () => {
     window.renderMathInElement = auto.default;
 });
 
-/* ───────────────────────── UI decorations & utils ─────────────────────── */
-
+/* ───────────────────────── UI decorations & utils ──────────────────────── */
 /** Sort helper for consistent alphabetical ordering. */
 const sortByTitle = (a, b) => a.title.localeCompare(b.title);
 
@@ -559,7 +562,9 @@ function seeAlso(page) {
         textContent: 'See also'
     }), el('ul')]);
     const ulEl = wrap.querySelector('ul');
-    related.forEach(({ p }) => ulEl.append(el('li', {}, [el('a', {
+    related.forEach(({
+        p
+    }) => ulEl.append(el('li', {}, [el('a', {
         href: '#' + hashOf(p),
         textContent: p.title
     })])));
@@ -616,14 +621,12 @@ function decorateHeadings(page, container = $('#content')) {
                 e.stopPropagation();
                 copyText(url, h.querySelector('button.heading-copy'));
             }));
-        h.addEventListener('click', (e) => {
-            // Safer: ignore clicks that originate from nested links/buttons
-            if (e.target && e.target.closest && e.target.closest('a,button')) return;
+        h.onclick = () => {
             // Do not hijack when the user is actively selecting text inside the h*.
             if (window.getSelection && String(window.getSelection()).length) return;
             clearSelection();
             copyText(url, btn);
-        });
+        };
     });
 }
 
@@ -641,21 +644,24 @@ function decorateCodeBlocks(container = $('#content')) {
 function decorateExternalLinks() {
     $$('#content a[href]').forEach(a => {
         const href = a.getAttribute('href');
+        if (!href) return;
         if (!href || href.startsWith('#')) return; // in-page / app links → ignore
         let url;
-        try { url = new URL(href, baseURLNoHash()); }
-        catch { return; } // tolerate weird hrefs
+        try {
+            url = new URL(href, baseURLNoHash());
+        } catch {
+            return;
+        } // tolerate weird hrefs
         const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
         const isExternal = isHttp && url.origin !== location.origin;
         if (isExternal) {
             a.setAttribute('target', '_blank');
             // preserve any existing rel values, add safety flags
             const rel = new Set((a.getAttribute('rel') || '').split(/\s+/).filter(Boolean));
-            rel.add('noopener'); rel.add('noreferrer'); rel.add('external');
+            rel.add('noopener');
+            rel.add('noreferrer');
+            rel.add('external');
             a.setAttribute('rel', Array.from(rel).join(' '));
-            // Informative aria-label for SR users
-            const labelText = (a.textContent || url.hostname).trim();
-            a.setAttribute('aria-label', `${labelText} (opens in new tab, external link to ${url.hostname})`);
         }
     });
 }
@@ -691,11 +697,17 @@ function buildTree() {
                 });
                 const lbl = el('a', {
                     class: 'lbl',
-                    dataset: { page: p.id },
+                    dataset: {
+                        page: p.id
+                    },
                     href: '#' + hashOf(p),
                     textContent: p.title
                 });
-                const sub = el('ul', { id: groupId, role: 'group', style: `display:${open?'block':'none'}` });
+                const sub = el('ul', {
+                    id: groupId,
+                    role: 'group',
+                    style: `display:${open?'block':'none'}`
+                });
                 li.setAttribute('role', 'treeitem');
                 li.setAttribute('aria-expanded', String(open));
                 li.append(caret, lbl, sub);
@@ -705,7 +717,13 @@ function buildTree() {
             } else {
                 li.className = 'article';
                 li.setAttribute('role', 'treeitem');
-                li.append(el('a', { dataset: { page: p.id }, href: '#' + hashOf(p), textContent: p.title }));
+                li.append(el('a', {
+                    dataset: {
+                        page: p.id
+                    },
+                    href: '#' + hashOf(p),
+                    textContent: p.title
+                }));
                 container.append(li);
             }
         });
@@ -715,7 +733,16 @@ function buildTree() {
     rec(prim, frag);
     // Secondary clusters are separated visually and rendered one by one.
     secs.forEach(r => {
-        const sep = el('div', { class: 'group-sep', role: 'presentation', 'aria-hidden': 'true' }, [el('hr', { role: 'presentation', 'aria-hidden': 'true' })]);
+        const sep = el('div', {
+                class: 'group-sep',
+                role: 'presentation',
+                'aria-hidden': 'true'
+            },
+            [el('hr', {
+                role: 'presentation',
+                'aria-hidden': 'true'
+            })]
+        );
         frag.append(sep);
         rec([r], frag);
     });
@@ -746,10 +773,10 @@ function highlightSidebar(page) {
     // Try to keep the active item in view without jumping the page scroll
     const tree = $('#tree');
     if (tree && link) {
-        requestAnimationFrame(() => {
-            const r = link.getBoundingClientRect();
-            const tr = tree.getBoundingClientRect();
-            if (r.top < tr.top || r.bottom > tr.bottom) link.scrollIntoView({ block: 'nearest' });
+        const r = link.getBoundingClientRect();
+        const tr = tree.getBoundingClientRect();
+        if (r.top < tr.top || r.bottom > tr.bottom) link.scrollIntoView({
+            block: 'nearest'
         });
     }
 }
@@ -762,7 +789,8 @@ function highlightSidebar(page) {
  *  - Exact phrase (multi-word) match adds a small bonus.
  */
 function search(q) {
-    const resUL = $('#results'), treeUL = $('#tree');
+    const resUL = $('#results'),
+        treeUL = $('#tree');
     if (!resUL || !treeUL) return;
     const val = q.trim().toLowerCase();
     resUL.setAttribute('aria-live', 'polite');
@@ -776,13 +804,22 @@ function search(q) {
     }
 
     const tokens = val.split(/\s+/).filter(t => t.length >= 2); // ignore 1-char noise
-    const tokenRegexes = tokens.map(t => new RegExp(`\\b${escapeRegex(t)}\\b`));
+    const tokenRegexes = tokens.map(t => new RegExp('\\b' + escapeRegex(t) + '\\b'))
     resUL.innerHTML = '';
     resUL.style.display = '';
     treeUL.style.display = 'none';
 
     // ——— weights (tweak to taste) ———
-    const W = { title: 5, tag: 3, body: 1, secTitle: 3, secBody: 1, phraseTitle: 5, phraseBody: 2, secCountCap: 4 };
+    const W = {
+        title: 5,
+        tag: 3,
+        body: 1,
+        secTitle: 3,
+        secBody: 1,
+        phraseTitle: 5,
+        phraseBody: 2,
+        secCountCap: 4
+    };
     const phrase = tokens.length > 1 ? val : null;
 
     const scored = [];
@@ -791,7 +828,7 @@ function search(q) {
         // Fast prefilter: require all tokens somewhere in the page’s searchable string.
         if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
 
-        // Lowercased fields (local only to avoid mutating page objects)
+        // Lowercased fields (kept local to avoid mutating your page objects)
         const titleL = p.title.toLowerCase();
         const tagsL = [...p.tagsSet].join(' ').toLowerCase();
         const bodyL = p.content.toLowerCase();
@@ -799,10 +836,11 @@ function search(q) {
         let score = 0;
 
         // Per-token weighting (word-boundary to avoid partials)
-        for (const r of tokenRegexes) {
+        for (let i = 0; i < tokenRegexes.length; i++) {
+            const r = tokenRegexes[i];
             if (r.test(titleL)) score += W.title;
-            if (r.test(tagsL))  score += W.tag;
-            if (r.test(bodyL))  score += W.body;
+            if (r.test(tagsL)) score += W.tag;
+            if (r.test(bodyL)) score += W.body;
         }
 
         // Phrase bonus for multi-word queries
@@ -815,21 +853,32 @@ function search(q) {
         const matchedSecs = [];
         for (const sec of p.sections) {
             if (!tokens.every(tok => sec.search.includes(tok))) continue;
+
             const secTitle = sec.txt.toLowerCase();
             const secBody = sec.body.toLowerCase();
             let s = 0;
-            for (const r of tokenRegexes) {
+
+            for (const tok of tokens) {
+                const r = new RegExp('\b' + escapeRegex(tok) + '\b', 'g');
                 if (r.test(secTitle)) s += W.secTitle;
-                if (r.test(secBody))  s += W.secBody;
+                if (r.test(secBody)) s += W.secBody;
             }
             if (phrase && (secTitle.includes(phrase) || secBody.includes(phrase))) s += 1;
-            matchedSecs.push({ sec, s });
+
+            matchedSecs.push({
+                sec,
+                s
+            });
         }
 
         matchedSecs.sort((a, b) => b.s - a.s);
         score += Math.min(W.secCountCap, matchedSecs.length); // modest page boost
 
-        scored.push({ p, score, matchedSecs });
+        scored.push({
+            p,
+            score,
+            matchedSecs
+        });
     }
 
     // Final ordering: score desc, then title alphabetically for stability
@@ -837,16 +886,40 @@ function search(q) {
 
     // Render
     const frag = DOC.createDocumentFragment();
-    for (const { p, matchedSecs } of scored) {
-        const li = el('li', { class: 'page-result' }, [ el('a', { href: '#' + hashOf(p), textContent: p.title }) ]);
+    for (const {
+            p,
+            matchedSecs
+        }
+        of scored) {
+        const li = el('li', {
+            class: 'page-result'
+        }, [
+            el('a', {
+                href: '#' + hashOf(p),
+                textContent: p.title
+            })
+        ]);
+
         if (matchedSecs.length) {
             const base = hashOf(p);
-            const sub  = el('ul', { class: 'sub-results' });
-            matchedSecs.forEach(({ sec }) => sub.append(el('li', { class: 'heading-result' }, [
-                el('a', { href: `#${base ? base + '#' : ''}${sec.id}`, textContent: sec.txt })
-            ])));
+            const sub = el('ul', {
+                class: 'sub-results'
+            });
+            matchedSecs.forEach(({
+                sec
+            }) => {
+                sub.append(el('li', {
+                    class: 'heading-result'
+                }, [
+                    el('a', {
+                        href: `#${base ? base + '#' : ''}${sec.id}`,
+                        textContent: sec.txt
+                    })
+                ]));
+            });
             li.append(sub);
         }
+
         frag.append(li);
     }
 
@@ -871,49 +944,88 @@ function breadcrumb(page) {
 
     chain.forEach(n => {
         dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
-        const wrap = el('span', { class: 'dropdown' });
-        const a = el('a', { textContent: n.title, href: '#' + hashOf(n) });
+        const wrap = el('span', {
+            class: 'dropdown'
+        });
+        const a = el('a', {
+            textContent: n.title,
+            href: '#' + hashOf(n)
+        });
         if (n === page) a.className = 'crumb-current';
         wrap.append(a);
 
         const siblings = n.parent.children.filter(s => s !== n);
         if (siblings.length) {
             const ul = el('ul');
-            siblings.forEach(s => ul.append(el('li', { textContent: s.title, onclick: () => nav(s) })));
+            siblings.forEach(s => ul.append(el('li', {
+                textContent: s.title,
+                onclick: () => nav(s)
+            })));
             wrap.append(ul);
         }
         dyn.append(wrap);
     });
 
     if (page.children.length) {
-        const box = el('span', { class: 'childbox' }, [el('span', { class: 'toggle', textContent: '▾' }), el('ul')]);
+        const box = el('span', {
+            class: 'childbox'
+        }, [el('span', {
+            class: 'toggle',
+            textContent: '▾'
+        }), el('ul')]);
         const ul = box.querySelector('ul');
-        page.children.sort(sortByTitle).forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => nav(ch) })));
+        page.children.sort(sortByTitle).forEach(ch => ul.append(el('li', {
+            textContent: ch.title,
+            onclick: () => nav(ch)
+        })));
         dyn.append(box);
     }
 }
 
 /* ───────────────────────────── mini graph (D3) ─────────────────────────── */
 // Stable IDs used in CSS to style node/link classes by semantic role.
-const IDS = { current: 'node_current', parent: 'node_parent', leaf: 'node_leaf', hierPRE: 'link_hier', tagPRE: 'link_tag', label: 'graph_text' };
+const IDS = {
+    current: 'node_current',
+    parent: 'node_parent',
+    leaf: 'node_leaf',
+    hierPRE: 'link_hier',
+    tagPRE: 'link_tag',
+    label: 'graph_text'
+};
 const graphs = {}; // registry for future expansion (e.g., full graph)
 let CURRENT = -1; // currently highlighted node id in the graph
 
 /** Return current <svg>#mini size (fullscreen aware) */
 function getMiniSize() {
     const svg = $('#mini');
-    if (!svg) return { w: 400, h: 300 };
-    if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
+    if (!svg) return {
+        w: 400,
+        h: 300
+    };
+    if (svg.classList.contains('fullscreen')) return {
+        w: innerWidth,
+        h: innerHeight
+    };
     const r = svg.getBoundingClientRect();
-    return { w: Math.max(1, r.width | 0), h: Math.max(1, r.height | 0) };
+    return {
+        w: Math.max(1, r.width | 0),
+        h: Math.max(1, r.height | 0)
+    };
 }
 
 /** Update the mini graph viewport and recentre the simulation. */
 function updateMiniViewport() {
     if (!graphs.mini) return;
-    const { svg, sim } = graphs.mini;
-    const { w, h } = getMiniSize();
-    graphs.mini.w = w; graphs.mini.h = h;
+    const {
+        svg,
+        sim
+    } = graphs.mini;
+    const {
+        w,
+        h
+    } = getMiniSize();
+    graphs.mini.w = w;
+    graphs.mini.h = h;
     svg.attr('viewBox', `0 0 ${w} ${h}`).attr('width', w).attr('height', h).attr('preserveAspectRatio', 'xMidYMid meet');
     sim.force('center', KM.d3.forceCenter(w / 2, h / 2));
     sim.alpha(0.2).restart();
@@ -926,43 +1038,79 @@ function updateMiniViewport() {
  *   weight (capped in CSS when mapped to style IDs).
  */
 function buildGraphData() {
-    const nodes = [], links = [], adj = new Map(), hierPairs = new Set();
-    const touch = (a, b) => { (adj.get(a) || adj.set(a, new Set()).get(a)).add(b); (adj.get(b) || adj.set(b, new Set()).get(b)).add(a); };
+    const nodes = [],
+        links = [],
+        adj = new Map(),
+        hierPairs = new Set();
+    const touch = (a, b) => {
+        (adj.get(a) || adj.set(a, new Set()).get(a)).add(b);
+        (adj.get(b) || adj.set(b, new Set()).get(b)).add(a);
+    };
     const tierOf = n => n < 3 ? 1 : n < 6 ? 2 : n < 11 ? 3 : n < 21 ? 4 : 5; // tiers by subtree size
 
-    pages.forEach((p, i) => { p._i = i; nodes.push({ id: i, label: p.title, ref: p }); });
+    pages.forEach((p, i) => {
+        p._i = i;
+        nodes.push({
+            id: i,
+            label: p.title,
+            ref: p
+        });
+    });
 
     // Hierarchical edges (unique per parent<->child). Using a Set to dedupe.
     pages.forEach(p => {
         if (!p.parent) return;
         if (p.isSecondary && p.parent === root) return; // reduce noise for promoted reps
-        const a = p._i, b = p.parent._i;
+        const a = p._i,
+            b = p.parent._i;
         const key = a < b ? `${a}|${b}` : `${b}|${a}`;
-        links.push({ source: a, target: b, shared: 0, kind: 'hier', tier: tierOf(descendants(p)) });
+        links.push({
+            source: a,
+            target: b,
+            shared: 0,
+            kind: 'hier',
+            tier: tierOf(descendants(p))
+        });
         hierPairs.add(key);
         touch(a, b);
     });
 
     // Accumulate shared‑tag counts per unique pair.
     const tagToPages = new Map(); // Map<tag, number[]>
-    pages.forEach(p => { for (const t of p.tagsSet) { if (!tagToPages.has(t)) tagToPages.set(t, []); tagToPages.get(t).push(p._i); } });
+    pages.forEach(p => {
+        for (const t of p.tagsSet) {
+            if (!tagToPages.has(t)) tagToPages.set(t, []);
+            tagToPages.get(t).push(p._i);
+        }
+    });
     const shared = new Map(); // key "i|j" -> count
     for (const arr of tagToPages.values()) {
-        for (let x = 0; x < arr.length; x++) for (let y = x + 1; y < arr.length; y++) {
-            const i = arr[x], j = arr[y];
-            const key = i < j ? `${i}|${j}` : `${j}|${i}`;
-            shared.set(key, (shared.get(key) || 0) + 1);
+        for (let x = 0; x < arr.length; x++) {
+            for (let y = x + 1; y < arr.length; y++) {
+                const i = arr[x],
+                    j = arr[y];
+                const key = i < j ? `${i}|${j}` : `${j}|${i}`;
+                shared.set(key, (shared.get(key) || 0) + 1);
+            }
         }
     }
-    const TAG_MIN = 2; // noise reduction: drop ultra-weak tag edges
     for (const [key, count] of shared) {
-        if (hierPairs.has(key) || count < TAG_MIN) continue; // avoid doubling + noise
+        if (hierPairs.has(key)) continue; // avoid doubling up with hierarchy
         const [i, j] = key.split('|').map(Number);
-        links.push({ source: i, target: j, shared: count, kind: 'tag' });
+        links.push({
+            source: i,
+            target: j,
+            shared: count,
+            kind: 'tag'
+        });
         touch(i, j);
     }
 
-    return { nodes, links, adj };
+    return {
+        nodes,
+        links,
+        adj
+    };
 }
 
 /**
@@ -973,13 +1121,25 @@ async function buildGraph() {
     await KM.ensureD3();
     if (graphs.mini) return; // idempotent
 
-    const { nodes, links, adj } = buildGraphData();
+    const {
+        nodes,
+        links,
+        adj
+    } = buildGraphData();
     const svg = KM.d3.select('#mini');
-    const { w: W, h: H } = getMiniSize();
+    const {
+        w: W,
+        h: H
+    } = getMiniSize();
     svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
 
     // Copy arrays to avoid accidental mutation of the master model.
-    const localN = nodes.map(n => ({ ...n })), localL = links.map(l => ({ ...l }));
+    const localN = nodes.map(n => ({
+            ...n
+        })),
+        localL = links.map(l => ({
+            ...l
+        }));
 
     const sim = KM.d3.forceSimulation(localN)
         .force('link', KM.d3.forceLink(localL).id(d => d.id).distance(80))
@@ -1000,9 +1160,19 @@ async function buildGraph() {
         .on('mouseover', (e, d) => fade(d.id, 0.15))
         .on('mouseout', () => fade(null, 1))
         .call(KM.d3.drag()
-            .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
-            .on('drag',  (e, d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
-            .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
+            .on('start', (e, d) => {
+                d.fx = d.x;
+                d.fy = d.y;
+            })
+            .on('drag', (e, d) => {
+                sim.alphaTarget(0.25).restart();
+                d.fx = e.x;
+                d.fy = e.y;
+            })
+            .on('end', (e, d) => {
+                if (!e.active) sim.alphaTarget(0);
+                d.fx = d.fy = null;
+            }));
 
     const node = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
 
@@ -1025,7 +1195,16 @@ async function buildGraph() {
         label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
     });
 
-    graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H };
+    graphs.mini = {
+        svg,
+        node,
+        label,
+        sim,
+        view,
+        adj,
+        w: W,
+        h: H
+    };
     observeMiniResize();
 }
 
@@ -1043,10 +1222,11 @@ function highlightCurrent(force = false) {
         .attr('r', d => d.id === id ? 8 : 6);
     g.label.classed('current', d => d.id === id);
 
-    const cx = g.w / 2, cy = g.h / 2;
+    const cx = g.w / 2,
+        cy = g.h / 2;
     g.node.filter(d => d.id === id).each(d => {
-        if (KM.resetGraphOnCenter) g.view.attr('transform', null); // optional reset
-        const dx = cx - d.x, dy = cy - d.y;
+        const dx = cx - d.x,
+            dy = cy - d.y;
         g.view.attr('transform', `translate(${dx},${dy})`);
         const k = 0.10;
         d.vx += (cx - d.x) * k;
@@ -1062,11 +1242,10 @@ function highlightCurrent(force = false) {
 function observeMiniResize() {
     const elx = $('#mini');
     if (!elx) return;
-    let raf = 0;
     new ResizeObserver(() => {
         if (!graphs.mini) return;
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(() => { updateMiniViewport(); highlightCurrent(true); });
+        updateMiniViewport();
+        highlightCurrent(true);
     }).observe(elx);
 }
 
@@ -1075,7 +1254,9 @@ function observeMiniResize() {
 function scrollToAnchor(anchor) {
     if (!anchor) return;
     const target = DOC.getElementById(anchor);
-    if (target) target.scrollIntoView({ behavior: 'smooth' });
+    if (target) target.scrollIntoView({
+        behavior: 'smooth'
+    });
 }
 
 /**
@@ -1086,8 +1267,12 @@ function scrollToAnchor(anchor) {
 async function render(page, anchor) {
     const contentEl = $('#content');
     if (!contentEl) return;
-    const { parse } = await KM.ensureMarkdown();
-    contentEl.innerHTML = parse(page.content, { headerIds: false });
+    const {
+        parse
+    } = await KM.ensureMarkdown();
+    contentEl.innerHTML = parse(page.content, {
+        headerIds: false
+    });
     decorateExternalLinks();
 
     // Progressive image hints to reduce LCP impact and avoid network contention.
@@ -1109,14 +1294,29 @@ async function render(page, anchor) {
     }
 
     // Render LaTeX math only when textual heuristics hint there is any.
-    if (/(\$[^$]+\$|\\\\\(|\\\\\[)/.test(page.content)) {
+    if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
         await KM.ensureKatex();
         window.renderMathInElement(contentEl, {
-            delimiters: [
-                { left: '$$', right: '$$', display: true },
-                { left: '\\[', right: '\\]', display: true },
-                { left: '$',  right: '$',  display: false },
-                { left: '\\(', right: '\\)', display: false }
+            delimiters: [{
+                    left: '$$',
+                    right: '$$',
+                    display: true
+                },
+                {
+                    left: '\\[',
+                    right: '\\]',
+                    display: true
+                },
+                {
+                    left: '$',
+                    right: '$',
+                    display: false
+                },
+                {
+                    left: '\\(',
+                    right: '\\)',
+                    display: false
+                }
             ],
             throwOnError: false
         });
@@ -1151,7 +1351,9 @@ function route() {
     if (currentPage !== page) {
         currentPage = page;
         // Reset to top for new pages to keep UX consistent across browsers.
-        window.scrollTo({ top: 0 });
+        window.scrollTo({
+            top: 0
+        });
         breadcrumb(page);
         render(page, anchor);
         highlightCurrent(true);
@@ -1197,7 +1399,10 @@ let uiInited = false; // guard against duplicate initialization
         const baseSegs = base ? base.split('#') : [];
         if (!baseSegs.length) return null; // not a link to a page → ignore
         const anchor = seg.slice(baseSegs.length).join('#');
-        return { page, anchor };
+        return {
+            page,
+            anchor
+        };
     }
 
 
@@ -1219,11 +1424,26 @@ let uiInited = false; // guard against duplicate initialization
             const render = (window.renderMathInElement || (KM && KM.renderMathInElement));
             if (!render) return;
             render(container, {
-                delimiters: [
-                    { left: '$$', right: '$$', display: true },
-                    { left: '\\[', right: '\\]', display: true },
-                    { left: '$',  right: '$',  display: false },
-                    { left: '\\(', right: '\\)', display: false },
+                delimiters: [{
+                        left: '$$',
+                        right: '$$',
+                        display: true
+                    },
+                    {
+                        left: '\\\\[',
+                        right: '\\\\]',
+                        display: true
+                    },
+                    {
+                        left: '\\\\(',
+                        right: '\\\\)',
+                        display: false
+                    },
+                    {
+                        left: '$',
+                        right: '$',
+                        display: false
+                    },
                 ],
                 throwOnError: false,
             });
@@ -1232,14 +1452,21 @@ let uiInited = false; // guard against duplicate initialization
 
     function positionPreview(panel, linkEl) {
         const rect = linkEl.getBoundingClientRect();
-        const vw = __VPW, vh = __VPH;
+        const vw = __VPW,
+            vh = __VPH;
         const gap = 8;
         const W = Math.min(520, vw * 0.48);
         const H = Math.min(480, vh * 0.72);
         const preferRight = rect.right + gap + W <= vw;
-        const left = preferRight ? Math.min(rect.right + gap, vw - W - gap) : Math.max(gap, rect.left - gap - W);
+        const left = preferRight ? Math.min(rect.right + gap, vw - W - gap) :
+            Math.max(gap, rect.left - gap - W);
         const top = Math.min(Math.max(gap, rect.top), vh - H - gap);
-        Object.assign(panel.el.style, { width: W + 'px', height: H + 'px', left: left + 'px', top: top + 'px' });
+        Object.assign(panel.el.style, {
+            width: W + 'px',
+            height: H + 'px',
+            left: left + 'px',
+            top: top + 'px'
+        });
     }
 
     function closeFrom(indexInclusive = 0) {
@@ -1255,7 +1482,8 @@ let uiInited = false; // guard against duplicate initialization
     function anyPreviewOrTriggerActive() {
         // Keep previews if: any preview is hovered, or the currently focused/hovered
         // element is (or contains) a trigger link.
-        const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
+        const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview'))
+            .some(p => p.matches(':hover'));
         if (anyHoverPreview) return true;
         const active = document.activeElement;
         const activeIsTrigger = !!(active && active.closest && isInternalPageLink(active.closest('a[href^="#"]')));
@@ -1277,9 +1505,13 @@ let uiInited = false; // guard against duplicate initialization
         // Parse + cache HTML for the page
         let html = previewHTMLCache.get(page.id);
         if (!html) {
-            const { parse } = await KM.ensureMarkdown();
+            const {
+                parse
+            } = await KM.ensureMarkdown();
             const tmp = el('div');
-            tmp.innerHTML = parse(page.content, { headerIds: false });
+            tmp.innerHTML = parse(page.content, {
+                headerIds: false
+            });
             numberHeadings(tmp); // ensure same heading IDs as main view
             html = tmp.innerHTML;
             previewHTMLCache.set(page.id, html);
@@ -1311,30 +1543,61 @@ let uiInited = false; // guard against duplicate initialization
                 const tRect = t.getBoundingClientRect();
                 const y = tRect.top - cRect.top + container.scrollTop;
                 const top = Math.max(0, y - headerH - 6);
-                container.scrollTo({ top, behavior: 'instant' });
+                container.scrollTo({
+                    top,
+                    behavior: 'instant'
+                });
                 t.classList.add('km-preview-focus');
             }
         }
     }
 
     function createPanel(linkEl) {
-        const container = el('div', { class: 'km-link-preview', role: 'dialog', 'aria-label': 'Preview' });
-        const header = el('header', {}, [ el('button', { type: 'button', class: 'km-preview-close', title: 'Close', 'aria-label': 'Close', innerHTML: '✕' }) ]);
+        const container = el('div', {
+            class: 'km-link-preview',
+            role: 'dialog',
+            'aria-label': 'Preview'
+        });
+        const header = el('header', {}, [
+            el('button', {
+                type: 'button',
+                class: 'km-preview-close',
+                title: 'Close',
+                'aria-label': 'Close',
+                innerHTML: '✕'
+            })
+        ]);
         const body = el('div');
         container.append(header, body);
         document.body.appendChild(container);
 
-        const panel = { el: container, body, link: linkEl, hover: false, timer: null };
+        const panel = {
+            el: container,
+            body,
+            link: linkEl,
+            hover: false,
+            timer: null
+        };
         const idx = previewStack.push(panel) - 1;
 
         // Hover handling for close lifecycle
-        container.addEventListener('mouseenter', () => { panel.hover = true; clearTimeout(panel.timer); clearTimeout(scheduleTrim._t); }, { passive: true });
+        container.addEventListener('mouseenter', () => {
+            panel.hover = true;
+            clearTimeout(panel.timer);
+            clearTimeout(scheduleTrim._t);
+        }, {
+            passive: true
+        });
         container.addEventListener('mouseleave', (e) => {
             panel.hover = false;
             const to = e.relatedTarget;
             if (to && (to.closest && to.closest('.km-link-preview'))) return; // still inside previews stack
-            panel.timer = setTimeout(() => { closeFrom(idx); }, 240);
-        }, { passive: true });
+            panel.timer = setTimeout(() => {
+                closeFrom(idx);
+            }, 240);
+        }, {
+            passive: true
+        });
         header.querySelector('button').addEventListener('click', () => closeFrom(idx));
 
         // Open links INSIDE previews → spawn another panel on top
@@ -1395,8 +1658,12 @@ let uiInited = false; // guard against duplicate initialization
             scheduleTrim();
         }, true);
 
-        addEventListener('hashchange', () => closeFrom(0), { passive: true });
-        addEventListener('scroll', () => scheduleTrim(), { passive: true }); // close trailing when scrolling
+        addEventListener('hashchange', () => closeFrom(0), {
+            passive: true
+        });
+        addEventListener('scroll', () => scheduleTrim(), {
+            passive: true
+        }); // close trailing when scrolling
     }
 
     // Expose for initUI()
@@ -1405,7 +1672,9 @@ let uiInited = false; // guard against duplicate initialization
 
 
 function initUI() {
-    try { KM.attachLinkPreviewsV2(); } catch (_) {}
+    try {
+        KM.attachLinkPreviewsV2();
+    } catch (_) {}
 
     if (uiInited) return; // idempotent safety
     uiInited = true;
@@ -1491,7 +1760,8 @@ function initUI() {
     }
 
     // Search box: debounce keystrokes; show a clear button when non‑empty.
-    const searchInput = $('#search'), searchClear = $('#search-clear');
+    const searchInput = $('#search'),
+        searchClear = $('#search-clear');
     let debounce = 0;
     if (searchInput && searchClear) {
         searchInput.oninput = e => {
@@ -1516,7 +1786,13 @@ function initUI() {
         closePanels();
         if (!wasOpen) {
             elx.classList.add('open');
-            if (!elx.querySelector('.panel-close')) elx.append(el('button', { type: 'button', class: 'panel-close', 'aria-label': 'Close panel', textContent: '✕', onclick: closePanels }));
+            if (!elx.querySelector('.panel-close')) elx.append(el('button', {
+                type: 'button',
+                class: 'panel-close',
+                'aria-label': 'Close panel',
+                textContent: '✕',
+                onclick: closePanels
+            }));
         }
     };
     const burgerSidebar = $('#burger-sidebar');
@@ -1534,13 +1810,16 @@ function initUI() {
             updateMiniViewport();
             highlightCurrent(true);
         }
-    }, { passive: true });
+    }, {
+        passive: true
+    });
 
     // Close panels upon navigation clicks inside the lists.
     $('#tree').addEventListener('click', e => {
         const caret = e.target.closest('button.caret');
         if (caret) {
-            const li = caret.closest('li.folder'), sub = li.querySelector('ul');
+            const li = caret.closest('li.folder'),
+                sub = li.querySelector('ul');
             const open = !li.classList.contains('open');
             li.classList.toggle('open', open);
             caret.setAttribute('aria-expanded', String(open));
@@ -1550,21 +1829,35 @@ function initUI() {
             return;
         }
         if (e.target.closest('a')) closePanels();
-    }, { passive: true });
-    $('#results').addEventListener('click', e => { if (e.target.closest('a')) closePanels(); }, { passive: true });
+    }, {
+        passive: true
+    });
+    $('#results').addEventListener('click', e => {
+        if (e.target.closest('a')) closePanels();
+    }, {
+        passive: true
+    });
 
     // Hash router wiring.
-    addEventListener('hashchange', route, { passive: true });
+    addEventListener('hashchange', route, {
+        passive: true
+    });
 
     // ESC: close panels or exit graph fullscreen.
     addEventListener('keydown', (e) => {
         if (e.key !== 'Escape') return;
         let acted = false;
         const kb = $('#kb-help');
-        if (kb && !kb.hidden) { kb.hidden = true; acted = true; }
+        if (kb && !kb.hidden) {
+            kb.hidden = true;
+            acted = true;
+        }
         const sidebarOpen = $('#sidebar')?.classList.contains('open');
         const utilOpen = $('#util')?.classList.contains('open');
-        if (sidebarOpen || utilOpen) { closePanels(); acted = true; }
+        if (sidebarOpen || utilOpen) {
+            closePanels();
+            acted = true;
+        }
         if (mini && mini.classList.contains('fullscreen')) {
             mini.classList.remove('fullscreen');
             if (expandBtn) expandBtn.setAttribute('aria-pressed', 'false');
@@ -1573,7 +1866,9 @@ function initUI() {
             acted = true;
         }
         if (acted) e.preventDefault(); // prevent page‑level ESC behavior when handled
-    }, { capture: true });
+    }, {
+        capture: true
+    });
 
 
     // ===== Keyboard Shortcuts =====
@@ -1583,7 +1878,6 @@ function initUI() {
     const $theme = $('#theme-toggle');
     const $expand = $('#expand');
     const $kbIcon = $('#kb-icon');
-    let __helpOpener = null;
 
     // --- Small DOM helper (no dependency on global `el`)
     const h = (tag, attrs = {}, children = []) => {
@@ -1666,7 +1960,9 @@ function initUI() {
         if (keys) {
             rightHTML = keys.map(kb).join(', ');
         } else if (ids) {
-            const shows = ids.map((id) => bindings.find((b) => b.id === id)?.help).filter(Boolean);
+            const shows = ids
+            .map((id) => bindings.find((b) => b.id === id)?.help)
+            .filter(Boolean);
             rightHTML = shows.map(kb).join(', ');
         }
         const right = h('span', { innerHTML: rightHTML });
@@ -1683,28 +1979,13 @@ function initUI() {
     function openHelp() {
         const host = ensureKbHelp();
         window.openHelp = openHelp; // expose for external triggers
-        __helpOpener = document.activeElement;
         host.hidden = false;
         host.focus();
-        // Focus trap
-        const focusables = host.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        const first = focusables[0], last = focusables[focusables.length - 1];
-        host.onkeydown = (e) => {
-            if (e.key !== 'Tab') return;
-            if (e.shiftKey) {
-                if (document.activeElement === first) { e.preventDefault(); last.focus(); }
-            } else {
-                if (document.activeElement === last) { e.preventDefault(); first.focus(); }
-            }
-        };
     }
 
     function closeHelp() {
         const host = document.getElementById('kb-help');
-        if (!host) return;
-        host.hidden = true;
-        host.onkeydown = null;
-        if (__helpOpener && __helpOpener.focus && document.contains(__helpOpener)) __helpOpener.focus();
+        if (host) host.hidden = true;
     }
 
     // --- Global keydown handler
@@ -1749,11 +2030,15 @@ function initUI() {
         const MQ_DESKTOP = window.matchMedia('(min-width: 1000px), (orientation: landscape)');
         const ROOT = document.body;
 
-        function isCondensed() { return !MQ_DESKTOP.matches; }
+        function isCondensed() {
+            return !MQ_DESKTOP.matches;
+        }
 
         function setHidden(flag, cls, region) {
             ROOT.classList.toggle(cls, !!flag);
-            if (region) region.setAttribute('aria-hidden', flag ? 'true' : 'false');
+            if (region) {
+                region.setAttribute('aria-hidden', flag ? 'true' : 'false');
+            }
         }
 
         // Hooks for shortcuts
@@ -1770,10 +2055,16 @@ function initUI() {
         }
 
         // Observe viewport changes
-        MQ_DESKTOP.addEventListener('change', () => { if (isCondensed()) resetForCondensed(); });
+        MQ_DESKTOP.addEventListener('change', () => {
+            if (isCondensed()) resetForCondensed();
+        });
 
         // Button next to watermark opens help
-        $('#kb-btn')?.addEventListener('click', (e) => { e.preventDefault(); const open = (window.openHelp || (() => {})); open(); });
+        $('#kb-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            const open = (window.openHelp || (() => {}));
+            open();
+        });
 
         // Expose for other modules if needed
         window.__kmIsCondensed = isCondensed;
@@ -1781,7 +2072,9 @@ function initUI() {
     })();
 
     // Preload HLJS core when the main thread is likely idle to improve UX later.
-    whenIdle(() => { KM.ensureHighlight(); });
+    whenIdle(() => {
+        KM.ensureHighlight();
+    });
 }
 
 /* ──────────────────────────────── boot ─────────────────────────────────── */
@@ -1803,7 +2096,10 @@ function initUI() {
             if (freshEnough) {
                 txt = cached.txt;
             } else {
-                const r = await fetch(MD, { cache: 'no-cache', signal: ctrl.signal });
+                const r = await fetch(MD, {
+                    cache: 'no-cache',
+                    signal: ctrl.signal
+                });
                 clearTimeout(timeout);
                 if (!r.ok) throw new Error(`Failed to fetch MD (${r.status})`);
                 txt = await r.text();
