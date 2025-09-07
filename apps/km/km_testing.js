@@ -1872,6 +1872,9 @@ function initUI() {
         capture: true
     });
 
+
+    // ===== Keyboard Shortcuts =====
+    (function keyboardShortcuts() {
     // --- Element refs
     const $search = $('#search');
     const $theme = $('#theme-toggle');
