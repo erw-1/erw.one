@@ -414,9 +414,15 @@ function buildToc(page) {
 function prevNext(page) {
   $('#prev-next')?.remove();
   if (!page.parent) return;                                 // root has no siblings
-  if (page.parent === root && page.isSecondary) return;     // avoid cross-section paging at top level
- 
-  const sib = page.parent.children;
+  // At the top level, avoid cross-section paging: promoted secondary reps
+  // should not be considered siblings of the primary root children.
+  if (page.parent === root) {
+    if (page.isSecondary) return;                           // no prev/next for promoted reps
+  }
+
+  // Compute siblings; at root, filter out secondary reps when paging a primary page.
+  let sib = page.parent.children;
+  if (page.parent === root && !page.isSecondary) sib = sib.filter(p => !p.isSecondary);
   if (sib.length < 2) return;               // nothing to paginate
   const i = sib.indexOf(page), wrap = el('div', { id:'prev-next' });
   if (i > 0) wrap.append(el('a', { href:'#'+hashOf(sib[i-1]), textContent:'← '+sib[i-1].title }));
