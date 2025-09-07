@@ -1875,211 +1875,157 @@ function initUI() {
 
     // ===== Keyboard Shortcuts =====
     (function keyboardShortcuts() {
-        const searchInput = $('#search');
-        const themeBtn = $('#theme-toggle');
-        const sidebarEl = $('#sidebar');
-        const utilEl = $('#util');
-        const expandBtn = $('#expand');
+    // --- Element refs
+    const $search = $('#search');
+    const $theme = $('#theme-toggle');
+    const $expand = $('#expand');
+    const $kbIcon = $('#kb-icon');
 
-        // Create (once) a minimal help panel
-        function ensureKbHelp() {
-            let host = $('#kb-help');
-            if (host) return host;
-            host = el('div', {
-                id: 'kb-help',
-                role: 'dialog',
-                'aria-modal': 'true',
-                'aria-label': 'Keyboard shortcuts',
-                hidden: true
-            });
-            const panel = el('div', {
-                class: 'panel'
-            });
-            const title = el('h2', {
-                textContent: 'Keyboard shortcuts'
-            });
-            const close = el('button', {
-                type: 'button',
-                class: 'close',
-                title: 'Close',
-                'aria-label': 'Close help',
-                textContent: '✕',
-                onclick: () => closeHelp()
-            });
-            const header = el('header', {}, [title, close]);
-            const list = el('ul', {}, [
-                el('li', {}, [el('span', {
-                    class: 'desc',
-                    textContent: 'Focus search'
-                }), el('span', {
-                    innerHTML: '<kbd>/</kbd> or <kbd>Ctrl</kbd>+<kbd>K</kbd>'
-                })]),
-                el('li', {}, [el('span', {
-                    class: 'desc',
-                    textContent: 'Cycle theme (light / dark)'
-                }), el('span', {
-                    innerHTML: '<kbd>T</kbd>'
-                })]),
-                el('li', {}, [el('span', {
-                    class: 'desc',
-                    textContent: 'Toggle left sidebar (pages & search)'
-                }), el('span', {
-                    innerHTML: '<kbd>B</kbd>'
-                })]),
-                el('li', {}, [el('span', {
-                    class: 'desc',
-                    textContent: 'Toggle right sidebar (graph & ToC)'
-                }), el('span', {
-                    innerHTML: '<kbd>U</kbd>'
-                })]),
-                el('li', {}, [el('span', {
-                    class: 'desc',
-                    textContent: 'Toggle header (breadcrumbs)'
-                }), el('span', {
-                    innerHTML: '<kbd>C</kbd>'
-                })]),
-                el('li', {}, [el('span', {
-                    class: 'desc',
-                    textContent: 'Fullscreen graph'
-                }), el('span', {
-                    innerHTML: '<kbd>G</kbd>'
-                })]),
-                el('li', {}, [el('span', {
-                    class: 'desc',
-                    textContent: 'Close panels & overlays'
-                }), el('span', {
-                    innerHTML: '<kbd>Esc</kbd>'
-                })]),
-                el('li', {}, [el('span', {
-                    class: 'desc',
-                    textContent: 'Show this help panel'
-                }), el('span', {
-                    innerHTML: '<kbd>?</kbd>'
-                })]),
-            ]);
-            panel.append(header, list);
-            host.append(panel);
-            document.body.appendChild(host);
-            return host;
+    // --- Small DOM helper (no dependency on global `el`)
+    const h = (tag, attrs = {}, children = []) => {
+        const node = document.createElement(tag);
+        for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') node.className = v;
+        else if (k === 'textContent') node.textContent = v;
+        else if (k === 'innerHTML') node.innerHTML = v;
+        else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
+        else node.setAttribute(k, v);
+        }
+        for (const c of Array.isArray(children) ? children : [children]) if (c) node.append(c);
+        return node;
+    };
+
+    // --- Utilities
+    const isEditable = (el) => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
+    const key = (e, k) => e.key === k || e.key.toLowerCase() === (k + '').toLowerCase();
+    const keyIn = (e, list) => list.some((k) => key(e, k));
+    const isMod = (e) => e.ctrlKey || e.metaKey; // Ctrl on Windows/Linux, Cmd on macOS
+    const noMods = (e) => !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
+
+    // --- Actions
+    const actions = {
+        focusSearch: () => $search?.focus(),
+        toggleTheme: () => $theme?.click(),
+        toggleSidebar: () => window.__kmToggleSidebar?.(),
+        toggleUtil: () => window.__kmToggleUtil?.(),
+        toggleCrumb: () => window.__kmToggleCrumb?.(),
+        fullscreenGraph: () => $expand?.click(),
+        openHelp,
+        closeHelp,
+    };
+
+    // --- Key bindings (single source of truth)
+    // `inEditable: true` means it should still fire inside inputs/contenteditable
+    const bindings = [
+        { id: 'search-ctrlk', when: (e) => isMod(e) && key(e, 'k'), action: 'focusSearch', inEditable: true, help: 'Ctrl/Cmd + K' },
+        { id: 'search-slash', when: (e) => key(e, '/') && !e.shiftKey && !e.altKey && !isMod(e), action: 'focusSearch', help: '/' },
+        { id: 'search-s', when: (e) => key(e, 's') && noMods(e), action: 'focusSearch', help: 'S' },
+        { id: 'theme', when: (e) => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
+        { id: 'left', when: (e) => keyIn(e, ['a', 'q']) && noMods(e), action: 'toggleSidebar', help: 'A or Q' },
+        { id: 'right', when: (e) => key(e, 'd') && noMods(e), action: 'toggleUtil', help: 'D' },
+        { id: 'crumb', when: (e) => keyIn(e, ['w', 'z']) && noMods(e), action: 'toggleCrumb', help: 'W or Z' },
+        { id: 'graph', when: (e) => key(e, 'g') && noMods(e), action: 'fullscreenGraph', help: 'G' },
+        { id: 'help', when: (e) => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
+        // Escape closes help only (let other Esc handlers elsewhere continue to work)
+        { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true },
+    ];
+
+    // --- Help panel (built from `bindings` so it never drifts)
+    function ensureKbHelp() {
+        let host = document.getElementById('kb-help');
+        if (host) return host;
+
+        host = h('div', { id: 'kb-help', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', hidden: true, tabIndex: '-1' });
+        const panel = h('div', { class: 'panel' });
+        const title = h('h2', { textContent: 'Keyboard shortcuts' });
+        const closeBtn = h('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: '✕', onclick: () => actions.closeHelp() });
+        const header = h('header', {}, [title, closeBtn]);
+
+        const items = [
+        { desc: 'Focus search', ids: ['search-slash', 'search-ctrlk', 'search-s'] },
+        { desc: 'Cycle theme (light / dark)', ids: ['theme'] },
+        { desc: 'Toggle left sidebar (pages & search)', ids: ['left'] },
+        { desc: 'Toggle right sidebar (graph & ToC)', ids: ['right'] },
+        { desc: 'Toggle header (breadcrumbs)', ids: ['crumb'] },
+        { desc: 'Toggle fullscreen graph', ids: ['graph'] },
+        { desc: 'Close panels & overlays', keys: ['Esc'] },
+        { desc: 'Show this help panel', ids: ['help'] },
+        ];
+
+        const list = h('ul');
+        const kb = (s) => `<kbd>${s}</kbd>`;
+
+        for (const { desc, ids, keys } of items) {
+        const li = h('li');
+        const left = h('span', { class: 'desc', textContent: desc });
+        let rightHTML = '';
+        if (keys) {
+            rightHTML = keys.map(kb).join(', ');
+        } else if (ids) {
+            const shows = ids
+            .map((id) => bindings.find((b) => b.id === id)?.help)
+            .filter(Boolean);
+            rightHTML = shows.map(kb).join(', ');
+        }
+        const right = h('span', { innerHTML: rightHTML });
+        li.append(left, right);
+        list.append(li);
         }
 
-        function openHelp() {
-            const host = ensureKbHelp();
-            window.openHelp = openHelp;
-            host.hidden = false;
-            host.focus();
-        }
+        panel.append(header, list);
+        host.append(panel);
+        document.body.appendChild(host);
+        return host;
+    }
 
-        function closeHelp() {
-            const host = $('#kb-help');
-            if (host) host.hidden = true;
-        }
+    function openHelp() {
+        const host = ensureKbHelp();
+        window.openHelp = openHelp; // expose for external triggers
+        host.hidden = false;
+        host.focus();
+    }
 
-        function isEditable(el) {
-            return !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
-        }
+    function closeHelp() {
+        const host = document.getElementById('kb-help');
+        if (host) host.hidden = true;
+    }
 
-        function toggle(el) {
-            if (!el) return;
-            const wasOpen = el.classList.contains('open');
-            closePanels();
-            if (!wasOpen) {
-                el.classList.add('open');
-                if (!el.querySelector('.panel-close')) el.append(el('button', {
-                    type: 'button',
-                    class: 'panel-close',
-                    'aria-label': 'Close panel',
-                    textContent: '✕',
-                    onclick: closePanels
-                }));
-            }
-        }
+    // --- Global keydown handler
+    addEventListener('keydown', (e) => {
+        const tgt = e.target;
 
-        addEventListener('keydown', (e) => {
-            const key = e.key;
-            const lower = key.toLowerCase();
-            const tgt = e.target;
-
-            // Always allow Esc handling defined elsewhere
-            if (key === 'Escape') return;
-
-            // If typing in an editable control, only allow Ctrl/Cmd+K to focus search.
-            if (isEditable(tgt)) {
-                if ((e.ctrlKey || e.metaKey) && lower === 'k') {
-                    e.preventDefault();
-                    searchInput?.focus();
-                }
-                return;
-            }
-
-            // Global shortcuts
-            if ((e.ctrlKey || e.metaKey) && lower === 'k') {
-                e.preventDefault();
-                searchInput?.focus();
-                return;
-            }
-            if (key === '/' && !e.shiftKey && !e.altKey) {
-                e.preventDefault();
-                searchInput?.focus();
-                return;
-            }
-            if (lower === 't' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                e.preventDefault();
-                themeBtn?.click();
-                return;
-            }
-            if (lower === 'b' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                e.preventDefault();
-                (window.__kmToggleSidebar || (() => {}))();
-                return;
-            }
-            if (lower === 'u' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                e.preventDefault();
-                (window.__kmToggleUtil || (() => {}))();
-                return;
-            }
-            if (lower === 'g' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                e.preventDefault();
-                expandBtn?.click();
-                return;
-            }
-
-            if (lower === 'c' && !e.ctrlKey && !e.metaKey && !e.altKey) {
-                e.preventDefault();
-                (window.__kmToggleCrumb || (() => {}))();
-                return;
-            }
-            if (key === 'Escape') {
-                const host = $('#kb-help');
-                if (host && !host.hidden) {
-                    e.preventDefault();
-                    host.hidden = true;
-                    return;
-                }
-            }
-            if (key === '?' || (e.shiftKey && key === '/')) {
-                e.preventDefault();
-                openHelp();
-                return;
-            }
-        }, {
-            capture: true
-        });
-
-        // Keycap icon opens help
-        $('#kb-icon')?.addEventListener('click', (e) => {
+        // If typing in an editable control, allow only bindings explicitly marked for it
+        if (isEditable(tgt)) {
+        for (const b of bindings) {
+            if (!b.inEditable) continue;
+            if (b.when(e)) {
             e.preventDefault();
-            openHelp();
-        });
+            typeof b.action === 'string' ? actions[b.action]() : b.action(e);
+            return;
+            }
+        }
+        return; // ignore the rest while editing
+        }
 
-        // Close help on click outside panel
-        document.addEventListener('click', (e) => {
-            const host = $('#kb-help');
-            if (!host || host.hidden) return;
-            if (e.target === host) closeHelp();
-        });
+        for (const b of bindings) {
+        if (b.when(e)) {
+            e.preventDefault();
+            typeof b.action === 'string' ? actions[b.action]() : b.action(e);
+            return;
+        }
+        }
+    }, { capture: true });
+
+    // --- Open help via icon
+    $kbIcon?.addEventListener('click', (e) => { e.preventDefault(); actions.openHelp(); });
+
+    // --- Close help on click outside the panel
+    document.addEventListener('click', (e) => {
+        const host = document.getElementById('kb-help');
+        if (!host || host.hidden) return;
+        if (e.target === host) actions.closeHelp();
+    });
     })();
-
 
     // ===== Desktop-only panel toggles and condensed reset =====
     (function desktopPanelToggles() {
