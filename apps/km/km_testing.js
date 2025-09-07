@@ -1361,7 +1361,7 @@ function initUI() {
     closePanels();
     if (!wasOpen) {
       elx.classList.add('open');
-      if (!elx.querySelector('.panel-close')) elx.append(el('button', { type:'button', class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels ));
+      if (!elx.querySelector('.panel-close')) elx.append(el('button', { type:'button', class:'panel-close', 'aria-label':'Close panel', textContent:'✕', onclick: closePanels }));
     }
   };
   const burgerSidebar = $('#burger-sidebar');
