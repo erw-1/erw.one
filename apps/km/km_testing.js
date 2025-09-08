@@ -204,6 +204,20 @@ function resetScrollTop() {
 // The in-memory representation of the wiki, derived from a single Markdown
 // bundle. Each page has: id,title,parent,tags,content,children[],sections[],...
 let pages = [];
+let INV = new Map(); 
+
+function buildInvertedIndex() {
+    INV.clear();
+    for (const p of pages) {
+        const toks = new Set((p.searchStr || '').split(/\W+/).filter(t => t.length >= 2));
+        for (const t of toks) {
+            if (!INV.has(t)) INV.set(t, new Set());
+            INV.get(t).add(p);
+        }
+    }
+}
+// token -> Set<Page>
+
 let byId = new Map();
 let root = null; // Reference to the home page
 const descMemo = new Map(); // Memoization for descendant counts
@@ -255,6 +269,12 @@ function parseMarkdownBundle(txt) {
         p.tagsL  = [...p.tagsSet].join(' ').toLowerCase();
         p.bodyL  = (p.content || '').toLowerCase();
         p.searchStr = (p.titleL + ' ' + p.tagsL + ' ' + p.bodyL);
+    for (const p of pool) {
+        const toks = new Set((p.searchStr || '').split(/\W+/).filter(t => t.length >= 2));
+        for (const t of toks) (INV.get(t) || INV.set(t, new Set()).get(t)).add(p);
+    }
+}
++ p.tagsL + ' ' + p.bodyL);
     });
 
     // Extract fenced code and per-heading sections for deep search.
@@ -345,6 +365,26 @@ function computeHashes() {
         p.hash = segs.join('#'); // empty for root
     });
 }
+/** Precompute related pages via tag overlap (store as page._related) for fast See Also. */
+function precomputeRelated() {
+    const tagMap = new Map(); // tag -> Page[]
+    pages.forEach(p => p.tagsSet.forEach(t => {
+        (tagMap.get(t) || tagMap.set(t, []).get(t)).push(p);
+    }));
+    pages.forEach(p => {
+        const counts = new Map();
+        p.tagsSet.forEach(t => {
+            for (const q of tagMap.get(t) || []) if (q !== p) {
+                counts.set(q, (counts.get(q) || 0) + 1);
+            }
+        });
+        p._related = [...counts.entries()]
+            .sort((a,b) => b[1]-a[1] || sortByTitle(a[0], b[0]))
+            .map(([q]) => q)
+            .slice(0, 12);
+    });
+}
+
 /** Return precomputed hash (empty string for root). */
 const hashOf = page => page?.hash ?? '';
 /** Resolve a sequence of id segments to a page node. */
@@ -589,6 +629,7 @@ KM.ensureMarkdown = () => {
     return {
       parse: (src, opt) => md.parse(src, { ...opt, mangle: false }),
       // call after you inject parsed HTML into the DOM
+      renderMermaid: (root) => mermaid.run({ nodes: (root || document).querySelectorAll(".mermaid") }),
       setMermaidTheme,
     };
   });
@@ -639,6 +680,19 @@ function renderMathSafe(root) {
 const PAGE_HTML_LRU_MAX = 40;
 const pageHTMLLRU = new Map(); // pageId -> html
 
+/** Warm the HTML LRU cache for likely next clicks (siblings + children). */
+function prewarmNeighbors(page) {
+    try {
+        const picks = new Set([...(page.parent ? page.parent.children : []), ...(page.children || [])]);
+        picks.delete(page);
+        const next = [...picks].slice(0, 6);
+        whenIdle(async () => {
+            for (const p of next) {
+                if (!pageHTMLLRU.has(p.id)) await getParsedHTML(p);
+            }
+        });
+    } catch {}
+}
 async function getParsedHTML(page) {
     if (pageHTMLLRU.has(page.id)) {
         const html = pageHTMLLRU.get(page.id);
@@ -770,21 +824,17 @@ function prevNext(page) {
 /**
  * "See also" box using tag overlap for lightweight related content discovery.
  */
+
 function seeAlso(page) {
     $('#see-also')?.remove();
-    if (!page.tagsSet?.size) return;
-    const related = pages
-        .filter(p => p !== page)
-        .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
-        .filter(r => r.shared > 0)
-        .sort((a, b) => (b.shared - a.shared) || sortByTitle(a.p, b.p));
-    if (!related.length) return;
-
+    const list = page._related || [];
+    if (!list.length) return;
     const wrap = el('div', { id: 'see-also' }, [el('h2', { textContent: 'See also' }), el('ul')]);
     const ulEl = wrap.querySelector('ul');
-    related.forEach(({ p }) => ulEl.append(el('li', {}, [el('a', {href: '#' + hashOf(p), textContent: p.title })])));
-    const content = $('#content'), pn = $('#prev-next');
-    content.insertBefore(wrap, pn ?? null); // insert before prev/next if present
+    list.forEach(p => ulEl.append(el('li', {}, [el('a', { href: '#' + hashOf(p), textContent: p.title })])));
+    const content = $('#content');
+    const pn = $('#prev-next');
+    content.insertBefore(wrap, pn ?? null);
 }
 
 /**
@@ -806,7 +856,7 @@ function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
   let seq = 0, stamp = Date.now().toString(36);
   container.querySelectorAll('a[href^="#"]').forEach(a => {
-    if (KM.isInternalPageLink(a)) {               // already uses resolveTarget()
+    if (KM.isInternalPageLink ? KM.isInternalPageLink(a) : ((a.getAttribute('href')||'').startsWith('#'))) {               // already uses resolveTarget()
       a.classList.add('km-has-preview');
       a.dataset.preview = '1';
       if (!a.id) a.id = `km-prev-${stamp}-${seq++}`;  // unique id for styling/debug
@@ -912,21 +962,22 @@ async function highlightVisibleCode(root = DOC) {
         obs.observe(elx);
     });
 }
-
-/* ─────────── Lazy, on-scroll mermaid render ─────────── */
+/** Lazy render Mermaid diagrams when they come into view. */
 async function lazyRenderMermaid(root = document) {
-  await KM.ensureMarkdown();
-  const nodes = (root || document).querySelectorAll(".mermaid");
-  if (!nodes.length) return;
-  const io = new IntersectionObserver((entries) => {
-    entries.forEach(en => {
-      if (!en.isIntersecting) return;
-      KM.mermaid.run({ nodes: [en.target]}); // render one node
-      io.unobserve(en.target);
-    });
-  }, { rootMargin: '200px 0px', threshold: 0 });
-  nodes.forEach(n => io.observe(n));
+    const nodes = [...(root || document).querySelectorAll('.mermaid')];
+    if (!nodes.length) return;
+    await KM.ensureMarkdown(); // ensures KM.mermaid is ready
+    const io = new IntersectionObserver((entries, o) => {
+        for (const en of entries) {
+            if (!en.isIntersecting) continue;
+            const elx = en.target;
+            try { KM.mermaid.run({ nodes: [elx] }); } catch {}
+            o.unobserve(elx);
+        }
+    }, { rootMargin: '200px 0px', threshold: 0 });
+    nodes.forEach(n => io.observe(n));
 }
+
 
 /* ─────────── Run script from MD (optional) ─────────── */
 function runInlineScripts(root) {
@@ -1089,7 +1140,16 @@ function search(q) {
     };
     const phrase = tokens.length > 1 ? val : null;
 
-    const scored = [];
+    
+    // Candidate set via inverted-index intersection
+    let cand = null;
+    for (const t of tokens) {
+        const s = INV.get(t);
+        if (!s) { cand = new Set(); break; }
+        cand = cand ? new Set([...cand].filter(x => s.has(x))) : new Set(s);
+    }
+    const pool = cand ? [...cand] : pages;
+const scored = [];
 
     for (const p of pages) {
         // Fast prefilter: require all tokens somewhere in the page’s searchable string.
@@ -1277,8 +1337,10 @@ function buildGraphData() {
     const tagToPages = new Map(); // Map<tag, number[]>
     pages.forEach(p => { for (const t of p.tagsSet) { if (!tagToPages.has(t)) tagToPages.set(t, []); tagToPages.get(t).push(p._i); } });
     const shared = new Map(); // key "i|j" -> count
-    const MAX_PER_TAG = 80;
+    const MAX_PER_TAG = 40;
+    const SKIP_IF_GROUP_OVER = 120;
     for (const arr0 of tagToPages.values()) {
+        if (arr0.length > SKIP_IF_GROUP_OVER) continue;
         const arr = arr0.slice(0, MAX_PER_TAG);
         for (let x = 0; x < arr.length; x++) {
             for (let y = x + 1; y < arr.length; y++) {
@@ -1416,13 +1478,14 @@ function scrollToAnchor(anchor) {
  * (images, footnotes, heading IDs, syntax highlight, math, ToC, copy buttons,
  * related links, prev/next), and finally scroll to any anchor.
  */
+
 async function render(page, anchor) {
     const contentEl = $('#content');
     if (!contentEl) return;
 
     contentEl.dataset.mathRendered = '0';
     contentEl.innerHTML = await getParsedHTML(page);
- 
+
     // Run scripts embedded in the Markdown
     if (ALLOW_JS_FROM_MD === "true") {
       runInlineScripts(contentEl);
@@ -1438,25 +1501,60 @@ async function render(page, anchor) {
         if (!img.hasAttribute('fetchpriority') && i < 2) img.setAttribute('fetchpriority', 'high');
     });
 
-    // in render(page, anchor)
     fixFootnoteLinks(page);
     annotatePreviewableLinks();
-    
-    // kick off work concurrently
-    const hasMath = /(\$[^$]+\$|\\\(|\\\[)/.test(page.content);
+
+    // Kick off heavy decorators concurrently
+    const hasMath = /(\$[^$]+\$|\(|\[)/.test(page.content);
     const jobs = [
-      highlightVisibleCode(contentEl),
-      lazyRenderMermaid(contentEl),
-      hasMath ? KM.ensureKatex().then(() => renderMathSafe(contentEl)) : null,
+        highlightVisibleCode(contentEl),
+        lazyRenderMermaid(contentEl),
+        hasMath ? KM.ensureKatex().then(() => renderMathSafe(contentEl)) : null,
     ].filter(Boolean);
     await Promise.all(jobs);
-    
+
+    // Synchronous/light decorations
     buildToc(page);
     decorateHeadings(page);
     decorateCodeBlocks();
     prevNext(page);
     seeAlso(page);
 
+    whenIdle(() => prewarmNeighbors(page));
+    scrollToAnchor(anchor);
+}
+
+
+    decorateExternalLinks();
+
+    // Progressive image hints to reduce LCP impact and avoid network contention.
+    const imgs = $$('#content img');
+    imgs.forEach((img, i) => {
+        img.loading = 'lazy';
+        img.decoding = 'async';
+        if (!img.hasAttribute('fetchpriority') && i < 2) img.setAttribute('fetchpriority', 'high');
+    });
+
+    fixFootnoteLinks(page);
+    annotatePreviewableLinks();
+
+    // Kick off heavy decorators concurrently
+    const hasMath = /(\$[^$]+\$|\\(|\\[)/.test(page.content);
+    const jobs = [
+        highlightVisibleCode(contentEl),
+        lazyRenderMermaid(contentEl),
+        hasMath ? KM.ensureKatex().then(() => renderMathSafe(contentEl)) : null,
+    ].filter(Boolean);
+    await Promise.all(jobs);
+}
+
+    buildToc(page);
+    decorateHeadings(page);
+    decorateCodeBlocks();
+    prevNext(page);
+    seeAlso(page);
+
+    whenIdle(() => prewarmNeighbors(page));
     scrollToAnchor(anchor);
 }
 
@@ -1532,7 +1630,16 @@ let uiInited = false; // guard against duplicate initialization
       if (seg.length && !baseSegs.length) return null;
     
       const anchor = seg.slice(baseSegs.length).join('#');
-      return { page, anchor };
+      return { page, anchor }
+// Expose a helper so main code can check if a link is previewable
+KM.isInternalPageLink = (a) => {
+    try {
+        const href = a?.getAttribute?.('href') || '';
+        if (!href.startsWith('#')) return false;
+        return !!resolveTarget(href);
+    } catch { return false; }
+};
+;
     }
 
     function rewriteRelativeAnchorsIn(panel, page) {
@@ -1601,7 +1708,11 @@ let uiInited = false; // guard against duplicate initialization
 
         // Lazy highlight within preview
         await highlightVisibleCode(panel.body);
-             
+        
+        // Mermaid graphs (correct)
+        const { renderMermaid } = await KM.ensureMarkdown();
+        await renderMermaid(panel.body);
+        
         // Render math (KaTeX) — only if there’s math
         if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
           await KM.ensureKatex();
@@ -2211,6 +2322,9 @@ function initUI() {
         attachSecondaryHomes();
         computeHashes();
 
+        precomputeRelated();
+        buildInvertedIndex();
+        whenIdle(() => { KM.ensureMarkdown(); });
         await domReady();
         initUI();
 
