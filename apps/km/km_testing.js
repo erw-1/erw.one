@@ -432,7 +432,7 @@ KM.ensureHLJSTheme = () => new Promise(res => {
     l.href = THEME[mode];
 });
 
-// Markdown parser (marked) with footnotes, emoji, alert blocks, Mermaid, and custom inline + block extensions.
+// Markdown parser (marked) with footnotes, emoji, marked-alert, custom callouts, spoiler, and Mermaid.
 let mdReady = null;
 
 KM.ensureMarkdown = () => {
@@ -441,25 +441,54 @@ KM.ensureMarkdown = () => {
   // ---------- helpers ----------
   const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  // Symmetric, delimited inline extension (==, ^, ~, ++)
+  // Symmetric, delimited inline extension (e.g., ==mark==, ^sup^, ~sub~, ++u++)
   function createInline({ name, delimiter, tag, hint = delimiter[0], notAfterOpen, notBeforeClose }) {
     const d = esc(delimiter);
-    const after  = notAfterOpen   ? `(?!${notAfterOpen})`   : "";
+    const after = notAfterOpen ? `(?!${notAfterOpen})` : "";
     const before = notBeforeClose ? `(?!${notBeforeClose})` : "";
     const re = new RegExp(`^${d}${after}(?=\\S)([\\s\\S]*?\\S)${d}${before}`);
     return {
-      name, level: "inline",
+      name,
+      level: "inline",
       start(src) { return src.indexOf(hint); },
       tokenizer(src) {
         const m = re.exec(src);
         if (!m) return;
         return { type: name, raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
       },
-      renderer(tok) { return `<${tag}>${this.parser.parseInline(tok.tokens)}</${tag}>`; }
+      renderer(tok) {
+        return `<${tag}>${this.parser.parseInline(tok.tokens)}</${tag}>`;
+      }
     };
   }
 
-  // :::spoiler [title]\n…\n:::
+  function createCallouts() {
+    return {
+      name: "callout",
+      level: "block",
+      start(src) { return src.indexOf(":::"); },
+      tokenizer(src) {
+        const re = /^:::(success|info|warning|danger)(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
+        const m = re.exec(src);
+        if (!m) return;
+        const [, kind, title = "", body] = m;
+        return {
+          type: "callout",
+          raw: m[0],
+          kind,
+          title,
+          tokens: this.lexer.blockTokens(body)
+        };
+      },
+      renderer(tok) {
+        const inner = this.parser.parse(tok.tokens);
+        const map = { info: "note", success: "tip", warning: "warning", danger: "caution" };
+        const cls = map[tok.kind] || "note";
+        return `<div class="md-callout md-${cls}">\n${inner}\n</div>\n`;
+      }
+    };
+  }
+
   function createSpoiler() {
     return {
       name: "spoiler",
@@ -486,7 +515,7 @@ KM.ensureMarkdown = () => {
     };
   }
 
-  // ```mermaid\n...\n```
+  // Mermaid fenced code: ```mermaid\n...\n```
   const mermaidExt = {
     name: "mermaid",
     level: "block",
@@ -497,18 +526,19 @@ KM.ensureMarkdown = () => {
       return { type: "mermaid", raw: m[0], text: m[1] };
     },
     renderer(tok) {
-      // Keep text as textContent-friendly (entities decode back to characters)
       const escHTML = (s) => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       return `<pre class="mermaid">${escHTML(tok.text)}</pre>\n`;
     }
   };
 
   // ---------- extensions via factory ----------
-  const markExt      = createInline({ name: "mark",      delimiter: "==", tag: "mark", hint: "=" });
-  const supExt       = createInline({ name: "sup",       delimiter: "^",  tag: "sup",  notAfterOpen: "\\[|\\^" });
-  const subExt       = createInline({ name: "sub",       delimiter: "~",  tag: "sub",  notAfterOpen: "~", notBeforeClose: "~" });
-  const underlineExt = createInline({ name: "underline", delimiter: "++", tag: "u",    hint: "+", notAfterOpen: "\\+", notBeforeClose: "\\+" });
-  const spoilerExt   = createSpoiler();
+  const markExt       = createInline({ name: "mark",      delimiter: "==", tag: "mark", hint: "=" });
+  const supExt        = createInline({ name: "sup",       delimiter: "^",  tag: "sup",  notAfterOpen: "\\[|\\^" });
+  const subExt        = createInline({ name: "sub",       delimiter: "~",  tag: "sub",  notAfterOpen: "~", notBeforeClose: "~" });
+  const underlineExt  = createInline({ name: "underline", delimiter: "++", tag: "u",    hint: "+", notAfterOpen: "\\+", notBeforeClose: "\\+" });
+
+  const calloutExt = createCallouts();
+  const spoilerExt = createSpoiler();
 
   mdReady = Promise.all([
     import("https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm"),
@@ -530,17 +560,17 @@ KM.ensureMarkdown = () => {
 
     const md = new marked.Marked()
       .use((footnoteMod.default ?? footnoteMod)())
-      .use((alertMod.default ?? alertMod)()) // :::info, :::success, :::warning, :::danger
+      .use((alertMod.default ?? alertMod)()) // KEEP marked-alert
       .use((emojiPluginMod.markedEmoji ?? emojiPluginMod.default)({
         emojis: Emojis,
         renderer: t => t.emoji
       }))
-      // put mermaid first so it wins over default fenced code tokenizer
-      .use({ extensions: [mermaidExt, markExt, supExt, subExt, underlineExt, spoilerExt] });
+      // put Mermaid before default code fence handling
+      .use({ extensions: [mermaidExt, markExt, supExt, subExt, underlineExt, calloutExt, spoilerExt] });
 
     return {
       parse: (src, opt) => md.parse(src, { ...opt, mangle: false }),
-      // call this after you insert the HTML into the page
+      // call after you inject parsed HTML into the DOM
       renderMermaid: (root) => mermaid.run({ nodes: (root || document).querySelectorAll(".mermaid") })
     };
   });
@@ -602,6 +632,7 @@ async function getParsedHTML(page) {
     const tmp = el('div');
     tmp.innerHTML = parse(page.content, { headerIds: false });
     numberHeadings(tmp); // ensure stable heading IDs
+ 
     const html = tmp.innerHTML;
     pageHTMLLRU.set(page.id, html);
     if (pageHTMLLRU.size > PAGE_HTML_LRU_MAX) {
@@ -1366,6 +1397,9 @@ async function render(page, anchor) {
 
     // Lazy syntax highlight
     await highlightVisibleCode($('#content'));
+
+    // Mermaid graphs
+    await renderMermaid($('#content'));
 
     // Render LaTeX math only when textual heuristics hint there is any.
     if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
