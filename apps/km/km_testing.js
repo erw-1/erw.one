@@ -867,7 +867,7 @@ function decorateCodeBlocks(container = $('#content')) {
 }
 
 /** For markdown content: open external http(s) links in a new tab, safely. */
-function decorateExternalLinks() {
+function decorateExternalLinks(container = $('#content')) {
     $$('a[href]', container).forEach(a => {
         const href = a.getAttribute('href');
         if (!href || href.startsWith('#')) return;
@@ -1401,76 +1401,63 @@ function scrollToAnchor(anchor) {
  * Render the current page: markdown → HTML, then progressive enhancements
  * (images, footnotes, heading IDs, syntax highlight, math, ToC, copy buttons,
  * related links, prev/next), and finally scroll to any anchor.
- */
-/* ─────────────────────────── Unified renderer ──────────────────────────── */
-/**
- * renderInto(container, page, { anchor, mode }):
- * The single render pipeline used by BOTH the main article view and link previews.
- * - container: Element to render into
- * - page: Page object
- * - opts.anchor: optional heading id to scroll to (main only)
- * - opts.mode: 'main' | 'preview'
- */
-async function renderInto(container, page, opts = {}) {
-    const { anchor = '', mode = 'main' } = opts;
+ *//** Shared enhancement pipeline used by both main content and previews. */
+async function enhanceRendered(containerEl, page) {
+    // Ensure external links are safe and open in a new tab
+    decorateExternalLinks(containerEl);
 
-    if (!container) return;
-    container.dataset.mathRendered = '0';
-    container.innerHTML = await getParsedHTML(page);
-
-    // Optional JS execution from Markdown
-    if (ALLOW_JS_FROM_MD === "true") {
-        runInlineScripts(container);
-    }
-
-    // External links safety + a11y
-    decorateExternalLinks(container);
-
-    // Progressive image hints
-    const imgs = $$('img', container);
+    // Progressive image hints to reduce LCP impact and avoid network contention.
+    const imgs = $$('img', containerEl);
     imgs.forEach((img, i) => {
         img.loading = 'lazy';
         img.decoding = 'async';
         if (!img.hasAttribute('fetchpriority') && i < 2) img.setAttribute('fetchpriority', 'high');
     });
 
-    // Footnotes + internal preview annotations
-    fixFootnoteLinks(page, container);
-    annotatePreviewableLinks(container);
+    // Fix local footnote anchors when behind a base hash
+    fixFootnoteLinks(page, containerEl);
+    // Mark internal hash links as previewable
+    annotatePreviewableLinks(containerEl);
 
-    // Lazy syntax highlighting inside the container
-    await highlightVisibleCode(container);
+    // Lazy syntax highlight inside this container
+    await highlightVisibleCode(containerEl);
 
-    // Mermaid diagrams inside the container
+    // Mermaid diagrams in this container
     const { renderMermaid } = await KM.ensureMarkdown();
-    await renderMermaid(container);
+    await renderMermaid(containerEl);
 
-    // LaTeX math (KaTeX), only when content hints there is any
-    if (/(\$[^$]+\$|\\(|\\[)/.test(page.content)) {
+    // Render LaTeX math if present
+    if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
         await KM.ensureKatex();
-        renderMathSafe(container);
+        renderMathSafe(containerEl);
     }
 
-    // Decorations common to both
-    decorateHeadings(page, container);
-    decorateCodeBlocks(container);
-
-    // Main-view only extras
-    if (mode === 'main') {
-        buildToc(page);
-        prevNext(page);
-        seeAlso(page);
-        // Smooth scroll to anchor if provided
-        scrollToAnchor(anchor);
-    }
+    decorateHeadings(page, containerEl);
+    decorateCodeBlocks(containerEl);
 }
 
 
 async function render(page, anchor) {
     const contentEl = $('#content');
     if (!contentEl) return;
-    await renderInto(contentEl, page, { anchor, mode: 'main' });
+
+    contentEl.dataset.mathRendered = '0';
+    contentEl.innerHTML = await getParsedHTML(page);
+
+    // Run scripts embedded in the Markdown (main content only)
+    if (ALLOW_JS_FROM_MD === "true") {
+      runInlineScripts(contentEl);
+    }
+
+    await enhanceRendered(contentEl, page);
+
+    buildToc(page);
+    prevNext(page);
+    seeAlso(page);
+
+    scrollToAnchor(anchor);
 }
+
 let currentPage = null; // debounces redundant renders on hash changes
 
 /**
@@ -1607,9 +1594,14 @@ let uiInited = false; // guard against duplicate initialization
 
     async function fillPanel(panel, page, anchor) {
     panel.body.dataset.mathRendered = '0';
-    await renderInto(panel.body, page, { mode: 'preview' });
+    panel.body.innerHTML = await getParsedHTML(page);
+
+    // Rewrite intra-article anchors to include the base page path for robustness
     rewriteRelativeAnchorsIn(panel, page);
-    // Anchor scrolling inside preview with header offset
+
+    await enhanceRendered(panel.body, page);
+
+    // Auto scroll to anchor inside the preview body
     if (anchor) {
         const container = panel.el;
         await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
@@ -1626,6 +1618,544 @@ let uiInited = false; // guard against duplicate initialization
         }
     }
 }
+
+    function createPanel(linkEl) {
+        const container = el('div', { class: 'km-link-preview', role: 'dialog', 'aria-label': 'Preview' });
+        const header = el('header', {}, [
+            el('button', { type: 'button', class: 'km-preview-close', title: 'Close', 'aria-label': 'Close', innerHTML: '✕' })
+        ]);
+        const body = el('div');
+        container.append(header, body);
+        document.body.appendChild(container);
+
+        const panel = { el: container, body, link: linkEl, timer: null };
+        const idx = previewStack.push(panel) - 1;
+
+        // Hover handling for close lifecycle
+        container.addEventListener('mouseenter', () => {
+            clearTimeout(panel.timer);
+            clearTimeout(trimTimer);
+        }, { passive: true });
+        container.addEventListener('mouseleave', (e) => {
+            const to = e.relatedTarget;
+            if (to && (to.closest && to.closest('.km-link-preview'))) return; // still inside previews stack
+            panel.timer = setTimeout(() => { closeFrom(idx); }, 240);
+        }, { passive: true });
+        header.querySelector('button').addEventListener('click', () => closeFrom(idx));
+
+        // Open links INSIDE previews → spawn another panel on top
+        container.addEventListener('mouseover', (e) => maybeOpenFromEvent(e), true);
+        container.addEventListener('focusin',  (e) => maybeOpenFromEvent(e), true);
+
+        positionPreview(panel, linkEl);
+
+        // Copy link buttons
+        panel.el.addEventListener('click', (e) => {
+        const btn = e.target.closest?.('button.heading-copy, button.code-copy');
+        if (!btn) return;
+        if (btn.classList.contains('heading-copy')) {
+            const h = btn.closest(HEADINGS_SEL);
+            const target = resolveTarget(panel.link.getAttribute('href')||'');
+            const base = buildDeepURL(target?.page, '') || (baseURLNoHash() + '#');
+            copyText(base + h.id, btn);
+        } else {
+            const pre = btn.closest('pre');
+            const code = pre?.querySelector('code');
+            copyText(code ? code.innerText : pre?.innerText || '', btn);
+        }
+        });
+
+        return panel;
+    }
+
+    async function openPreviewForLink(linkEl) {
+        const href = linkEl.getAttribute('href') || '';
+        const target = resolveTarget(href);
+        if (!target) return;
+
+        // Dedupe: if this exact link already has an open preview, just reposition it.
+        const existingIdx = previewStack.findIndex(p => p.link === linkEl);
+        if (existingIdx >= 0) {
+            const existing = previewStack[existingIdx];
+            clearTimeout(existing.timer);
+            positionPreview(existing, linkEl);
+            return;
+        }
+
+        const panel = createPanel(linkEl);
+        // Cancel any close timers on existing panels when a child opens
+        previewStack.forEach(p => clearTimeout(p.timer));
+        await fillPanel(panel, target.page, target.anchor);
+    }
+
+    function isInternalPageLink(a) {
+        const href = a?.getAttribute('href') || '';
+        return !!resolveTarget(href);
+    }
+
+    function maybeOpenFromEvent(e) {
+        const a = e.target && e.target.closest && e.target.closest('a[href^="#"]');
+        if (!a || !isInternalPageLink(a)) return;
+        clearTimeout(hoverDelay);
+        const openNow = e.type === 'focusin';
+        if (openNow) {
+            openPreviewForLink(a);
+        } else {
+            hoverDelay = setTimeout(() => openPreviewForLink(a), 220);
+        }
+    }
+
+    // Global listeners: main content + previews (delegated)
+    function attachLinkPreviews() {
+        const root = $('#content');
+        if (!root) return;
+        root.addEventListener('mouseover', maybeOpenFromEvent, true);
+        root.addEventListener('focusin',  maybeOpenFromEvent, true);
+        root.addEventListener('mouseout', (e) => {
+            const to = e.relatedTarget;
+            if (to && (to.closest && to.closest('.km-link-preview'))) return; // moving into a preview
+            scheduleTrim();
+        }, true);
+
+        addEventListener('hashchange', () => closeFrom(0), { passive: true });
+        addEventListener('scroll',     () => scheduleTrim(), { passive: true }); // close trailing when scrolling
+    }
+
+    // Expose for initUI()
+    KM.attachLinkPreviews = attachLinkPreviews;
+    KM.isInternalPageLink = isInternalPageLink;
+})();
+
+
+function initUI() {
+    try {
+        KM.attachLinkPreviews();
+    } catch (_) {}
+
+    if (uiInited) return; // idempotent safety
+    uiInited = true;
+
+    // Disable browser scroll restoration (we handle scroll position ourselves).
+    try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch {}
+
+    // Title & sidebar
+    $('#wiki-title-text').textContent = TITLE;
+    document.title = TITLE;
+    buildTree();
+
+    // THEME: persists preference, respects config, reacts to system & storage.
+    (function themeInit() {
+        const btn = $('#theme-toggle'),
+            rootEl = DOC.documentElement,
+            media = matchMedia('(prefers-color-scheme: dark)');
+        const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
+        const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
+        let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
+
+        if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
+
+        apply(dark);
+        if (btn) {
+            btn.setAttribute('aria-pressed', String(dark));
+            btn.onclick = () => {
+                dark = !dark;
+                apply(dark);
+                btn.setAttribute('aria-pressed', String(dark));
+                localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+            };
+        }
+
+        // Follow OS changes only when there is no explicit user or config preference.
+        media.addEventListener?.('change', (e) => {
+            const hasUserPref = !!localStorage.getItem('km-theme');
+            if (!hasUserPref && !cfg) {
+                dark = e.matches;
+                apply(dark);
+            }
+        });
+
+        // Keep multiple tabs in sync via the StorageEvent.
+        addEventListener('storage', (e) => {
+            if (e.key === 'km-theme') {
+                dark = e.newValue === 'dark';
+                apply(dark);
+            }
+        });
+
+        function apply(isDark) {
+            // Prefer CSS variables to enable theming without large CSS rewrites.
+            rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
+            rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
+            KM.ensureHLJSTheme(); // async theme swap for syntax highlight CSS
+            KM.syncMermaidThemeWithPage(); // swap Mermaid theme + re-render diagrams
+        }
+    })();
+
+    // Initial route/render.
+    route();
+
+    // Lazy-build the mini-graph on first visibility to avoid upfront cost.
+    const miniElForObserver = $('#mini');
+    if (miniElForObserver) {
+        new IntersectionObserver((entries, obs) => {
+            if (entries[0]?.isIntersecting) {
+                buildGraph();
+                obs.disconnect();
+            }
+        }).observe(miniElForObserver);
+    }
+
+    // Graph fullscreen toggle with aria-pressed state for a11y.
+    const mini = $('#mini');
+    const expandBtn = $('#expand');
+    if (expandBtn && mini) {
+        expandBtn.onclick = () => {
+            const full = mini.classList.toggle('fullscreen');
+            expandBtn.setAttribute('aria-pressed', String(full));
+            updateMiniViewport();
+            requestAnimationFrame(() => highlightCurrent(true));
+        };
+    }
+
+    // Event delegation for copy buttons in main content
+    const contentRoot = $('#content');
+    if (contentRoot) {
+        contentRoot.addEventListener('click', (e) => {
+            const btn = e.target.closest?.('button.heading-copy, button.code-copy');
+            if (!btn) return;
+
+            if (btn.classList.contains('heading-copy')) {
+                const h = btn.closest(HEADINGS_SEL);
+                const page = currentPage;
+                const base = buildDeepURL(page, '') || (baseURLNoHash() + '#');
+                copyText(base + h.id, btn);
+            } else if (btn.classList.contains('code-copy')) {
+                const pre = btn.closest('pre');
+                const code = pre?.querySelector('code');
+                copyText(code ? code.innerText : pre?.innerText || '', btn);
+            }
+        });
+    }
+
+    // Search box: debounce keystrokes; show a clear button when non-empty.
+    const searchInput = $('#search'),
+        searchClear = $('#search-clear');
+    let debounce = 0;
+    if (searchInput && searchClear) {
+        searchInput.oninput = e => {
+            clearTimeout(debounce);
+            const val = e.target.value;
+            searchClear.style.display = val ? '' : 'none';
+            debounce = setTimeout(() => search(val), 150);
+        };
+        searchClear.onclick = () => {
+            searchInput.value = '';
+            searchClear.style.display = 'none';
+            search('');
+            searchInput.focus();
+        };
+    }
+
+    // Panels: toggle one at a time, each with its own close button once opened.
+    const togglePanel = sel => {
+        const elx = $(sel);
+        if (!elx) return;
+        const wasOpen = elx.classList.contains('open');
+        closePanels();
+        if (!wasOpen) {
+            elx.classList.add('open');
+            if (!elx.querySelector('.panel-close')) elx.append(el('button', {
+                type: 'button',
+                class: 'panel-close',
+                'aria-label': 'Close panel',
+                textContent: '✕',
+                onclick: closePanels
+            }));
+        }
+    };
+    const burgerSidebar = $('#burger-sidebar');
+    const burgerUtil = $('#burger-util');
+    if (burgerSidebar) burgerSidebar.onclick = () => togglePanel('#sidebar');
+    if (burgerUtil) burgerUtil.onclick = () => togglePanel('#util');
+
+    // Keep layout stable on resize and recompute fullscreen graph viewport.
+    addEventListener('resize', () => {
+        if (matchMedia('(min-width:1001px)').matches) {
+            closePanels();
+            highlightCurrent(true);
+        }
+        if ($('#mini')?.classList.contains('fullscreen')) {
+            updateMiniViewport();
+            highlightCurrent(true);
+        }
+    }, { passive: true });
+
+    // Close panels upon navigation clicks inside the lists.
+    $('#tree').addEventListener('click', e => {
+        const caret = e.target.closest('button.caret');
+        if (caret) {
+            const li = caret.closest('li.folder'),
+                sub = li.querySelector('ul');
+            const open = !li.classList.contains('open');
+            li.classList.toggle('open', open);
+            caret.setAttribute('aria-expanded', String(open));
+            caret.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
+            li.setAttribute('aria-expanded', String(open));
+            if (sub) sub.style.display = open ? 'block' : 'none';
+            return;
+        }
+        if (e.target.closest('a')) closePanels();
+    }, { passive: true });
+    $('#results').addEventListener('click', e => {
+        if (e.target.closest('a')) closePanels();
+    }, { passive: true });
+
+    // Hash router wiring.
+    addEventListener('hashchange', route, { passive: true });
+
+    // ESC: close panels or exit graph fullscreen.
+    addEventListener('keydown', (e) => {
+        if (e.key !== 'Escape') return;
+        let acted = false;
+        const kb = $('#kb-help');
+        if (kb && !kb.hidden) {
+            kb.hidden = true;
+            acted = true;
+        }
+        const sidebarOpen = $('#sidebar')?.classList.contains('open');
+        const utilOpen = $('#util')?.classList.contains('open');
+        if (sidebarOpen || utilOpen) {
+            closePanels();
+            acted = true;
+        }
+        if (mini && mini.classList.contains('fullscreen')) {
+            mini.classList.remove('fullscreen');
+            if (expandBtn) expandBtn.setAttribute('aria-pressed', 'false');
+            updateMiniViewport();
+            requestAnimationFrame(() => highlightCurrent(true));
+            acted = true;
+        }
+        if (acted) e.preventDefault(); // prevent page-level ESC behavior when handled
+    }, { capture: true });
+
+
+    // ===== Keyboard Shortcuts =====
+    (function keyboardShortcuts() {
+    // --- Element refs
+    const $search = $('#search');
+    const $theme = $('#theme-toggle');
+    const $expand = $('#expand');
+    const $kbIcon = $('#kb-icon');
+
+    // --- Small DOM helper (no dependency on global `el`)
+    const h = (tag, attrs = {}, children = []) => {
+        const node = document.createElement(tag);
+        for (const [k, v] of Object.entries(attrs)) {
+        if (k === 'class') node.className = v;
+        else if (k === 'textContent') node.textContent = v;
+        else if (k === 'innerHTML') node.innerHTML = v;
+        else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
+        else node.setAttribute(k, v);
+        }
+        for (const c of Array.isArray(children) ? children : [children]) if (c) node.append(c);
+        return node;
+    };
+
+    // --- Utilities
+    const isEditable = (el) => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
+    const key = (e, k) => e.key === k || e.key.toLowerCase() === (k + '').toLowerCase();
+    const keyIn = (e, list) => list.some((k) => key(e, k));
+    const isMod = (e) => e.ctrlKey || e.metaKey; // Ctrl on Windows/Linux, Cmd on macOS
+    const noMods = (e) => !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
+
+    // --- Actions
+    let _helpOpener = null;
+    const actions = {
+        focusSearch: () => $search?.focus(),
+        toggleTheme: () => $theme?.click(),
+        toggleSidebar: () => window.__kmToggleSidebar?.(),
+        toggleUtil: () => window.__kmToggleUtil?.(),
+        toggleCrumb: () => window.__kmToggleCrumb?.(),
+        fullscreenGraph: () => $expand?.click(),
+        openHelp,
+        closeHelp,
+    };
+
+    // --- Key bindings (single source of truth)
+    // `inEditable: true` means it should still fire inside inputs/contenteditable
+    const bindings = [
+        { id: 'search-ctrlk', when: (e) => isMod(e) && key(e, 'k'), action: 'focusSearch', inEditable: true, help: 'Ctrl/Cmd + K' },
+        { id: 'search-slash', when: (e) => key(e, '/') && !e.shiftKey && !isMod(e), action: 'focusSearch', help: '/' },
+        { id: 'search-s', when: (e) => key(e, 's') && noMods(e), action: 'focusSearch', help: 'S' },
+        { id: 'left', when: (e) => keyIn(e, ['a', 'q']) && noMods(e), action: 'toggleSidebar', help: 'A or Q' },
+        { id: 'right', when: (e) => key(e, 'd') && noMods(e), action: 'toggleUtil', help: 'D' },
+        { id: 'crumb', when: (e) => keyIn(e, ['w', 'z']) && noMods(e), action: 'toggleCrumb', help: 'W or Z' },
+        { id: 'theme', when: (e) => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
+        { id: 'graph', when: (e) => key(e, 'g') && noMods(e), action: 'fullscreenGraph', help: 'G' },
+        { id: 'help', when: (e) => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
+        // Escape closes help only (let other Esc handlers elsewhere continue to work)
+        { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true }
+    ];
+
+    // --- Help panel (built from `bindings` so it never drifts)
+    function ensureKbHelp() {
+        let host = document.getElementById('kb-help');
+        if (host) return host;
+
+        host = h('div', { id: 'kb-help', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', hidden: true, tabIndex: '-1' });
+        const panel = h('div', { class: 'panel' });
+        const title = h('h2', { textContent: 'Keyboard shortcuts' });
+        const closeBtn = h('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: '✕', onclick: () => actions.closeHelp() });
+        const header = h('header', {}, [title, closeBtn]);
+
+        const items = [
+        { desc: 'Focus search', ids: ['search-slash', 'search-ctrlk', 'search-s'] },
+        { desc: 'Toggle header (breadcrumbs)', ids: ['crumb'] },
+        { desc: 'Toggle left sidebar (pages & search)', ids: ['left'] },
+        { desc: 'Toggle right sidebar (graph & ToC)', ids: ['right'] },
+        { desc: 'Cycle theme (light / dark)', ids: ['theme'] },
+        { desc: 'Toggle fullscreen graph', ids: ['graph'] },
+        { desc: 'Close panels & overlays', keys: ['Esc'] },
+        { desc: 'Show this help panel', ids: ['help'] }
+        ];
+
+        const list = h('ul');
+        const kb = (s) => `<kbd>${s}</kbd>`;
+
+        for (const { desc, ids, keys } of items) {
+        const li = h('li');
+        const left = h('span', { class: 'desc', textContent: desc });
+        let rightHTML = '';
+        if (keys) {
+            rightHTML = keys.map(kb).join(', ');
+        } else if (ids) {
+            const shows = ids
+            .map((id) => bindings.find((b) => b.id === id)?.help)
+            .filter(Boolean);
+            rightHTML = shows.map(kb).join(', ');
+        }
+        const right = h('span', { innerHTML: rightHTML });
+        li.append(left, right);
+        list.append(li);
+        }
+
+        panel.append(header, list);
+        host.append(panel);
+        document.body.appendChild(host);
+        return host;
+    }
+
+    function openHelp() {
+        const host = ensureKbHelp();
+        window.openHelp = openHelp; // expose for external triggers
+        host.hidden = false;
+        // Focus trap & return focus to opener
+        _helpOpener = document.activeElement;
+        const focusables = host.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+        const first = focusables[0], last = focusables[focusables.length - 1];
+        host.addEventListener('keydown', (e) => {
+            if (e.key !== 'Tab') return;
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+        });
+        (first || host).focus();
+    }
+
+    function closeHelp() {
+        const host = document.getElementById('kb-help');
+        if (host) host.hidden = true;
+        _helpOpener?.focus?.();
+    }
+
+    // --- Global keydown handler
+    addEventListener('keydown', (e) => {
+        const tgt = e.target;
+
+        // If typing in an editable control, allow only bindings explicitly marked for it
+        if (isEditable(tgt)) {
+        for (const b of bindings) {
+            if (!b.inEditable) continue;
+            if (b.when(e)) {
+            e.preventDefault();
+            typeof b.action === 'string' ? actions[b.action]() : b.action(e);
+            return;
+            }
+        }
+        return; // ignore the rest while editing
+        }
+
+        for (const b of bindings) {
+        if (b.when(e)) {
+            e.preventDefault();
+            typeof b.action === 'string' ? actions[b.action]() : b.action(e);
+            return;
+        }
+        }
+    }, { capture: true });
+
+    // --- Open help via icon
+    $kbIcon?.addEventListener('click', (e) => { e.preventDefault(); actions.openHelp(); });
+
+    // --- Close help on click outside the panel
+    document.addEventListener('click', (e) => {
+        const host = document.getElementById('kb-help');
+        if (!host || host.hidden) return;
+        if (e.target === host) actions.closeHelp();
+    });
+    })();
+
+    // ===== Desktop-only panel toggles and condensed reset =====
+    (function desktopPanelToggles() {
+        const MQ_DESKTOP = window.matchMedia('(min-width: 1000px), (orientation: landscape)');
+        const ROOT = document.body;
+
+        function isCondensed() {
+            return !MQ_DESKTOP.matches;
+        }
+
+        function setHidden(flag, cls, region) {
+            ROOT.classList.toggle(cls, !!flag);
+            if (region) {
+                region.setAttribute('aria-hidden', flag ? 'true' : 'false');
+            }
+        }
+
+        // Hooks for shortcuts
+        window.__kmToggleSidebar = () => setHidden(!ROOT.classList.contains('hide-sidebar'), 'hide-sidebar', $('#sidebar'));
+        window.__kmToggleUtil = () => setHidden(!ROOT.classList.contains('hide-util'), 'hide-util', $('#util'));
+        window.__kmToggleCrumb = () => setHidden(!ROOT.classList.contains('hide-crumb'), 'hide-crumb', $('#crumb'));
+
+        // Reset when entering condensed view to avoid conflicts
+        function resetForCondensed() {
+            ROOT.classList.remove('hide-sidebar', 'hide-util', 'hide-crumb');
+            $('#sidebar')?.setAttribute('aria-hidden', 'false');
+            $('#util')?.setAttribute('aria-hidden', 'false');
+            $('#crumb')?.setAttribute('aria-hidden', 'false');
+        }
+
+        // Observe viewport changes
+        MQ_DESKTOP.addEventListener('change', () => {
+            if (isCondensed()) resetForCondensed();
+        });
+
+        // Button next to watermark opens help
+        $('#kb-btn')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            const open = (window.openHelp || (() => {}));
+            open();
+        });
+
+        // Expose for other modules if needed
+        window.__kmIsCondensed = isCondensed;
+        window.__kmResetForCondensed = resetForCondensed;
+    })();
+
+    // Preload HLJS core when the main thread is likely idle to improve UX later.
+    whenIdle(() => {
+        KM.ensureHighlight();
+    });
+}
+
 /* ──────────────────────────────── boot ─────────────────────────────────── */
 // IIFE boot sequence: fetch MD, parse, compute structure, then render UI.
 (async () => {
