@@ -546,7 +546,7 @@ KM.ensureMarkdown = () => {
     import("https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm"),
     import("https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm"),
     import("https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm"),
-    import("https://cdn.jsdelivr.net/npm/mermaid@11.9.0/+esm"),
+    import("https://cdn.jsdelivr.net/npm/mermaid@11.10.1/+esm"),
   ]).then(([marked, alertMod, footnoteMod, emojiPluginMod, emojiLibMod, mermaidMod]) => {
     // keyword → emoji
     const emojiLib = emojiLibMod.default ?? emojiLibMod;
