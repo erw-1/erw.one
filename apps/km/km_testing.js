@@ -15,7 +15,7 @@
 
  ▸ Design goals honored by the implementation
    - No build step: Everything runs natively in modern browsers.
-   - Minimal global surface: A tiny window.KM namespace for interop/testing.
+   - Minimal global surface: A tiny window.KM namespace for interop/testing.F
    - Robustness: Defensive checks around DOM readiness, network errors, and
      idempotent initializers.
    - Performance: Idle work deferral, small synchronous critical path, async
@@ -1396,10 +1396,11 @@ async function render(page, anchor) {
     // numberHeadings already applied by getParsedHTML()
 
     // Lazy syntax highlight
-    await highlightVisibleCode($('#content'));
+    await highlightVisibleCode(contentEl);
 
     // Mermaid graphs
-    await renderMermaid($('#content'));
+    const { renderMermaid } = await KM.ensureMarkdown();
+    await renderMermaid(contentEl);
 
     // Render LaTeX math only when textual heuristics hint there is any.
     if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
@@ -1463,7 +1464,7 @@ function closePanels() {
 
 let uiInited = false; // guard against duplicate initialization
 
-/* ───────────────────────────── link previews (v2) ─────────────────────────────
+/* ───────────────────────────── link previews ─────────────────────────────
    - Hover/focus an internal link → show small scrollable preview of the target page
    - If the URL includes a heading anchor, auto-scroll to that heading
    - Code blocks inside previews are highlighted (lazy, HLJS)
@@ -1553,6 +1554,10 @@ let uiInited = false; // guard against duplicate initialization
 
         // Lazy highlight within preview
         await highlightVisibleCode(panel.body);
+
+        // Mermaid graphs
+        await KM.ensureKatex();
+        renderMathSafe(panel.body);
 
         // Render math (KaTeX)
         await KM.ensureKatex();
