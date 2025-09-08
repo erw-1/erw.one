@@ -1590,14 +1590,16 @@ let uiInited = false; // guard against duplicate initialization
 
         // Lazy highlight within preview
         await highlightVisibleCode(panel.body);
-
-        // Mermaid graphs
-        await KM.ensureKatex();
-        renderMathSafe(panel.body);
-
-        // Render math (KaTeX)
-        await KM.ensureKatex();
-        renderMathSafe(panel.body);
+        
+        // Mermaid graphs (correct)
+        const { renderMermaid } = await KM.ensureMarkdown();
+        await renderMermaid(panel.body);
+        
+        // Render math (KaTeX) — only if there’s math
+        if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
+          await KM.ensureKatex();
+          renderMathSafe(panel.body);
+        }
 
         decorateCodeBlocks(panel.body);
         decorateHeadings(page, panel.body);
