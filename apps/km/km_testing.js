@@ -435,21 +435,41 @@ KM.ensureHLJSTheme = () => new Promise(res => {
 // Markdown parser (marked) with alert & footnote plugins.
 let mdReady = null;
 KM.ensureMarkdown = () => {
-    if (mdReady) return mdReady;
-    mdReady = Promise.all([
-        import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
-        import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
-        import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
-        import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
-    ]).then(([marked, alertMod, footnoteMod, emojiMod]) => {
-        const md = new marked.Marked()
-            .use(alertMod.default())
-            .use(footnoteMod.default())
-            .use(emojiMod.default());
+  if (mdReady) return mdReady;
 
-        return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }) };
-    });
-    return mdReady;
+  mdReady = Promise.all([
+    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
+    import('https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm'),
+  ]).then(([marked, alertMod, footnoteMod, emojiPluginMod, emojiLibMod]) => {
+    // Build keyword -> emoji map (first keyword wins), just like your TS reference.
+    const emojiLib = emojiLibMod.default ?? emojiLibMod;
+    const Emojis = Object.entries(emojiLib).reduce((dict, [emoji, keywords]) => {
+      // emojilib v4 exports { "😀": ["grinning", "smile", ...], ... }
+      if (Array.isArray(keywords)) {
+        for (const keyword of keywords) {
+          if (dict[keyword] == null) dict[keyword] = emoji;
+        }
+      }
+      return dict;
+    }, {});
+
+    // Configure marked + plugins
+    const md = new marked.Marked()
+      .use((alertMod.default ?? alertMod)())
+      .use((footnoteMod.default ?? footnoteMod)())
+      .use(
+        // marked-emoji expects { emojis, renderer }
+        (emojiPluginMod.markedEmoji ?? emojiPluginMod.default)({
+          emojis: Emojis,
+          renderer: (token) => token.emoji, // render the emoji char directly
+        })
+      );
+    return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }), };
+  });
+  return mdReady;
 };
 
 // KaTeX (math) on demand: inject CSS once, then load JS + auto-render helper.
