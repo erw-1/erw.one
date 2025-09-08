@@ -1,3 +1,6 @@
+/* km_testing.js — Refactor pass (2025-09-08)
+   - See changelog in assistant message for details.
+*/
 /* eslint-env browser, es2022 */
 /*
 ================================================================================
@@ -164,6 +167,32 @@ function resetScrollTop() {
 }
 
 /* ───────────────────────────── data model ──────────────────────────────── */
+/**
+ * @typedef {Object} Section
+ * @property {string} id        // Stable heading id like "1_2_1"
+ * @property {string} txt       // Heading text
+ * @property {string} body      // Body text under this heading
+ * @property {string} search    // Lowercased text used for search
+ */
+
+/**
+ * @typedef {Object} Page
+ * @property {string} id
+ * @property {string} title
+ * @property {Page|null} parent
+ * @property {Set<string>} tagsSet
+ * @property {string} content
+ * @property {Page[]} children
+ * @property {Section[]} sections
+ * @property {boolean} [isSecondary]
+ * @property {number}  [_i]
+ * @property {string}  [hash]
+ * @property {string}  [titleL]
+ * @property {string}  [tagsL]
+ * @property {string}  [bodyL]
+ * @property {string}  [searchStr]
+ */
+
 // The in-memory representation of the wiki, derived from a single Markdown
 // bundle. Each page has: id,title,parent,tags,content,children[],sections[],...
 let pages = [];
@@ -474,6 +503,9 @@ async function getParsedHTML(page) {
 }
 
 /* ───────────────────────── UI decorations & utils ──────────────────────── */
+/** Reusable selector for all heading levels (H1–H6) */
+const HEADINGS_SEL = 'h1,h2,h3,h4,h5,h6';
+
 /** Locale-aware title sort (Change #7) */
 const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
 const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
@@ -497,7 +529,7 @@ async function copyText(txt, node) {
 /** Number headings (h1–h5) deterministically for deep-linking. */
 function numberHeadings(elm) {
     const counters = [0, 0, 0, 0, 0, 0, 0];
-    $$('h1,h2,h3,h4,h5,h6', elm).forEach(h => {
+    $$(HEADINGS_SEL, elm).forEach(h => {
         const level = +h.tagName[1] - 1; // H1→0, H2→1, ...
         counters[level]++; // bump current level
         for (let i = level + 1; i < 7; i++) counters[i] = 0; // reset deeper
@@ -514,7 +546,7 @@ function buildToc(page) {
     const tocEl = $('#toc');
     if (!tocEl) return;
     tocEl.innerHTML = '';
-    const heads = $$('#content h1,#content h2,#content h3');
+    const heads = $$('#content ' + HEADINGS_SEL);
     if (!heads.length) {
         tocObserver?.disconnect();
         tocObserver = null;
@@ -640,7 +672,7 @@ const iconBtn = (title, path, cls, onClick) =>
 function decorateHeadings(page, container = $('#content')) {
     const base = hashOf(page);
     const prefix = baseURLNoHash() + '#' + (base ? base + '#' : '');
-    $$('h1,h2,h3,h4,h5,h6', container).forEach(h => {
+    $$(HEADINGS_SEL, container).forEach(h => {
         const url = `${prefix}${h.id}`;
         // Add button without per-element handler (delegated listener will act)
         h.querySelector('button.heading-copy') || h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy'));
@@ -1386,7 +1418,7 @@ let uiInited = false; // guard against duplicate initialization
                 const tRect = t.getBoundingClientRect();
                 const y = tRect.top - cRect.top + container.scrollTop;
                 const top = Math.max(0, y - headerH - 6);
-                container.scrollTo({ top, behavior: 'instant' });
+                container.scrollTo({ top, behavior: 'auto' });
                 t.classList.add('km-preview-focus');
             }
         }
@@ -1427,7 +1459,7 @@ let uiInited = false; // guard against duplicate initialization
         const btn = e.target.closest?.('button.heading-copy, button.code-copy');
         if (!btn) return;
         if (btn.classList.contains('heading-copy')) {
-            const h = btn.closest('h1,h2,h3,h4,h5,h6');
+            const h = btn.closest(HEADINGS_SEL);
             const base = baseURLNoHash() + '#' + (hashOf(panel.link && resolveTarget(panel.link.getAttribute('href')||'')?.page) ? hashOf(resolveTarget(panel.link.getAttribute('href')||'')?.page) + '#' : '');
             copyText(base + h.id, btn);
         } else {
@@ -1595,7 +1627,7 @@ function initUI() {
             if (!btn) return;
 
             if (btn.classList.contains('heading-copy')) {
-                const h = btn.closest('h1,h2,h3,h4,h5,h6');
+                const h = btn.closest(HEADINGS_SEL);
                 const page = currentPage;
                 const base = baseURLNoHash() + '#' + (hashOf(page) ? hashOf(page) + '#' : '');
                 copyText(base + h.id, btn);
