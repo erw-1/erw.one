@@ -441,11 +441,11 @@ KM.ensureMarkdown = () => {
         import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
         import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
         import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
-    ]).then(([marked, alertMod, footnoteMod, emojiMod]) => {
+    ]).then(([marked, alertMod, footnoteMod, markedEmoji]) => {
         const md = new marked.Marked()
             .use(alertMod.default())
             .use(footnoteMod.default())
-            .use(emojiMod({
+            .use(markedEmoji({
               emojis: { heart: '❤️', tada: '🎉' },
               renderer: (token) => token.emoji,
             }));
