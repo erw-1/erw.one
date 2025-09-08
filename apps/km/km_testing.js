@@ -445,7 +445,7 @@ KM.ensureMarkdown = () => {
         const md = new marked.Marked()
             .use(alertMod.default())
             .use(footnoteMod.default())
-            .use(emojiMod.default({ unicode: true }));;
+            .use(emojiMod({ unicode: true }));
 
         return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }) };
     });
