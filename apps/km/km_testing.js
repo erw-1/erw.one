@@ -807,7 +807,7 @@ function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
   let seq = 0, stamp = Date.now().toString(36);
   container.querySelectorAll('a[href^="#"]').forEach(a => {
-    if (isInternalPageLink(a)) {               // already uses resolveTarget()
+    if (KM.isInternalPageLink(a)) {               // already uses resolveTarget()
       a.classList.add('km-has-preview');
       a.dataset.preview = '1';
       if (!a.id) a.id = `km-prev-${stamp}-${seq++}`;  // unique id for styling/debug
@@ -1727,6 +1727,7 @@ let uiInited = false; // guard against duplicate initialization
 
     // Expose for initUI()
     KM.attachLinkPreviews = attachLinkPreviews;
+    KM.isInternalPageLink = isInternalPageLink;
 })();
 
 
