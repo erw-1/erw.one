@@ -93,7 +93,7 @@ Object.assign(KM, {
 // Configuration is defined inline in index.html to keep the site portable.
 const CFG_EL = DOC.getElementById('km-config');
 const CFG = CFG_EL ? (JSON.parse(CFG_EL.textContent || '{}') || {}) : {};
-const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT, CACHE_MD } = CFG;
+const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT, ALLOW_JS_FROM_MD, CACHE_MD } = CFG;
 
 // cache_md: time-to-live in minutes (empty / 0 / NaN → disabled)
 const CACHE_MIN = Number(CACHE_MD) || 0;
@@ -1271,7 +1271,10 @@ async function render(page, anchor) {
     contentEl.innerHTML = await getParsedHTML(page);
  
     // Run scripts embedded in the Markdown
-    runInlineScripts(contentEl);
+    if (CONFIG.allow_script_from_md) {
+      runInlineScripts(contentEl);
+    }
+
     decorateExternalLinks();
 
     // Progressive image hints to reduce LCP impact and avoid network contention.
