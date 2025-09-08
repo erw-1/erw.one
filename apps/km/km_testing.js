@@ -589,7 +589,30 @@ KM.ensureMarkdown = () => {
     return {
       parse: (src, opt) => md.parse(src, { ...opt, mangle: false }),
       // call after you inject parsed HTML into the DOM
-      renderMermaid: (root) => mermaid.run({ nodes: (root || document).querySelectorAll(".mermaid") }),
+      renderMermaidLazy: (root) => {
+      const container = root || document;
+      const nodeList = container.querySelectorAll(".mermaid");
+      if (!nodeList || !nodeList.length) return;
+      const runOne = (el, o) => {
+        if (el.dataset.mmdDone === "1") { o && o.unobserve(el); return; }
+        try {
+          mermaid.run({ nodes: [el] });
+        } catch (_) {}
+        el.dataset.mmdDone = "1";
+        if (o) o.unobserve(el);
+      };
+      if (!("IntersectionObserver" in window)) {
+        nodeList.forEach(el => runOne(el));
+        return;
+      }
+      const obs = new IntersectionObserver((entries, o) => {
+        for (const en of entries) {
+          if (!en.isIntersecting) continue;
+          runOne(en.target, o);
+        }
+      }, { rootMargin: "200px 0px", threshold: 0 });
+      nodeList.forEach(el => { if (el.dataset.mmdDone !== "1") obs.observe(el); });
+    },
       setMermaidTheme,
     };
   });
@@ -1423,8 +1446,8 @@ async function enhanceRendered(containerEl, page) {
     await highlightVisibleCode(containerEl);
 
     // Mermaid diagrams in this container
-    const { renderMermaid } = await KM.ensureMarkdown();
-    await renderMermaid(containerEl);
+    const { renderMermaidLazy } = await KM.ensureMarkdown();
+    await renderMermaidLazy(containerEl);
 
     // Render LaTeX math if present
     if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
