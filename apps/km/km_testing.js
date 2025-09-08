@@ -883,7 +883,9 @@ function decorateHeadings(page, container = $('#content')) {
 
 function decorateCodeBlocks(container = $('#content')) {
     $$('pre', container).forEach(pre => {
-        if (pre.querySelector('button.code-copy')) return; // idempotent
+                // Skip Mermaid source blocks; they may render lazily later
+        if (pre.classList.contains('mermaid')) return;
+if (pre.querySelector('button.code-copy')) return; // idempotent
         // Add button without handler; delegated listener will copy
         pre.append(iconBtn('Copy code', ICONS.code, 'code-copy'));
     });
