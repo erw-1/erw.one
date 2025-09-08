@@ -21,21 +21,23 @@
   ====================================================================================================================================== --> 
   
      <!-- JS configuration for the content / theme / supported syntax highlighting
-        "TITLE":        - Will be the page and tab title 
-        "MD"            - Raw MD source (can also be a file eg. 'content.md')
-        "DEFAULT_THEME" - (optional) 'dark' | 'light' 
-        "ACCENT"        - (optional) CSS color string '#3fabd1', 'red', etc.
-        "LANGS"         - (optional) For codeblocks highlighting (supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/)
-        "CACHE_MD"      - (optional) Caching time (minutes) for the MD, set to "0" or blank to refresh content every reload
+        "TITLE":           - Will be the page and tab title 
+        "MD"               - Raw MD source (can also be a file eg. 'content.md')
+        "DEFAULT_THEME"    - (optional) 'dark' | 'light' 
+        "ACCENT"           - (optional) CSS color string '#3fabd1', 'red', etc.
+        "LANGS"            - (optional) For codeblocks highlighting (supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/)
+        "ALLOW_JS_FROM_MD" - (risky)    If you want to run embeded js from the MD, eg. interactive elements, etc.
+        "CACHE_MD"         - (optional) Caching time (minutes) for the MD, set to "0" or blank to refresh content every reload
     -->
       <script type="application/json" id="km-config">     
         {
-          "TITLE":          "Title of your wiki",
-          "MD":             "https://hackmd.io/@erw-1/km_demo/download",
-          "DEFAULT_THEME":  "dark",
-          "ACCENT":         "#3fabd1",
-          "LANGS":          ["javascript", "bash", "markdown", "python", "css"],
-          "CACHE_MD":       "0"
+          "TITLE":            "Title of your wiki",
+          "MD":               "https://hackmd.io/@erw-1/km_demo/download",
+          "DEFAULT_THEME":    "dark",
+          "ACCENT":           "#3fabd1",
+          "LANGS":            ["javascript", "bash", "markdown", "python", "css"],
+          "ALLOW_JS_FROM_MD": "true",
+          "CACHE_MD":         "0"
         }
       </script>
       
