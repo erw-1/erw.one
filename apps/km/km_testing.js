@@ -671,7 +671,6 @@ function renderMathSafe(root) {
 const PAGE_HTML_LRU_MAX = 40;
 const pageHTMLLRU = new Map(); // pageId -> html
 
-async 
 /** Warm the HTML LRU cache for likely next clicks (siblings + children). */
 function prewarmNeighbors(page) {
     try {
