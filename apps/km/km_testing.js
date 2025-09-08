@@ -1271,7 +1271,7 @@ async function render(page, anchor) {
     contentEl.innerHTML = await getParsedHTML(page);
  
     // Run scripts embedded in the Markdown
-    if (CONFIG.allow_script_from_md) {
+    if (ALLOW_JS_FROM_MD === "true") {
       runInlineScripts(contentEl);
     }
 
