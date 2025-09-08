@@ -445,7 +445,7 @@ KM.ensureMarkdown = () => {
         const md = new marked.Marked()
             .use(alertMod.default())
             .use(footnoteMod.default())
-            .use(emojiMod.defaults({emojis: { heart: '❤️', tada: '🎉' },renderer: (token) => token.emoji}));
+            .use(emojiMod.default({emojis: { heart: '❤️', tada: '🎉' },renderer: (token) => token.emoji}));
 
         return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }) };
     });
