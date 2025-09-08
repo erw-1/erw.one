@@ -1940,8 +1940,9 @@ function initUI() {
             setFolderOpen(li, open);
             return;
         }
-        if (e.target.closest('a')) closePanels();nels();
+        if (e.target.closest('a')) closePanels();
     }, { passive: true });
+ 
     $('#results').addEventListener('click', e => {
         if (e.target.closest('a')) closePanels();
     }, { passive: true });
