@@ -916,12 +916,12 @@ async function highlightVisibleCode(root = DOC) {
 /* ─────────── Lazy, on-scroll mermaid render ─────────── */
 async function lazyRenderMermaid(root = document) {
   await KM.ensureMarkdown();
-  const nodes = [...root.querySelectorAll('.mermaid')];
+  const nodes = (root || document).querySelectorAll(".mermaid");
   if (!nodes.length) return;
   const io = new IntersectionObserver((entries) => {
     entries.forEach(en => {
       if (!en.isIntersecting) return;
-      KM.mermaid.run({ nodes: [en.target] }); // render one node
+      KM.mermaid.run({ nodes: [en.target]}); // render one node
       io.unobserve(en.target);
     });
   }, { rootMargin: '200px 0px', threshold: 0 });
