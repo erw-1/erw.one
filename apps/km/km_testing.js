@@ -1,16 +1,16 @@
 /* eslint-env browser, es2022 */
 /*
 ================================================================================
- km - Static No‑Build Wiki runtime (ESM)
+ km - Static No-Build Wiki runtime (ESM)
 
  ▸ Architecture
-   - Single self‑bootstrapping module that fetches a concatenated Markdown
-     bundle, parses it into an in‑memory tree/graph, and renders it into a
+   - Single self-bootstrapping module that fetches a concatenated Markdown
+     bundle, parses it into an in-memory tree/graph, and renders it into a
      minimal SPA shell (index.html).
    - External dependencies (marked, highlight.js, KaTeX, D3) are loaded lazily
      via native ESM imports from CDNs. Each loader is idempotent.
-   - Routing is hash‑based (#a#b#c#anchor). The first segments address the page
-     hierarchy; any remainder is an in‑page heading id.
+   - Routing is hash-based (#a#b#c#anchor). The first segments address the page
+     hierarchy; any remainder is an in-page heading id.
    - A small D3 force graph visualizes hierarchy + tag similarity.
 
  ▸ Design goals honored by the implementation
@@ -20,14 +20,14 @@
      idempotent initializers.
    - Performance: Idle work deferral, small synchronous critical path, async
      progressive decoration (ToC, code copy buttons, KaTeX, HLJS theme swap).
-   - Accessibility: ARIA roles/labels, keyboard‑friendly interactions, and
+   - Accessibility: ARIA roles/labels, keyboard-friendly interactions, and
      reduced motion by relying on native scrolling and focus behavior.
 
  ▸ Notation used through comments
    - [INVARIANT]: Property the code relies on; breaking it will cause bugs.
    - [PERF]: Performance note.
    - [A11Y]: Accessibility note.
-   - [CROSS‑BROWSER]: Compatibility nuance.
+   - [CROSS-BROWSER]: Compatibility nuance.
    - [SECURITY]: Safe usage hints.
 
 ================================================================================
@@ -51,17 +51,21 @@ addEventListener('resize', () => {
 }, {
     passive: true
 });
+
 // Intentionally small helpers to keep call sites terse and readable.
 const DOC = document;
+
 /** Query a single element within an optional context (defaults to document) */
 const $ = (sel, c = DOC) => c.querySelector(sel);
+
 /** Query all elements and spread into a real array for easy iteration */
 const $$ = (sel, c = DOC) => [...c.querySelectorAll(sel)];
+
 /**
  * Create an element with a property/attribute map and children.
  * - Prefers setting properties (e.g., .textContent) over attributes when
  *   available to avoid type coercion pitfalls and to preserve semantics.
- * - Supports a special 'dataset' key to batch‑assign data attributes.
+ * - Supports a special 'dataset' key to batch-assign data attributes.
  */
 const el = (tag, props = {}, children = []) => {
     const n = DOC.createElement(tag);
@@ -89,13 +93,13 @@ Object.assign(KM, {
 // Configuration is defined inline in index.html to keep the site portable.
 const CFG_EL = DOC.getElementById('km-config');
 const CFG = CFG_EL ? (JSON.parse(CFG_EL.textContent || '{}') || {}) : {};
-const {
-    TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT, CACHE_MD
-} = CFG;
+const { TITLE = 'Wiki', MD = '', LANGS = [], DEFAULT_THEME, ACCENT, CACHE_MD } = CFG;
 
 // cache_md: time-to-live in minutes (empty / 0 / NaN → disabled)
 const CACHE_MIN = Number(CACHE_MD) || 0;
-const CACHE_KEY = (url) => `km:md:v1:${url}`;
+
+// Bump cache key version when parse/render logic changes to avoid stale bundles.
+const CACHE_KEY = (url) => `km:md:v2:${url}`;
 
 function readCache(url) {
     try {
@@ -111,10 +115,7 @@ function readCache(url) {
 
 function writeCache(url, txt) {
     try {
-        localStorage.setItem(CACHE_KEY(url), JSON.stringify({
-            ts: Date.now(),
-            txt
-        }));
+        localStorage.setItem(CACHE_KEY(url), JSON.stringify({ ts: Date.now(), txt }));
     } catch (_) {}
 }
 
@@ -123,15 +124,14 @@ function writeCache(url, txt) {
 
 /** Escape a string for safe use inside a RegExp. */
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 /**
- * Defer non‑urgent side‑effects without blocking interactivity/paint.
+ * Defer non-urgent side-effects without blocking interactivity/paint.
  * Uses requestIdleCallback when available, otherwise a 0ms timeout.
  * [PERF] Keeps first content paint snappy by pushing work off the main path.
  */
 const whenIdle = (cb, timeout = 1500) =>
-    'requestIdleCallback' in window ? requestIdleCallback(cb, {
-        timeout
-    }) : setTimeout(cb, 0);
+    'requestIdleCallback' in window ? requestIdleCallback(cb, { timeout }) : setTimeout(cb, 0);
 
 /**
  * Promise that resolves when DOM is safe to read/write.
@@ -140,9 +140,7 @@ const whenIdle = (cb, timeout = 1500) =>
 const domReady = () =>
     DOC.readyState !== 'loading' ?
     Promise.resolve() :
-    new Promise(res => DOC.addEventListener('DOMContentLoaded', res, {
-        once: true
-    }));
+    new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
 
 /** Collapse any active selection prior to programmatic focus/scroll. */
 const clearSelection = () => {
@@ -153,8 +151,20 @@ const clearSelection = () => {
 /** Base URL without hash; works for file:// and querystrings. */
 const baseURLNoHash = () => location.href.replace(/#.*$/, '');
 
+/** Force the main scroll position to the top (window + content region). */
+function resetScrollTop() {
+    // Window / document scrollers
+    window.scrollTo(0, 0);
+    // Some engines still rely on these:
+    DOC.documentElement && (DOC.documentElement.scrollTop = 0);
+    DOC.body && (DOC.body.scrollTop = 0);
+    // If the app uses a scrollable content container, reset it too
+    const c = $('#content');
+    if (c) c.scrollTop = 0;
+}
+
 /* ───────────────────────────── data model ──────────────────────────────── */
-// The in‑memory representation of the wiki, derived from a single Markdown
+// The in-memory representation of the wiki, derived from a single Markdown
 // bundle. Each page has: id,title,parent,tags,content,children[],sections[],...
 let pages = [];
 let byId = new Map();
@@ -163,7 +173,7 @@ const descMemo = new Map(); // Memoization for descendant counts
 
 /**
  * Parse a concatenated Markdown bundle with HTML comments as metadata blocks:
- *   <!--id:"home" title:"Title" parent:"" tags:"foo,bar"-->
+ *   <!--id:"lol" title:"Title" parent:"home" tags:"foo,bar"-->
  *   ...markdown body...
  * Repeated for each page.
  *
@@ -176,6 +186,7 @@ function parseMarkdownBundle(txt) {
     byId = new Map();
     root = null;
     descMemo.clear();
+    pageHTMLLRU.clear(); // ensure HTML cache matches the current bundle
 
     // Greedy match: capture meta block + following body up to the next meta block.
     const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
@@ -183,15 +194,12 @@ function parseMarkdownBundle(txt) {
         const meta = {};
         // Parse k:"v" pairs with a simple, predictable grammar.
         hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
-        const page = {
-            ...meta,
-            content: (body || '').trim(),
-            children: []
-        };
+        const page = { ...meta, content: (body || '').trim(), children: [] };
         pages.push(page);
         byId.set(page.id, page);
     }
     if (!pages.length) throw new Error('No pages parsed from MD bundle.');
+
     // Prefer an explicit "home" page, otherwise first page acts as root.
     root = byId.get('home') || pages[0];
 
@@ -205,19 +213,18 @@ function parseMarkdownBundle(txt) {
             p.parent = null; // root has no parent
         }
         p.tagsSet = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
-        p._titleL = (p.title || '').toLowerCase();
-        p._tagsL  = ([...p.tagsSet].join(' ')).toLowerCase();
-        p._bodyL  = (p.content || '').toLowerCase();
-        p.searchStr = (p._titleL + ' ' + p._tagsL + ' ' + p._bodyL);
+        // Precompute lowercase fields for faster search
+        p.titleL = (p.title || '').toLowerCase();
+        p.tagsL  = [...p.tagsSet].join(' ').toLowerCase();
+        p.bodyL  = (p.content || '').toLowerCase();
+        p.searchStr = (p.titleL + ' ' + p.tagsL + ' ' + p.bodyL);
     });
 
-    // Extract fenced code and per‑heading sections for deep search.
+    // Extract fenced code and per-heading sections for deep search.
     pages.forEach(p => {
         const counters = [0, 0, 0, 0, 0, 0];
         const sections = [];
-        let inFence = false,
-            offset = 0,
-            prev = null;
+        let inFence = false, offset = 0, prev = null;
 
         for (const line of p.content.split(/\r?\n/)) {
             if (/^(?:```|~~~)/.test(line)) inFence = !inFence; // toggle on fences
@@ -225,13 +232,11 @@ function parseMarkdownBundle(txt) {
                 if (prev) {
                     // Commit previous heading section body and index text for search.
                     prev.body = p.content.slice(prev.bodyStart, offset).trim();
-                    prev.titleL = (prev.txt || '').toLowerCase();
-                    prev.bodyL  = (prev.body || '').toLowerCase();
-                    prev.search = (prev.titleL + ' ' + prev.bodyL);
+                    prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
                     sections.push(prev);
                 }
                 const [, hashes, txt] = line.match(/^(#{1,6})\s+(.+)/);
-                const level = hashes.length - 1; // 0‑based depth (H1→0, H2→1, ...)
+                const level = hashes.length - 1; // 0-based depth (H1→0, H2→1, ...)
                 counters[level]++; // increment current level
                 for (let i = level + 1; i < 6; i++) counters[i] = 0; // reset deeper
                 prev = {
@@ -244,9 +249,7 @@ function parseMarkdownBundle(txt) {
         }
         if (prev) { // commit last trailing section
             prev.body = p.content.slice(prev.bodyStart).trim();
-            prev.titleL = (prev.txt || '').toLowerCase();
-            prev.bodyL  = (prev.body || '').toLowerCase();
-            prev.search = (prev.titleL + ' ' + prev.bodyL);
+            prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
             sections.push(prev);
         }
         p.sections = sections;
@@ -258,10 +261,7 @@ function descendants(page) {
     if (descMemo.has(page)) return descMemo.get(page);
     let n = 0;
     (function rec(x) {
-        x.children.forEach(c => {
-            n++;
-            rec(c);
-        });
+        x.children.forEach(c => { n++; rec(c); });
     })(page);
     descMemo.set(page, n);
     return n;
@@ -320,7 +320,7 @@ const find = segs => {
     }
     return n; // returns the deepest valid node
 };
-/** Update location.hash for in‑app navigation (public for external links). */
+/** Update location.hash for in-app navigation (public for external links). */
 function nav(page) {
     if (page) location.hash = '#' + hashOf(page);
 }
@@ -390,7 +390,7 @@ KM.ensureHLJSTheme = () => new Promise(res => {
         DOC.head.appendChild(l);
     }
     if (l.getAttribute('href') === THEME[mode]) return res();
-    // Resolve regardless of load success to keep render non‑blocking.
+    // Resolve regardless of load success to keep render non-blocking.
     l.onload = l.onerror = res;
     l.href = THEME[mode];
 });
@@ -405,17 +405,12 @@ KM.ensureMarkdown = () => {
         import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
     ]).then(([marked, alertMod, footnoteMod]) => {
         const md = new marked.Marked().use(alertMod.default()).use(footnoteMod.default());
-        return {
-            parse: (src, opt) => md.parse(src, {
-                ...opt,
-                mangle: false
-            })
-        };
+        return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }) };
     });
     return mdReady;
 };
 
-// KaTeX (math) on demand: inject CSS once, then load JS + auto‑render helper.
+// KaTeX (math) on demand: inject CSS once, then load JS + auto-render helper.
 KM.ensureKatex = ensureOnce(async () => {
     const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
     if (!DOC.getElementById('katex-css')) {
@@ -434,13 +429,58 @@ KM.ensureKatex = ensureOnce(async () => {
     window.renderMathInElement = auto.default;
 });
 
+/* ───────────────────────── KaTeX shared render helper ──────────────────── */
+/** Centralized KaTeX options to keep main content and previews in sync. */
+const KATEX_OPTS = {
+    delimiters: [
+        { left: '$$',  right: '$$',  display: true  },
+        { left: '\\[', right: '\\]', display: true  },
+        { left: '\\(', right: '\\)', display: false },
+        { left: '$',   right: '$',   display: false },
+    ],
+    throwOnError: false,
+};
+/** Safe wrapper used everywhere (main view + previews). No-op if not loaded; avoids double render. */
+function renderMathSafe(root) {
+    try {
+        if (root.dataset.mathRendered === '1') return;
+        window.renderMathInElement?.(root, KATEX_OPTS);
+        root.dataset.mathRendered = '1';
+    } catch {}
+}
+
+/* ─────────────────────── HTML LRU cache (Change #1) ───────────────────── */
+const PAGE_HTML_LRU_MAX = 40;
+const pageHTMLLRU = new Map(); // pageId -> html
+
+async function getParsedHTML(page) {
+    if (pageHTMLLRU.has(page.id)) {
+        const html = pageHTMLLRU.get(page.id);
+        pageHTMLLRU.delete(page.id);
+        pageHTMLLRU.set(page.id, html);
+        return html;
+    }
+    const { parse } = await KM.ensureMarkdown();
+    const tmp = el('div');
+    tmp.innerHTML = parse(page.content, { headerIds: false });
+    numberHeadings(tmp); // ensure stable heading IDs
+    const html = tmp.innerHTML;
+    pageHTMLLRU.set(page.id, html);
+    if (pageHTMLLRU.size > PAGE_HTML_LRU_MAX) {
+        const firstKey = pageHTMLLRU.keys().next().value;
+        pageHTMLLRU.delete(firstKey);
+    }
+    return html;
+}
+
 /* ───────────────────────── UI decorations & utils ──────────────────────── */
-/** Sort helper for consistent alphabetical ordering. */
-const sortByTitle = (a, b) => a.title.localeCompare(b.title);
+/** Locale-aware title sort (Change #7) */
+const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
+const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
 
 /**
  * Copy helper with tiny visual confirmation via a transient CSS class.
- * [CROSS‑BROWSER] Clipboard API may be unavailable → we fail quietly.
+ * [CROSS-BROWSER] Clipboard API may be unavailable → we fail quietly.
  */
 async function copyText(txt, node) {
     try {
@@ -454,7 +494,7 @@ async function copyText(txt, node) {
     }
 }
 
-/** Number headings (h1–h5) deterministically for deep‑linking. */
+/** Number headings (h1–h5) deterministically for deep-linking. */
 function numberHeadings(elm) {
     const counters = [0, 0, 0, 0, 0, 0, 0];
     $$('h1,h2,h3,h4,h5,h6', elm).forEach(h => {
@@ -465,9 +505,9 @@ function numberHeadings(elm) {
     });
 }
 
-let tocObserver = null; // re‑created per page render
+let tocObserver = null; // re-created per page render
 /**
- * Build the per‑article Table of Contents and live‑highlight on scroll.
+ * Build the per-article Table of Contents and live-highlight on scroll.
  * Uses IntersectionObserver to mark the current heading in view.
  */
 function buildToc(page) {
@@ -486,21 +526,17 @@ function buildToc(page) {
         frag = DOC.createDocumentFragment();
     for (const h of heads) {
         frag.append(el('li', {
-            dataset: {
-                level: h.tagName[1],
-                hid: h.id
-            }
+            dataset: { level: h.tagName[1], hid: h.id }
         }, [
-            el('a', {
-                href: '#' + (base ? base + '#' : '') + h.id,
-                textContent: h.textContent
+            el('a', { href: '#' + (base ? base + '#' : '') + h.id,
+                      textContent: h.textContent
             })
         ]));
     }
     ulEl.append(frag);
     tocEl.append(ulEl);
 
-    // Reset any previous observer; prevents duplicate callbacks on re‑render.
+    // Reset any previous observer; prevents duplicate callbacks on re-render.
     tocObserver?.disconnect();
     tocObserver = new IntersectionObserver(entries => {
         for (const en of entries) {
@@ -511,10 +547,7 @@ function buildToc(page) {
                 a.classList.add('toc-current');
             }
         }
-    }, {
-        rootMargin: '0px 0px -70% 0px',
-        threshold: 0
-    });
+    }, { rootMargin: '0px 0px -70% 0px', threshold: 0 });
     heads.forEach(h => tocObserver.observe(h));
 }
 
@@ -522,20 +555,17 @@ function buildToc(page) {
 function prevNext(page) {
     $('#prev-next')?.remove();
     if (!page.parent) return; // root has no siblings
+
     // At the top level, avoid cross-section paging: promoted secondary reps
     // should not be considered siblings of the primary root children.
-    if (page.parent === root) {
-        if (page.isSecondary) return; // no prev/next for promoted reps
-    }
+    if (page.parent === root) { if (page.isSecondary) return; } // no prev/next for promoted reps
 
     // Compute siblings; at root, filter out secondary reps when paging a primary page.
     let sib = page.parent.children;
     if (page.parent === root && !page.isSecondary) sib = sib.filter(p => !p.isSecondary);
     if (sib.length < 2) return; // nothing to paginate
     const i = sib.indexOf(page),
-        wrap = el('div', {
-            id: 'prev-next'
-        });
+        wrap = el('div', { id: 'prev-next' });
     if (i > 0) wrap.append(el('a', {
         href: '#' + hashOf(sib[i - 1]),
         textContent: '← ' + sib[i - 1].title
@@ -555,41 +585,29 @@ function seeAlso(page) {
     if (!page.tagsSet?.size) return;
     const related = pages
         .filter(p => p !== page)
-        .map(p => ({
-            p,
-            shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length
-        }))
+        .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
         .filter(r => r.shared > 0)
         .sort((a, b) => (b.shared - a.shared) || sortByTitle(a.p, b.p));
     if (!related.length) return;
 
-    const wrap = el('div', {
-        id: 'see-also'
-    }, [el('h2', {
-        textContent: 'See also'
-    }), el('ul')]);
+    const wrap = el('div', { id: 'see-also' }, [el('h2', { textContent: 'See also' }), el('ul')]);
     const ulEl = wrap.querySelector('ul');
-    related.forEach(({
-        p
-    }) => ulEl.append(el('li', {}, [el('a', {
-        href: '#' + hashOf(p),
-        textContent: p.title
-    })])));
-    const content = $('#content'),
-        pn = $('#prev-next');
+    related.forEach(({ p }) => ulEl.append(el('li', {}, [el('a', {href: '#' + hashOf(p), textContent: p.title })])));
+    const content = $('#content'), pn = $('#prev-next');
     content.insertBefore(wrap, pn ?? null); // insert before prev/next if present
 }
 
 /**
  * Footnote links generated by marked are local to the article. When the
  * article itself lives behind a base hash (#a#b), make links robust by
- * prefixing the base hash for intra‑article anchors.
+ * prefixing the base hash for intra-article anchors.
  */
 function fixFootnoteLinks(page, container = $('#content')) {
     const base = hashOf(page);
     if (!base) return;
     $$('a[href^="#"]', container).forEach(a => {
         const href = a.getAttribute('href');
+        if (!href) return;
         if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) a.setAttribute('href', `#${base}${href}`);
     });
 }
@@ -602,37 +620,36 @@ const ICONS = {
     link: 'M3.9 12c0-1.7 1.4-3.1 3.1-3.1h5.4v-2H7c-2.8 0-5 2.2-5 5s2.2 5 5 5h5.4v-2H7c-1.7 0-3.1-1.4-3.1-3.1zm5.4 1h6.4v-2H9.3v2zm9.7-8h-5.4v2H19c1.7 0 3.1 1.4 3.1 3.1s-1.4 3.1-3.1 3.1h-5.4v2H19c2.8 0 5-2.2 5-5s-2.2-5-5-5z',
     code: 'M19,21H5c-1.1,0-2-0.9-2-2V7h2v12h14V21z M21,3H9C7.9,3,7,3.9,7,5v12 c0,1.1,0.9,2,2,2h12c2.2,0,2-2,2-2V5C23,3.9,22.1,3,21,3z M21,17H9V5h12V17z',
 };
-/** Create a compact icon button with a11y title/aria and onClick handler. */
+/** Create a compact icon button with a11y title/aria and optional click handler. */
 const iconBtn = (title, path, cls, onClick) =>
     el('button', {
         type: 'button',
         class: cls,
         title,
         'aria-label': title,
-        onclick: onClick,
+        ...(onClick && { onclick: onClick }),
         innerHTML: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>`
     });
 
 /**
- * Add copy buttons and clickable deep‑links to headings & code blocks.
- * ‑ Click on heading copies a ready‑to‑share URL to that section.
- * ‑ Each code block gets a "Copy" affordance targeting code content.
+ * Add copy buttons and clickable deep-links to headings & code blocks.
+ * - Click on heading copies a ready-to-share URL to that section.
+ * - Each code block gets a "Copy" affordance targeting code content.
+ * (Change #3: event delegation handles button clicks; no per-button handlers.)
  */
 function decorateHeadings(page, container = $('#content')) {
     const base = hashOf(page);
     const prefix = baseURLNoHash() + '#' + (base ? base + '#' : '');
     $$('h1,h2,h3,h4,h5,h6', container).forEach(h => {
         const url = `${prefix}${h.id}`;
-        const btn = h.querySelector('button.heading-copy') ||
-            h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy', e => {
-                e.stopPropagation();
-                copyText(url, h.querySelector('button.heading-copy'));
-            }));
-        h.onclick = () => {
-            // Do not hijack when the user is actively selecting text inside the h*.
+        // Add button without per-element handler (delegated listener will act)
+        h.querySelector('button.heading-copy') || h.appendChild(iconBtn('Copy direct link', ICONS.link, 'heading-copy'));
+        // Keep heading click behavior for convenience
+        h.onclick = (ev) => {
+            if ((ev.target instanceof Element) && ev.target.closest('a,button,input,select,textarea')) return;
             if (window.getSelection && String(window.getSelection()).length) return;
             clearSelection();
-            copyText(url, btn);
+            copyText(url, h.querySelector('button.heading-copy'));
         };
     });
 }
@@ -640,36 +657,56 @@ function decorateHeadings(page, container = $('#content')) {
 function decorateCodeBlocks(container = $('#content')) {
     $$('pre', container).forEach(pre => {
         if (pre.querySelector('button.code-copy')) return; // idempotent
-        pre.append(iconBtn('Copy code', ICONS.code, 'code-copy', () => {
-            const code = pre.querySelector('code');
-            copyText(code ? code.innerText : pre.innerText, pre.querySelector('button.code-copy'));
-        }));
+        // Add button without handler; delegated listener will copy
+        pre.append(iconBtn('Copy code', ICONS.code, 'code-copy'));
     });
 }
 
-/** For markdown content: open external http(s) links in a new tab, safely. */
+/** For markdown content: open external http(s) links in a new tab, safely. (Change #6) */
 function decorateExternalLinks() {
     $$('#content a[href]').forEach(a => {
         const href = a.getAttribute('href');
-        if (!href) return;
-        if (!href || href.startsWith('#')) return; // in-page / app links → ignore
+        if (!href || href.startsWith('#')) return;
+        if (!/^https?:\/\//i.test(href)) return; // only absolute http(s)
+
         let url;
-        try {
-            url = new URL(href, baseURLNoHash());
-        } catch {
-            return;
-        } // tolerate weird hrefs
-        const isHttp = url.protocol === 'http:' || url.protocol === 'https:';
-        const isExternal = isHttp && url.origin !== location.origin;
-        if (isExternal) {
-            a.setAttribute('target', '_blank');
-            // preserve any existing rel values, add safety flags
-            const rel = new Set((a.getAttribute('rel') || '').split(/\s+/).filter(Boolean));
-            rel.add('noopener');
-            rel.add('noreferrer');
-            rel.add('external');
-            a.setAttribute('rel', Array.from(rel).join(' '));
+        try { url = new URL(href); } catch { return; }
+        if (url.origin === location.origin) return;
+
+        a.setAttribute('target', '_blank');
+        // preserve any existing rel values, add safety flags
+        const rel = new Set((a.getAttribute('rel') || '').split(/\s+/).filter(Boolean));
+        rel.add('noopener'); rel.add('noreferrer'); rel.add('external');
+        a.setAttribute('rel', Array.from(rel).join(' '));
+        // a11y: announce new tab and host
+        if (!a.hasAttribute('aria-label')) {
+            a.setAttribute('aria-label', `${a.textContent} (opens in new tab, ${url.hostname})`);
         }
+    });
+}
+
+/* ─────────── Lazy, on-scroll code highlighting (Change #2) ─────────── */
+async function highlightVisibleCode(root = DOC) {
+    await KM.ensureHLJSTheme();
+    await KM.ensureHighlight();
+    const blocks = [...root.querySelectorAll('pre code')];
+    if (!blocks.length) return;
+
+    const obs = new IntersectionObserver((entries, o) => {
+        for (const en of entries) {
+            if (!en.isIntersecting) continue;
+            const elx = en.target;
+            if (!elx.dataset.hlDone) {
+                window.hljs.highlightElement(elx);
+                elx.dataset.hlDone = '1';
+            }
+            o.unobserve(elx);
+        }
+    }, { rootMargin: '200px 0px', threshold: 0 });
+
+    blocks.forEach(elx => {
+        if (elx.dataset.hlDone) return;
+        obs.observe(elx);
     });
 }
 
@@ -692,7 +729,7 @@ function buildTree() {
         nodes.forEach(p => {
             const li = el('li');
             if (p.children.length) {
-                const open = depth < 2; // auto‑open top levels
+                const open = depth < 2; // auto-open top levels
                 li.className = 'folder' + (open ? ' open' : '');
                 const groupId = `group-${p.id}`;
                 const caret = el('button', {
@@ -704,9 +741,7 @@ function buildTree() {
                 });
                 const lbl = el('a', {
                     class: 'lbl',
-                    dataset: {
-                        page: p.id
-                    },
+                    dataset: { page: p.id },
                     href: '#' + hashOf(p),
                     textContent: p.title
                 });
@@ -725,9 +760,7 @@ function buildTree() {
                 li.className = 'article';
                 li.setAttribute('role', 'treeitem');
                 li.append(el('a', {
-                    dataset: {
-                        page: p.id
-                    },
+                    dataset: { page: p.id },
                     href: '#' + hashOf(p),
                     textContent: p.title
                 }));
@@ -745,10 +778,7 @@ function buildTree() {
                 role: 'presentation',
                 'aria-hidden': 'true'
             },
-            [el('hr', {
-                role: 'presentation',
-                'aria-hidden': 'true'
-            })]
+            [el('hr', { role: 'presentation', 'aria-hidden': 'true' })]
         );
         frag.append(sep);
         rec([r], frag);
@@ -782,8 +812,8 @@ function highlightSidebar(page) {
     if (tree && link) {
         const r = link.getBoundingClientRect();
         const tr = tree.getBoundingClientRect();
-        if (r.top < tr.top || r.bottom > tr.bottom) link.scrollIntoView({
-            block: 'nearest'
+        requestAnimationFrame(() => {
+            if (r.top < tr.top || r.bottom > tr.bottom) link.scrollIntoView({ block: 'nearest' });
         });
     }
 }
@@ -794,6 +824,7 @@ function highlightSidebar(page) {
  *  - Title hits weigh most, then tags, then body.
  *  - Section heading hits boost both the page and the sub-results.
  *  - Exact phrase (multi-word) match adds a small bonus.
+ * (Change #9: reuse compiled regexes for sections)
  */
 function search(q) {
     const resUL = $('#results'),
@@ -811,7 +842,7 @@ function search(q) {
     }
 
     const tokens = val.split(/\s+/).filter(t => t.length >= 2); // ignore 1-char noise
-    const tokenRegexes = tokens.map(t => new RegExp('\\b' + escapeRegex(t) + '\\b'))
+    const tokenRegexes = tokens.map(t => new RegExp('\\b' + escapeRegex(t) + '\\b'));
     resUL.innerHTML = '';
     resUL.style.display = '';
     treeUL.style.display = 'none';
@@ -835,25 +866,19 @@ function search(q) {
         // Fast prefilter: require all tokens somewhere in the page’s searchable string.
         if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
 
-        // Lowercased fields (kept local to avoid mutating your page objects)
-        const titleL = p._titleL;
-        const tagsL = p._tagsL;
-        const bodyL = p._bodyL;
-
         let score = 0;
 
         // Per-token weighting (word-boundary to avoid partials)
-        for (let i = 0; i < tokenRegexes.length; i++) {
-            const r = tokenRegexes[i];
-            if (r.test(titleL)) score += W.title;
-            if (r.test(tagsL)) score += W.tag;
-            if (r.test(bodyL)) score += W.body;
+        for (const r of tokenRegexes) {
+            if (r.test(p.titleL)) score += W.title;
+            if (r.test(p.tagsL))  score += W.tag;
+            if (r.test(p.bodyL))  score += W.body;
         }
 
         // Phrase bonus for multi-word queries
         if (phrase) {
-            if (titleL.includes(phrase)) score += W.phraseTitle;
-            else if (bodyL.includes(phrase)) score += W.phraseBody;
+            if (p.titleL.includes(phrase)) score += W.phraseTitle;
+            else if (p.bodyL.includes(phrase)) score += W.phraseBody;
         }
 
         // Rank section sub-results (and give the page a small boost for having many)
@@ -861,67 +886,41 @@ function search(q) {
         for (const sec of p.sections) {
             if (!tokens.every(tok => sec.search.includes(tok))) continue;
 
-            const secTitle = sec.titleL;
-            const secBody = sec.bodyL;
+            const secTitle = sec.txt.toLowerCase();
+            const secBody = sec.body.toLowerCase();
             let s = 0;
 
-            for (const tok of tokens) {
-                const r = new RegExp('\b' + escapeRegex(tok) + '\b', 'g');
+            for (const r of tokenRegexes) {
                 if (r.test(secTitle)) s += W.secTitle;
-                if (r.test(secBody)) s += W.secBody;
+                if (r.test(secBody))  s += W.secBody;
             }
             if (phrase && (secTitle.includes(phrase) || secBody.includes(phrase))) s += 1;
 
-            matchedSecs.push({
-                sec,
-                s
-            });
+            matchedSecs.push({ sec, s });
         }
 
         matchedSecs.sort((a, b) => b.s - a.s);
         score += Math.min(W.secCountCap, matchedSecs.length); // modest page boost
 
-        scored.push({
-            p,
-            score,
-            matchedSecs
-        });
+        scored.push({ p, score, matchedSecs });
     }
 
     // Final ordering: score desc, then title alphabetically for stability
-    scored.sort((a, b) => b.score - a.score || a.p.title.localeCompare(b.p.title));
+    scored.sort((a, b) => b.score - a.score || sortByTitle(a.p, b.p));
 
     // Render
     const frag = DOC.createDocumentFragment();
-    for (const {
-            p,
-            matchedSecs
-        }
-        of scored) {
-        const li = el('li', {
-            class: 'page-result'
-        }, [
-            el('a', {
-                href: '#' + hashOf(p),
-                textContent: p.title
-            })
+    for (const { p, matchedSecs } of scored) {
+        const li = el('li', { class: 'page-result' }, [
+            el('a', { href: '#' + hashOf(p), textContent: p.title })
         ]);
 
         if (matchedSecs.length) {
             const base = hashOf(p);
-            const sub = el('ul', {
-                class: 'sub-results'
-            });
-            matchedSecs.forEach(({
-                sec
-            }) => {
-                sub.append(el('li', {
-                    class: 'heading-result'
-                }, [
-                    el('a', {
-                        href: `#${base ? base + '#' : ''}${sec.id}`,
-                        textContent: sec.txt
-                    })
+            const sub = el('ul', { class: 'sub-results' });
+            matchedSecs.forEach(({ sec }) => {
+                sub.append(el('li', { class: 'heading-result' }, [
+                    el('a', { href: `#${base ? base + '#' : ''}${sec.id}`, textContent: sec.txt })
                 ]));
             });
             li.append(sub);
@@ -939,7 +938,7 @@ function search(q) {
 /* ─────────────────────────── breadcrumb / crumb ────────────────────────── */
 /**
  * Build breadcrumb with sibling dropdowns and an optional child drawer for
- * quick intra‑level navigation.
+ * quick intra-level navigation.
  */
 function breadcrumb(page) {
     const dyn = $('#crumb-dyn');
@@ -949,15 +948,10 @@ function breadcrumb(page) {
     for (let n = page; n; n = n.parent) chain.unshift(n);
     if (chain.length) chain.shift(); // drop root label when present
 
-    chain.forEach(n => {
-        dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
-        const wrap = el('span', {
-            class: 'dropdown'
-        });
-        const a = el('a', {
-            textContent: n.title,
-            href: '#' + hashOf(n)
-        });
+    chain.forEach((n, i) => {
+        if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
+        const wrap = el('span', { class: 'dropdown' });
+        const a = el('a', { textContent: n.title, href: '#' + hashOf(n) });
         if (n === page) a.className = 'crumb-current';
         wrap.append(a);
 
@@ -974,12 +968,7 @@ function breadcrumb(page) {
     });
 
     if (page.children.length) {
-        const box = el('span', {
-            class: 'childbox'
-        }, [el('span', {
-            class: 'toggle',
-            textContent: '▾'
-        }), el('ul')]);
+        const box = el('span', { class: 'childbox' }, [el('span', { class: 'toggle', textContent: '▾' }), el('ul')]);
         const ul = box.querySelector('ul');
         page.children.sort(sortByTitle).forEach(ch => ul.append(el('li', {
             textContent: ch.title,
@@ -1005,37 +994,24 @@ let CURRENT = -1; // currently highlighted node id in the graph
 /** Return current <svg>#mini size (fullscreen aware) */
 function getMiniSize() {
     const svg = $('#mini');
-    if (!svg) return {
-        w: 400,
-        h: 300
-    };
-    if (svg.classList.contains('fullscreen')) return {
-        w: innerWidth,
-        h: innerHeight
-    };
+    if (!svg) return { w: 400, h: 300 };
+    if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
     const r = svg.getBoundingClientRect();
-    return {
-        w: Math.max(1, r.width | 0),
-        h: Math.max(1, r.height | 0)
-    };
+    return { w: Math.max(1, r.width | 0), h: Math.max(1, r.height | 0) };
 }
 
 /** Update the mini graph viewport and recentre the simulation. */
+let _miniKick = 0;
 function updateMiniViewport() {
     if (!graphs.mini) return;
-    const {
-        svg,
-        sim
-    } = graphs.mini;
-    const {
-        w,
-        h
-    } = getMiniSize();
+    const { svg, sim } = graphs.mini;
+    const { w, h } = getMiniSize();
     graphs.mini.w = w;
     graphs.mini.h = h;
     svg.attr('viewBox', `0 0 ${w} ${h}`).attr('width', w).attr('height', h).attr('preserveAspectRatio', 'xMidYMid meet');
     sim.force('center', KM.d3.forceCenter(w / 2, h / 2));
-    sim.alpha(0.2).restart();
+    clearTimeout(_miniKick);
+    _miniKick = setTimeout(() => { sim.alpha(0.2).restart(); }, 50);
 }
 
 /**
@@ -1045,10 +1021,7 @@ function updateMiniViewport() {
  *   weight (capped in CSS when mapped to style IDs).
  */
 function buildGraphData() {
-    const nodes = [],
-        links = [],
-        adj = new Map(),
-        hierPairs = new Set();
+    const nodes = [], links = [], adj = new Map(), hierPairs = new Set();
     const touch = (a, b) => {
         (adj.get(a) || adj.set(a, new Set()).get(a)).add(b);
         (adj.get(b) || adj.set(b, new Set()).get(b)).add(a);
@@ -1057,96 +1030,61 @@ function buildGraphData() {
 
     pages.forEach((p, i) => {
         p._i = i;
-        nodes.push({
-            id: i,
-            label: p.title,
-            ref: p
-        });
+        nodes.push({ id: i, label: p.title, ref: p });
     });
 
     // Hierarchical edges (unique per parent<->child). Using a Set to dedupe.
     pages.forEach(p => {
         if (!p.parent) return;
         if (p.isSecondary && p.parent === root) return; // reduce noise for promoted reps
-        const a = p._i,
-            b = p.parent._i;
+        const a = p._i, b = p.parent._i;
         const key = a < b ? `${a}|${b}` : `${b}|${a}`;
-        links.push({
-            source: a,
-            target: b,
-            shared: 0,
-            kind: 'hier',
-            tier: tierOf(descendants(p))
-        });
+        links.push({ source: a, target: b, shared: 0, kind: 'hier', tier: tierOf(descendants(p)) });
         hierPairs.add(key);
         touch(a, b);
     });
 
-    // Accumulate shared‑tag counts per unique pair.
+    // Accumulate shared-tag counts per unique pair with a soft cap per tag group.
     const tagToPages = new Map(); // Map<tag, number[]>
-    pages.forEach(p => {
-        for (const t of p.tagsSet) {
-            if (!tagToPages.has(t)) tagToPages.set(t, []);
-            tagToPages.get(t).push(p._i);
-        }
-    });
+    pages.forEach(p => { for (const t of p.tagsSet) { if (!tagToPages.has(t)) tagToPages.set(t, []); tagToPages.get(t).push(p._i); } });
     const shared = new Map(); // key "i|j" -> count
-    for (const arr of tagToPages.values()) {
+    const MAX_PER_TAG = 80;
+    for (const arr0 of tagToPages.values()) {
+        const arr = arr0.slice(0, MAX_PER_TAG);
         for (let x = 0; x < arr.length; x++) {
             for (let y = x + 1; y < arr.length; y++) {
-                const i = arr[x],
-                    j = arr[y];
+                const i = arr[x], j = arr[y];
                 const key = i < j ? `${i}|${j}` : `${j}|${i}`;
                 shared.set(key, (shared.get(key) || 0) + 1);
             }
         }
     }
     for (const [key, count] of shared) {
+        if (count < 2) continue; // drop weak tag ties to reduce noise
         if (hierPairs.has(key)) continue; // avoid doubling up with hierarchy
         const [i, j] = key.split('|').map(Number);
-        links.push({
-            source: i,
-            target: j,
-            shared: count,
-            kind: 'tag'
-        });
+        links.push({ source: i, target: j, shared: count, kind: 'tag' });
         touch(i, j);
     }
 
-    return {
-        nodes,
-        links,
-        adj
-    };
+    return { nodes, links, adj };
 }
 
 /**
- * Build the mini force‑directed graph lazily on first visibility.
+ * Build the mini force-directed graph lazily on first visibility.
  * [PERF] Work is deferred until #mini is actually intersecting the viewport.
  */
 async function buildGraph() {
     await KM.ensureD3();
     if (graphs.mini) return; // idempotent
 
-    const {
-        nodes,
-        links,
-        adj
-    } = buildGraphData();
+    const { nodes, links, adj } = buildGraphData();
     const svg = KM.d3.select('#mini');
-    const {
-        w: W,
-        h: H
-    } = getMiniSize();
+    const { w: W, h: H } = getMiniSize();
     svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
 
     // Copy arrays to avoid accidental mutation of the master model.
-    const localN = nodes.map(n => ({
-            ...n
-        })),
-        localL = links.map(l => ({
-            ...l
-        }));
+    const localN = nodes.map(n => ({ ...n })), localL = links.map(l => ({ ...l }));
 
     const sim = KM.d3.forceSimulation(localN)
         .force('link', KM.d3.forceLink(localL).id(d => d.id).distance(80))
@@ -1167,19 +1105,9 @@ async function buildGraph() {
         .on('mouseover', (e, d) => fade(d.id, 0.15))
         .on('mouseout', () => fade(null, 1))
         .call(KM.d3.drag()
-            .on('start', (e, d) => {
-                d.fx = d.x;
-                d.fy = d.y;
-            })
-            .on('drag', (e, d) => {
-                sim.alphaTarget(0.25).restart();
-                d.fx = e.x;
-                d.fy = e.y;
-            })
-            .on('end', (e, d) => {
-                if (!e.active) sim.alphaTarget(0);
-                d.fx = d.fy = null;
-            }));
+            .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
+            .on('drag',  (e, d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
+            .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
 
     const node = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
 
@@ -1202,16 +1130,7 @@ async function buildGraph() {
         label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
     });
 
-    graphs.mini = {
-        svg,
-        node,
-        label,
-        sim,
-        view,
-        adj,
-        w: W,
-        h: H
-    };
+    graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H };
     observeMiniResize();
 }
 
@@ -1229,11 +1148,10 @@ function highlightCurrent(force = false) {
         .attr('r', d => d.id === id ? 8 : 6);
     g.label.classed('current', d => d.id === id);
 
-    const cx = g.w / 2,
-        cy = g.h / 2;
+    const cx = g.w / 2, cy = g.h / 2;
     g.node.filter(d => d.id === id).each(d => {
-        const dx = cx - d.x,
-            dy = cy - d.y;
+        const dx = cx - d.x, dy = cy - d.y;
+        // (Change #10) remove redundant reset transform
         g.view.attr('transform', `translate(${dx},${dy})`);
         const k = 0.10;
         d.vx += (cx - d.x) * k;
@@ -1245,7 +1163,7 @@ function highlightCurrent(force = false) {
     CURRENT = id;
 }
 
-/** Keep mini‑graph responsive to container size and fullscreen changes. */
+/** Keep mini-graph responsive to container size and fullscreen changes. */
 function observeMiniResize() {
     const elx = $('#mini');
     if (!elx) return;
@@ -1257,13 +1175,11 @@ function observeMiniResize() {
 }
 
 /* ───────────────────────── renderer + router + init ────────────────────── */
-/** Scroll to an in‑page anchor if present. Smooth for user comfort. */
+/** Scroll to an in-page anchor if present. Smooth for user comfort. */
 function scrollToAnchor(anchor) {
     if (!anchor) return;
     const target = DOC.getElementById(anchor);
-    if (target) target.scrollIntoView({
-        behavior: 'smooth'
-    });
+    if (target) target.scrollIntoView({ behavior: 'smooth' });
 }
 
 /**
@@ -1274,12 +1190,11 @@ function scrollToAnchor(anchor) {
 async function render(page, anchor) {
     const contentEl = $('#content');
     if (!contentEl) return;
-    const {
-        parse
-    } = await KM.ensureMarkdown();
-    contentEl.innerHTML = parse(page.content, {
-        headerIds: false
-    });
+
+    // (Change #1 + #5)
+    contentEl.dataset.mathRendered = '0';
+    contentEl.innerHTML = await getParsedHTML(page);
+
     decorateExternalLinks();
 
     // Progressive image hints to reduce LCP impact and avoid network contention.
@@ -1291,42 +1206,15 @@ async function render(page, anchor) {
     });
 
     fixFootnoteLinks(page);
-    numberHeadings(contentEl);
+    // numberHeadings already applied by getParsedHTML()
 
-    // Syntax highlight (theme is swapped separately on theme changes).
-    if (DOC.querySelector('#content pre code')) {
-        await KM.ensureHLJSTheme();
-        await KM.ensureHighlight();
-        window.hljs.highlightAll();
-    }
+    // Lazy syntax highlight (Change #2)
+    await highlightVisibleCode($('#content'));
 
     // Render LaTeX math only when textual heuristics hint there is any.
     if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
         await KM.ensureKatex();
-        window.renderMathInElement(contentEl, {
-            delimiters: [{
-                    left: '$$',
-                    right: '$$',
-                    display: true
-                },
-                {
-                    left: '\\[',
-                    right: '\\]',
-                    display: true
-                },
-                {
-                    left: '$',
-                    right: '$',
-                    display: false
-                },
-                {
-                    left: '\\(',
-                    right: '\\)',
-                    display: false
-                }
-            ],
-            throwOnError: false
-        });
+        renderMathSafe(contentEl);
     }
 
     buildToc(page);
@@ -1341,7 +1229,7 @@ async function render(page, anchor) {
 let currentPage = null; // debounces redundant renders on hash changes
 
 /**
- * Hash router: compute (page, optional in‑page anchor) and render.
+ * Hash router: compute (page, optional in-page anchor) and render.
  * Handles three cases:
  *   1) First load / page change → full render + sidebar/graph updates
  *   2) Same page, anchor change → smooth scroll only
@@ -1357,16 +1245,16 @@ function route() {
 
     if (currentPage !== page) {
         currentPage = page;
-        // Reset to top for new pages to keep UX consistent across browsers.
-        window.scrollTo({
-            top: 0
-        });
+
         breadcrumb(page);
         render(page, anchor);
         highlightCurrent(true);
         highlightSidebar(page);
+
+        // After the new content paints, ensure we're at the top (unless navigating to an anchor).
+        if (!anchor) requestAnimationFrame(() => resetScrollTop());
     } else if (anchor) {
-        // Same page, only anchor changed → avoid re‑parsing & re‑rendering.
+        // Same page, only anchor changed → avoid re-parsing & re-rendering.
         scrollToAnchor(anchor);
         const a = $(`#toc li[data-hid="${anchor}"] > a`);
         if (a) {
@@ -1388,13 +1276,13 @@ let uiInited = false; // guard against duplicate initialization
 /* ───────────────────────────── link previews (v2) ─────────────────────────────
    - Hover/focus an internal link → show small scrollable preview of the target page
    - If the URL includes a heading anchor, auto-scroll to that heading
-   - Code blocks inside previews are highlighted (highlight.js)
+   - Code blocks inside previews are highlighted (lazy, HLJS)
    - Hovering links *inside previews* opens nested previews in a stack
    - Mouse leaving or clicking ✕ closes the relevant preview
 */
 (() => {
-    const previewHTMLCache = new Map(); // page.id -> parsed HTML string
-    const previewStack = []; // stack of { el, body, link, hover, timer }
+    // (Change #1) Use global getParsedHTML LRU cache
+    const previewStack = []; // stack of { el, body, link, timer }
     let hoverDelay = null;
 
     function resolveTarget(href) {
@@ -1406,12 +1294,8 @@ let uiInited = false; // guard against duplicate initialization
         const baseSegs = base ? base.split('#') : [];
         if (!baseSegs.length) return null; // not a link to a page → ignore
         const anchor = seg.slice(baseSegs.length).join('#');
-        return {
-            page,
-            anchor
-        };
+        return { page, anchor };
     }
-
 
     function rewriteRelativeAnchorsIn(panel, page) {
         const base = hashOf(page); // e.g. "stresstest"
@@ -1426,41 +1310,9 @@ let uiInited = false; // guard against duplicate initialization
         });
     }
 
-    function renderMathInPreview(container) {
-        try {
-            const render = (window.renderMathInElement || (KM && KM.renderMathInElement));
-            if (!render) return;
-            render(container, {
-                delimiters: [{
-                        left: '$$',
-                        right: '$$',
-                        display: true
-                    },
-                    {
-                        left: '\\\\[',
-                        right: '\\\\]',
-                        display: true
-                    },
-                    {
-                        left: '\\\\(',
-                        right: '\\\\)',
-                        display: false
-                    },
-                    {
-                        left: '$',
-                        right: '$',
-                        display: false
-                    },
-                ],
-                throwOnError: false,
-            });
-        } catch {}
-    }
-
     function positionPreview(panel, linkEl) {
         const rect = linkEl.getBoundingClientRect();
-        const vw = __VPW,
-            vh = __VPH;
+        const vw = __VPW, vh = __VPH;
         const gap = 8;
         const W = Math.min(520, vw * 0.48);
         const H = Math.min(480, vh * 0.72);
@@ -1485,58 +1337,42 @@ let uiInited = false; // guard against duplicate initialization
         }
     }
 
-
     function anyPreviewOrTriggerActive() {
-        // Keep previews if: any preview is hovered, or the currently focused/hovered
-        // element is (or contains) a trigger link.
         const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview'))
             .some(p => p.matches(':hover'));
         if (anyHoverPreview) return true;
         const active = document.activeElement;
         const activeIsTrigger = !!(active && active.closest && isInternalPageLink(active.closest('a[href^="#"]')));
         if (activeIsTrigger) return true;
-        // Any hovered trigger link?
         const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
         return hoveringTrigger;
     }
 
+    let trimTimer;
     function scheduleTrim() {
-        clearTimeout(scheduleTrim._t);
-        scheduleTrim._t = setTimeout(() => {
+        clearTimeout(trimTimer);
+        trimTimer = setTimeout(() => {
             if (!anyPreviewOrTriggerActive()) closeFrom(0);
         }, 220);
     }
 
-
     async function fillPanel(panel, page, anchor) {
-        // Parse + cache HTML for the page
-        let html = previewHTMLCache.get(page.id);
-        if (!html) {
-            const {
-                parse
-            } = await KM.ensureMarkdown();
-            const tmp = el('div');
-            tmp.innerHTML = parse(page.content, {
-                headerIds: false
-            });
-            numberHeadings(tmp); // ensure same heading IDs as main view
-            html = tmp.innerHTML;
-            previewHTMLCache.set(page.id, html);
-        }
-        panel.body.innerHTML = html;
+        // (Change #1 + #5)
+        panel.body.dataset.mathRendered = '0';
+        panel.body.innerHTML = await getParsedHTML(page);
         rewriteRelativeAnchorsIn(panel, page);
 
-        // Highlight code inside the preview
-        await KM.ensureHighlight();
-        await KM.ensureHLJSTheme();
-        panel.body.querySelectorAll('pre code').forEach(c => window.hljs.highlightElement(c));
+        // Lazy highlight within preview (Change #2)
+        await highlightVisibleCode(panel.body);
 
         // Render math (KaTeX)
         await KM.ensureKatex();
-        renderMathInPreview(panel.body);
+        renderMathSafe(panel.body);
 
         decorateCodeBlocks(panel.body);
         decorateHeadings(page, panel.body);
+        decorateExternalLinks(panel.body);
+        fixFootnoteLinks(page, panel.body);
 
         // Auto scroll to anchor if provided
         if (anchor) {
@@ -1550,68 +1386,57 @@ let uiInited = false; // guard against duplicate initialization
                 const tRect = t.getBoundingClientRect();
                 const y = tRect.top - cRect.top + container.scrollTop;
                 const top = Math.max(0, y - headerH - 6);
-                container.scrollTo({
-                    top,
-                    behavior: 'instant'
-                });
+                container.scrollTo({ top, behavior: 'instant' });
                 t.classList.add('km-preview-focus');
             }
         }
     }
 
     function createPanel(linkEl) {
-        const container = el('div', {
-            class: 'km-link-preview',
-            role: 'dialog',
-            'aria-label': 'Preview'
-        });
+        const container = el('div', { class: 'km-link-preview', role: 'dialog', 'aria-label': 'Preview' });
         const header = el('header', {}, [
-            el('button', {
-                type: 'button',
-                class: 'km-preview-close',
-                title: 'Close',
-                'aria-label': 'Close',
-                innerHTML: '✕'
-            })
+            el('button', { type: 'button', class: 'km-preview-close', title: 'Close', 'aria-label': 'Close', innerHTML: '✕' })
         ]);
         const body = el('div');
         container.append(header, body);
         document.body.appendChild(container);
 
-        const panel = {
-            el: container,
-            body,
-            link: linkEl,
-            hover: false,
-            timer: null
-        };
+        const panel = { el: container, body, link: linkEl, timer: null };
         const idx = previewStack.push(panel) - 1;
 
         // Hover handling for close lifecycle
         container.addEventListener('mouseenter', () => {
-            panel.hover = true;
             clearTimeout(panel.timer);
-            clearTimeout(scheduleTrim._t);
-        }, {
-            passive: true
-        });
+            clearTimeout(trimTimer);
+        }, { passive: true });
         container.addEventListener('mouseleave', (e) => {
-            panel.hover = false;
             const to = e.relatedTarget;
             if (to && (to.closest && to.closest('.km-link-preview'))) return; // still inside previews stack
-            panel.timer = setTimeout(() => {
-                closeFrom(idx);
-            }, 240);
-        }, {
-            passive: true
-        });
+            panel.timer = setTimeout(() => { closeFrom(idx); }, 240);
+        }, { passive: true });
         header.querySelector('button').addEventListener('click', () => closeFrom(idx));
 
         // Open links INSIDE previews → spawn another panel on top
         container.addEventListener('mouseover', (e) => maybeOpenFromEvent(e), true);
-        container.addEventListener('focusin', (e) => maybeOpenFromEvent(e), true);
+        container.addEventListener('focusin',  (e) => maybeOpenFromEvent(e), true);
 
         positionPreview(panel, linkEl);
+
+        // Copy link buttons
+        panel.el.addEventListener('click', (e) => {
+        const btn = e.target.closest?.('button.heading-copy, button.code-copy');
+        if (!btn) return;
+        if (btn.classList.contains('heading-copy')) {
+            const h = btn.closest('h1,h2,h3,h4,h5,h6');
+            const base = baseURLNoHash() + '#' + (hashOf(panel.link && resolveTarget(panel.link.getAttribute('href')||'')?.page) ? hashOf(resolveTarget(panel.link.getAttribute('href')||'')?.page) + '#' : '');
+            copyText(base + h.id, btn);
+        } else {
+            const pre = btn.closest('pre');
+            const code = pre?.querySelector('code');
+            copyText(code ? code.innerText : pre?.innerText || '', btn);
+        }
+        });
+
         return panel;
     }
 
@@ -1632,7 +1457,6 @@ let uiInited = false; // guard against duplicate initialization
         const panel = createPanel(linkEl);
         // Cancel any close timers on existing panels when a child opens
         previewStack.forEach(p => clearTimeout(p.timer));
-        panel.targetKey = `${target.page.id}#${target.anchor||''}`;
         await fillPanel(panel, target.page, target.anchor);
     }
 
@@ -1658,19 +1482,15 @@ let uiInited = false; // guard against duplicate initialization
         const root = $('#content');
         if (!root) return;
         root.addEventListener('mouseover', maybeOpenFromEvent, true);
-        root.addEventListener('focusin', maybeOpenFromEvent, true);
+        root.addEventListener('focusin',  maybeOpenFromEvent, true);
         root.addEventListener('mouseout', (e) => {
             const to = e.relatedTarget;
             if (to && (to.closest && to.closest('.km-link-preview'))) return; // moving into a preview
             scheduleTrim();
         }, true);
 
-        addEventListener('hashchange', () => closeFrom(0), {
-            passive: true
-        });
-        addEventListener('scroll', () => scheduleTrim(), {
-            passive: true
-        }); // close trailing when scrolling
+        addEventListener('hashchange', () => closeFrom(0), { passive: true });
+        addEventListener('scroll',     () => scheduleTrim(), { passive: true }); // close trailing when scrolling
     }
 
     // Expose for initUI()
@@ -1685,6 +1505,9 @@ function initUI() {
 
     if (uiInited) return; // idempotent safety
     uiInited = true;
+
+    // Disable browser scroll restoration (we handle scroll position ourselves).
+    try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch {}
 
     // Title & sidebar
     $('#wiki-title-text').textContent = TITLE;
@@ -1701,7 +1524,6 @@ function initUI() {
         let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
 
         if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
-        const metaTheme = DOC.querySelector('meta[name="theme-color"]');
 
         apply(dark);
         if (btn) {
@@ -1735,7 +1557,6 @@ function initUI() {
             // Prefer CSS variables to enable theming without large CSS rewrites.
             rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
             rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
-            if (metaTheme) metaTheme.setAttribute('content', isDark ? '#1d1d1d' : '#ffffff');
             KM.ensureHLJSTheme(); // async theme swap for syntax highlight CSS
         }
     })();
@@ -1743,7 +1564,7 @@ function initUI() {
     // Initial route/render.
     route();
 
-    // Lazy‑build the mini‑graph on first visibility to avoid upfront cost.
+    // Lazy-build the mini-graph on first visibility to avoid upfront cost.
     const miniElForObserver = $('#mini');
     if (miniElForObserver) {
         new IntersectionObserver((entries, obs) => {
@@ -1754,7 +1575,7 @@ function initUI() {
         }).observe(miniElForObserver);
     }
 
-    // Graph fullscreen toggle with aria‑pressed state for a11y.
+    // Graph fullscreen toggle with aria-pressed state for a11y.
     const mini = $('#mini');
     const expandBtn = $('#expand');
     if (expandBtn && mini) {
@@ -1766,7 +1587,27 @@ function initUI() {
         };
     }
 
-    // Search box: debounce keystrokes; show a clear button when non‑empty.
+    // (Change #3) Event delegation for copy buttons in main content
+    const contentRoot = $('#content');
+    if (contentRoot) {
+        contentRoot.addEventListener('click', (e) => {
+            const btn = e.target.closest?.('button.heading-copy, button.code-copy');
+            if (!btn) return;
+
+            if (btn.classList.contains('heading-copy')) {
+                const h = btn.closest('h1,h2,h3,h4,h5,h6');
+                const page = currentPage;
+                const base = baseURLNoHash() + '#' + (hashOf(page) ? hashOf(page) + '#' : '');
+                copyText(base + h.id, btn);
+            } else if (btn.classList.contains('code-copy')) {
+                const pre = btn.closest('pre');
+                const code = pre?.querySelector('code');
+                copyText(code ? code.innerText : pre?.innerText || '', btn);
+            }
+        });
+    }
+
+    // Search box: debounce keystrokes; show a clear button when non-empty.
     const searchInput = $('#search'),
         searchClear = $('#search-clear');
     let debounce = 0;
@@ -1817,9 +1658,7 @@ function initUI() {
             updateMiniViewport();
             highlightCurrent(true);
         }
-    }, {
-        passive: true
-    });
+    }, { passive: true });
 
     // Close panels upon navigation clicks inside the lists.
     $('#tree').addEventListener('click', e => {
@@ -1836,19 +1675,13 @@ function initUI() {
             return;
         }
         if (e.target.closest('a')) closePanels();
-    }, {
-        passive: true
-    });
+    }, { passive: true });
     $('#results').addEventListener('click', e => {
         if (e.target.closest('a')) closePanels();
-    }, {
-        passive: true
-    });
+    }, { passive: true });
 
     // Hash router wiring.
-    addEventListener('hashchange', route, {
-        passive: true
-    });
+    addEventListener('hashchange', route, { passive: true });
 
     // ESC: close panels or exit graph fullscreen.
     addEventListener('keydown', (e) => {
@@ -1872,10 +1705,8 @@ function initUI() {
             requestAnimationFrame(() => highlightCurrent(true));
             acted = true;
         }
-        if (acted) e.preventDefault(); // prevent page‑level ESC behavior when handled
-    }, {
-        capture: true
-    });
+        if (acted) e.preventDefault(); // prevent page-level ESC behavior when handled
+    }, { capture: true });
 
 
     // ===== Keyboard Shortcuts =====
@@ -1908,6 +1739,7 @@ function initUI() {
     const noMods = (e) => !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
 
     // --- Actions
+    let _helpOpener = null;
     const actions = {
         focusSearch: () => $search?.focus(),
         toggleTheme: () => $theme?.click(),
@@ -1923,16 +1755,16 @@ function initUI() {
     // `inEditable: true` means it should still fire inside inputs/contenteditable
     const bindings = [
         { id: 'search-ctrlk', when: (e) => isMod(e) && key(e, 'k'), action: 'focusSearch', inEditable: true, help: 'Ctrl/Cmd + K' },
-        { id: 'search-slash', when: (e) => key(e, '/') && !e.shiftKey && !e.altKey && !isMod(e), action: 'focusSearch', help: '/' },
+        { id: 'search-slash', when: (e) => key(e, '/') && !e.shiftKey && !isMod(e), action: 'focusSearch', help: '/' },
         { id: 'search-s', when: (e) => key(e, 's') && noMods(e), action: 'focusSearch', help: 'S' },
-        { id: 'theme', when: (e) => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
         { id: 'left', when: (e) => keyIn(e, ['a', 'q']) && noMods(e), action: 'toggleSidebar', help: 'A or Q' },
         { id: 'right', when: (e) => key(e, 'd') && noMods(e), action: 'toggleUtil', help: 'D' },
         { id: 'crumb', when: (e) => keyIn(e, ['w', 'z']) && noMods(e), action: 'toggleCrumb', help: 'W or Z' },
+        { id: 'theme', when: (e) => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
         { id: 'graph', when: (e) => key(e, 'g') && noMods(e), action: 'fullscreenGraph', help: 'G' },
         { id: 'help', when: (e) => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
         // Escape closes help only (let other Esc handlers elsewhere continue to work)
-        { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true },
+        { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true }
     ];
 
     // --- Help panel (built from `bindings` so it never drifts)
@@ -1948,13 +1780,13 @@ function initUI() {
 
         const items = [
         { desc: 'Focus search', ids: ['search-slash', 'search-ctrlk', 'search-s'] },
-        { desc: 'Cycle theme (light / dark)', ids: ['theme'] },
+        { desc: 'Toggle header (breadcrumbs)', ids: ['crumb'] },
         { desc: 'Toggle left sidebar (pages & search)', ids: ['left'] },
         { desc: 'Toggle right sidebar (graph & ToC)', ids: ['right'] },
-        { desc: 'Toggle header (breadcrumbs)', ids: ['crumb'] },
+        { desc: 'Cycle theme (light / dark)', ids: ['theme'] },
         { desc: 'Toggle fullscreen graph', ids: ['graph'] },
         { desc: 'Close panels & overlays', keys: ['Esc'] },
-        { desc: 'Show this help panel', ids: ['help'] },
+        { desc: 'Show this help panel', ids: ['help'] }
         ];
 
         const list = h('ul');
@@ -1987,12 +1819,22 @@ function initUI() {
         const host = ensureKbHelp();
         window.openHelp = openHelp; // expose for external triggers
         host.hidden = false;
-        host.focus();
+        // Focus trap & return focus to opener
+        _helpOpener = document.activeElement;
+        const focusables = host.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+        const first = focusables[0], last = focusables[focusables.length - 1];
+        host.addEventListener('keydown', (e) => {
+            if (e.key !== 'Tab') return;
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+        });
+        (first || host).focus();
     }
 
     function closeHelp() {
         const host = document.getElementById('kb-help');
         if (host) host.hidden = true;
+        _helpOpener?.focus?.();
     }
 
     // --- Global keydown handler

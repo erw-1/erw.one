@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<!-- =====================================================================
+<!-- ============================================================================
+ 
   km — STATIC WIKI
   Self-contained and feature rich wiki/docs/notes runnable on any static host.
   No build step. External libs via CDNs. Client-side. Optional SEO.
@@ -9,28 +10,28 @@
     2. Fork the branch you want (SEO / NO SEO) or download the offline version
     3. Edit config in index.html
     4. Enable Github Page (repo settings > pages > deploy from a branch > main)
-    5. Access your km here! > https://{github username}.github.io/{repo name}/
-
-======================================================================== -->
+    5. Access your km here! > https://{github_username}.github.io/{repo_name}
+    
+============================================================================= -->
 <html lang="en">
 <head>
-  <!-- =====================================================================
+  <!-- =====================================================================================================================================
   Configuration - Edit all this !
   Replace example values. Uncomment what you need. Delete what you don't want.
-  ======================================================================== --> 
+  ====================================================================================================================================== --> 
   
      <!-- JS configuration for the content / theme / supported syntax highlighting
-      "TITLE":        - Will be the page and tab title 
-      "MD"            - Raw MD source (can also be a file eg. 'content.md')
-      "DEFAULT_THEME" - (optional) 'dark' | 'light' 
-      "ACCENT"        - (optional) CSS color string '#3fabd1', 'red', etc.
-      "LANGS"         - (optional) For codeblocks highlighting (supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/)
-      "CACHE_MD"      - (optional) Caching time (minutes) for the MD, set to "0" or blank to refresh content every reload
+        "TITLE":        - Will be the page and tab title 
+        "MD"            - Raw MD source (can also be a file eg. 'content.md')
+        "DEFAULT_THEME" - (optional) 'dark' | 'light' 
+        "ACCENT"        - (optional) CSS color string '#3fabd1', 'red', etc.
+        "LANGS"         - (optional) For codeblocks highlighting (supported langs: https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/)
+        "CACHE_MD"      - (optional) Caching time (minutes) for the MD, set to "0" or blank to refresh content every reload
     -->
       <script type="application/json" id="km-config">     
         {
           "TITLE":          "Title of your wiki",
-          "MD":             "https://hackmd.io/@h-s-n/doc_test/download",
+          "MD":             "https://hackmd.io/@erw-1/km_demo/download",
           "DEFAULT_THEME":  "dark",
           "ACCENT":         "#3fabd1",
           "LANGS":          ["javascript", "bash", "markdown", "python", "css"],
@@ -43,13 +44,13 @@
       <meta name="theme-color" content="#1e1e1e">
       <link rel="canonical"       href="https://example.com/"> <!-- Your URL -->
     
-      <link rel="preload"   as="image" href="logo.webp" fetchpriority="high">
-      <link id="favicon-el" rel="icon" href="logo.webp">
+      <link rel="preload"   as="image" href="assets/logo.webp" fetchpriority="high">
+      <link id="favicon-el" rel="icon" href="assets/logo.webp">
     
-      <!-- Two additional things to change in the body: 
-            - line 281 - img src, if you change the "logo.webp" filename.
-            - line 282 - title, will be replaced by the one in the JS config, but will help SEO and reduce layout shift if edited
- (optional) - line 342 - Static content for SEO for search engines that don't render JS
+      <!-- Additional things to change in the body: 
+            - line 283 - img src, if you change the "logo.webp" filename.
+            - line 283 - title, will be replaced by the one in the JS config, but will help SEO and reduce layout shift if edited (optional)
+            - line 346 - Static content for SEO for search engines that don't render JS (optional)
       -->
 
     <!-- ===== SEO block, to be referenced on search engines (optional) =============================================================
@@ -235,11 +236,12 @@
       <!-- if you want Mastodon/identity verification → rel=me (not SEO, but useful) -->
         <!-- <link rel="me" href="https://mastodon.social/@yourhandle"> -->
 
-    <!-- ===== End of SEO block ========================================= -->
+    <!-- ===== End of SEO block ======================================================================================================== -->
     
-  <!-- =====================================================================
+  <!-- =====================================================================================================================================
   End of configuration
-  ======================================================================== -->  
+  ====================================================================================================================================== -->  
+
   <!-- ——— Core meta ——— -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -252,8 +254,8 @@
   <link rel="preconnect"    href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect"    href="https://hackmd.io" crossorigin>
   
-  <script async type="module" src="km_testing.js"></script>
-  <link   rel="stylesheet"    href="km.min.css">
+  <script async type="module"  src="src/km_testing.js"></script>
+  <link   rel="stylesheet"    href="src/km.css">
   
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm" crossorigin>
   <link rel="modulepreload" href="https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm" crossorigin>
@@ -271,31 +273,30 @@
 </head>
   
 <body>
-  <noscript>
-    <div class="noscript">This wiki needs JavaScript enabled to render content.</div>
-  </noscript>
   <!-- ======================================================================
        SIDEBAR • TREE + SEARCH
-  ====================================================================== -->
+  ======================================================================= -->
   <nav id="sidebar" role="navigation" aria-label="Site navigation">
     <a href="#" title="Home" aria-label="Home">
       <div id="wiki-title" tabindex="0">
-        <img src="logo.webp" width="32" height="32" alt="" loading="lazy" decoding="async">    <!-- IF YOU RENAMED YOUR ICON/LOGO, EDIT THIS -->
+        <img src="assets/logo.webp" width="32" height="32" alt="" loading="lazy" decoding="async">    <!-- IF YOU RENAMED YOUR ICON/LOGO, EDIT THIS -->
         <h1 id="wiki-title-text">Title</h1>                                                    <!-- EDIT THIS TO REDUCE LAYOUT SHIFT -->
       </div>
     </a>
+    
     <!-- ——— SEARCH BOX ——— -->
     <div id="search-box">
       <input id="search" type="search" placeholder="Search…" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search">
       <button id="search-clear" aria-label="Clear search" title="Clear search" style="display: none;">✕</button>
     </div>
+
     <!-- ——— DYNAMIC NAVIGATION TREES ——— -->
     <ul id="tree" role="tree"></ul>
     <ul id="results" aria-labelledby="results-label" aria-live="polite"></ul>
   </nav>
   <!-- ======================================================================
        MAIN PANEL • BREADCRUMB + CONTENT + UTILS
-  ====================================================================== -->
+  ======================================================================= -->
   <main>
     <!-- ——— BREADCRUMB / TOP BAR ——— -->
     <nav id="crumb" role="navigation" aria-label="Breadcrumb">
@@ -310,13 +311,14 @@
         </svg>
       </a>
       <span id="crumb-dyn"></span>
+
       <button id="burger-util" class="burger" aria-label="Open utility panel" aria-controls="util" aria-expanded="false" type="button">
         <svg width="24" height="24" viewBox="0 0 24 24">
           <circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" />
         </svg>
       </button>
+
       <button id="theme-toggle" class="theme-toggle" aria-pressed="false" aria-label="Toggle light / dark" type="button">
-        <!-- sun -->
         <svg class="sun" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
           <circle cx="12" cy="12" r="5"></circle>
           <g stroke-linecap="round" stroke-width="2">
@@ -324,10 +326,10 @@
             </line><line x1="1" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"></line>
           </g>
         </svg>
-        <!-- moon -->
         <svg class="moon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"></path>
         </svg>
+
         <button id="kb-icon" class="kb-keycap" type="button" aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-controls="kb-help">
           <svg viewBox="0 0 33 33" width="30" height="30" aria-hidden="true">
             <rect id="kb-keycap-bg" x="1" y="1" width="30" height="30" rx="3" ry="3" opacity="0.15"></rect>
@@ -349,13 +351,16 @@
         <h2 id="loading" role="status" aria-live="polite">Knowledge is loading...</h2>
         <noscript>This site requires JavaScript to load content.</noscript>
       </article>
+
       <!-- ——— RIGHT UTILITY PANE (mini-graph + ToC) ——— -->
       <section id="util" aria-labelledby="util-heading">
         <div id="graph-box">
           <svg id="mini" role="img" aria-label="Document graph"></svg>
           <button id="expand" type="button" aria-controls="mini" aria-expanded="false" aria-label="Expand graph">⛶</button>
         </div>
+
         <a class="watermark" href="https://github.com/erw-1/km" target="_blank" rel="noopener noreferrer">Powered by KM</a>
+
         <nav id="toc" aria-label="Table of contents"></nav>
       </section>
     </div>
