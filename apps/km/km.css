@@ -758,6 +758,67 @@
     width: 22px;
     height: 22px;
   }
+
+  a.km-has-preview { 
+    background:  color-mix(in srgb, var(--color-accent-quarter) 5%, transparent);
+    padding: 0 var(--g-sm);
+    border-radius: var(--r-sm);
+  }
+
+  a.km-has-preview::after { content: "👁"; font-size: .85em; opacity: .7; margin-left: .2em; }
+  .mermaid { max-width: 100% !important; }
+
+   html[data-theme="dark"] [aria-roledescription="xychart"] .background {
+       display: none
+   }
+   
+   html[data-theme="dark"] [aria-roledescription="xychart"] *:not(.line-plot-1 path) {
+       fill: #333;
+       stroke: #ccc;
+   }
+   
+   html[data-theme="dark"] [aria-roledescription="xychart"] text {
+       fill:#ccc !important;
+       stroke: none !important;
+   }
+   
+   html[data-theme="dark"] [aria-roledescription="c4"] text {
+       fill:#ccc !important;
+       stroke: none !important;
+   }
+   
+   html[data-theme="dark"] [aria-roledescription="xychart"] .line-plot-1 path {
+       stroke: #ccc;
+   }
+   
+   html[data-theme="dark"] .erDiagram path:not(.relationshipLine),
+   html[data-theme="dark"] .requirementDiagram path:not(.relationshipLine),
+   html[data-theme="dark"] .statediagram path:not(.relationshipLine){
+       fill: #1f2020;
+       stroke: #ccc;
+   }
+   
+   html[data-theme="dark"] [aria-roledescription="quadrantChart"] rect {
+       filter: grayscale(1) invert(1) contrast(0.9) brightness(2);
+   }
+   
+   html[data-theme="dark"] [aria-roledescription="quadrantChart"] line {
+       stroke: #808080 !important;
+   }
+   
+   html[data-theme="dark"] [aria-roledescription="quadrantChart"] text {
+       fill:#ccc !important;
+   }
+   
+   html[data-theme="dark"] .nodeLabel {
+       color: var(--color-text) !important;
+   }
+   
+   html[data-theme="dark"] [aria-roledescription="pie"] .pieCircle, html[data-theme="dark"] [aria-roledescription="pie"] .legend rect {
+     filter: grayscale(0.9) invert(1) contrast(0.9) brightness(1.2);  
+     stroke: #808080 !important;
+   }
+
 }
 
 /* ---------------------------------------------------------------------------
