@@ -433,7 +433,7 @@ KM.ensureHLJSTheme = () => new Promise(res => {
 });
 
 KM.syncMermaidThemeWithPage = async () => {
-    const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'forest';
+    const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
     const { setMermaidTheme } = await KM.ensureMarkdown();
     setMermaidTheme(mode);
     // Re-render current page so Mermaid converts <pre.mermaid> → <svg> with the new theme
