@@ -827,7 +827,7 @@
     color: var(--color-accent);
   }
 
-  pre,
+  pre:not(.mermaid),
   .katex-display {
     width: fit-content;
     max-width: 100%;
@@ -1157,6 +1157,51 @@
 
   #content { content-visibility: auto; contain-intrinsic-size: 1000px 800px; }
   .km-link-preview > div { content-visibility: auto; contain-intrinsic-size: 800px 600px; }
+   
+  mark {
+     border-radius: var(--r-sm);
+     color: var(--color-accent);
+     background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+     padding: var(--g-sm) var(--g-md);
+     box-decoration-break: clone;        /* keep padding on wrapped lines */
+     -webkit-box-decoration-break: clone;
+   }
+   
+   /* optional: make super/sub look crisper */
+   sup, sub { font-size: .75em; line-height: 0; }
+   u{ text-underline-offset: .15em; }
+   
+   /* Callouts */
+   .md-callout{
+     --_c: var(--note);
+     border-radius: var(--r-md);
+     padding: var(--g-md);
+     margin: var(--g-md) 0;
+     background: color-mix(in srgb, var(--_c) 12%, transparent);
+     border-left: 2px solid color-mix(in srgb, var(--_c) 40%, transparent);
+   }
+   
+   .md-callout p:first-child{ margin-top: 0; }
+   .md-callout p:last-child{ margin-bottom: 0; }
+   
+   .md-note   { --_c: var(--note); }
+   .md-tip    { --_c: var(--tip); }
+   .md-warning{ --_c: var(--warning); }
+   .md-caution{ --_c: var(--caution); }
+   
+   /* Spoiler */
+   details.md-spoiler{
+     border-radius: var(--r-md);
+     border-left: 2px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+   }
+   details.md-spoiler > summary{
+     user-select: none;
+   }
+   details.md-spoiler > summary::-webkit-details-marker{ display:none; }
+   
+   .mermaid button.code-copy {
+       display: none;
+   }
 }
 
 /* ---------------------------------------------------------------------------
