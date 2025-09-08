@@ -803,6 +803,19 @@ function fixFootnoteLinks(page, container = $('#content')) {
     });
 }
 
+function annotatePreviewableLinks(container = $('#content')) {
+  if (!container) return;
+  let seq = 0, stamp = Date.now().toString(36);
+  container.querySelectorAll('a[href^="#"]').forEach(a => {
+    if (isInternalPageLink(a)) {               // already uses resolveTarget()
+      a.classList.add('km-has-preview');
+      a.dataset.preview = '1';
+      if (!a.id) a.id = `km-prev-${stamp}-${seq++}`;  // unique id for styling/debug
+      if (!a.title) a.title = 'Preview on hover';
+    }
+  });
+}
+
 /**
  * Small inline SVG icons used by copy buttons. Embedding avoids extra
  * requests and works offline.
@@ -1412,7 +1425,7 @@ async function render(page, anchor) {
     });
 
     fixFootnoteLinks(page);
-    // numberHeadings already applied by getParsedHTML()
+    annotatePreviewableLinks();
 
     // Lazy syntax highlight
     await highlightVisibleCode(contentEl);
@@ -1496,15 +1509,19 @@ let uiInited = false; // guard against duplicate initialization
     let hoverDelay = null;
 
     function resolveTarget(href) {
-        if (!href || !href.startsWith('#')) return null;
-        const seg = href.slice(1).split('#').filter(Boolean);
-        if (!seg.length) return null;
-        const page = find(seg);
-        const base = hashOf(page);
-        const baseSegs = base ? base.split('#') : [];
-        if (!baseSegs.length) return null; // not a link to a page → ignore
-        const anchor = seg.slice(baseSegs.length).join('#');
-        return { page, anchor };
+      if (!href || !href.startsWith('#')) return null;
+      const seg = href.slice(1).split('#').filter(Boolean);
+    
+      // Allow bare "#" to mean the root (Home) page
+      const page = seg.length ? find(seg) : root;
+      const base = hashOf(page);
+      const baseSegs = base ? base.split('#') : [];
+    
+      // If we had segments but none mapped to a page, it's just an in-article anchor → no preview
+      if (seg.length && !baseSegs.length) return null;
+    
+      const anchor = seg.slice(baseSegs.length).join('#');
+      return { page, anchor };
     }
 
     function rewriteRelativeAnchorsIn(panel, page) {
@@ -1586,6 +1603,7 @@ let uiInited = false; // guard against duplicate initialization
         decorateHeadings(page, panel.body);
         decorateExternalLinks(panel.body);
         fixFootnoteLinks(page, panel.body);
+        annotatePreviewableLinks(panel.body);
 
         // Auto scroll to anchor if provided
         if (anchor) {
@@ -1692,7 +1710,7 @@ let uiInited = false; // guard against duplicate initialization
     }
 
     // Global listeners: main content + previews (delegated)
-    function attachLinkPreviewsV2() {
+    function attachLinkPreviews() {
         const root = $('#content');
         if (!root) return;
         root.addEventListener('mouseover', maybeOpenFromEvent, true);
@@ -1708,13 +1726,13 @@ let uiInited = false; // guard against duplicate initialization
     }
 
     // Expose for initUI()
-    KM.attachLinkPreviewsV2 = attachLinkPreviewsV2;
+    KM.attachLinkPreviews = attachLinkPreviews;
 })();
 
 
 function initUI() {
     try {
-        KM.attachLinkPreviewsV2();
+        KM.attachLinkPreviews();
     } catch (_) {}
 
     if (uiInited) return; // idempotent safety
