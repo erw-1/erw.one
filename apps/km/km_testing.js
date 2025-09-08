@@ -437,24 +437,86 @@ let mdReady = null;
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
 
-  mdReady = Promise.all([
-    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
-    import('https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm'),
-  ]).then(([marked, alertMod, footnoteMod, emojiPluginMod, emojiLibMod]) => {
-    // Build keyword -> emoji map (first keyword wins), just like your TS reference.
-    const emojiLib = emojiLibMod.default ?? emojiLibMod;
-    const Emojis = Object.entries(emojiLib).reduce((dict, [emoji, keywords]) => {
-      // emojilib v4 exports { "😀": ["grinning", "smile", ...], ... }
-      if (Array.isArray(keywords)) {
-        for (const keyword of keywords) {
-          if (dict[keyword] == null) dict[keyword] = emoji;
+    // ——— Add inline extensions: ==mark==, ^sup^, ~sub~ ———
+    const markExt = {
+      name: 'mark',
+      level: 'inline',
+      start(src) { return src.indexOf('=='); }, // perf hint
+      tokenizer(src) {
+        const m = /^==(?=\S)([\s\S]*?\S)==/.exec(src);
+        if (m) {
+          return {
+            type: 'mark',
+            raw: m[0],
+            text: m[1],
+            tokens: this.lexer.inlineTokens(m[1])
+          };
         }
+      },
+      renderer(token) {
+        return `<mark>${this.parser.parseInline(token.tokens)}</mark>`;
       }
-      return dict;
-    }, {});
+    };
+    
+    const supExt = {
+      name: 'sup',
+      level: 'inline',
+      start(src) { return src.indexOf('^'); },
+      tokenizer(src) {
+        const m = /^\^(?!\^)(?=\S)([\s\S]*?\S)\^/.exec(src);
+        if (m) {
+          return {
+            type: 'sup',
+            raw: m[0],
+            text: m[1],
+            tokens: this.lexer.inlineTokens(m[1])
+          };
+        }
+      },
+      renderer(token) {
+        return `<sup>${this.parser.parseInline(token.tokens)}</sup>`;
+      }
+    };
+    
+    const subExt = {
+      name: 'sub',
+      level: 'inline',
+      start(src) { return src.indexOf('~'); },
+      tokenizer(src) {
+        // avoid conflict with strikethrough "~~"
+        const m = /^~(?!~)(?=\S)([\s\S]*?\S)~(?!~)/.exec(src);
+        if (m) {
+          return {
+            type: 'sub',
+            raw: m[0],
+            text: m[1],
+            tokens: this.lexer.inlineTokens(m[1])
+          };
+        }
+      },
+      renderer(token) {
+        return `<sub>${this.parser.parseInline(token.tokens)}</sub>`;
+      }
+    };
+   
+    mdReady = Promise.all([
+      import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
+      import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
+      import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
+      import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
+      import('https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm'),
+    ]).then(([marked, alertMod, footnoteMod, emojiPluginMod, emojiLibMod]) => {
+      // Build keyword -> emoji map (first keyword wins), just like your TS reference.
+      const emojiLib = emojiLibMod.default ?? emojiLibMod;
+      const Emojis = Object.entries(emojiLib).reduce((dict, [emoji, keywords]) => {
+        // emojilib v4 exports { "😀": ["grinning", "smile", ...], ... }
+        if (Array.isArray(keywords)) {
+          for (const keyword of keywords) {
+            if (dict[keyword] == null) dict[keyword] = emoji;
+          }
+        }
+        return dict;
+      }, {});
 
     // Configure marked + plugins
     const md = new marked.Marked()
@@ -466,7 +528,8 @@ KM.ensureMarkdown = () => {
           emojis: Emojis,
           renderer: (token) => token.emoji, // render the emoji char directly
         })
-      );
+      )
+      .use({ extensions: [markExt, supExt, subExt] });
     return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }), };
   });
   return mdReady;
