@@ -1,6 +1,3 @@
-/* km_testing.js — Refactor pass (2025-09-08)
-   - See changelog in assistant message for details.
-*/
 /* eslint-env browser, es2022 */
 /*
 ================================================================================
@@ -125,6 +122,11 @@ function writeCache(url, txt) {
 
 /* ───────────────────────────── small utils ─────────────────────────────── */
 
+/* Precompiled regular expressions (sanity + perf) */
+const RE_FENCE = /^(?:```|~~~)/;
+const RE_HEADING = /^(#{1,6})\s+/;
+const RE_HEADING_FULL = /^(#{1,6})\s+(.+)/;
+
 /** Escape a string for safe use inside a RegExp. */
 const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -153,6 +155,12 @@ const clearSelection = () => {
 
 /** Base URL without hash; works for file:// and querystrings. */
 const baseURLNoHash = () => location.href.replace(/#.*$/, '');
+
+/** Build a deep-link URL for a given page + anchor id */
+function buildDeepURL(page, anchorId='') {
+    const base = baseURLNoHash() + '#' + (hashOf(page) ? hashOf(page) + (anchorId ? '#' : '') : '');
+    return anchorId ? base + anchorId : base;
+}
 
 /** Force the main scroll position to the top (window + content region). */
 function resetScrollTop() {
@@ -256,15 +264,15 @@ function parseMarkdownBundle(txt) {
         let inFence = false, offset = 0, prev = null;
 
         for (const line of p.content.split(/\r?\n/)) {
-            if (/^(?:```|~~~)/.test(line)) inFence = !inFence; // toggle on fences
-            if (!inFence && /^(#{1,6})\s+/.test(line)) {
+            if (RE_FENCE.test(line)) inFence = !inFence; // toggle on fences
+            if (!inFence && RE_HEADING.test(line)) {
                 if (prev) {
                     // Commit previous heading section body and index text for search.
                     prev.body = p.content.slice(prev.bodyStart, offset).trim();
                     prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
                     sections.push(prev);
                 }
-                const [, hashes, txt] = line.match(/^(#{1,6})\s+(.+)/);
+                const [, hashes, txt] = line.match(RE_HEADING_FULL);
                 const level = hashes.length - 1; // 0-based depth (H1→0, H2→1, ...)
                 counters[level]++; // increment current level
                 for (let i = level + 1; i < 6; i++) counters[i] = 0; // reset deeper
@@ -478,7 +486,7 @@ function renderMathSafe(root) {
     } catch {}
 }
 
-/* ─────────────────────── HTML LRU cache (Change #1) ───────────────────── */
+/* ─────────────────────── HTML LRU cache ───────────────────── */
 const PAGE_HTML_LRU_MAX = 40;
 const pageHTMLLRU = new Map(); // pageId -> html
 
@@ -506,7 +514,7 @@ async function getParsedHTML(page) {
 /** Reusable selector for all heading levels (H1–H6) */
 const HEADINGS_SEL = 'h1,h2,h3,h4,h5,h6';
 
-/** Locale-aware title sort (Change #7) */
+/** Locale-aware title sort */
 const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
 const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
 
@@ -667,11 +675,11 @@ const iconBtn = (title, path, cls, onClick) =>
  * Add copy buttons and clickable deep-links to headings & code blocks.
  * - Click on heading copies a ready-to-share URL to that section.
  * - Each code block gets a "Copy" affordance targeting code content.
- * (Change #3: event delegation handles button clicks; no per-button handlers.)
+ * - Event delegation handles button clicks; no per-button handlers.)
  */
 function decorateHeadings(page, container = $('#content')) {
     const base = hashOf(page);
-    const prefix = baseURLNoHash() + '#' + (base ? base + '#' : '');
+    const prefix = buildDeepURL(page, '') || (baseURLNoHash() + '#'); // reuse builder
     $$(HEADINGS_SEL, container).forEach(h => {
         const url = `${prefix}${h.id}`;
         // Add button without per-element handler (delegated listener will act)
@@ -694,7 +702,7 @@ function decorateCodeBlocks(container = $('#content')) {
     });
 }
 
-/** For markdown content: open external http(s) links in a new tab, safely. (Change #6) */
+/** For markdown content: open external http(s) links in a new tab, safely. */
 function decorateExternalLinks() {
     $$('#content a[href]').forEach(a => {
         const href = a.getAttribute('href');
@@ -717,7 +725,7 @@ function decorateExternalLinks() {
     });
 }
 
-/* ─────────── Lazy, on-scroll code highlighting (Change #2) ─────────── */
+/* ─────────── Lazy, on-scroll code highlighting ─────────── */
 async function highlightVisibleCode(root = DOC) {
     await KM.ensureHLJSTheme();
     await KM.ensureHighlight();
@@ -856,7 +864,7 @@ function highlightSidebar(page) {
  *  - Title hits weigh most, then tags, then body.
  *  - Section heading hits boost both the page and the sub-results.
  *  - Exact phrase (multi-word) match adds a small bonus.
- * (Change #9: reuse compiled regexes for sections)
+ *  - Reuse compiled regexes for sections)
  */
 function search(q) {
     const resUL = $('#results'),
@@ -1183,7 +1191,7 @@ function highlightCurrent(force = false) {
     const cx = g.w / 2, cy = g.h / 2;
     g.node.filter(d => d.id === id).each(d => {
         const dx = cx - d.x, dy = cy - d.y;
-        // (Change #10) remove redundant reset transform
+        // Remove redundant reset transform
         g.view.attr('transform', `translate(${dx},${dy})`);
         const k = 0.10;
         d.vx += (cx - d.x) * k;
@@ -1223,7 +1231,6 @@ async function render(page, anchor) {
     const contentEl = $('#content');
     if (!contentEl) return;
 
-    // (Change #1 + #5)
     contentEl.dataset.mathRendered = '0';
     contentEl.innerHTML = await getParsedHTML(page);
 
@@ -1240,7 +1247,7 @@ async function render(page, anchor) {
     fixFootnoteLinks(page);
     // numberHeadings already applied by getParsedHTML()
 
-    // Lazy syntax highlight (Change #2)
+    // Lazy syntax highlight
     await highlightVisibleCode($('#content'));
 
     // Render LaTeX math only when textual heuristics hint there is any.
@@ -1313,7 +1320,7 @@ let uiInited = false; // guard against duplicate initialization
    - Mouse leaving or clicking ✕ closes the relevant preview
 */
 (() => {
-    // (Change #1) Use global getParsedHTML LRU cache
+    // Use global getParsedHTML LRU cache
     const previewStack = []; // stack of { el, body, link, timer }
     let hoverDelay = null;
 
@@ -1389,12 +1396,11 @@ let uiInited = false; // guard against duplicate initialization
     }
 
     async function fillPanel(panel, page, anchor) {
-        // (Change #1 + #5)
         panel.body.dataset.mathRendered = '0';
         panel.body.innerHTML = await getParsedHTML(page);
         rewriteRelativeAnchorsIn(panel, page);
 
-        // Lazy highlight within preview (Change #2)
+        // Lazy highlight within preview
         await highlightVisibleCode(panel.body);
 
         // Render math (KaTeX)
@@ -1460,7 +1466,8 @@ let uiInited = false; // guard against duplicate initialization
         if (!btn) return;
         if (btn.classList.contains('heading-copy')) {
             const h = btn.closest(HEADINGS_SEL);
-            const base = baseURLNoHash() + '#' + (hashOf(panel.link && resolveTarget(panel.link.getAttribute('href')||'')?.page) ? hashOf(resolveTarget(panel.link.getAttribute('href')||'')?.page) + '#' : '');
+            const target = resolveTarget(panel.link.getAttribute('href')||'');
+            const base = buildDeepURL(target?.page, '') || (baseURLNoHash() + '#');
             copyText(base + h.id, btn);
         } else {
             const pre = btn.closest('pre');
@@ -1619,7 +1626,7 @@ function initUI() {
         };
     }
 
-    // (Change #3) Event delegation for copy buttons in main content
+    // Event delegation for copy buttons in main content
     const contentRoot = $('#content');
     if (contentRoot) {
         contentRoot.addEventListener('click', (e) => {
@@ -1629,7 +1636,7 @@ function initUI() {
             if (btn.classList.contains('heading-copy')) {
                 const h = btn.closest(HEADINGS_SEL);
                 const page = currentPage;
-                const base = baseURLNoHash() + '#' + (hashOf(page) ? hashOf(page) + '#' : '');
+                const base = buildDeepURL(page, '') || (baseURLNoHash() + '#');
                 copyText(base + h.id, btn);
             } else if (btn.classList.contains('code-copy')) {
                 const pre = btn.closest('pre');
