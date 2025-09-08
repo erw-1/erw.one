@@ -775,6 +775,17 @@ async function highlightVisibleCode(root = DOC) {
     });
 }
 
+/* ─────────── Run script from MD (optional) ─────────── */
+function runInlineScripts(root) {
+  root.querySelectorAll('script').forEach(old => {
+    const s = document.createElement('script');
+    // copy attributes (type, src, etc.)
+    for (const { name, value } of [...old.attributes]) s.setAttribute(name, value);
+    s.textContent = old.textContent || '';
+    old.replaceWith(s); // inserting a new <script> runs it
+  });
+}
+
 /* ─────────────────────────── sidebar / search ──────────────────────────── */
 /**
  * Build the collapsible tree in the sidebar using the page hierarchy.
@@ -1258,7 +1269,9 @@ async function render(page, anchor) {
 
     contentEl.dataset.mathRendered = '0';
     contentEl.innerHTML = await getParsedHTML(page);
-
+ 
+    // Run scripts embedded in the Markdown
+    runInlineScripts(contentEl);
     decorateExternalLinks();
 
     // Progressive image hints to reduce LCP impact and avoid network contention.
