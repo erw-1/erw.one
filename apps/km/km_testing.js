@@ -80,7 +80,32 @@ const el = (tag, props = {}, children = []) => {
         const arr = Array.isArray(children) ? children : [children]
         if (arr.length) n.append(...arr)
     }
-    return n;
+    
+/**
+ * Parse a hash or href into a { page, anchor, valid } tuple.
+ * - page: resolved Page node (falls back to root when no segments)
+ * - anchor: remaining fragment after page path
+ * - valid: true if the hash includes a page path that maps to a page;
+ *          false when it's just an in-article anchor with no page path
+ */
+function parseTarget(hashOrHref = location.hash) {
+    let href = hashOrHref || '';
+    try {
+        if (!href.startsWith('#')) {
+            href = new URL(href, location.href).hash || '';
+        }
+    } catch (_) {
+        href = '';
+    }
+    const seg = href ? href.slice(1).split('#').filter(Boolean) : [];
+    const page = seg.length ? find(seg) : root;
+    const base = hashOf(page);
+    const baseSegs = base ? base.split('#') : [];
+    const valid = !(seg.length && !baseSegs.length);
+    const anchor = seg.slice(baseSegs.length).join('#');
+    return { page, anchor, valid };
+}
+return n;
 };
 // Expose a couple of helpers and a DEBUG flag for quick diagnostics.
 Object.assign(KM, {
@@ -437,14 +462,9 @@ KM.syncMermaidThemeWithPage = async () => {
     const { setMermaidTheme } = await KM.ensureMarkdown();
     setMermaidTheme(mode);
     // Re-render current page so Mermaid converts <pre.mermaid> → <svg> with the new theme
-    const seg = location.hash.slice(1).split('#').filter(Boolean);
-    const page = find(seg);               // you already have find()
-    const base = hashOf(page);            // and hashOf()
-    const baseSegs = base ? base.split('#') : [];
-    const anchor = seg.slice(baseSegs.length).join('#');
-    await render(page, anchor);           // reuse your existing renderer
+    const { page, anchor } = parseTarget(location.hash);
+    await render(page, anchor);
 };
-
 // Markdown parser (marked) with footnotes, emoji, marked-alert, custom callouts, spoiler, and Mermaid.
 let mdReady = null;
 
@@ -816,13 +836,29 @@ function seeAlso(page) {
  * article itself lives behind a base hash (#a#b), make links robust by
  * prefixing the base hash for intra-article anchors.
  */
-function fixFootnoteLinks(page, container = $('#content')) {
+
+/**
+ * Normalize in-document hash anchors to include the base page path when needed.
+ * - If onlyFootnotes is true, limits to footnote anchors (#fn*, #footnote*)
+ */
+function normalizeAnchors(container, page, { onlyFootnotes = false } = {}) {
     const base = hashOf(page);
     if (!base) return;
     $$('a[href^="#"]', container).forEach(a => {
-        const href = a.getAttribute('href');
+        const href = a.getAttribute('href') || '';
         if (!href) return;
-        if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) a.setAttribute('href', `#${base}${href}`);
+        if (onlyFootnotes) {
+            if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) {
+                a.setAttribute('href', `#${base}${href}`);
+            }
+            return;
+        }
+        // For previews: turn pure in-article anchors into "#<page>#<fragment>"
+        const t = parseTarget(href);
+        const isFull = !!(t && t.valid);
+        if (isFull) return;
+        const frag = href.length > 1 ? ('#' + href.slice(1)) : '';
+        a.setAttribute('href', '#' + base + frag);
     });
 }
 
@@ -881,6 +917,24 @@ function decorateHeadings(page, container = $('#content')) {
     });
 }
 
+
+/** Shared event delegation for copy buttons in a given root. */
+function wireCopyButtons(root, getBaseUrl) {
+    if (!root) return;
+    root.addEventListener('click', (e) => {
+        const btn = e.target.closest?.('button.heading-copy, button.code-copy');
+        if (!btn) return;
+        if (btn.classList.contains('heading-copy')) {
+            const h = btn.closest(HEADINGS_SEL);
+            const base = (typeof getBaseUrl === 'function') ? (getBaseUrl() || '') : '';
+            copyText(base + h.id, btn);
+        } else {
+            const pre = btn.closest('pre');
+            const code = pre?.querySelector('code');
+            copyText(code ? code.innerText : pre?.innerText || '', btn);
+        }
+    });
+}
 function decorateCodeBlocks(container = $('#content')) {
     $$('pre', container).forEach(pre => {
                 // Skip Mermaid source blocks; they may render lazily later
@@ -916,7 +970,6 @@ function decorateExternalLinks(container = $('#content')) {
 
 /* ─────────── Lazy, on-scroll code highlighting ─────────── */
 async function highlightVisibleCode(root = DOC) {
-    await KM.ensureHLJSTheme();
     await KM.ensureHighlight();
     const blocks = [...root.querySelectorAll('pre code')];
     if (!blocks.length) return;
@@ -956,6 +1009,20 @@ function runInlineScripts(root) {
  * Folders (nodes with children) get a caret and an initially open state up to
  * depth 2 for discoverability.
  */
+
+/** Toggle a sidebar folder's open/closed state and related ARIA/UI in one place. */
+function setFolderOpen(li, open) {
+    if (!li || !li.classList.contains('folder')) return;
+    li.classList.toggle('open', !!open);
+    li.setAttribute('aria-expanded', String(!!open));
+    const caret = li.querySelector('button.caret');
+    if (caret) {
+        caret.setAttribute('aria-expanded', String(!!open));
+        caret.setAttribute('aria-label', !!open ? 'Collapse' : 'Expand');
+    }
+    const sub = li.querySelector('ul[role="group"], ul');
+    if (sub) sub.style.display = !!open ? 'block' : 'none';
+}
 function buildTree() {
     const ul = $('#tree');
     if (!ul) return;
@@ -1035,18 +1102,12 @@ function highlightSidebar(page) {
     let li = link.closest('li');
     while (li) {
         if (li.classList.contains('folder')) {
-            li.classList.add('open');
-            li.setAttribute('aria-expanded', 'true');
-            const caret = li.querySelector('button.caret');
-            if (caret) {
-                caret.setAttribute('aria-expanded', 'true');
-                caret.setAttribute('aria-label', 'Collapse');
-            }
-            const sub = li.querySelector('ul[role="group"]');
-            if (sub) sub.style.display = 'block';
+            setFolderOpen(li, true);
         }
         li = li.parentElement?.closest('li');
+    }li = li.parentElement?.closest('li');
     }
+
     // Try to keep the active item in view without jumping the page scroll
     const tree = $('#tree');
     if (tree && link) {
@@ -1056,7 +1117,6 @@ function highlightSidebar(page) {
             if (r.top < tr.top || r.bottom > tr.bottom) link.scrollIntoView({ block: 'nearest' });
         });
     }
-}
 
 /**
  * Ranked search over titles, tags, and per-heading sections.
@@ -1440,7 +1500,7 @@ async function enhanceRendered(containerEl, page) {
     });
 
     // Fix local footnote anchors when behind a base hash
-    fixFootnoteLinks(page, containerEl);
+    normalizeAnchors(containerEl, page, { onlyFootnotes: true });
     // Mark internal hash links as previewable
     annotatePreviewableLinks(containerEl);
 
@@ -1494,11 +1554,7 @@ let currentPage = null; // debounces redundant renders on hash changes
  */
 function route() {
     closePanels();
-    const seg = location.hash.slice(1).split('#').filter(Boolean);
-    const page = find(seg);
-    const base = hashOf(page);
-    const baseSegs = base ? base.split('#') : [];
-    const anchor = seg.slice(baseSegs.length).join('#'); // remainder → heading id
+    const { page, anchor } = parseTarget(location.hash); // remainder → heading id
 
     if (currentPage !== page) {
         currentPage = page;
@@ -1543,33 +1599,14 @@ let uiInited = false; // guard against duplicate initialization
     let hoverDelay = null;
 
     function resolveTarget(href) {
-      if (!href || !href.startsWith('#')) return null;
-      const seg = href.slice(1).split('#').filter(Boolean);
-    
-      // Allow bare "#" to mean the root (Home) page
-      const page = seg.length ? find(seg) : root;
-      const base = hashOf(page);
-      const baseSegs = base ? base.split('#') : [];
-    
-      // If we had segments but none mapped to a page, it's just an in-article anchor → no preview
-      if (seg.length && !baseSegs.length) return null;
-    
-      const anchor = seg.slice(baseSegs.length).join('#');
-      return { page, anchor };
+        const t = parseTarget(href);
+        return (t && t.valid) ? { page: t.page, anchor: t.anchor } : null;
     }
 
     function rewriteRelativeAnchorsIn(panel, page) {
-        const base = hashOf(page); // e.g. "stresstest"
-        panel.body.querySelectorAll('a[href^="#"]').forEach(a => {
-            const h = a.getAttribute('href') || '';
-            // Already a full page link? leave it
-            const isFull = !!resolveTarget(h);
-            if (isFull) return;
-            // Make it "#<page>#<fragment>"
-            const frag = h.length > 1 ? ('#' + h.slice(1)) : '';
-            a.setAttribute('href', '#' + base + frag);
-        });
+        normalizeAnchors(panel.body, page);
     }
+
 
     function positionPreview(panel, linkEl) {
         const rect = linkEl.getBoundingClientRect();
@@ -1622,7 +1659,7 @@ let uiInited = false; // guard against duplicate initialization
     panel.body.innerHTML = await getParsedHTML(page);
 
     // Rewrite intra-article anchors to include the base page path for robustness
-    rewriteRelativeAnchorsIn(panel, page);
+    normalizeAnchors(panel.body, page);
 
     await enhanceRendered(panel.body, page);
 
@@ -1675,21 +1712,10 @@ let uiInited = false; // guard against duplicate initialization
         positionPreview(panel, linkEl);
 
         // Copy link buttons
-        panel.el.addEventListener('click', (e) => {
-        const btn = e.target.closest?.('button.heading-copy, button.code-copy');
-        if (!btn) return;
-        if (btn.classList.contains('heading-copy')) {
-            const h = btn.closest(HEADINGS_SEL);
-            const target = resolveTarget(panel.link.getAttribute('href')||'');
-            const base = buildDeepURL(target?.page, '') || (baseURLNoHash() + '#');
-            copyText(base + h.id, btn);
-        } else {
-            const pre = btn.closest('pre');
-            const code = pre?.querySelector('code');
-            copyText(code ? code.innerText : pre?.innerText || '', btn);
-        }
+        wireCopyButtons(panel.el, () => {
+            const t = parseTarget(panel.link.getAttribute('href') || '');
+            return buildDeepURL(t?.page, '') || (baseURLNoHash() + '#');
         });
-
         return panel;
     }
 
@@ -1715,7 +1741,8 @@ let uiInited = false; // guard against duplicate initialization
 
     function isInternalPageLink(a) {
         const href = a?.getAttribute('href') || '';
-        return !!resolveTarget(href);
+        const t = parseTarget(href);
+        return !!(t && t.valid);
     }
 
     function maybeOpenFromEvent(e) {
@@ -1845,20 +1872,9 @@ function initUI() {
     // Event delegation for copy buttons in main content
     const contentRoot = $('#content');
     if (contentRoot) {
-        contentRoot.addEventListener('click', (e) => {
-            const btn = e.target.closest?.('button.heading-copy, button.code-copy');
-            if (!btn) return;
-
-            if (btn.classList.contains('heading-copy')) {
-                const h = btn.closest(HEADINGS_SEL);
-                const page = currentPage;
-                const base = buildDeepURL(page, '') || (baseURLNoHash() + '#');
-                copyText(base + h.id, btn);
-            } else if (btn.classList.contains('code-copy')) {
-                const pre = btn.closest('pre');
-                const code = pre?.querySelector('code');
-                copyText(code ? code.innerText : pre?.innerText || '', btn);
-            }
+        wireCopyButtons(contentRoot, () => {
+            const page = currentPage;
+            return buildDeepURL(page, '') || (baseURLNoHash() + '#');
         });
     }
 
@@ -1919,17 +1935,12 @@ function initUI() {
     $('#tree').addEventListener('click', e => {
         const caret = e.target.closest('button.caret');
         if (caret) {
-            const li = caret.closest('li.folder'),
-                sub = li.querySelector('ul');
+            const li = caret.closest('li.folder');
             const open = !li.classList.contains('open');
-            li.classList.toggle('open', open);
-            caret.setAttribute('aria-expanded', String(open));
-            caret.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
-            li.setAttribute('aria-expanded', String(open));
-            if (sub) sub.style.display = open ? 'block' : 'none';
+            setFolderOpen(li, open);
             return;
         }
-        if (e.target.closest('a')) closePanels();
+        if (e.target.closest('a')) closePanels();nels();
     }, { passive: true });
     $('#results').addEventListener('click', e => {
         if (e.target.closest('a')) closePanels();
@@ -1973,18 +1984,7 @@ function initUI() {
     const $kbIcon = $('#kb-icon');
 
     // --- Small DOM helper (no dependency on global `el`)
-    const h = (tag, attrs = {}, children = []) => {
-        const node = document.createElement(tag);
-        for (const [k, v] of Object.entries(attrs)) {
-        if (k === 'class') node.className = v;
-        else if (k === 'textContent') node.textContent = v;
-        else if (k === 'innerHTML') node.innerHTML = v;
-        else if (k.startsWith('on') && typeof v === 'function') node.addEventListener(k.slice(2), v);
-        else node.setAttribute(k, v);
-        }
-        for (const c of Array.isArray(children) ? children : [children]) if (c) node.append(c);
-        return node;
-    };
+    const h = el;
 
     // --- Utilities
     const isEditable = (el) => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
