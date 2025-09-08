@@ -442,7 +442,11 @@ KM.ensureMarkdown = () => {
         import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
         import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
     ]).then(([marked, alertMod, footnoteMod]) => {
-        const md = new marked.Marked().use(alertMod.default()).use(footnoteMod.default()).use(markedEmoji.default());
+        const md = new marked.Marked()
+            .use(alertMod.default())
+            .use(footnoteMod.default())
+            .use(emojiMod.default({ unicode: true }));;
+
         return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }) };
     });
     return mdReady;
