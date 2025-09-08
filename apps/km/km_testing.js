@@ -432,6 +432,19 @@ KM.ensureHLJSTheme = () => new Promise(res => {
     l.href = THEME[mode];
 });
 
+KM.syncMermaidThemeWithPage = async () => {
+    const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+    const { setMermaidTheme } = await KM.ensureMarkdown();
+    setMermaidTheme(mode);
+    // Re-render current page so Mermaid converts <pre.mermaid> → <svg> with the new theme
+    const seg = location.hash.slice(1).split('#').filter(Boolean);
+    const page = find(seg);               // you already have find()
+    const base = hashOf(page);            // and hashOf()
+    const baseSegs = base ? base.split('#') : [];
+    const anchor = seg.slice(baseSegs.length).join('#');
+    await render(page, anchor);           // reuse your existing renderer
+};
+
 // Markdown parser (marked) with footnotes, emoji, marked-alert, custom callouts, spoiler, and Mermaid.
 let mdReady = null;
 
@@ -555,8 +568,13 @@ KM.ensureMarkdown = () => {
       return d;
     }, {});
 
-    const mermaid = (mermaidMod.default ?? mermaidMod);
-    mermaid.initialize({ startOnLoad: false });
+     const mermaid = (mermaidMod.default ?? mermaidMod);
+     mermaid.initialize({ startOnLoad: false });
+     // expose + helper so we can retheme on demand
+     KM.mermaid = mermaid;
+     const setMermaidTheme = (mode /* 'default' | 'dark' | etc. */) => {
+       mermaid.initialize({ startOnLoad: false, theme: mode });
+     };
 
     const md = new marked.Marked()
       .use((footnoteMod.default ?? footnoteMod)())
@@ -571,7 +589,8 @@ KM.ensureMarkdown = () => {
     return {
       parse: (src, opt) => md.parse(src, { ...opt, mangle: false }),
       // call after you inject parsed HTML into the DOM
-      renderMermaid: (root) => mermaid.run({ nodes: (root || document).querySelectorAll(".mermaid") })
+      renderMermaid: (root) => mermaid.run({ nodes: (root || document).querySelectorAll(".mermaid") }),
+      setMermaidTheme,
     };
   });
 
@@ -1753,6 +1772,7 @@ function initUI() {
             rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
             rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
             KM.ensureHLJSTheme(); // async theme swap for syntax highlight CSS
+            KM.syncMermaidThemeWithPage(); // swap Mermaid theme + re-render diagrams
         }
     })();
 
