@@ -438,115 +438,97 @@ let mdReady = null;
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
 
-  // ——— Inline: ==mark== ———
-  const markExt = {
-    name: 'mark',
-    level: 'inline',
-    start(src) { return src.indexOf('=='); },
-    tokenizer(src) {
-      const m = /^==(?=\S)([\s\S]*?\S)==/.exec(src);
-      if (m) return { type: 'mark', raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
-    },
-    renderer(tok) { return `<mark>${this.parser.parseInline(tok.tokens)}</mark>`; }
-  };
+  // ---------- helpers ----------
+  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-  // ——— Inline: ^sup^ (don’t clash with footnotes ^[ ) ———
-  const supExt = {
-    name: 'sup',
-    level: 'inline',
-    start(src) { return src.indexOf('^'); },
-    tokenizer(src) {
-      const m = /^\^(?!\[|\^)(?=\S)([\s\S]*?\S)\^/.exec(src);
-      if (m) return { type: 'sup', raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
-    },
-    renderer(tok) { return `<sup>${this.parser.parseInline(tok.tokens)}</sup>`; }
-  };
+  // Symmetric, delimited inline extension (e.g., ==mark==, ^sup^, ~sub~, ++u++)
+  function createInline({ name, delimiter, tag, hint = delimiter[0], notAfterOpen, notBeforeClose }) {
+    const d = esc(delimiter);
+    const after = notAfterOpen ? `(?!${notAfterOpen})` : "";
+    const before = notBeforeClose ? `(?!${notBeforeClose})` : "";
+    const re = new RegExp(`^${d}${after}(?=\\S)([\\s\\S]*?\\S)${d}${before}`);
+    return {
+      name,
+      level: "inline",
+      start(src) { return src.indexOf(hint); },
+      tokenizer(src) {
+        const m = re.exec(src);
+        if (!m) return;
+        return { type: name, raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
+      },
+      renderer(tok) {
+        return `<${tag}>${this.parser.parseInline(tok.tokens)}</${tag}>`;
+      }
+    };
+  }
 
-  // ——— Inline: ~sub~ (avoid ~~ strike) ———
-  const subExt = {
-    name: 'sub',
-    level: 'inline',
-    start(src) { return src.indexOf('~'); },
-    tokenizer(src) {
-      const m = /^~(?!~)(?=\S)([\s\S]*?\S)~(?!~)/.exec(src);
-      if (m) return { type: 'sub', raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
-    },
-    renderer(tok) { return `<sub>${this.parser.parseInline(tok.tokens)}</sub>`; }
-  };
+  function createCallouts() {
+    return {
+      name: "callout",
+      level: "block",
+      start(src) { return src.indexOf(":::"); },
+      tokenizer(src) {
+        const re = /^:::(success|info|warning|danger)(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
+        const m = re.exec(src);
+        if (!m) return;
+        const [, kind, title = "", body] = m;
+        return {
+          type: "callout",
+          raw: m[0],
+          kind,
+          title,
+          tokens: this.lexer.blockTokens(body)
+        };
+      },
+      renderer(tok) {
+        const inner = this.parser.parse(tok.tokens);
+        const map = { info: "note", success: "tip", warning: "warning", danger: "caution" };
+        const cls = map[tok.kind] || "note";
+        return `<div class="md-callout md-${cls}">\n${inner}\n</div>\n`;
+      }
+    };
+  }
 
-  // ——— Inline: ++underline++ ———
-  const underlineExt = {
-    name: 'underline',
-    level: 'inline',
-    start(src) { return src.indexOf('++'); },
-    tokenizer(src) {
-      const m = /^\+\+(?!\+)(?=\S)([\s\S]*?\S)\+\+(?!\+)/.exec(src);
-      if (m) return { type: 'underline', raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
-    },
-    renderer(tok) { return `<u>${this.parser.parseInline(tok.tokens)}</u>`; }
-  };
+  function createSpoiler() {
+    return {
+      name: "spoiler",
+      level: "block",
+      start(src) { return src.indexOf(":::spoiler"); },
+      tokenizer(src) {
+        const re = /^:::spoiler(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
+        const m = re.exec(src);
+        if (!m) return;
+        const [, title = "spoiler", body] = m;
+        return {
+          type: "spoiler",
+          raw: m[0],
+          title,
+          titleTokens: this.lexer.inlineTokens(title),
+          tokens: this.lexer.blockTokens(body)
+        };
+      },
+      renderer(tok) {
+        const summary = this.parser.parseInline(tok.titleTokens);
+        const inner = this.parser.parse(tok.tokens);
+        return `<details class="md-spoiler"><summary>${summary}</summary>\n${inner}\n</details>\n`;
+      }
+    };
+  }
 
-  // ——— Block: :::success|info|warning|danger [title?]\n…\n::: ———
-  const calloutExt = {
-    name: 'callout',
-    level: 'block',
-    start(src) { return src.indexOf(':::'); },
-    tokenizer(src) {
-      // capture type, optional title (ignored visually, but kept if you want to show later), and body
-      const re = /^:::(success|info|warning|danger)(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
-      const m = re.exec(src);
-      if (!m) return;
+  // ---------- extensions via factory ----------
+  const markExt       = createInline({ name: "mark",      delimiter: "==", tag: "mark", hint: "=" });
+  const supExt        = createInline({ name: "sup",       delimiter: "^",  tag: "sup",  notAfterOpen: "\\[|\\^" });
+  const subExt        = createInline({ name: "sub",       delimiter: "~",  tag: "sub",  notAfterOpen: "~", notBeforeClose: "~" });
+  const underlineExt  = createInline({ name: "underline", delimiter: "++", tag: "u",    hint: "+", notAfterOpen: "\\+", notBeforeClose: "\\+" });
 
-      const [, kind, title = '', body] = m;
-      return {
-        type: 'callout',
-        raw: m[0],
-        kind,
-        title,
-        // tokenize inner as blocks so markdown works inside
-        tokens: this.lexer.blockTokens(body)
-      };
-    },
-    renderer(tok) {
-      const inner = this.parser.parse(tok.tokens);
-      // classes align with CSS below: md-callout + md-{note|tip|warning|caution}
-      const map = { info: 'note', success: 'tip', warning: 'warning', danger: 'caution' };
-      const cls = map[tok.kind] || 'note';
-      return `<div class="md-callout md-${cls}">\n${inner}\n</div>\n`;
-    }
-  };
-
-  // ——— Block: :::spoiler [title]\n…\n::: ———
-  const spoilerExt = {
-    name: 'spoiler',
-    level: 'block',
-    start(src) { return src.indexOf(':::spoiler'); },
-    tokenizer(src) {
-      const re = /^:::spoiler(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
-      const m = re.exec(src);
-      if (!m) return;
-
-      const [, title = 'spoiler', body] = m;
-      return {
-        type: 'spoiler',
-        raw: m[0],
-        title,
-        titleTokens: this.lexer.inlineTokens(title),
-        tokens: this.lexer.blockTokens(body)
-      };
-    },
-    renderer(tok) {
-      const summary = this.parser.parseInline(tok.titleTokens);
-      const inner = this.parser.parse(tok.tokens);
-      return `<details class="md-spoiler"><summary>${summary}</summary>\n${inner}\n</details>\n`;
-    }
-  };
+  const calloutExt = createCallouts();
+  const spoilerExt = createSpoiler();
 
   mdReady = Promise.all([
-    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
-    import('https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm'),
+    import("https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm"),
+    import("https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm"),
+    import("https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm"),
+    import("https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm"),
   ]).then(([marked, footnoteMod, emojiPluginMod, emojiLibMod]) => {
     // keyword → emoji
     const emojiLib = emojiLibMod.default ?? emojiLibMod;
