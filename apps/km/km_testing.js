@@ -432,106 +432,140 @@ KM.ensureHLJSTheme = () => new Promise(res => {
     l.href = THEME[mode];
 });
 
-// Markdown parser (marked) with alert & footnote plugins.
+// Markdown parser (marked) with footnotes, emoji, and custom inline + block extensions.
 let mdReady = null;
+
 KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
 
-    // ——— Add inline extensions: ==mark==, ^sup^, ~sub~ ———
-    const markExt = {
-      name: 'mark',
-      level: 'inline',
-      start(src) { return src.indexOf('=='); }, // perf hint
-      tokenizer(src) {
-        const m = /^==(?=\S)([\s\S]*?\S)==/.exec(src);
-        if (m) {
-          return {
-            type: 'mark',
-            raw: m[0],
-            text: m[1],
-            tokens: this.lexer.inlineTokens(m[1])
-          };
-        }
-      },
-      renderer(token) {
-        return `<mark>${this.parser.parseInline(token.tokens)}</mark>`;
-      }
-    };
-    
-    const supExt = {
-      name: 'sup',
-      level: 'inline',
-      start(src) { return src.indexOf('^'); },
-      tokenizer(src) {
-        const m = /^\^(?!\^)(?=\S)([\s\S]*?\S)\^/.exec(src);
-        if (m) {
-          return {
-            type: 'sup',
-            raw: m[0],
-            text: m[1],
-            tokens: this.lexer.inlineTokens(m[1])
-          };
-        }
-      },
-      renderer(token) {
-        return `<sup>${this.parser.parseInline(token.tokens)}</sup>`;
-      }
-    };
-    
-    const subExt = {
-      name: 'sub',
-      level: 'inline',
-      start(src) { return src.indexOf('~'); },
-      tokenizer(src) {
-        // avoid conflict with strikethrough "~~"
-        const m = /^~(?!~)(?=\S)([\s\S]*?\S)~(?!~)/.exec(src);
-        if (m) {
-          return {
-            type: 'sub',
-            raw: m[0],
-            text: m[1],
-            tokens: this.lexer.inlineTokens(m[1])
-          };
-        }
-      },
-      renderer(token) {
-        return `<sub>${this.parser.parseInline(token.tokens)}</sub>`;
-      }
-    };
-   
-    mdReady = Promise.all([
-      import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
-      import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
-      import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
-      import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
-      import('https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm'),
-    ]).then(([marked, alertMod, footnoteMod, emojiPluginMod, emojiLibMod]) => {
-      // Build keyword -> emoji map (first keyword wins), just like your TS reference.
-      const emojiLib = emojiLibMod.default ?? emojiLibMod;
-      const Emojis = Object.entries(emojiLib).reduce((dict, [emoji, keywords]) => {
-        // emojilib v4 exports { "😀": ["grinning", "smile", ...], ... }
-        if (Array.isArray(keywords)) {
-          for (const keyword of keywords) {
-            if (dict[keyword] == null) dict[keyword] = emoji;
-          }
-        }
-        return dict;
-      }, {});
+  // ——— Inline: ==mark== ———
+  const markExt = {
+    name: 'mark',
+    level: 'inline',
+    start(src) { return src.indexOf('=='); },
+    tokenizer(src) {
+      const m = /^==(?=\S)([\s\S]*?\S)==/.exec(src);
+      if (m) return { type: 'mark', raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
+    },
+    renderer(tok) { return `<mark>${this.parser.parseInline(tok.tokens)}</mark>`; }
+  };
 
-    // Configure marked + plugins
+  // ——— Inline: ^sup^ (don’t clash with footnotes ^[ ) ———
+  const supExt = {
+    name: 'sup',
+    level: 'inline',
+    start(src) { return src.indexOf('^'); },
+    tokenizer(src) {
+      const m = /^\^(?!\[|\^)(?=\S)([\s\S]*?\S)\^/.exec(src);
+      if (m) return { type: 'sup', raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
+    },
+    renderer(tok) { return `<sup>${this.parser.parseInline(tok.tokens)}</sup>`; }
+  };
+
+  // ——— Inline: ~sub~ (avoid ~~ strike) ———
+  const subExt = {
+    name: 'sub',
+    level: 'inline',
+    start(src) { return src.indexOf('~'); },
+    tokenizer(src) {
+      const m = /^~(?!~)(?=\S)([\s\S]*?\S)~(?!~)/.exec(src);
+      if (m) return { type: 'sub', raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
+    },
+    renderer(tok) { return `<sub>${this.parser.parseInline(tok.tokens)}</sub>`; }
+  };
+
+  // ——— Inline: ++underline++ ———
+  const underlineExt = {
+    name: 'underline',
+    level: 'inline',
+    start(src) { return src.indexOf('++'); },
+    tokenizer(src) {
+      const m = /^\+\+(?!\+)(?=\S)([\s\S]*?\S)\+\+(?!\+)/.exec(src);
+      if (m) return { type: 'underline', raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
+    },
+    renderer(tok) { return `<u>${this.parser.parseInline(tok.tokens)}</u>`; }
+  };
+
+  // ——— Block: :::success|info|warning|danger [title?]\n…\n::: ———
+  const calloutExt = {
+    name: 'callout',
+    level: 'block',
+    start(src) { return src.indexOf(':::'); },
+    tokenizer(src) {
+      // capture type, optional title (ignored visually, but kept if you want to show later), and body
+      const re = /^:::(success|info|warning|danger)(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
+      const m = re.exec(src);
+      if (!m) return;
+
+      const [, kind, title = '', body] = m;
+      return {
+        type: 'callout',
+        raw: m[0],
+        kind,
+        title,
+        // tokenize inner as blocks so markdown works inside
+        tokens: this.lexer.blockTokens(body)
+      };
+    },
+    renderer(tok) {
+      const inner = this.parser.parse(tok.tokens);
+      // classes align with CSS below: md-callout + md-{note|tip|warning|caution}
+      const map = { info: 'note', success: 'tip', warning: 'warning', danger: 'caution' };
+      const cls = map[tok.kind] || 'note';
+      return `<div class="md-callout md-${cls}">\n${inner}\n</div>\n`;
+    }
+  };
+
+  // ——— Block: :::spoiler [title]\n…\n::: ———
+  const spoilerExt = {
+    name: 'spoiler',
+    level: 'block',
+    start(src) { return src.indexOf(':::spoiler'); },
+    tokenizer(src) {
+      const re = /^:::spoiler(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
+      const m = re.exec(src);
+      if (!m) return;
+
+      const [, title = 'spoiler', body] = m;
+      return {
+        type: 'spoiler',
+        raw: m[0],
+        title,
+        titleTokens: this.lexer.inlineTokens(title),
+        tokens: this.lexer.blockTokens(body)
+      };
+    },
+    renderer(tok) {
+      const summary = this.parser.parseInline(tok.titleTokens);
+      const inner = this.parser.parse(tok.tokens);
+      return `<details class="md-spoiler"><summary>${summary}</summary>\n${inner}\n</details>\n`;
+    }
+  };
+
+  mdReady = Promise.all([
+    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
+    import('https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm'),
+  ]).then(([marked, footnoteMod, emojiPluginMod, emojiLibMod]) => {
+    // keyword → emoji
+    const emojiLib = emojiLibMod.default ?? emojiLibMod;
+    const Emojis = Object.entries(emojiLib).reduce((d, [emoji, keywords]) => {
+      if (Array.isArray(keywords)) for (const k of keywords) if (d[k] == null) d[k] = emoji;
+      return d;
+    }, {});
+
     const md = new marked.Marked()
-      .use((alertMod.default ?? alertMod)())
       .use((footnoteMod.default ?? footnoteMod)())
-      .use(
-        // marked-emoji expects { emojis, renderer }
-        (emojiPluginMod.markedEmoji ?? emojiPluginMod.default)({
-          emojis: Emojis,
-          renderer: (token) => token.emoji, // render the emoji char directly
-        })
-      )
-      .use({ extensions: [markExt, supExt, subExt] });
-    return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }), };
+      .use((emojiPluginMod.markedEmoji ?? emojiPluginMod.default)({
+        emojis: Emojis,
+        renderer: t => t.emoji
+      }))
+      .use({ extensions: [markExt, supExt, subExt, underlineExt, calloutExt, spoilerExt] });
+
+    return { parse: (src, opt) => md.parse(src, { ...opt, mangle: false }) };
   });
+
   return mdReady;
 };
 
