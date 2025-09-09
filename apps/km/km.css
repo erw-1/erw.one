@@ -767,6 +767,7 @@
 
   a.km-has-preview::after { content: "👁"; font-size: .85em; opacity: .7; margin-left: .2em; }
   .mermaid { max-width: 100% !important; }
+  [aria-roledescription="radar"] { max-width: 100% }
 
    html[data-theme="dark"] [aria-roledescription="xychart"] .background {
        display: none
@@ -887,6 +888,7 @@
   /* Typography & code */
   blockquote {
     color: var(--color-mid-contrast);
+    margin: 0
   }
   summary:hover {
     color: var(--color-accent);
