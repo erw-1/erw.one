@@ -819,6 +819,10 @@
      stroke: #808080 !important;
    }
 
+   /* keeps layout from jumping before SVG appears */
+   .mermaid { min-height: 1.5em; visibility: hidden; }
+   .mermaid[data-processed="true"] { visibility: visible; }
+
 }
 
 /* ---------------------------------------------------------------------------
