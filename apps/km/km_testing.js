@@ -1501,7 +1501,7 @@ async function enhanceRendered(containerEl, page) {
     });
 
     // Normalize anchors (footnotes only in main content)
-    normalizeAnchors(contentEl, page, { onlyFootnotes: true });
+    normalizeAnchors(containerEl, page, { onlyFootnotes: true });
 
     // Mark internal hash links as previewable
     annotatePreviewableLinks(containerEl);
