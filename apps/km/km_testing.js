@@ -156,12 +156,16 @@ const clearSelection = () => {
 /** Base URL without hash; works for file:// and querystrings. */
 const baseURLNoHash = () => location.href.replace(/#.*$/, '');
 
-/** Build a deep-link URL for a given page + heading id using ?h= */
+/** Build a deep-link URL for a given page + anchor id */
 function buildDeepURL(page, anchorId = '') {
-    const base = baseURLNoHash() + '#' + (hashOf(page) || '');
-    if (anchorId) return base + '?h=' + anchorId;
-    // Callers that plan to append a heading id later get a ?h= prefix
-    return base + '?h=';
+    const pageHash = hashOf(page) || '';
+    const base = baseURLNoHash() + '#' + pageHash;
+    if (anchorId) {
+      // Add separator only if we're not already at the root ("#")
+      return base + (pageHash ? '#' : '') + anchorId;
+    }
+    // When callers plan to append a heading id later, return a trailing '#'
+    return pageHash ? base + '#' : base;
 }
 
 /** 
@@ -173,15 +177,15 @@ function buildDeepURL(page, anchorId = '') {
 function parseTarget(hashOrHref = location.hash) {
     const href = (hashOrHref || '').startsWith('#') ? hashOrHref : new URL(hashOrHref || '', location.href).hash;
     if (href === '') return { page: root, anchor: '' };
-    const frag = (href || '').slice(1);
-    const [path, query = ''] = frag.split('?', 2);
-    const seg = (path || '').split('#').filter(Boolean);
+    const seg = (href || '').slice(1).split('#').filter(Boolean);
     const page = seg.length ? find(seg) : root;
-    // Prefer ?h=… (new style)
-    const q = new URLSearchParams(query);
-    const h = q.get('h') || '';
-    if (h) return { page, anchor: h };
+    const base = hashOf(page);
+    const baseSegs = base ? base.split('#') : [];
+    if (seg.length && !baseSegs.length) return null; // anchor to nowhere
+    const anchor = seg.slice(baseSegs.length).join('#');
+    return { page, anchor };
 }
+
 
 /** Force the main scroll position to the top (window + content region). */
 function resetScrollTop() {
@@ -726,7 +730,7 @@ async function copyText(txt, node) {
 
 /**
  * Shared copy-button wiring for headings and code blocks.
- * getBaseUrl() should return `buildDeepURL(page, '') || baseURLNoHash() + '#?h='`.
+ * getBaseUrl() should return something like `buildDeepURL(page, '') || baseURLNoHash() + '#'`.
  */
 function wireCopyButtons(root, getBaseUrl) {
     if (!root) return;
@@ -736,7 +740,7 @@ function wireCopyButtons(root, getBaseUrl) {
         if (btn.classList.contains('heading-copy')) {
             const h = btn.closest(HEADINGS_SEL);
             if (!h) return;
-            const base = getBaseUrl() || (baseURLNoHash() + '#?h=');
+            const base = getBaseUrl() || (baseURLNoHash() + '#');
             copyText(base + h.id, btn);
         } else {
             const pre = btn.closest('pre');
@@ -780,7 +784,7 @@ function buildToc(page) {
         frag.append(el('li', {
             dataset: { level: h.tagName[1], hid: h.id }
         }, [
-            el('a', { href: '#' + base + '?h=' + h.id,
+            el('a', { href: '#' + (base ? base + '#' : '') + h.id,
                       textContent: h.textContent
             })
         ]));
@@ -1081,7 +1085,7 @@ function highlightSidebar(page) {
     let li = link.closest('li');
     while (li) {
         if (li.classList.contains('folder')) {
-+            setFolderOpen(li, true);
+            setFolderOpen(li, true);
         }
         li = li.parentElement?.closest('li');
     }
@@ -1212,7 +1216,7 @@ function search(q) {
             const sub = el('ul', { class: 'sub-results' });
             matchedSecs.forEach(({ sec }) => {
                 sub.append(el('li', { class: 'heading-result' }, [
-                    el('a', { href: `#${base}?h=${sec.id}`, textContent: sec.txt })
+                    el('a', { href: `#${base ? base + '#' : ''}${sec.id}`, textContent: sec.txt })
                 ]));
             });
             li.append(sub);
@@ -1429,9 +1433,7 @@ async function buildGraph() {
 /** Highlight the current page’s node and pull it towards the center. */
 function highlightCurrent(force = false) {
     if (!graphs.mini) return;
-    const frag = location.hash.slice(1);
-    const path = frag.split('?', 2)[0];
-    const seg = path.split('#').filter(Boolean);
+    const seg = location.hash.slice(1).split('#').filter(Boolean);
     const pg = find(seg);
     const id = pg?._i ?? -1;
     if (id === CURRENT && !force) return;
@@ -1703,7 +1705,7 @@ let uiInited = false; // guard against duplicate initialization
         // Shared copy buttons (previews)
         wireCopyButtons(panel.el, () => {
             const t = parseTarget(panel.link.getAttribute('href') || '');
-            return buildDeepURL(t?.page, '') || (baseURLNoHash() + '#?h=');
+            return buildDeepURL(t?.page, '') || (baseURLNoHash() + '#');
         });
 
         return panel;
