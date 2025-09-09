@@ -1515,18 +1515,6 @@ function observeMiniResize() {
 
 /* ───────────────────────── renderer + router + init ────────────────────── */
 
-// Parse the root and its first few children off the critical path so first navigation is instant.
-function warmLRU() {
-  const hot = [root, ...root.children.slice(0, 6)].filter(Boolean);
-  whenIdle(async () => {
-    for (const p of hot) {
-      if (!pageHTMLLRU.has(p.id)) {
-        try { await getParsedHTML(p); } catch {}
-      }
-    }
-  }, 3000);
-}
-
 /** Scroll to an in-page anchor if present. Smooth for user comfort. */
 function scrollToAnchor(anchor) {
     if (!anchor) return;
@@ -1912,8 +1900,7 @@ function initUI() {
     })();
 
     // Initial route/render.
-    route(); warmLRU();
- 
+    route(); 
 
     // Lazy-build the mini-graph on first visibility to avoid upfront cost.
     const miniElForObserver = $('#mini');
