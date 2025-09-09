@@ -367,6 +367,7 @@
     flex: 1;
     padding: var(--g-lg) calc(var(--g-lg) * 2);
     overflow-y: auto;
+    overflow-x: hidden;
   }
 
   /* Prev / next pager */
