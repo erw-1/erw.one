@@ -1843,9 +1843,7 @@ function initUI() {
             rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
             rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
             KM.ensureHLJSTheme(); // async theme swap for syntax highlight CSS
-            // Swap Mermaid theme & reflow diagrams. Do this after toggling data-theme
-            // so downstream styling can detect the new state.
-            KM.syncMermaidThemeWithPage().catch(() => {});
+            KM.syncMermaidThemeWithPage(); // swap Mermaid theme + re-render diagrams
         }
     })();
 
