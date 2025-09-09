@@ -447,23 +447,19 @@ KM.ensureHLJSTheme = async () => {
 
 KM.syncMermaidThemeWithPage = async () => {
   const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-  const { setMermaidTheme } = await KM.ensureMarkdown();
-  setMermaidTheme(mode); // just switches config, doesn't redraw yet
-
-  const resetAndRerender = (root) => {
+  const { setMermaidTheme, renderMermaidLazy } = await KM.ensureMarkdown();
+  setMermaidTheme(mode); // just flips Mermaid config
+  
+  async function resetAndRerender(root) {
     if (!root) return;
     root.querySelectorAll('.mermaid').forEach(el => {
-      // ensure we have the source cached
       if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
-      // restore source and clear flags so Mermaid can draw with the new theme
       el.innerHTML = el.dataset.mmdSrc;
-      el.removeAttribute('data-processed'); // Mermaid’s internal marker
-      el.dataset.mmdDone = '';              // clear our guard
-      // draw immediately; theme flips are rare so no need to lazy-run
-      try { KM.mermaid.run({ nodes: [el] }); } catch {}
-      el.dataset.mmdDone = '1';
+      el.removeAttribute('data-processed');
+      delete el.dataset.mmdDone;
     });
-  };
+    await renderMermaidLazy(root); // <- sequential redraw with new theme
+  }
 
   resetAndRerender(document.getElementById('content'));
   document.querySelectorAll('.km-link-preview').forEach(p => {
@@ -612,44 +608,63 @@ KM.ensureMarkdown = () => {
 
     return {
       parse: (src, opt) => md.parse(src, { ...opt, mangle: false }),
-      // call after you inject parsed HTML into the DOM
-      renderMermaidLazy: (root) => {
-      const container = root || document;
-      const nodeList = container.querySelectorAll(".mermaid");
-      if (!nodeList || !nodeList.length) return;
-      const runOne = (el, o) => {
-        if (el.dataset.mmdDone === "1") { o && o.unobserve(el); return; }
+      // call after injecting parsed HTML into the DOM
+      renderMermaidLazy: async (root) => {
+        const container = root || document;
+        const nodes = [...container.querySelectorAll(".mermaid")];
+        if (!nodes.length) return;
       
-        // 1) remember original source for future re-renders
-        if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
+        // Render a single node and wait until Mermaid finishes
+        async function renderOne(el) {
+          if (el.dataset.mmdDone === "1") return;
       
-        // 2) mark as running *before* calling Mermaid to prevent races
-        el.dataset.mmdDone = "1";
-        try {
-          // If this node already has an SVG (e.g. after a previous run), reset it
-          if (el.querySelector('svg')) {
-            el.innerHTML = el.dataset.mmdSrc;                // restore text
-            el.removeAttribute('data-processed');            // Mermaid’s own flag
+          // 1) Remember original source once
+          if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
+      
+          // 2) Reset any prior render
+          if (el.querySelector("svg")) {
+            el.innerHTML = el.dataset.mmdSrc;
           }
-          mermaid.run({ nodes: [el] });
-        } catch (_) {
-          // roll back the flag on failure so we can try again later
-          delete el.dataset.mmdDone;
+          el.removeAttribute("data-processed"); // Mermaid’s own flag
+          el.dataset.mmdDone = "1";             // our guard
+      
+          // 3) Waiter: resolves when data-processed flips or an <svg> appears
+          const done = (() => {
+            let resolve;
+            const p = new Promise(res => (resolve = res));
+            const mo = new MutationObserver(() => {
+              if (el.getAttribute("data-processed") === "true" || el.querySelector("svg")) {
+                mo.disconnect(); resolve();
+              }
+            });
+            mo.observe(el, { attributes: true, childList: true });
+            // Safety timeout (in case of syntax errors etc.)
+            const t = setTimeout(() => { mo.disconnect(); resolve(); }, 4000);
+            p.finally(() => clearTimeout(t));
+            return p;
+          })();
+      
+          try {
+            // Mermaid v11: run() is fine; we rely on the observer for completion.
+            await KM.mermaid.run({ nodes: [el] });
+          } catch (_) {
+            // Allow a retry later if needed
+            delete el.dataset.mmdDone;
+            throw _;
+          }
+      
+          // 4) Only continue once this diagram is actually processed
+          await done;
         }
-        o && o.unobserve(el);
-      };
-      if (!("IntersectionObserver" in window)) {
-        nodeList.forEach(el => runOne(el));
-        return;
-      }
-      const obs = __trackObserver(new IntersectionObserver((entries, o) => {
-        for (const en of entries) {
-          if (!en.isIntersecting) continue;
-          runOne(en.target, o);
+      
+        // Sequential: top-to-bottom in DOM order
+        for (const el of nodes) {
+          try { // don’t let one bad diagram block the rest
+            await renderOne(el);
+          } catch {}
         }
-      }, { rootMargin: "200px 0px", threshold: 0 }));
-      nodeList.forEach(el => { if (el.dataset.mmdDone !== "1") obs.observe(el); });
-    },
+      },
+
       setMermaidTheme,
     };
   });
