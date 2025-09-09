@@ -28,8 +28,7 @@
    - [PERF]: Performance note.
    - [A11Y]: Accessibility note.
    - [CROSS-BROWSER]: Compatibility nuance.
-   - [SECURITY]: Safe usage hints.return anchorId ? base + anchorId : base;
-
+   - [SECURITY]: Safe usage hints
 ================================================================================
 */
 
@@ -165,28 +164,29 @@ const buildDeepURL = (page, anchorId = '') => {
  * - Returns null when the hash looks like an anchor to a non-existent page.
  */
 function parseTarget(hashOrHref = location.hash) {
-    const href = (hashOrHref || '').startsWith('#') ? hashOrHref : new URL(hashOrHref || '', location.href).hash;
-    if (href === '') return { page: root, anchor: '' };
-    const seg = (href || '').slice(1).split('#').filter(Boolean);
-    const page = seg.length ? find(seg) : root;
-    const base = hashOf(page);
-    const baseSegs = base ? base.split('#') : [];
-    if (seg.length && !baseSegs.length) return null; // anchor to nowhere
-    const anchor = seg.slice(baseSegs.length).join('#');
-    return { page, anchor };
+  const href = (hashOrHref || '').startsWith('#') ? hashOrHref : new URL(hashOrHref || '', location.href).hash;
+  if (href === '') return { page: root, anchor: '' };
+
+  const seg = (href || '').slice(1).split('#').filter(Boolean);
+  const page = seg.length ? find(seg) : root;
+  const base = hashOf(page);
+  const baseSegs = base ? base.split('#') : [];
+
+  // If segments didn't resolve beyond root, treat remainder as an in-page anchor on root.
+  if (seg.length && !baseSegs.length) {
+    return { page: root, anchor: seg.join('#') };
+  }
+
+  const anchor = seg.slice(baseSegs.length).join('#');
+  return { page, anchor };
 }
+
 
 
 /** Force the main scroll position to the top (window + content region). */
 function resetScrollTop() {
-    // Window / document scrollers
-    window.scrollTo(0, 0);
-    // Some engines still rely on these:
-    DOC.documentElement && (DOC.documentElement.scrollTop = 0);
-    DOC.body && (DOC.body.scrollTop = 0);
-    // If the app uses a scrollable content container, reset it too
-    const c = $('#content');
-    if (c) c.scrollTop = 0;
+  (document.scrollingElement || document.documentElement).scrollTop = 0;
+  $('#content')?.scrollTo?.(0, 0);
 }
 
 /* ───────────────────────────── data model ──────────────────────────────── */
@@ -446,11 +446,17 @@ KM.ensureHLJSTheme = async () => {
 };
 
 KM.syncMermaidThemeWithPage = async () => {
-    const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-    const { setMermaidTheme } = await KM.ensureMarkdown();
-    setMermaidTheme(mode);
-    const t = parseTarget(location.hash) ?? { page: root, anchor: '' };
-    await render(t.page, t.anchor);
+  const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+  const { setMermaidTheme, renderMermaidLazy } = await KM.ensureMarkdown();
+  setMermaidTheme(mode);
+
+  // Re-run Mermaid only within current content (and any open previews)
+  const content = document.getElementById('content');
+  if (content) await renderMermaidLazy(content);
+  document.querySelectorAll('.km-link-preview').forEach(async p => {
+    const body = p.querySelector(':scope > div');
+    if (body) await renderMermaidLazy(body);
+  });
 };
 
 // Markdown parser (marked) with footnotes, emoji, marked-alert, custom callouts, spoiler, and Mermaid.
@@ -717,15 +723,16 @@ const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
  * [CROSS-BROWSER] Clipboard API may be unavailable → we fail quietly.
  */
 async function copyText(txt, node) {
-    try {
-        await navigator.clipboard.writeText(txt);
-        if (node) {
-            node.classList.add('flash');
-            setTimeout(() => node.classList.remove('flash'), 300);
-        }
-    } catch (e) {
-        if (KM.DEBUG) console.warn('Clipboard API unavailable', e);
-    }
+  try {
+    await navigator.clipboard.writeText(txt);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch {}
+    ta.remove();
+  } finally {
+    if (node) { node.classList.add('flash'); setTimeout(() => node.classList.remove('flash'), 300); }
+  }
 }
 
 /**
@@ -752,13 +759,14 @@ function wireCopyButtons(root, getBaseUrl) {
 
 /** Number headings (h1–h5) deterministically for deep-linking. */
 function numberHeadings(elm) {
-    const counters = [0, 0, 0, 0, 0, 0, 0];
-    $$(HEADINGS_SEL, elm).forEach(h => {
-        const level = +h.tagName[1] - 1; // H1→0, H2→1, ...
-        counters[level]++; // bump current level
-        for (let i = level + 1; i < 7; i++) counters[i] = 0; // reset deeper
-        h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
-    });
+  const counters = [0,0,0,0,0,0,0];
+  $$(HEADINGS_SEL, elm).forEach(h => {
+    if (h.id) return; // honor precomputed ids
+    const level = +h.tagName[1] - 1;
+    counters[level]++;
+    for (let i = level + 1; i < 7; i++) counters[i] = 0;
+    h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
+  });
 }
 
 let tocObserver = null; // re-created per page render
@@ -873,9 +881,6 @@ function normalizeAnchors(container = $('#content'), page, { onlyFootnotes = fal
         }
     });
 }
-
-// Back-compat wrappers (kept but routed to the single normalizer)
-function fixFootnoteLinks(page, container = $('#content')) { normalizeAnchors(container, page, { onlyFootnotes: true }); }
 
 function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
@@ -1496,7 +1501,7 @@ async function enhanceRendered(containerEl, page) {
     });
 
     // Normalize anchors (footnotes only in main content)
-    fixFootnoteLinks(page, containerEl);
+    normalizeAnchors(contentEl, page, { onlyFootnotes: true });
 
     // Mark internal hash links as previewable
     annotatePreviewableLinks(containerEl);
@@ -2178,6 +2183,7 @@ function initUI() {
     // Preload HLJS core when the main thread is likely idle to improve UX later.
     whenIdle(() => {
         KM.ensureHighlight();
+        KM.ensureMarkdown(); });
     });
 }
 
