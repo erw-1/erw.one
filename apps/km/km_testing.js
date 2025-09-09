@@ -447,15 +447,27 @@ KM.ensureHLJSTheme = async () => {
 
 KM.syncMermaidThemeWithPage = async () => {
   const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-  const { setMermaidTheme, renderMermaidLazy } = await KM.ensureMarkdown();
-  setMermaidTheme(mode);
+  const { setMermaidTheme } = await KM.ensureMarkdown();
+  setMermaidTheme(mode); // just switches config, doesn't redraw yet
 
-  // Re-run Mermaid only within current content (and any open previews)
-  const content = document.getElementById('content');
-  if (content) await renderMermaidLazy(content);
-  document.querySelectorAll('.km-link-preview').forEach(async p => {
-    const body = p.querySelector(':scope > div');
-    if (body) await renderMermaidLazy(body);
+  const resetAndRerender = (root) => {
+    if (!root) return;
+    root.querySelectorAll('.mermaid').forEach(el => {
+      // ensure we have the source cached
+      if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
+      // restore source and clear flags so Mermaid can draw with the new theme
+      el.innerHTML = el.dataset.mmdSrc;
+      el.removeAttribute('data-processed'); // Mermaid’s internal marker
+      el.dataset.mmdDone = '';              // clear our guard
+      // draw immediately; theme flips are rare so no need to lazy-run
+      try { KM.mermaid.run({ nodes: [el] }); } catch {}
+      el.dataset.mmdDone = '1';
+    });
+  };
+
+  resetAndRerender(document.getElementById('content'));
+  document.querySelectorAll('.km-link-preview').forEach(p => {
+    resetAndRerender(p.querySelector(':scope > div'));
   });
 };
 
@@ -607,11 +619,24 @@ KM.ensureMarkdown = () => {
       if (!nodeList || !nodeList.length) return;
       const runOne = (el, o) => {
         if (el.dataset.mmdDone === "1") { o && o.unobserve(el); return; }
-        try {
-          mermaid.run({ nodes: [el] });
-        } catch (_) {}
+      
+        // 1) remember original source for future re-renders
+        if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
+      
+        // 2) mark as running *before* calling Mermaid to prevent races
         el.dataset.mmdDone = "1";
-        if (o) o.unobserve(el);
+        try {
+          // If this node already has an SVG (e.g. after a previous run), reset it
+          if (el.querySelector('svg')) {
+            el.innerHTML = el.dataset.mmdSrc;                // restore text
+            el.removeAttribute('data-processed');            // Mermaid’s own flag
+          }
+          mermaid.run({ nodes: [el] });
+        } catch (_) {
+          // roll back the flag on failure so we can try again later
+          delete el.dataset.mmdDone;
+        }
+        o && o.unobserve(el);
       };
       if (!("IntersectionObserver" in window)) {
         nodeList.forEach(el => runOne(el));
