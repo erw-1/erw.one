@@ -1514,6 +1514,19 @@ function observeMiniResize() {
 }
 
 /* ───────────────────────── renderer + router + init ────────────────────── */
+
+// Parse the root and its first few children off the critical path so first navigation is instant.
+function warmLRU() {
+  const hot = [root, ...root.children.slice(0, 6)].filter(Boolean);
+  whenIdle(async () => {
+    for (const p of hot) {
+      if (!pageHTMLLRU.has(p.id)) {
+        try { await getParsedHTML(p); } catch {}
+      }
+    }
+  }, 3000);
+}
+
 /** Scroll to an in-page anchor if present. Smooth for user comfort. */
 function scrollToAnchor(anchor) {
     if (!anchor) return;
@@ -1555,7 +1568,13 @@ async function enhanceRendered(containerEl, page) {
     
     // Math can also be deferred; render when KaTeX arrives
     if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
-      KM.ensureKatex().then(() => renderMathSafe(containerEl));
+      const obs = __trackObserver(new IntersectionObserver((entries, o) => {
+        if (entries.some(en => en.isIntersecting)) {
+          KM.ensureKatex().then(() => renderMathSafe(containerEl));
+          o.disconnect();
+        }
+      }, { root: null, rootMargin: '200px 0px', threshold: 0 }), containerEl);
+      obs.observe(containerEl);
     }
 
     decorateHeadings(page, containerEl);
@@ -1669,7 +1688,7 @@ let uiInited = false; // guard against duplicate initialization
         for (let i = previewStack.length - 1; i >= indexInclusive; i--) {
             const p = previewStack[i];
             clearTimeout(p.timer);
-            __cleanupObservers(panel.el);
+            __cleanupObservers(p.el);
             p.el.remove();
             previewStack.pop();
         }
@@ -1893,7 +1912,8 @@ function initUI() {
     })();
 
     // Initial route/render.
-    route();
+    route(); warmLRU();
+ 
 
     // Lazy-build the mini-graph on first visibility to avoid upfront cost.
     const miniElForObserver = $('#mini');
