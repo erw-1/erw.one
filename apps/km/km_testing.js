@@ -28,7 +28,7 @@
    - [PERF]: Performance note.
    - [A11Y]: Accessibility note.
    - [CROSS-BROWSER]: Compatibility nuance.
-   - [SECURITY]: Safe usage hints.
+   - [SECURITY]: Safe usage hints.return anchorId ? base + anchorId : base;
 
 ================================================================================
 */
@@ -76,42 +76,6 @@ const el = (tag, props = {}, children = []) => {
         else if (k in n) n[k] = v; // prefer properties when present
         else n.setAttribute(k, v); // fallback to attribute
     }
-
-/** DRY helper to toggle a sidebar folder open/closed with ARIA & display. */
-function setFolderOpen(li, open) {
-    if (!li) return;
-    li.classList.toggle('open', !!open);
-    li.setAttribute('aria-expanded', String(!!open));
-    const caret = li.querySelector('button.caret');
-    if (caret) {
-        caret.setAttribute('aria-expanded', String(!!open));
-        caret.setAttribute('aria-label', !!open ? 'Collapse' : 'Expand');
-    }
-    const sub = li.querySelector('ul[role="group"]');
-    if (sub) sub.style.display = !!open ? 'block' : 'none';
-}
-
-/**
- * Shared copy-button wiring for headings and code blocks.
- * getBaseUrl() should return something like `buildDeepURL(page, '') || baseURLNoHash() + '#'`.
- */
-function wireCopyButtons(root, getBaseUrl) {
-    if (!root) return;
-    root.addEventListener('click', (e) => {
-        const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
-        if (!btn) return;
-        if (btn.classList.contains('heading-copy')) {
-            const h = btn.closest(HEADINGS_SEL);
-            if (!h) return;
-            const base = getBaseUrl() || (baseURLNoHash() + '#');
-            copyText(base + '#' + h.id, btn);
-        } else {
-            const pre = btn.closest('pre');
-            const code = pre?.querySelector('code');
-            copyText(code ? code.innerText : pre?.innerText || '', btn);
-        }
-    });
-}
     if (children != null) {
         const arr = Array.isArray(children) ? children : [children]
         if (arr.length) n.append(...arr)
@@ -198,7 +162,7 @@ function buildDeepURL(page, anchorId='') {
     return anchorId ? base + anchorId : base;
 }
 
-/**
+/** 
  * One parser to rule them all: hash/href → { page, anchor } | null.
  * - Accepts full hrefs or hash-only fragments.
  * - Falls back to {page:root, anchor:''} for empty hash.
@@ -215,6 +179,7 @@ function parseTarget(hashOrHref = location.hash) {
     const anchor = seg.slice(baseSegs.length).join('#');
     return { page, anchor };
 }
+
 
 /** Force the main scroll position to the top (window + content region). */
 function resetScrollTop() {
@@ -757,6 +722,28 @@ async function copyText(txt, node) {
     }
 }
 
+/**
+ * Shared copy-button wiring for headings and code blocks.
+ * getBaseUrl() should return something like `buildDeepURL(page, '') || baseURLNoHash() + '#'`.
+ */
+function wireCopyButtons(root, getBaseUrl) {
+    if (!root) return;
+    root.addEventListener('click', (e) => {
+        const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
+        if (!btn) return;
+        if (btn.classList.contains('heading-copy')) {
+            const h = btn.closest(HEADINGS_SEL);
+            if (!h) return;
+            const base = getBaseUrl() || (baseURLNoHash() + '#');
+            copyText(base + h.id, btn);
+        } else {
+            const pre = btn.closest('pre');
+            const code = pre?.querySelector('code');
+            copyText(code ? code.innerText : pre?.innerText || '', btn);
+        }
+    });
+}
+
 /** Number headings (h1–h5) deterministically for deep-linking. */
 function numberHeadings(elm) {
     const counters = [0, 0, 0, 0, 0, 0, 0];
@@ -880,6 +867,7 @@ function normalizeAnchors(container = $('#content'), page, { onlyFootnotes = fal
         }
     });
 }
+
 // Back-compat wrappers (kept but routed to the single normalizer)
 function fixFootnoteLinks(page, container = $('#content')) { normalizeAnchors(container, page, { onlyFootnotes: true }); }
 
@@ -1091,7 +1079,7 @@ function highlightSidebar(page) {
     let li = link.closest('li');
     while (li) {
         if (li.classList.contains('folder')) {
-            setFolderOpen(li, true);
++            setFolderOpen(li, true);
         }
         li = li.parentElement?.closest('li');
     }
@@ -1104,6 +1092,20 @@ function highlightSidebar(page) {
             if (r.top < tr.top || r.bottom > tr.bottom) link.scrollIntoView({ block: 'nearest' });
         });
     }
+}
+
+/** DRY helper to toggle a sidebar folder open/closed with ARIA & display. */
+function setFolderOpen(li, open) {
+    if (!li) return;
+    li.classList.toggle('open', !!open);
+    li.setAttribute('aria-expanded', String(!!open));
+    const caret = li.querySelector('button.caret');
+    if (caret) {
+        caret.setAttribute('aria-expanded', String(!!open));
+        caret.setAttribute('aria-label', !!open ? 'Collapse' : 'Expand');
+    }
+    const sub = li.querySelector('ul[role="group"]');
+    if (sub) sub.style.display = !!open ? 'block' : 'none';
 }
 
 /**
@@ -1489,6 +1491,7 @@ async function enhanceRendered(containerEl, page) {
 
     // Normalize anchors (footnotes only in main content)
     fixFootnoteLinks(page, containerEl);
+
     // Mark internal hash links as previewable
     annotatePreviewableLinks(containerEl);
 
@@ -1534,7 +1537,11 @@ async function render(page, anchor) {
 let currentPage = null; // debounces redundant renders on hash changes
 
 /**
- * Hash router using shared target parser.
+ * Hash router: compute (page, optional in-page anchor) and render.
+ * Handles three cases:
+ *   1) First load / page change → full render + sidebar/graph updates
+ *   2) Same page, anchor change → smooth scroll only
+ *   3) Defensive handling of invalid hashes (falls back to closest page)
  */
 function route() {
     closePanels();
@@ -1583,8 +1590,6 @@ let uiInited = false; // guard against duplicate initialization
     // Use global getParsedHTML LRU cache
     const previewStack = []; // stack of { el, body, link, timer }
     let hoverDelay = null;
-
-    // Use the global parser everywhere
 
     function rewriteRelativeAnchorsIn(panel, page) { normalizeAnchors(panel.body, page); }
 
@@ -1690,6 +1695,7 @@ let uiInited = false; // guard against duplicate initialization
         container.addEventListener('focusin',  (e) => maybeOpenFromEvent(e), true);
 
         positionPreview(panel, linkEl);
+
         // Shared copy buttons (previews)
         wireCopyButtons(panel.el, () => {
             const t = parseTarget(panel.link.getAttribute('href') || '');
@@ -1957,7 +1963,6 @@ function initUI() {
     const $expand = $('#expand');
     const $kbIcon = $('#kb-icon');
 
-    // Use global `el()` everywhere
     // --- Utilities
     const isEditable = (el) => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
     const key = (e, k) => e.key === k || e.key.toLowerCase() === (k + '').toLowerCase();
