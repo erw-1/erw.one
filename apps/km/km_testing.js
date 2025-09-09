@@ -611,12 +611,12 @@ KM.ensureMarkdown = () => {
         nodeList.forEach(el => runOne(el));
         return;
       }
-      const obs = new IntersectionObserver((entries, o) => {
+      const obs = __trackObserver(new IntersectionObserver((entries, o) => {
         for (const en of entries) {
           if (!en.isIntersecting) continue;
           runOne(en.target, o);
         }
-      }, { rootMargin: "200px 0px", threshold: 0 });
+      }, { rootMargin: "200px 0px", threshold: 0 }));
       nodeList.forEach(el => { if (el.dataset.mmdDone !== "1") obs.observe(el); });
     },
       setMermaidTheme,
@@ -693,6 +693,20 @@ async function getParsedHTML(page) {
 /* ───────────────────────── UI decorations & utils ──────────────────────── */
 /** Reusable selector for all heading levels (H1–H6) */
 const HEADINGS_SEL = 'h1,h2,h3,h4,h5,h6';
+
+/** Central registry for Intersection/Resize observers created per-render. */
+const __ACTIVE_OBSERVERS = new Set();
+function __trackObserver(o) {
+    try { if (o && typeof o.disconnect === 'function') __ACTIVE_OBSERVERS.add(o); } catch {}
+    return o;
+}
+function __cleanupObservers() {
+    // Disconnect & clear any page-scoped observers (highlight, Mermaid, etc.)
+    for (const o of __ACTIVE_OBSERVERS) {
+        try { o.disconnect?.(); } catch {}
+    }
+    __ACTIVE_OBSERVERS.clear();
+}
 
 /** Locale-aware title sort */
 const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
@@ -957,7 +971,7 @@ async function highlightVisibleCode(root = DOC) {
     const blocks = [...root.querySelectorAll('pre code')];
     if (!blocks.length) return;
 
-    const obs = new IntersectionObserver((entries, o) => {
+    const obs = __trackObserver(new IntersectionObserver((entries, o) => {
         for (const en of entries) {
             if (!en.isIntersecting) continue;
             const elx = en.target;
@@ -967,7 +981,7 @@ async function highlightVisibleCode(root = DOC) {
             }
             o.unobserve(elx);
         }
-    }, { rootMargin: '200px 0px', threshold: 0 });
+    }, { rootMargin: '200px 0px', threshold: 0 }));
 
     blocks.forEach(elx => {
         if (elx.dataset.hlDone) return;
@@ -1508,6 +1522,7 @@ async function enhanceRendered(containerEl, page) {
 async function render(page, anchor) {
     const contentEl = $('#content');
     if (!contentEl) return;
+    __cleanupObservers(); // prevent observer leaks between renders
 
     contentEl.dataset.mathRendered = '0';
     contentEl.innerHTML = await getParsedHTML(page);
@@ -1589,15 +1604,18 @@ let uiInited = false; // guard against duplicate initialization
         const rect = linkEl.getBoundingClientRect();
         const vw = __VPW, vh = __VPH;
         const gap = 8;
-        const W = Math.min(520, vw * 0.48);
-        const H = Math.min(480, vh * 0.72);
+        // Let CSS control size (e.g., width:min(48vw,520px); height:min(72vh,480px))
+        // Measure current box to clamp position without setting inline width/height.
+        const el = panel.el;
+        // Force a layout read after append
+        const W = Math.max(1, el.offsetWidth || 1);
+        const H = Math.max(1, el.offsetHeight || 1);
         const preferRight = rect.right + gap + W <= vw;
-        const left = preferRight ? Math.min(rect.right + gap, vw - W - gap) :
-            Math.max(gap, rect.left - gap - W);
-        const top = Math.min(Math.max(gap, rect.top), vh - H - gap);
+        const left = preferRight
+            ? Math.min(rect.right + gap, vw - W - gap)
+            : Math.max(gap, rect.left - gap - W);
+        const top = Math.min(Math.max(gap, rect.top), Math.max(gap, vh - H - gap));
         Object.assign(panel.el.style, {
-            width: W + 'px',
-            height: H + 'px',
             left: left + 'px',
             top: top + 'px'
         });
@@ -1723,7 +1741,7 @@ let uiInited = false; // guard against duplicate initialization
     }
 
     function maybeOpenFromEvent(e) {
-        const a = e.target && e.target.closest && e.target.closest('a[href^="#"]');
+        const a = e.target?.closest?.('a[href^="#"]');
         if (!a || !isInternalPageLink(a)) return;
         clearTimeout(hoverDelay);
         const openNow = e.type === 'focusin';
@@ -1735,9 +1753,14 @@ let uiInited = false; // guard against duplicate initialization
     }
 
     // Global listeners: main content + previews (delegated)
+    let __lpGlobalBound = false;
     function attachLinkPreviews() {
         const root = $('#content');
         if (!root) return;
+     
+        // idempotent: only bind once per content root
+        if (root.dataset.kmPreviewsBound === '1') return;
+        root.dataset.kmPreviewsBound = '1';
         root.addEventListener('mouseover', maybeOpenFromEvent, true);
         root.addEventListener('focusin',  maybeOpenFromEvent, true);
         root.addEventListener('mouseout', (e) => {
@@ -1746,8 +1769,12 @@ let uiInited = false; // guard against duplicate initialization
             scheduleTrim();
         }, true);
 
-        addEventListener('hashchange', () => closeFrom(0), { passive: true });
-        addEventListener('scroll',     () => scheduleTrim(), { passive: true }); // close trailing when scrolling
+        // Bind global listeners only once
+        if (!__lpGlobalBound) {
+            addEventListener('hashchange', () => closeFrom(0), { passive: true });
+            addEventListener('scroll',     () => scheduleTrim(), { passive: true }); // close trailing when scrolling
+            __lpGlobalBound = true;
+        }
     }
 
     // Expose for initUI()
@@ -1816,7 +1843,9 @@ function initUI() {
             rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
             rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
             KM.ensureHLJSTheme(); // async theme swap for syntax highlight CSS
-            KM.syncMermaidThemeWithPage(); // swap Mermaid theme + re-render diagrams
+            // Swap Mermaid theme & reflow diagrams. Do this after toggling data-theme
+            // so downstream styling can detect the new state.
+            KM.syncMermaidThemeWithPage().catch(() => {});
         }
     })();
 
