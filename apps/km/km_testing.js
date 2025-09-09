@@ -45,12 +45,6 @@ const KM = window.KM;
 // Cached viewport, updated on resize to reduce repeated reads.
 let __VPW = window.innerWidth,
     __VPH = window.innerHeight;
-addEventListener('resize', () => {
-    __VPW = window.innerWidth;
-    __VPH = window.innerHeight;
-}, {
-    passive: true
-});
 
 // Intentionally small helpers to keep call sites terse and readable.
 const DOC = document;
@@ -157,16 +151,12 @@ const clearSelection = () => {
 const baseURLNoHash = () => location.href.replace(/#.*$/, '');
 
 /** Build a deep-link URL for a given page + anchor id */
-function buildDeepURL(page, anchorId = '') {
+const buildDeepURL = (page, anchorId = '') => {
     const pageHash = hashOf(page) || '';
     const base = baseURLNoHash() + '#' + pageHash;
-    if (anchorId) {
-      // Add separator only if we're not already at the root ("#")
-      return base + (pageHash ? '#' : '') + anchorId;
-    }
-    // When callers plan to append a heading id later, return a trailing '#'
-    return pageHash ? base + '#' : base;
-}
+    // Add separator only if we're not already at the root ("#")
+    return anchorId ? base + (pageHash ? '#' : '') + anchorId : (pageHash ? base + '#' : base);
+};
 
 /** 
  * One parser to rule them all: hash/href → { page, anchor } | null.
@@ -438,7 +428,7 @@ KM.ensureHighlight = ensureOnce(async () => {
  * ensureHLJSTheme(): Swap light/dark CSS theme to match current app theme.
  * Not memoized by design because we must update the <link> href each time.
  */
-KM.ensureHLJSTheme = () => new Promise(res => {
+KM.ensureHLJSTheme = async () => {
     const THEME = {
         light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
         dark: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
@@ -451,11 +441,9 @@ KM.ensureHLJSTheme = () => new Promise(res => {
         l.setAttribute('data-hljs-theme', '');
         DOC.head.appendChild(l);
     }
-    if (l.getAttribute('href') === THEME[mode]) return res();
-    // Resolve regardless of load success to keep render non-blocking.
-    l.onload = l.onerror = res;
-    l.href = THEME[mode];
-});
+    if (l.getAttribute('href') === THEME[mode]) return;
+    await new Promise(res => { l.onload = l.onerror = res; l.href = THEME[mode]; });
+};
 
 KM.syncMermaidThemeWithPage = async () => {
     const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
@@ -472,11 +460,9 @@ KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
 
   // ---------- helpers ----------
-  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
   // Symmetric, delimited inline extension (e.g., ==mark==, ^sup^, ~sub~, ++u++)
   function createInline({ name, delimiter, tag, hint = delimiter[0], notAfterOpen, notBeforeClose }) {
-    const d = esc(delimiter);
+    const d = escapeRegex(delimiter);
     const after = notAfterOpen ? `(?!${notAfterOpen})` : "";
     const before = notBeforeClose ? `(?!${notBeforeClose})` : "";
     const re = new RegExp(`^${d}${after}(?=\\S)([\\s\\S]*?\\S)${d}${before}`);
@@ -1905,7 +1891,9 @@ function initUI() {
     if (burgerUtil) burgerUtil.onclick = () => togglePanel('#util');
 
     // Keep layout stable on resize and recompute fullscreen graph viewport.
-    addEventListener('resize', () => {
+    const updateViewport = () => { __VPW = window.innerWidth; __VPH = window.innerHeight; };
+    const onResize = () => {
+        updateViewport(); // Cached viewport, updated on resize to reduce repeated reads.
         if (matchMedia('(min-width:1001px)').matches) {
             closePanels();
             highlightCurrent(true);
@@ -1914,7 +1902,9 @@ function initUI() {
             updateMiniViewport();
             highlightCurrent(true);
         }
-    }, { passive: true });
+    };
+    updateViewport();
+    addEventListener('resize', onResize, { passive: true });
 
     // Close panels upon navigation clicks inside the lists.
     $('#tree').addEventListener('click', e => {
