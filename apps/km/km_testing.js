@@ -1028,7 +1028,7 @@ async function highlightVisibleCode(root = document) {
             }
             o.unobserve(elx);
         }
-    }, { rootMargin: '200px 0px', threshold: 0 })), root);
+    }, { rootMargin: '200px 0px', threshold: 0 }), root);
   blocks.forEach(elx => { if (!elx.dataset.hlDone) obs.observe(elx); });
 }
 
