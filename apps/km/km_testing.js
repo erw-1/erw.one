@@ -741,17 +741,20 @@ async function getParsedHTML(page) {
 const HEADINGS_SEL = 'h1,h2,h3,h4,h5,h6';
 
 /** Central registry for Intersection/Resize observers created per-render. */
-const __ACTIVE_OBSERVERS = new Set();
-function __trackObserver(o) {
-    try { if (o && typeof o.disconnect === 'function') __ACTIVE_OBSERVERS.add(o); } catch {}
-    return o;
+const __OBS_BY_ROOT = new Map();
+function __trackObserver(o, root = document) {
+  if (!o || typeof o.disconnect !== 'function') return o;
+  const set = __OBS_BY_ROOT.get(root) || new Set();
+  set.add(o);
+  __OBS_BY_ROOT.set(root, set);
+  return o;
 }
-function __cleanupObservers() {
-    // Disconnect & clear any page-scoped observers (highlight, Mermaid, etc.)
-    for (const o of __ACTIVE_OBSERVERS) {
-        try { o.disconnect?.(); } catch {}
-    }
-    __ACTIVE_OBSERVERS.clear();
+
+function __cleanupObservers(root = document) {
+  const set = __OBS_BY_ROOT.get(root);
+  if (!set) return;
+  for (const o of set) { try { o.disconnect?.(); } catch {} }
+  set.clear();
 }
 
 /** Locale-aware title sort */
@@ -1011,12 +1014,11 @@ function decorateExternalLinks(container = $('#content')) {
 }
 
 /* ─────────── Lazy, on-scroll code highlighting ─────────── */
-async function highlightVisibleCode(root = DOC) {
-    await KM.ensureHighlight();
-    const blocks = [...root.querySelectorAll('pre code')];
-    if (!blocks.length) return;
-
-    const obs = __trackObserver(new IntersectionObserver((entries, o) => {
+async function highlightVisibleCode(root = document) {
+  await KM.ensureHighlight();
+  const blocks = [...root.querySelectorAll('pre code')];
+  if (!blocks.length) return;
+  const obs = __trackObserver(new IntersectionObserver((entries, o) => {
         for (const en of entries) {
             if (!en.isIntersecting) continue;
             const elx = en.target;
@@ -1026,12 +1028,8 @@ async function highlightVisibleCode(root = DOC) {
             }
             o.unobserve(elx);
         }
-    }, { rootMargin: '200px 0px', threshold: 0 }));
-
-    blocks.forEach(elx => {
-        if (elx.dataset.hlDone) return;
-        obs.observe(elx);
-    });
+    }, { rootMargin: '200px 0px', threshold: 0 })), root);
+  blocks.forEach(elx => { if (!elx.dataset.hlDone) obs.observe(elx); });
 }
 
 /* ─────────── Run script from MD (optional) ─────────── */
@@ -1671,6 +1669,7 @@ let uiInited = false; // guard against duplicate initialization
         for (let i = previewStack.length - 1; i >= indexInclusive; i--) {
             const p = previewStack[i];
             clearTimeout(p.timer);
+            __cleanupObservers(panel.el);
             p.el.remove();
             previewStack.pop();
         }
@@ -2221,10 +2220,11 @@ function initUI() {
         window.__kmResetForCondensed = resetForCondensed;
     })();
 
-    // Preload HLJS core when the main thread is likely idle to improve UX later.
+    // Preload stuff when the main thread is likely idle to improve UX later.
     whenIdle(() => {
         KM.ensureHighlight();
         KM.ensureMarkdown();
+        KM.ensureKatex();
     });
 }
 
