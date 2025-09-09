@@ -1546,17 +1546,18 @@ async function enhanceRendered(containerEl, page) {
     // Mark internal hash links as previewable
     annotatePreviewableLinks(containerEl);
 
-    // Lazy syntax highlight inside this container
-    await highlightVisibleCode(containerEl);
-
-    // Mermaid diagrams in this container
-    const { renderMermaidLazy } = await KM.ensureMarkdown();
-    await renderMermaidLazy(containerEl);
-
-    // Render LaTeX math if present
+    // Kick off non-critical work without blocking initial UI
+    // (they all remain lazy & incremental internally)
+    highlightVisibleCode(containerEl); // don't await
+    
+    KM.ensureMarkdown().then(({ renderMermaidLazy }) => {
+      // still sequential internally → no stacking, but non-blocking for ToC/buttons
+      return renderMermaidLazy(containerEl);
+    });
+    
+    // Math can also be deferred; render when KaTeX arrives
     if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
-        await KM.ensureKatex();
-        renderMathSafe(containerEl);
+      KM.ensureKatex().then(() => renderMathSafe(containerEl));
     }
 
     decorateHeadings(page, containerEl);
