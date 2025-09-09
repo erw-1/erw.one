@@ -157,9 +157,15 @@ const clearSelection = () => {
 const baseURLNoHash = () => location.href.replace(/#.*$/, '');
 
 /** Build a deep-link URL for a given page + anchor id */
-function buildDeepURL(page, anchorId='') {
-    const base = baseURLNoHash() + '#' + (hashOf(page) ? hashOf(page) + (anchorId ? '#' : '') : '');
-    return anchorId ? base + anchorId : base;
+function buildDeepURL(page, anchorId = '') {
+    const pageHash = hashOf(page) || '';
+    const base = baseURLNoHash() + '#' + pageHash;
+    if (anchorId) {
+      // Add separator only if we're not already at the root ("#")
+      return base + (pageHash ? '#' : '') + anchorId;
+    }
+    // When callers plan to append a heading id later, return a trailing '#'
+    return pageHash ? base + '#' : base;
 }
 
 /** 
@@ -735,7 +741,7 @@ function wireCopyButtons(root, getBaseUrl) {
             const h = btn.closest(HEADINGS_SEL);
             if (!h) return;
             const base = getBaseUrl() || (baseURLNoHash() + '#');
-            copyText(base + '#' + h.id, btn);
+            copyText(base + h.id, btn);
         } else {
             const pre = btn.closest('pre');
             const code = pre?.querySelector('code');
