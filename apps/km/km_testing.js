@@ -28,7 +28,8 @@
    - [PERF]: Performance note.
    - [A11Y]: Accessibility note.
    - [CROSS-BROWSER]: Compatibility nuance.
-   - [SECURITY]: Safe usage hints
+   - [SECURITY]: Safe usage hints.return anchorId ? base + anchorId : base;
+
 ================================================================================
 */
 
@@ -164,29 +165,28 @@ const buildDeepURL = (page, anchorId = '') => {
  * - Returns null when the hash looks like an anchor to a non-existent page.
  */
 function parseTarget(hashOrHref = location.hash) {
-  const href = (hashOrHref || '').startsWith('#') ? hashOrHref : new URL(hashOrHref || '', location.href).hash;
-  if (href === '') return { page: root, anchor: '' };
-
-  const seg = (href || '').slice(1).split('#').filter(Boolean);
-  const page = seg.length ? find(seg) : root;
-  const base = hashOf(page);
-  const baseSegs = base ? base.split('#') : [];
-
-  // If segments didn't resolve beyond root, treat remainder as an in-page anchor on root.
-  if (seg.length && !baseSegs.length) {
-    return { page: root, anchor: seg.join('#') };
-  }
-
-  const anchor = seg.slice(baseSegs.length).join('#');
-  return { page, anchor };
+    const href = (hashOrHref || '').startsWith('#') ? hashOrHref : new URL(hashOrHref || '', location.href).hash;
+    if (href === '') return { page: root, anchor: '' };
+    const seg = (href || '').slice(1).split('#').filter(Boolean);
+    const page = seg.length ? find(seg) : root;
+    const base = hashOf(page);
+    const baseSegs = base ? base.split('#') : [];
+    if (seg.length && !baseSegs.length) return null; // anchor to nowhere
+    const anchor = seg.slice(baseSegs.length).join('#');
+    return { page, anchor };
 }
-
 
 
 /** Force the main scroll position to the top (window + content region). */
 function resetScrollTop() {
-  (document.scrollingElement || document.documentElement).scrollTop = 0;
-  $('#content')?.scrollTo?.(0, 0);
+    // Window / document scrollers
+    window.scrollTo(0, 0);
+    // Some engines still rely on these:
+    DOC.documentElement && (DOC.documentElement.scrollTop = 0);
+    DOC.body && (DOC.body.scrollTop = 0);
+    // If the app uses a scrollable content container, reset it too
+    const c = $('#content');
+    if (c) c.scrollTop = 0;
 }
 
 /* ───────────────────────────── data model ──────────────────────────────── */
@@ -446,29 +446,11 @@ KM.ensureHLJSTheme = async () => {
 };
 
 KM.syncMermaidThemeWithPage = async () => {
-  const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-  const { setMermaidTheme } = await KM.ensureMarkdown();
-  setMermaidTheme(mode); // just switches config, doesn't redraw yet
-
-  const resetAndRerender = (root) => {
-    if (!root) return;
-    root.querySelectorAll('.mermaid').forEach(el => {
-      // ensure we have the source cached
-      if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
-      // restore source and clear flags so Mermaid can draw with the new theme
-      el.innerHTML = el.dataset.mmdSrc;
-      el.removeAttribute('data-processed'); // Mermaid’s internal marker
-      el.dataset.mmdDone = '';              // clear our guard
-      // draw immediately; theme flips are rare so no need to lazy-run
-      try { KM.mermaid.run({ nodes: [el] }); } catch {}
-      el.dataset.mmdDone = '1';
-    });
-  };
-
-  resetAndRerender(document.getElementById('content'));
-  document.querySelectorAll('.km-link-preview').forEach(p => {
-    resetAndRerender(p.querySelector(':scope > div'));
-  });
+    const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+    const { setMermaidTheme } = await KM.ensureMarkdown();
+    setMermaidTheme(mode);
+    const t = parseTarget(location.hash) ?? { page: root, anchor: '' };
+    await render(t.page, t.anchor);
 };
 
 // Markdown parser (marked) with footnotes, emoji, marked-alert, custom callouts, spoiler, and Mermaid.
@@ -619,24 +601,11 @@ KM.ensureMarkdown = () => {
       if (!nodeList || !nodeList.length) return;
       const runOne = (el, o) => {
         if (el.dataset.mmdDone === "1") { o && o.unobserve(el); return; }
-      
-        // 1) remember original source for future re-renders
-        if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
-      
-        // 2) mark as running *before* calling Mermaid to prevent races
-        el.dataset.mmdDone = "1";
         try {
-          // If this node already has an SVG (e.g. after a previous run), reset it
-          if (el.querySelector('svg')) {
-            el.innerHTML = el.dataset.mmdSrc;                // restore text
-            el.removeAttribute('data-processed');            // Mermaid’s own flag
-          }
           mermaid.run({ nodes: [el] });
-        } catch (_) {
-          // roll back the flag on failure so we can try again later
-          delete el.dataset.mmdDone;
-        }
-        o && o.unobserve(el);
+        } catch (_) {}
+        el.dataset.mmdDone = "1";
+        if (o) o.unobserve(el);
       };
       if (!("IntersectionObserver" in window)) {
         nodeList.forEach(el => runOne(el));
@@ -748,16 +717,15 @@ const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
  * [CROSS-BROWSER] Clipboard API may be unavailable → we fail quietly.
  */
 async function copyText(txt, node) {
-  try {
-    await navigator.clipboard.writeText(txt);
-  } catch {
-    const ta = document.createElement('textarea');
-    ta.value = txt; ta.style.position='fixed'; ta.style.left='-9999px';
-    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch {}
-    ta.remove();
-  } finally {
-    if (node) { node.classList.add('flash'); setTimeout(() => node.classList.remove('flash'), 300); }
-  }
+    try {
+        await navigator.clipboard.writeText(txt);
+        if (node) {
+            node.classList.add('flash');
+            setTimeout(() => node.classList.remove('flash'), 300);
+        }
+    } catch (e) {
+        if (KM.DEBUG) console.warn('Clipboard API unavailable', e);
+    }
 }
 
 /**
@@ -784,14 +752,13 @@ function wireCopyButtons(root, getBaseUrl) {
 
 /** Number headings (h1–h5) deterministically for deep-linking. */
 function numberHeadings(elm) {
-  const counters = [0,0,0,0,0,0,0];
-  $$(HEADINGS_SEL, elm).forEach(h => {
-    if (h.id) return; // honor precomputed ids
-    const level = +h.tagName[1] - 1;
-    counters[level]++;
-    for (let i = level + 1; i < 7; i++) counters[i] = 0;
-    h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
-  });
+    const counters = [0, 0, 0, 0, 0, 0, 0];
+    $$(HEADINGS_SEL, elm).forEach(h => {
+        const level = +h.tagName[1] - 1; // H1→0, H2→1, ...
+        counters[level]++; // bump current level
+        for (let i = level + 1; i < 7; i++) counters[i] = 0; // reset deeper
+        h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
+    });
 }
 
 let tocObserver = null; // re-created per page render
@@ -906,6 +873,9 @@ function normalizeAnchors(container = $('#content'), page, { onlyFootnotes = fal
         }
     });
 }
+
+// Back-compat wrappers (kept but routed to the single normalizer)
+function fixFootnoteLinks(page, container = $('#content')) { normalizeAnchors(container, page, { onlyFootnotes: true }); }
 
 function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
@@ -1526,7 +1496,7 @@ async function enhanceRendered(containerEl, page) {
     });
 
     // Normalize anchors (footnotes only in main content)
-    normalizeAnchors(containerEl, page, { onlyFootnotes: true });
+    fixFootnoteLinks(page, containerEl);
 
     // Mark internal hash links as previewable
     annotatePreviewableLinks(containerEl);
@@ -1873,7 +1843,9 @@ function initUI() {
             rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
             rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
             KM.ensureHLJSTheme(); // async theme swap for syntax highlight CSS
-            KM.syncMermaidThemeWithPage(); // swap Mermaid theme + re-render diagrams
+            // Swap Mermaid theme & reflow diagrams. Do this after toggling data-theme
+            // so downstream styling can detect the new state.
+            KM.syncMermaidThemeWithPage().catch(() => {});
         }
     })();
 
@@ -2208,7 +2180,6 @@ function initUI() {
     // Preload HLJS core when the main thread is likely idle to improve UX later.
     whenIdle(() => {
         KM.ensureHighlight();
-        KM.ensureMarkdown();
     });
 }
 
