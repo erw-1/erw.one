@@ -2183,7 +2183,7 @@ function initUI() {
     // Preload HLJS core when the main thread is likely idle to improve UX later.
     whenIdle(() => {
         KM.ensureHighlight();
-        KM.ensureMarkdown(); });
+        KM.ensureMarkdown();
     });
 }
 
