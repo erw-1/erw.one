@@ -1105,9 +1105,9 @@
   .km-link-preview header {
     position: sticky;
     top: 0;
-    margin-right: calc(-1.45 * var(--g-lg));
     display: flex;
     justify-content: flex-end;
+    z-index: var(--z-sky);
   }
 
   .km-link-preview button.km-preview-close {
