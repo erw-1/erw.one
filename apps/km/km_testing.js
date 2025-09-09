@@ -1501,7 +1501,7 @@ async function enhanceRendered(containerEl, page) {
     });
 
     // Normalize anchors (footnotes only in main content)
-    normalizeAnchors(containerEl, page, { onlyFootnotes: true });
+    normalizeAnchors(contentEl, page, { onlyFootnotes: true });
 
     // Mark internal hash links as previewable
     annotatePreviewableLinks(containerEl);
@@ -2183,7 +2183,7 @@ function initUI() {
     // Preload HLJS core when the main thread is likely idle to improve UX later.
     whenIdle(() => {
         KM.ensureHighlight();
-        KM.ensureMarkdown();
+        KM.ensureMarkdown(); });
     });
 }
 
