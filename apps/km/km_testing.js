@@ -564,7 +564,7 @@ KM.ensureMarkdown = () => {
     },
     renderer(tok) {
       const escHTML = (s) => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-      return `<pre class="mermaid">${escHTML(tok.text)}</pre>\n`;
+      return `<div class="mermaid">${escHTML(tok.text)}</div>\n`;
     }
   };
 
