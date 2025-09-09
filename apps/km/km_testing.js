@@ -28,8 +28,7 @@
    - [PERF]: Performance note.
    - [A11Y]: Accessibility note.
    - [CROSS-BROWSER]: Compatibility nuance.
-   - [SECURITY]: Safe usage hints.return anchorId ? base + anchorId : base;
-
+   - [SECURITY]: Safe usage hints
 ================================================================================
 */
 
@@ -45,12 +44,6 @@ const KM = window.KM;
 // Cached viewport, updated on resize to reduce repeated reads.
 let __VPW = window.innerWidth,
     __VPH = window.innerHeight;
-addEventListener('resize', () => {
-    __VPW = window.innerWidth;
-    __VPH = window.innerHeight;
-}, {
-    passive: true
-});
 
 // Intentionally small helpers to keep call sites terse and readable.
 const DOC = document;
@@ -157,10 +150,12 @@ const clearSelection = () => {
 const baseURLNoHash = () => location.href.replace(/#.*$/, '');
 
 /** Build a deep-link URL for a given page + anchor id */
-function buildDeepURL(page, anchorId='') {
-    const base = baseURLNoHash() + '#' + (hashOf(page) ? hashOf(page) + (anchorId ? '#' : '') : '');
-    return anchorId ? base + anchorId : base;
-}
+const buildDeepURL = (page, anchorId = '') => {
+    const pageHash = hashOf(page) || '';
+    const base = baseURLNoHash() + '#' + pageHash;
+    // Add separator only if we're not already at the root ("#")
+    return anchorId ? base + (pageHash ? '#' : '') + anchorId : (pageHash ? base + '#' : base);
+};
 
 /** 
  * One parser to rule them all: hash/href → { page, anchor } | null.
@@ -169,28 +164,29 @@ function buildDeepURL(page, anchorId='') {
  * - Returns null when the hash looks like an anchor to a non-existent page.
  */
 function parseTarget(hashOrHref = location.hash) {
-    const href = (hashOrHref || '').startsWith('#') ? hashOrHref : new URL(hashOrHref || '', location.href).hash;
-    if (href === '') return { page: root, anchor: '' };
-    const seg = (href || '').slice(1).split('#').filter(Boolean);
-    const page = seg.length ? find(seg) : root;
-    const base = hashOf(page);
-    const baseSegs = base ? base.split('#') : [];
-    if (seg.length && !baseSegs.length) return null; // anchor to nowhere
-    const anchor = seg.slice(baseSegs.length).join('#');
-    return { page, anchor };
+  const href = (hashOrHref || '').startsWith('#') ? hashOrHref : new URL(hashOrHref || '', location.href).hash;
+  if (href === '') return { page: root, anchor: '' };
+
+  const seg = (href || '').slice(1).split('#').filter(Boolean);
+  const page = seg.length ? find(seg) : root;
+  const base = hashOf(page);
+  const baseSegs = base ? base.split('#') : [];
+
+  // If segments didn't resolve beyond root, treat remainder as an in-page anchor on root.
+  if (seg.length && !baseSegs.length) {
+    return { page: root, anchor: seg.join('#') };
+  }
+
+  const anchor = seg.slice(baseSegs.length).join('#');
+  return { page, anchor };
 }
+
 
 
 /** Force the main scroll position to the top (window + content region). */
 function resetScrollTop() {
-    // Window / document scrollers
-    window.scrollTo(0, 0);
-    // Some engines still rely on these:
-    DOC.documentElement && (DOC.documentElement.scrollTop = 0);
-    DOC.body && (DOC.body.scrollTop = 0);
-    // If the app uses a scrollable content container, reset it too
-    const c = $('#content');
-    if (c) c.scrollTop = 0;
+  (document.scrollingElement || document.documentElement).scrollTop = 0;
+  $('#content')?.scrollTo?.(0, 0);
 }
 
 /* ───────────────────────────── data model ──────────────────────────────── */
@@ -432,7 +428,7 @@ KM.ensureHighlight = ensureOnce(async () => {
  * ensureHLJSTheme(): Swap light/dark CSS theme to match current app theme.
  * Not memoized by design because we must update the <link> href each time.
  */
-KM.ensureHLJSTheme = () => new Promise(res => {
+KM.ensureHLJSTheme = async () => {
     const THEME = {
         light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
         dark: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
@@ -445,18 +441,22 @@ KM.ensureHLJSTheme = () => new Promise(res => {
         l.setAttribute('data-hljs-theme', '');
         DOC.head.appendChild(l);
     }
-    if (l.getAttribute('href') === THEME[mode]) return res();
-    // Resolve regardless of load success to keep render non-blocking.
-    l.onload = l.onerror = res;
-    l.href = THEME[mode];
-});
+    if (l.getAttribute('href') === THEME[mode]) return;
+    await new Promise(res => { l.onload = l.onerror = res; l.href = THEME[mode]; });
+};
 
 KM.syncMermaidThemeWithPage = async () => {
-    const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-    const { setMermaidTheme } = await KM.ensureMarkdown();
-    setMermaidTheme(mode);
-    const t = parseTarget(location.hash) ?? { page: root, anchor: '' };
-    await render(t.page, t.anchor);
+  const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
+  const { setMermaidTheme, renderMermaidLazy } = await KM.ensureMarkdown();
+  setMermaidTheme(mode);
+
+  // Re-run Mermaid only within current content (and any open previews)
+  const content = document.getElementById('content');
+  if (content) await renderMermaidLazy(content);
+  document.querySelectorAll('.km-link-preview').forEach(async p => {
+    const body = p.querySelector(':scope > div');
+    if (body) await renderMermaidLazy(body);
+  });
 };
 
 // Markdown parser (marked) with footnotes, emoji, marked-alert, custom callouts, spoiler, and Mermaid.
@@ -466,11 +466,9 @@ KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
 
   // ---------- helpers ----------
-  const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-
   // Symmetric, delimited inline extension (e.g., ==mark==, ^sup^, ~sub~, ++u++)
   function createInline({ name, delimiter, tag, hint = delimiter[0], notAfterOpen, notBeforeClose }) {
-    const d = esc(delimiter);
+    const d = escapeRegex(delimiter);
     const after = notAfterOpen ? `(?!${notAfterOpen})` : "";
     const before = notBeforeClose ? `(?!${notBeforeClose})` : "";
     const re = new RegExp(`^${d}${after}(?=\\S)([\\s\\S]*?\\S)${d}${before}`);
@@ -619,12 +617,12 @@ KM.ensureMarkdown = () => {
         nodeList.forEach(el => runOne(el));
         return;
       }
-      const obs = new IntersectionObserver((entries, o) => {
+      const obs = __trackObserver(new IntersectionObserver((entries, o) => {
         for (const en of entries) {
           if (!en.isIntersecting) continue;
           runOne(en.target, o);
         }
-      }, { rootMargin: "200px 0px", threshold: 0 });
+      }, { rootMargin: "200px 0px", threshold: 0 }));
       nodeList.forEach(el => { if (el.dataset.mmdDone !== "1") obs.observe(el); });
     },
       setMermaidTheme,
@@ -702,6 +700,20 @@ async function getParsedHTML(page) {
 /** Reusable selector for all heading levels (H1–H6) */
 const HEADINGS_SEL = 'h1,h2,h3,h4,h5,h6';
 
+/** Central registry for Intersection/Resize observers created per-render. */
+const __ACTIVE_OBSERVERS = new Set();
+function __trackObserver(o) {
+    try { if (o && typeof o.disconnect === 'function') __ACTIVE_OBSERVERS.add(o); } catch {}
+    return o;
+}
+function __cleanupObservers() {
+    // Disconnect & clear any page-scoped observers (highlight, Mermaid, etc.)
+    for (const o of __ACTIVE_OBSERVERS) {
+        try { o.disconnect?.(); } catch {}
+    }
+    __ACTIVE_OBSERVERS.clear();
+}
+
 /** Locale-aware title sort */
 const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
 const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
@@ -711,15 +723,16 @@ const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
  * [CROSS-BROWSER] Clipboard API may be unavailable → we fail quietly.
  */
 async function copyText(txt, node) {
-    try {
-        await navigator.clipboard.writeText(txt);
-        if (node) {
-            node.classList.add('flash');
-            setTimeout(() => node.classList.remove('flash'), 300);
-        }
-    } catch (e) {
-        if (KM.DEBUG) console.warn('Clipboard API unavailable', e);
-    }
+  try {
+    await navigator.clipboard.writeText(txt);
+  } catch {
+    const ta = document.createElement('textarea');
+    ta.value = txt; ta.style.position='fixed'; ta.style.left='-9999px';
+    document.body.appendChild(ta); ta.select(); try { document.execCommand('copy'); } catch {}
+    ta.remove();
+  } finally {
+    if (node) { node.classList.add('flash'); setTimeout(() => node.classList.remove('flash'), 300); }
+  }
 }
 
 /**
@@ -746,13 +759,14 @@ function wireCopyButtons(root, getBaseUrl) {
 
 /** Number headings (h1–h5) deterministically for deep-linking. */
 function numberHeadings(elm) {
-    const counters = [0, 0, 0, 0, 0, 0, 0];
-    $$(HEADINGS_SEL, elm).forEach(h => {
-        const level = +h.tagName[1] - 1; // H1→0, H2→1, ...
-        counters[level]++; // bump current level
-        for (let i = level + 1; i < 7; i++) counters[i] = 0; // reset deeper
-        h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
-    });
+  const counters = [0,0,0,0,0,0,0];
+  $$(HEADINGS_SEL, elm).forEach(h => {
+    if (h.id) return; // honor precomputed ids
+    const level = +h.tagName[1] - 1;
+    counters[level]++;
+    for (let i = level + 1; i < 7; i++) counters[i] = 0;
+    h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
+  });
 }
 
 let tocObserver = null; // re-created per page render
@@ -868,9 +882,6 @@ function normalizeAnchors(container = $('#content'), page, { onlyFootnotes = fal
     });
 }
 
-// Back-compat wrappers (kept but routed to the single normalizer)
-function fixFootnoteLinks(page, container = $('#content')) { normalizeAnchors(container, page, { onlyFootnotes: true }); }
-
 function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
   let seq = 0, stamp = Date.now().toString(36);
@@ -965,7 +976,7 @@ async function highlightVisibleCode(root = DOC) {
     const blocks = [...root.querySelectorAll('pre code')];
     if (!blocks.length) return;
 
-    const obs = new IntersectionObserver((entries, o) => {
+    const obs = __trackObserver(new IntersectionObserver((entries, o) => {
         for (const en of entries) {
             if (!en.isIntersecting) continue;
             const elx = en.target;
@@ -975,7 +986,7 @@ async function highlightVisibleCode(root = DOC) {
             }
             o.unobserve(elx);
         }
-    }, { rootMargin: '200px 0px', threshold: 0 });
+    }, { rootMargin: '200px 0px', threshold: 0 }));
 
     blocks.forEach(elx => {
         if (elx.dataset.hlDone) return;
@@ -1079,7 +1090,7 @@ function highlightSidebar(page) {
     let li = link.closest('li');
     while (li) {
         if (li.classList.contains('folder')) {
-+            setFolderOpen(li, true);
+            setFolderOpen(li, true);
         }
         li = li.parentElement?.closest('li');
     }
@@ -1490,7 +1501,7 @@ async function enhanceRendered(containerEl, page) {
     });
 
     // Normalize anchors (footnotes only in main content)
-    fixFootnoteLinks(page, containerEl);
+    normalizeAnchors(containerEl, page, { onlyFootnotes: true });
 
     // Mark internal hash links as previewable
     annotatePreviewableLinks(containerEl);
@@ -1516,6 +1527,7 @@ async function enhanceRendered(containerEl, page) {
 async function render(page, anchor) {
     const contentEl = $('#content');
     if (!contentEl) return;
+    __cleanupObservers(); // prevent observer leaks between renders
 
     contentEl.dataset.mathRendered = '0';
     contentEl.innerHTML = await getParsedHTML(page);
@@ -1597,15 +1609,18 @@ let uiInited = false; // guard against duplicate initialization
         const rect = linkEl.getBoundingClientRect();
         const vw = __VPW, vh = __VPH;
         const gap = 8;
-        const W = Math.min(520, vw * 0.48);
-        const H = Math.min(480, vh * 0.72);
+        // Let CSS control size (e.g., width:min(48vw,520px); height:min(72vh,480px))
+        // Measure current box to clamp position without setting inline width/height.
+        const el = panel.el;
+        // Force a layout read after append
+        const W = Math.max(1, el.offsetWidth || 1);
+        const H = Math.max(1, el.offsetHeight || 1);
         const preferRight = rect.right + gap + W <= vw;
-        const left = preferRight ? Math.min(rect.right + gap, vw - W - gap) :
-            Math.max(gap, rect.left - gap - W);
-        const top = Math.min(Math.max(gap, rect.top), vh - H - gap);
+        const left = preferRight
+            ? Math.min(rect.right + gap, vw - W - gap)
+            : Math.max(gap, rect.left - gap - W);
+        const top = Math.min(Math.max(gap, rect.top), Math.max(gap, vh - H - gap));
         Object.assign(panel.el.style, {
-            width: W + 'px',
-            height: H + 'px',
             left: left + 'px',
             top: top + 'px'
         });
@@ -1731,7 +1746,7 @@ let uiInited = false; // guard against duplicate initialization
     }
 
     function maybeOpenFromEvent(e) {
-        const a = e.target && e.target.closest && e.target.closest('a[href^="#"]');
+        const a = e.target?.closest?.('a[href^="#"]');
         if (!a || !isInternalPageLink(a)) return;
         clearTimeout(hoverDelay);
         const openNow = e.type === 'focusin';
@@ -1743,9 +1758,14 @@ let uiInited = false; // guard against duplicate initialization
     }
 
     // Global listeners: main content + previews (delegated)
+    let __lpGlobalBound = false;
     function attachLinkPreviews() {
         const root = $('#content');
         if (!root) return;
+     
+        // idempotent: only bind once per content root
+        if (root.dataset.kmPreviewsBound === '1') return;
+        root.dataset.kmPreviewsBound = '1';
         root.addEventListener('mouseover', maybeOpenFromEvent, true);
         root.addEventListener('focusin',  maybeOpenFromEvent, true);
         root.addEventListener('mouseout', (e) => {
@@ -1754,8 +1774,12 @@ let uiInited = false; // guard against duplicate initialization
             scheduleTrim();
         }, true);
 
-        addEventListener('hashchange', () => closeFrom(0), { passive: true });
-        addEventListener('scroll',     () => scheduleTrim(), { passive: true }); // close trailing when scrolling
+        // Bind global listeners only once
+        if (!__lpGlobalBound) {
+            addEventListener('hashchange', () => closeFrom(0), { passive: true });
+            addEventListener('scroll',     () => scheduleTrim(), { passive: true }); // close trailing when scrolling
+            __lpGlobalBound = true;
+        }
     }
 
     // Expose for initUI()
@@ -1899,7 +1923,9 @@ function initUI() {
     if (burgerUtil) burgerUtil.onclick = () => togglePanel('#util');
 
     // Keep layout stable on resize and recompute fullscreen graph viewport.
-    addEventListener('resize', () => {
+    const updateViewport = () => { __VPW = window.innerWidth; __VPH = window.innerHeight; };
+    const onResize = () => {
+        updateViewport(); // Cached viewport, updated on resize to reduce repeated reads.
         if (matchMedia('(min-width:1001px)').matches) {
             closePanels();
             highlightCurrent(true);
@@ -1908,7 +1934,9 @@ function initUI() {
             updateMiniViewport();
             highlightCurrent(true);
         }
-    }, { passive: true });
+    };
+    updateViewport();
+    addEventListener('resize', onResize, { passive: true });
 
     // Close panels upon navigation clicks inside the lists.
     $('#tree').addEventListener('click', e => {
@@ -2155,6 +2183,7 @@ function initUI() {
     // Preload HLJS core when the main thread is likely idle to improve UX later.
     whenIdle(() => {
         KM.ensureHighlight();
+        KM.ensureMarkdown();
     });
 }
 
