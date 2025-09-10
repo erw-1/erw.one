@@ -257,9 +257,6 @@
     padding: var(--g-xs);
   }
 
-  .caret::before {
-    content: "▸";
-  }
   .folder.open > .caret {
     transform: rotate(90deg);
   }
