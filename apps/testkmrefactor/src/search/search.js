@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $, DOC, el } from '../core/dom.js';
+import { $, DOC, el } from '../core/namespace_dom.js';
 import { pages, hashOf } from '../model/bundle.js';
 
 const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
@@ -132,3 +132,4 @@ export function initSearch() {
   // initial state
   search('');
 }
+
