@@ -1,4 +1,8 @@
 /* eslint-env browser, es2022 */
+export const DOC = document;
+export const $ = (sel, c = DOC) => c.querySelector(sel);
+export const $$ = (sel, c = DOC) => [...c.querySelectorAll(sel)];
+
 export const whenIdle = (cb, timeout = 1500) =>
   'requestIdleCallback' in window
     ? requestIdleCallback(cb, { timeout })
@@ -19,11 +23,6 @@ export const clearSelection = () => {
 export const baseURLNoHash = () => location.href.replace(/#.*$/, '');
 export const KM = (window.KM = window.KM || {});
 
-const DOC = document;
-
-export const $ = (sel, c = DOC) => c.querySelector(sel);
-export const $$ = (sel, c = DOC) => [...c.querySelectorAll(sel)];
-
 export const el = (tag, props = {}, children = []) => {
   const n = DOC.createElement(tag);
   for (const k in props) {
@@ -41,5 +40,4 @@ export const el = (tag, props = {}, children = []) => {
 };
 
 Object.assign(KM, { $, $$, DEBUG: KM.DEBUG || false });
-
 export default KM;
