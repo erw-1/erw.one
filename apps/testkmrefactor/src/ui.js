@@ -1,598 +1,686 @@
-// src/ui.js
-import {
-  DOC, $, $$, el,
-  __VPW, __VPH, updateViewport,
-  escapeRegex, whenIdle, domReady, clearSelection, baseURLNoHash,
-  ICONS, iconBtn, wireCopyButtons, HEADINGS_SEL,
-} from './dom.js';
+'use strict';
+import { $, $$, el, escapeRegex, copyText, clearSelection, HEADINGS_SEL, whenIdle } from './helpers.js';
+import { pages, root, hashOf, find, TITLE as KM_TITLE, DEFAULT_THEME, ACCENT } from './data.js';
+import { getParsedHTML, enhanceRendered, normalizeAnchors } from './render.js';
+import { ensureHighlight, ensureMarkdown, ensureKatex } from './render.js';
 
-import {
-  TITLE, DEFAULT_THEME, ACCENT,
-  root, pages, descendants, byId,
-  hashOf, buildDeepURL, parseTarget, nav,
-} from './data.js';
-
-import {
-  getParsedHTML, enhanceRendered,
-  normalizeAnchors, annotatePreviewableLinks,
-  ensureHLJSTheme, syncMermaidThemeWithPage,
-} from './render.js';
-
-/* ───────────────────────────── Utilities ───────────────────────────── */
-
-const ensureOnce = (fn) => { let p; return () => (p ??= fn()); };
-
-/* Minimal d3 loader: selection + force + drag (smaller payload) */
-const ensureD3 = ensureOnce(async () => {
-  const [sel, force, drag] = await Promise.all([
-    import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
-    import('https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm'),
-    import('https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm'),
-  ]);
-  return {
-    select: sel.select,
-    selectAll: sel.selectAll,
-    forceSimulation: force.forceSimulation,
-    forceLink: force.forceLink,
-    forceManyBody: force.forceManyBody,
-    forceCenter: force.forceCenter,
-    drag: drag.drag,
-  };
-});
-
-/* ───────────────────────────── Panels ───────────────────────────── */
-
+// UI state and global toggles
+const graphs = {};       // for mini graph(s)
+let CURRENT = -1;
+let __lpGlobalBound = false;
+let tocObserver = null;
 export function closePanels() {
-  $('#sidebar')?.classList.remove('open');
-  $('#util')?.classList.remove('open');
+    $('#sidebar')?.classList.remove('open');
+    $('#util')?.classList.remove('open');
 }
-
-/* ───────────────────────────── Header / Breadcrumb ───────────────────────── */
-
-export function breadcrumb(page) {
-  const bar = $('#crumb');
-  if (!bar) return;
-  bar.innerHTML = '';
-
-  const path = [];
-  for (let n = page; n; n = n.parent) path.unshift(n);
-  if (path[0] !== root) path.unshift(root);
-
-  path.forEach((n, i) => {
-    if (i) bar.append(' › ');
-    if (i === path.length - 1) {
-      bar.append(el('span', { class: 'current', textContent: n.title }));
-    } else {
-      bar.append(el('a', { href: '#' + hashOf(n), textContent: n.title }));
+function setFolderOpen(li, open) {
+    if (!li) return;
+    li.classList.toggle('open', !!open);
+    li.setAttribute('aria-expanded', String(!!open));
+    const caret = li.querySelector('button.caret');
+    if (caret) {
+        caret.setAttribute('aria-expanded', String(!!open));
+        caret.setAttribute('aria-label', !!open ? 'Collapse' : 'Expand');
     }
-  });
+    const sub = li.querySelector('ul[role="group"]');
+    if (sub) sub.style.display = !!open ? 'block' : 'none';
 }
-
-/* ───────────────────────────── Sidebar Tree ───────────────────────────── */
-
-function isOpenKey(id) { return `km.open.${id}`; }
-function getStoredOpen(id) { return localStorage.getItem(isOpenKey(id)) === '1'; }
-function setStoredOpen(id, v) { localStorage.setItem(isOpenKey(id), v ? '1' : '0'); }
-
-function makeNodeLink(p) {
-  const a = el('a', { href: '#' + hashOf(p), textContent: p.title, title: p.title });
-  a.dataset.pid = p.id;
-  return a;
-}
-
-function buildTreeNode(p) {
-  const li = el('li', { 'data-id': p.id });
-  const hasKids = (p.children && p.children.length);
-  if (hasKids) {
-    const toggle = el('button', { class: 'twisty', 'aria-label': 'Toggle section', 'aria-expanded': 'false' }, [ICONS.caret]);
-    const head = el('div', { class: 'head' }, [toggle, makeNodeLink(p)]);
-    const ul = el('ul', { class: 'children' });
-    p.children.forEach(c => ul.append(buildTreeNode(c)));
-    li.append(head, ul);
-
-    const applyOpen = (open) => {
-      li.classList.toggle('open', open);
-      toggle.setAttribute('aria-expanded', String(open));
-    };
-    const initial = getStoredOpen(p.id);
-    applyOpen(initial);
-
-    toggle.addEventListener('click', (e) => {
-      const now = !li.classList.contains('open');
-      applyOpen(now);
-      setStoredOpen(p.id, now);
-      e.stopPropagation();
-    });
-  } else {
-    li.append(el('div', { class: 'head leaf' }, [makeNodeLink(p)]));
-  }
-  return li;
-}
-
-export function buildTree() {
-  const tree = $('#tree');
-  if (!tree) return;
-  tree.innerHTML = '';
-  const ul = el('ul', { class: 'root' });
-  root.children.forEach(p => ul.append(buildTreeNode(p)));
-  tree.append(ul);
-}
-
 export function highlightSidebar(page) {
-  const tree = $('#tree'); if (!tree) return;
-  tree.querySelector('.current')?.classList.remove('current');
-
-  const a = tree.querySelector(`a[data-pid="${page.id}"]`);
-  if (a) {
-    a.classList.add('current');
-    // open ancestors
-    for (let n = a.closest('li'); n; n = n.parentElement?.closest('li')) {
-      n.classList.add('open');
-      const btn = n.querySelector(':scope > .head > .twisty');
-      btn?.setAttribute('aria-expanded', 'true');
-      setStoredOpen(n.dataset.id, true);
+    $('#tree .sidebar-current')?.classList.remove('sidebar-current');
+    const link = $(`#tree a[data-page="${page.id}"]`);
+    if (!link) return;
+    link.classList.add('sidebar-current');
+    let li = link.closest('li');
+    while (li) {
+        if (li.classList.contains('folder')) {
+            setFolderOpen(li, true);
+        }
+        li = li.parentElement?.closest('li');
     }
-  }
-}
-
-/* ───────────────────────────── ToC ───────────────────────────── */
-
-let tocObserver;
-export function buildToc(page) {
-  const toc = $('#toc');
-  if (!toc) return;
-  toc.innerHTML = '';
-
-  const hs = $$(HEADINGS_SEL, $('#content'));
-  if (!hs.length) return;
-
-  const ul = el('ul');
-  hs.forEach(h => {
-    const li = el('li', { 'data-hid': h.id, class: h.tagName.toLowerCase() }, [
-      el('a', { href: buildDeepURL(page, h.id), textContent: h.textContent || '' })
-    ]);
-    ul.append(li);
-  });
-  toc.append(ul);
-
-  // Scroll spy
-  tocObserver?.disconnect();
-  tocObserver = new IntersectionObserver((entries) => {
-    const vis = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
-    const id = (vis[0] && vis[0].target && vis[0].target.id) || '';
-    if (id) {
-      const curr = toc.querySelector('.toc-current');
-      const next = toc.querySelector(`li[data-hid="${id}"] > a`);
-      if (curr !== next) {
-        curr?.classList.remove('toc-current');
-        next?.classList.add('toc-current');
-      }
+    const treeEl = $('#tree');
+    if (treeEl && link) {
+        const r = link.getBoundingClientRect();
+        const tr = treeEl.getBoundingClientRect();
+        requestAnimationFrame(() => {
+            if (r.top < tr.top || r.bottom > tr.bottom) {
+                link.scrollIntoView({ block: 'nearest' });
+            }
+        });
     }
-  }, { root: null, rootMargin: '0px 0px -70% 0px', threshold: 0 });
-
-  hs.forEach(h => tocObserver.observe(h));
 }
-
-/* ───────────────────────────── Search ───────────────────────────── */
-
-function tokenize(q) {
-  return (q || '').toLowerCase().trim().split(/\s+/).filter(Boolean);
-}
-
-export function search(q) {
-  const resultsEl = $('#results');
-  if (!resultsEl) return;
-
-  const terms = tokenize(q);
-  const reFull = new RegExp(escapeRegex(q).replace(/\s+/g, '\\s+'), 'i');
-  const tokenRes = terms.map(t => new RegExp(escapeRegex(t), 'i'));
-
-  const out = [];
-
-  for (const page of pages) {
-    let t = 0;
-    if (reFull.test(page.title)) t += 8;
-    if (page.tags && reFull.test(page.tags.join(' '))) t += 2;
-    if (reFull.test(page.content || '')) t += 4;
-
-    const matchedSecs = [];
-    if (terms.length && Array.isArray(page.sections)) {
-      for (const sec of page.sections) {
-        let hits = 0;
-        for (const r of tokenRes) if (r.test(sec.search)) hits++;
-        if (hits) matchedSecs.push({ sec, hits });
-      }
-    }
-
-    const score =
-      Math.log(1 + 4 * t) +
-      Math.log(1 + matchedSecs.length) +
-      (terms.length ? terms.length * 0.1 : 0);
-
-    if (t || matchedSecs.length) out.push({ page, score, matchedSecs });
-  }
-
-  out.sort((a, b) => b.score - a.score);
-  renderSearchResults(out, q || '');
-}
-
-function highlightText(txt, terms) {
-  if (!terms.length) return txt;
-  let s = txt;
-  for (const t of terms) {
-    const re = new RegExp(`(${escapeRegex(t)})`, 'ig');
-    s = s.replace(re, '<mark>$1</mark>');
-  }
-  return s;
-}
-
-function renderSearchResults(list, q) {
-  const resultsEl = $('#results');
-  const terms = tokenize(q);
-  resultsEl.innerHTML = '';
-
-  if (!list.length) {
-    resultsEl.append(el('p', { class: 'empty', textContent: 'No results.' }));
-    return;
-  }
-
-  const ol = el('ol', { class: 'search-list' });
-  for (const { page, matchedSecs } of list.slice(0, 100)) {
-    const li = el('li', { class: 'res' });
-    const title = el('a', { class: 'page', href: '#' + hashOf(page) });
-    title.innerHTML = highlightText(page.title, terms);
-    li.append(title);
-
-    if (matchedSecs.length) {
-      const ul = el('ul', { class: 'sections' });
-      matchedSecs.slice(0, 6).forEach(({ sec }) => {
-        const a = el('a', { href: buildDeepURL(page, sec.id) });
-        a.innerHTML = highlightText(sec.txt || sec.id, terms);
-        const sli = el('li', {}, [a]);
-        ul.append(sli);
-      });
-      li.append(ul);
-    }
-
-    ol.append(li);
-  }
-  resultsEl.append(ol);
-}
-
-/* ───────────────────────────── Mini Graph (D3) ───────────────────────────── */
-
-const graph = {
-  built: false,
-  nodeSel: null,
-  linkSel: null,
-  sim: null,
-  data: null,
-  svg: null,
-  g: null,
-};
-
-export async function buildGraph() {
-  const mini = $('#mini'); if (!mini || graph.built) return;
-  const d3 = await ensureD3();
-
-  // data
-  const nodes = [];
-  const links = [];
-  const idIdx = new Map();
-  let i = 0;
-  for (const p of descendants(root)) {
-    idIdx.set(p.id, i++);
-    nodes.push({ id: p.id, page: p, title: p.title });
-    if (p.parent) links.push({ source: p.parent.id, target: p.id });
-  }
-
-  const svg = d3.select('#mini').append('svg')
-    .attr('role', 'img')
-    .attr('aria-label', 'Site map');
-
-  const g = svg.append('g');
-
-  const link = g.selectAll('line')
-    .data(links)
-    .enter().append('line')
-    .attr('class', 'link');
-
-  const node = g.selectAll('circle')
-    .data(nodes)
-    .enter().append('circle')
-    .attr('class', 'node')
-    .attr('r', d => d.page === root ? 6 : 4)
-    .on('click', (e, d) => nav(d.page))
-    .call(d3.drag()
-      .on('start', (event, d) => {
-        if (!event.active) sim.alphaTarget(0.3).restart();
-        d.fx = d.x; d.fy = d.y;
-      })
-      .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
-      .on('end', (event, d) => {
-        if (!event.active) sim.alphaTarget(0);
-        d.fx = null; d.fy = null;
-      }));
-
-  const sim = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(links).id(d => d.id).distance(30).strength(0.12))
-    .force('charge', d3.forceManyBody().strength(-60))
-    .force('center', d3.forceCenter(0, 0))
-    .on('tick', () => {
-      link
-        .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
-      node.attr('cx', d => d.x).attr('cy', d => d.y);
+function buildTree() {
+    const ul = $('#tree');
+    if (!ul) return;
+    ul.setAttribute('role', 'tree');
+    ul.innerHTML = '';
+    const prim = root.children.filter(c => !c.isSecondary);
+    const secs = root.children.filter(c => c.isSecondary).sort((a, b) => a.clusterId - b.clusterId);
+    const rec = (nodes, container, depth = 0) => {
+        nodes.forEach(p => {
+            const li = el('li');
+            if (p.children.length) {
+                const open = depth < 2;
+                li.className = 'folder' + (open ? ' open' : '');
+                const groupId = `group-${p.id}`;
+                const caret = el('button', {
+                    type: 'button',
+                    class: 'caret',
+                    'aria-expanded': String(open),
+                    'aria-controls': groupId,
+                    'aria-label': open ? 'Collapse' : 'Expand'
+                });
+                const lbl = el('a', {
+                    class: 'lbl',
+                    dataset: { page: p.id },
+                    href: '#' + hashOf(p),
+                    textContent: p.title
+                });
+                const sub = el('ul', {
+                    id: groupId,
+                    role: 'group',
+                    style: `display:${open ? 'block' : 'none'}`
+                });
+                li.setAttribute('role', 'treeitem');
+                li.setAttribute('aria-expanded', String(open));
+                li.append(caret, lbl, sub);
+                container.append(li);
+                rec(p.children, sub, depth + 1);
+            } else {
+                li.className = 'article';
+                li.setAttribute('role', 'treeitem');
+                li.append(el('a', {
+                    dataset: { page: p.id },
+                    href: '#' + hashOf(p),
+                    textContent: p.title
+                }));
+                container.append(li);
+            }
+        });
+    };
+    rec(prim, ul);
+    secs.forEach(r => {
+        const sep = el('div', {
+            class: 'group-sep',
+            role: 'presentation',
+            'aria-hidden': 'true'
+        }, [ el('hr', { role: 'presentation', 'aria-hidden': 'true' }) ]);
+        ul.append(sep);
+        rec([r], ul);
     });
-
-  graph.built = true;
-  graph.nodeSel = node;
-  graph.linkSel = link;
-  graph.sim = sim;
-  graph.svg = svg;
-  graph.g = g;
-
-  updateMiniViewport();
-  highlightCurrent(true);
+}
+// Breadcrumb sibling navigation and related content
+let collator = new Intl.Collator(undefined, { sensitivity: 'base' });
+const sortByTitle = (a, b) => collator.compare(a.title, b.title);
+function seeAlso(page) {
+    $('#see-also')?.remove();
+    if (!page.tagsSet?.size) return;
+    const related = pages
+        .filter(p => p !== page)
+        .map(p => ({ p, shared: [...p.tagsSet].filter(t => page.tagsSet.has(t)).length }))
+        .filter(r => r.shared > 0)
+        .sort((a, b) => (b.shared - a.shared) || sortByTitle(a.p, b.p));
+    if (!related.length) return;
+    const wrap = el('div', { id: 'see-also' }, [ el('h2', { textContent: 'See also' }), el('ul') ]);
+    const ulEl = wrap.querySelector('ul');
+    related.forEach(({ p }) => ulEl.append(el('li', {}, [
+        el('a', { href: '#' + hashOf(p), textContent: p.title })
+    ])));
+    const contentEl = $('#content'), pn = $('#prev-next');
+    contentEl.insertBefore(wrap, pn ?? null);
+}
+function prevNext(page) {
+    $('#prev-next')?.remove();
+    if (!page.parent) return;
+    if (page.parent === root) { if (page.isSecondary) return; }
+    let sib = page.parent.children;
+    if (page.parent === root && !page.isSecondary) sib = sib.filter(p => !p.isSecondary);
+    if (sib.length < 2) return;
+    const i = sib.indexOf(page);
+    const wrap = el('div', { id: 'prev-next' });
+    if (i > 0) wrap.append(el('a', {
+        href: '#' + hashOf(sib[i - 1]),
+        textContent: '← ' + sib[i - 1].title
+    }));
+    if (i < sib.length - 1) wrap.append(el('a', {
+        href: '#' + hashOf(sib[i + 1]),
+        textContent: sib[i + 1].title + ' →'
+    }));
+    $('#content').append(wrap);
+}
+function search(q) {
+    const resUL = $('#results'), treeUL = $('#tree');
+    if (!resUL || !treeUL) return;
+    const val = q.trim().toLowerCase();
+    resUL.setAttribute('aria-live', 'polite');
+    resUL.setAttribute('aria-busy', 'true');
+    if (!val) {
+        resUL.style.display = 'none';
+        resUL.innerHTML = '';
+        treeUL.style.display = '';
+        return;
+    }
+    const tokens = val.split(/\s+/).filter(t => t.length >= 2);
+    resUL.innerHTML = '';
+    resUL.style.display = '';
+    treeUL.style.display = 'none';
+    const W = { title: 5, tag: 3, body: 1, secTitle: 3, secBody: 1, phraseTitle: 5, phraseBody: 2, secCountCap: 4 };
+    const phrase = tokens.length > 1 ? val : null;
+    const scored = [];
+    for (const p of pages) {
+        if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
+        let score = 0;
+        // per-token weighting
+        for (const t of tokens) {
+            const r = new RegExp('\\b' + escapeRegex(t) + '\\b');
+            if (r.test(p.titleL)) score += W.title;
+            if (r.test(p.tagsL))  score += W.tag;
+            if (r.test(p.bodyL))  score += W.body;
+        }
+        // phrase bonus
+        if (phrase) {
+            if (p.titleL.includes(phrase)) score += W.phraseTitle;
+            else if (p.bodyL.includes(phrase)) score += W.phraseBody;
+        }
+        // section sub-results
+        const matchedSecs = [];
+        for (const sec of p.sections) {
+            if (!tokens.every(tok => sec.search.includes(tok))) continue;
+            let s = 0;
+            for (const t of tokens) {
+                const r = new RegExp('\\b' + escapeRegex(t) + '\\b');
+                if (r.test(sec.txt.toLowerCase())) s += W.secTitle;
+                if (r.test(sec.body.toLowerCase()))  s += W.secBody;
+            }
+            if (phrase && (sec.txt.toLowerCase().includes(phrase) || sec.body.toLowerCase().includes(phrase))) s += 1;
+            matchedSecs.push({ sec, s });
+        }
+        matchedSecs.sort((a, b) => b.s - a.s);
+        score += Math.min(W.secCountCap, matchedSecs.length);
+        scored.push({ p, score, matchedSecs });
+    }
+    scored.sort((a, b) => b.score - a.score || sortByTitle(a.p, b.p));
+    const frag = document.createDocumentFragment();
+    for (const { p, matchedSecs } of scored) {
+        const li = el('li', { class: 'page-result' }, [
+            el('a', { href: '#' + hashOf(p), textContent: p.title })
+        ]);
+        if (matchedSecs.length) {
+            const base = hashOf(p);
+            const sub = el('ul', { class: 'sub-results' });
+            matchedSecs.forEach(({ sec }) => {
+                sub.append(el('li', { class: 'heading-result' }, [
+                    el('a', { href: `#${base ? base + '#' : ''}${sec.id}`, textContent: sec.txt })
+                ]));
+            });
+            li.append(sub);
+        }
+        frag.append(li);
+    }
+    resUL.append(frag);
+    if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
+    resUL.setAttribute('aria-busy', 'false');
+}
+export function wireCopyButtons(root, getBaseUrl) {
+    if (!root) return;
+    root.addEventListener('click', (e) => {
+        const btn = e.target?.closest('button.heading-copy, button.code-copy');
+        if (!btn) return;
+        if (btn.classList.contains('heading-copy')) {
+            const h = btn.closest(HEADINGS_SEL);
+            if (!h) return;
+            const base = getBaseUrl() || (location.href.replace(/#.*$/, '') + '#');
+            copyText(base + h.id, btn);
+        } else {
+            const pre = btn.closest('pre');
+            const code = pre?.querySelector('code');
+            copyText(code ? code.innerText : pre?.innerText || '', btn);
+        }
+    });
 }
 
-export function updateMiniViewport() {
-  const wrap = $('#mini');
-  if (!wrap || !graph.svg) return;
-  updateViewport();
-  const w = Math.max(120, wrap.clientWidth || 300);
-  const h = Math.max(80, wrap.clientHeight || 200);
-  graph.svg.attr('width', w).attr('height', h);
-  // fit content (we keep coordinates around 0,0)
-  graph.svg.attr('viewBox', [-w / 2, -h / 2, w, h].join(' '));
-}
-
-export function highlightCurrent(force = false) {
-  if (!graph.nodeSel) return;
-  const { page } = parseTarget(location.hash) || { page: root };
-  graph.nodeSel.classed('current', d => d.page === page);
-  if (force) graph.sim?.alpha(0.05).restart();
-}
-
-/* ───────────────────────────── Link previews ───────────────────────────── */
-
-(function attachLinkPreviews() {
-  const stack = []; // { el, body, link }
-
-  function remove(el) {
-    const i = stack.findIndex(p => p.el === el);
-    if (i >= 0) stack.splice(i, 1);
-    el.remove();
-  }
-
-  function position(panel, linkEl) {
-    const rect = linkEl.getBoundingClientRect();
-    const gap = 8;
-    const W = Math.max(1, panel.offsetWidth || 1);
-    const H = Math.max(1, panel.offsetHeight || 1);
-    const preferRight = rect.right + gap + W <= __VPW;
-    const left = preferRight ? (rect.right + gap) : Math.max(8, rect.left - gap - W);
-    const top = Math.min(__VPH - H - 8, Math.max(8, rect.top));
-    panel.style.left = left + 'px';
-    panel.style.top = top + 'px';
-  }
-
-  async function openPreview(linkEl) {
-    const href = linkEl.getAttribute('href') || '';
-    if (!href.startsWith('#')) return;
-    const { page, anchor } = parseTarget(href);
-    if (!page) return;
-
-    const wrapper = el('div', { class: 'km-link-preview', role: 'dialog' });
-    const head = el('div', { class: 'kp-head' }, [
-      el('span', { class: 'kp-title', textContent: page.title }),
-      iconBtn('Close', ICONS.close, 'kp-close'),
+// D3 and mini-graph integration
+const ensureD3 = ensureOnce(async () => {
+    const [sel, force, drag] = await Promise.all([
+        import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
+        import('https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm'),
+        import('https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm')
     ]);
-    const bodyWrap = el('div', { class: 'kp-body-wrap' });
-    const body = el('div'); // content root (so mermaid can rerender later)
-    bodyWrap.append(body);
-    wrapper.append(head, bodyWrap);
-    document.body.appendChild(wrapper);
-
-    head.querySelector('.kp-close')?.addEventListener('click', () => remove(wrapper));
-
-    // Fill content via render pipeline (but off-DOM HTML)
-    const html = await getParsedHTML(page);
-    body.innerHTML = html;
-    await enhanceRendered(body, page);
-    normalizeAnchors(body, page);
-    annotatePreviewableLinks(body);
-
-    if (anchor) {
-      const tgt = body.querySelector('#' + CSS.escape(anchor));
-      tgt?.scrollIntoView?.({ block: 'start' });
-    }
-
-    position(wrapper, linkEl);
-    stack.push({ el: wrapper, body, link: linkEl });
-  }
-
-  // Delegated hover/focus on in-article previewable links
-  document.addEventListener('mouseover', (e) => {
-    const a = (e.target && e.target.closest?.('a.km-previewable'));
-    if (!a) return;
-    // avoid popping multiple for same link
-    if (!stack.some(p => p.link === a)) openPreview(a);
-  }, { passive: true });
-
-  document.addEventListener('focusin', (e) => {
-    const a = (e.target && e.target.closest?.('a.km-previewable'));
-    if (!a) return;
-    if (!stack.some(p => p.link === a)) openPreview(a);
-  });
-
-  document.addEventListener('click', (e) => {
-    const btn = e.target && e.target.closest?.('.kp-close');
-    if (btn) e.preventDefault();
-  });
-
-  addEventListener('scroll', () => {
-    // reposition visible panels relative to their link
-    stack.forEach(p => position(p.el, p.link));
-  }, { passive: true });
-})();
-
-/* ───────────────────────────── Keyboard shortcuts ───────────────────────── */
-
-function nextPrevHeading(dir = 1) {
-  const hs = $$(HEADINGS_SEL, $('#content'));
-  if (!hs.length) return;
-  const y = (document.scrollingElement || document.documentElement).scrollTop + 2;
-  const idx = hs.findIndex(h => h.getBoundingClientRect().top + scrollY >= y);
-  const tgt = dir > 0 ? (hs[Math.min(hs.length - 1, (idx < 0 ? 0 : idx + 1))]) : (hs[Math.max(0, (idx <= 0 ? 0 : idx - 1))]);
-  tgt?.scrollIntoView({ behavior: 'smooth' });
-}
-
-function goSiblingPage(dir = 1) {
-  const t = parseTarget(location.hash);
-  const page = t?.page || root;
-  const parent = page.parent || root;
-  const sibs = parent.children || [];
-  const idx = sibs.indexOf(page);
-  const next = sibs[idx + dir];
-  if (next) nav(next);
-}
-
-function openSidebar() { $('#sidebar')?.classList.add('open'); }
-function openUtil() { $('#util')?.classList.add('open'); }
-
-function wireKeyboard() {
-  document.addEventListener('keydown', (e) => {
-    // ignore when typing in inputs/textareas or a modifier is pressed
-    const tag = (e.target && e.target.tagName) || '';
-    if (/(INPUT|TEXTAREA|SELECT)/.test(tag)) return;
-    if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-    switch (e.key) {
-      case 'j': e.preventDefault(); nextPrevHeading(+1); break;
-      case 'k': e.preventDefault(); nextPrevHeading(-1); break;
-      case 'J': e.preventDefault(); goSiblingPage(+1); break;
-      case 'K': e.preventDefault(); goSiblingPage(-1); break;
-      case '/': e.preventDefault(); openUtil(); $('#search')?.focus(); break;
-      case '[': e.preventDefault(); openSidebar(); break;
-      case 'Escape': closePanels(); break;
-      case '?': {
-        const o = $('#kb-overlay'); if (o) { o.hidden = !o.hidden; }
-        break;
-      }
-    }
-  });
-}
-
-/* ───────────────────────────── Theme (toggle + sync) ─────────────────────── */
-
-function themeInit() {
-  const btn = $('#theme-toggle');
-  const rootEl = DOC.documentElement;
-  const media = matchMedia('(prefers-color-scheme: dark)');
-  const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
-  const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
-  let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
-
-  if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
-
-  apply(dark);
-  if (btn) {
-    btn.setAttribute('aria-pressed', String(dark));
-    btn.onclick = () => {
-      dark = !dark; apply(dark);
-      btn.setAttribute('aria-pressed', String(dark));
-      localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+    KM.d3 = {
+        select: sel.select,
+        selectAll: sel.selectAll,
+        forceSimulation: force.forceSimulation,
+        forceLink: force.forceLink,
+        forceManyBody: force.forceManyBody,
+        forceCenter: force.forceCenter,
+        drag: drag.drag
     };
-  }
-
-  media.addEventListener?.('change', (e) => {
-    const hasUserPref = !!localStorage.getItem('km-theme');
-    if (!hasUserPref && !cfg) {
-      dark = e.matches; apply(dark);
+});
+function getMiniSize() {
+    const svgEl = $('#mini');
+    if (!svgEl) return { w: 400, h: 300 };
+    if (svgEl.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
+    const r = svgEl.getBoundingClientRect();
+    return { w: Math.max(1, r.width | 0), h: Math.max(1, r.height | 0) };
+}
+function updateMiniViewport() {
+    if (!graphs.mini) return;
+    const { svg, sim } = graphs.mini;
+    const { w, h } = getMiniSize();
+    graphs.mini.w = w; graphs.mini.h = h;
+    svg.attr('viewBox', `0 0 ${w} ${h}`).attr('width', w).attr('height', h).attr('preserveAspectRatio', 'xMidYMid meet');
+    clearTimeout(graphs.mini._kick);
+    graphs.mini._kick = setTimeout(() => { sim.alpha(0.2).restart(); }, 50);
+}
+function buildGraphData() {
+    const nodes = [], links = [], hierPairs = new Set(), adj = new Map();
+    const touch = (a, b) => {
+        (adj.get(a) || adj.set(a, new Set()).get(a)).add(b);
+        (adj.get(b) || adj.set(b, new Set()).get(b)).add(a);
+    };
+    const tierOf = n => n < 3 ? 1 : n < 6 ? 2 : n < 11 ? 3 : n < 21 ? 4 : 5;
+    pages.forEach((p, i) => { p._i = i; nodes.push({ id: i, label: p.title, ref: p }); });
+    pages.forEach(p => {
+        if (!p.parent) return;
+        if (p.isSecondary && p.parent === root) return;
+        const a = p._i, b = p.parent._i;
+        const key = a < b ? `${a}|${b}` : `${b}|${a}`;
+        links.push({ source: a, target: b, shared: 0, kind: 'hier', tier: tierOf((() => {
+            let n = 0; (function rec(x) { x.children.forEach(c => { n++; rec(c); }); })(p); return n;
+        })()) });
+        hierPairs.add(key);
+        touch(a, b);
+    });
+    const tagToPages = new Map();
+    pages.forEach(p => { for (const t of p.tagsSet) { if (!tagToPages.has(t)) tagToPages.set(t, []); tagToPages.get(t).push(p._i); } });
+    const shared = new Map();
+    const MAX_PER_TAG = 80;
+    for (const arr0 of tagToPages.values()) {
+        const arr = arr0.slice(0, MAX_PER_TAG);
+        for (let x = 0; x < arr.length; x++) {
+            for (let y = x + 1; y < arr.length; y++) {
+                const i = arr[x], j = arr[y];
+                const key = i < j ? `${i}|${j}` : `${j}|${i}`;
+                shared.set(key, (shared.get(key) || 0) + 1);
+            }
+        }
     }
-  });
-
-  addEventListener('storage', (e) => {
-    if (e.key === 'km-theme') {
-      dark = e.newValue === 'dark'; apply(dark);
+    for (const [key, count] of shared) {
+        if (count < 2) continue;
+        if (hierPairs.has(key)) continue;
+        const [i, j] = key.split('|').map(Number);
+        links.push({ source: i, target: j, shared: count, kind: 'tag' });
+        touch(i, j);
     }
-  });
-
-  function apply(isDark) {
-    rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
-    rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
-    ensureHLJSTheme();
-    syncMermaidThemeWithPage();
-  }
+    return { nodes, links, adj };
+}
+export async function buildGraph() {
+    await ensureD3();
+    if (graphs.mini) return;
+    const { nodes, links, adj } = buildGraphData();
+    const svg = KM.d3.select('#mini');
+    const { w: W, h: H } = getMiniSize();
+    svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
+    const localN = nodes.map(n => ({ ...n })), localL = links.map(l => ({ ...l }));
+    const sim = KM.d3.forceSimulation(localN)
+        .force('link', KM.d3.forceLink(localL).id(d => d.id).distance(80))
+        .force('charge', KM.d3.forceManyBody().strength(-240))
+        .force('center', KM.d3.forceCenter(W / 2, H / 2));
+    const view = svg.append('g').attr('class', 'view');
+    const link = view.append('g').selectAll('line')
+        .data(localL).join('line')
+        .attr('id', d => d.kind === 'hier' ? `link_hier${d.tier}` : `link_tag${Math.min(d.shared, 5)}`);
+    const wireNode = sel => sel
+        .attr('r', 6)
+        .attr('id', d => d.ref.children.length ? 'node_parent' : 'node_leaf')
+        .on('click', (e, d) => KM.nav(d.ref))
+        .on('mouseover', (e, d) => fade(d.id, 0.15))
+        .on('mouseout', () => fade(null, 1))
+        .call(KM.d3.drag()
+            .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
+            .on('drag',  (e, d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
+            .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
+    const node = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
+    const label = view.append('g').selectAll('text')
+        .data(localN).join('text')
+        .attr('id', 'graph_text').attr('font-size', 10)
+        .attr('pointer-events', 'none')
+        .text(d => d.label);
+    function fade(id, o) {
+        node.style('opacity', d => (id == null || adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
+        label.style('opacity', d => (id == null || adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
+        link.style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : o);
+    }
+    sim.on('tick', () => {
+        link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        node.attr('cx', d => d.x).attr('cy', d => d.y);
+        label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
+    });
+    graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, _kick: null };
+    observeMiniResize();
+}
+export function highlightCurrent(force = false) {
+    if (!graphs.mini) return;
+    const seg = location.hash.slice(1).split('#').filter(Boolean);
+    const pg = find(seg);
+    const id = pg?._i ?? -1;
+    if (id === CURRENT && !force) return;
+    const g = graphs.mini;
+    g.node
+        .attr('id', d => d.id === id ? 'node_current' : (d.ref.children.length ? 'node_parent' : 'node_leaf'))
+        .attr('r', d => d.id === id ? 8 : 6);
+    g.label.classed('current', d => d.id === id);
+    const cx = g.w / 2, cy = g.h / 2;
+    g.node.filter(d => d.id === id).each(d => {
+        const dx = cx - d.x, dy = cy - d.y;
+        g.view.attr('transform', `translate(${dx},${dy})`);
+        const k = 0.10;
+        d.vx += (cx - d.x) * k;
+        d.vy += (cy - d.y) * k;
+    });
+    g.sim.alphaTarget(0.15).restart();
+    setTimeout(() => g.sim.alphaTarget(0), 250);
+    CURRENT = id;
+}
+function observeMiniResize() {
+    const elx = $('#mini');
+    if (!elx) return;
+    new ResizeObserver(() => {
+        if (!graphs.mini) return;
+        updateMiniViewport();
+        highlightCurrent(true);
+    }).observe(elx);
 }
 
-/* ───────────────────────────── Init ───────────────────────────── */
+// Hover Link Previews
+function attachLinkPreviews() {
+    const rootEl = $('#content');
+    if (!rootEl) return;
+    if (rootEl.dataset.kmPreviewsBound === '1') return;
+    rootEl.dataset.kmPreviewsBound = '1';
+    const previewStack = [];
+    let hoverDelay = null;
+    function closeFrom(indexInclusive = 0) {
+        for (let i = previewStack.length - 1; i >= indexInclusive; i--) {
+            const p = previewStack[i];
+            clearTimeout(p.timer);
+            normalizeAnchors(p.body, p.linkPage);
+            p.el.remove();
+            previewStack.pop();
+        }
+    }
+    function anyPreviewOrTriggerActive() {
+        const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview'))
+            .some(p => p.matches(':hover'));
+        if (anyHoverPreview) return true;
+        const active = document.activeElement;
+        const activeIsTrigger = !!(active && active.closest && active.closest('a[href^="#"]'));
+        if (activeIsTrigger) return true;
+        const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
+        return hoveringTrigger;
+    }
+    let trimTimer;
+    function scheduleTrim() {
+        clearTimeout(trimTimer);
+        trimTimer = setTimeout(() => {
+            if (!anyPreviewOrTriggerActive()) closeFrom(0);
+        }, 220);
+    }
+    async function fillPanel(panel, page, anchor) {
+        panel.body.dataset.mathRendered = '0';
+        panel.body.innerHTML = await getParsedHTML(page);
+        normalizeAnchors(panel.body, page);
+        await enhanceRendered(panel.body, page);
+        if (anchor) {
+            // Wait two frames for content to settle, then scroll the preview to anchor
+            await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+            const t = panel.body.querySelector('#' + CSS.escape(anchor));
+            if (t) {
+                const header = panel.el.querySelector('header');
+                const headerH = header ? header.offsetHeight : 0;
+                const cRect = panel.el.getBoundingClientRect();
+                const tRect = t.getBoundingClientRect();
+                const y = tRect.top - cRect.top + panel.el.scrollTop;
+                const top = Math.max(0, y - headerH - 6);
+                panel.el.scrollTo({ top, behavior: 'auto' });
+                t.classList.add('km-preview-focus');
+            }
+        }
+    }
+    function createPanel(linkEl) {
+        const container = el('div', { class: 'km-link-preview', role: 'dialog', 'aria-label': 'Preview' });
+        const header = el('header', {}, [
+            el('button', { type: 'button', class: 'km-preview-close', title: 'Close', 'aria-label': 'Close', innerHTML: '✕' })
+        ]);
+        const body = el('div');
+        container.append(header, body);
+        document.body.appendChild(container);
+        const panel = { el: container, body, link: linkEl, linkPage: null, timer: null };
+        const idx = previewStack.push(panel) - 1;
+        // Hover lifecycle events for panel
+        container.addEventListener('mouseenter', () => {
+            clearTimeout(panel.timer);
+            clearTimeout(trimTimer);
+        }, { passive: true });
+        container.addEventListener('mouseleave', (e) => {
+            const to = e.relatedTarget;
+            if (to && (to.closest && to.closest('.km-link-preview'))) return;
+            panel.timer = setTimeout(() => { closeFrom(idx); }, 240);
+        }, { passive: true });
+        header.querySelector('button').addEventListener('click', () => closeFrom(idx));
+        // Allow nested previews: bind events inside this panel too
+        container.addEventListener('mouseover', (e) => maybeOpenFromEvent(e), true);
+        container.addEventListener('focusin',  (e) => maybeOpenFromEvent(e), true);
+        positionPreview(panel, linkEl);
+        // Attach copy buttons inside preview
+        wireCopyButtons(panel.el, () => {
+            const t = parseTarget(linkEl.getAttribute('href') || '');
+            return buildDeepURL(t?.page, '') || (location.href.replace(/#.*$/, '') + '#');
+        });
+        return panel;
+    }
+    async function openPreviewForLink(linkEl) {
+        const href = linkEl.getAttribute('href') || '';
+        const target = parseTarget(href);
+        if (!target) return;
+        // If this link already has an open preview, reposition it instead of opening a new one
+        const existingIdx = previewStack.findIndex(p => p.link === linkEl);
+        if (existingIdx >= 0) {
+            const existing = previewStack[existingIdx];
+            clearTimeout(existing.timer);
+            positionPreview(existing, linkEl);
+            return;
+        }
+        const panel = createPanel(linkEl);
+        // Cancel close timers on existing panels when a new one opens
+        previewStack.forEach(p => clearTimeout(p.timer));
+        panel.linkPage = target.page;
+        await fillPanel(panel, target.page, target.anchor);
+    }
+    function isInternalPageLink(a) {
+        const href = a?.getAttribute('href') || '';
+        return !!parseTarget(href);
+    }
+    function maybeOpenFromEvent(e) {
+        const a = e.target?.closest('a[href^="#"]');
+        if (!a || !isInternalPageLink(a)) return;
+        clearTimeout(hoverDelay);
+        const openNow = e.type === 'focusin';
+        if (openNow) {
+            openPreviewForLink(a);
+        } else {
+            hoverDelay = setTimeout(() => openPreviewForLink(a), 220);
+        }
+    }
+    // Bind events on main content for hover and focus
+    rootEl.addEventListener('mouseover', maybeOpenFromEvent, true);
+    rootEl.addEventListener('focusin',  maybeOpenFromEvent, true);
+    rootEl.addEventListener('mouseout', (e) => {
+        const to = e.relatedTarget;
+        if (to && (to.closest && to.closest('.km-link-preview'))) return;
+        scheduleTrim();
+    }, true);
+    if (!__lpGlobalBound) {
+        addEventListener('hashchange', () => closeFrom(0), { passive: true });
+        addEventListener('scroll',     () => scheduleTrim(), { passive: true });
+        __lpGlobalBound = true;
+    }
+}
+function positionPreview(panel, linkEl) {
+    const rect = linkEl.getBoundingClientRect();
+    const vw = window.innerWidth, vh = window.innerHeight;
+    const gap = 8;
+    // Force layout to measure the panel after adding it to DOM
+    const W = Math.max(1, panel.el.offsetWidth || 1);
+    const H = Math.max(1, panel.el.offsetHeight || 1);
+    const preferRight = rect.right + gap + W <= vw;
+    const left = preferRight
+        ? Math.min(rect.right + gap, vw - W - gap)
+        : Math.max(gap, rect.left - gap - W);
+    const top = Math.min(Math.max(gap, rect.top), Math.max(gap, vh - H - gap));
+    Object.assign(panel.el.style, { left: left + 'px', top: top + 'px' });
+}
 
-let inited = false;
-
-export async function initUI() {
-  if (inited) return;
-  inited = true;
-
-  await domReady();
-
-  // Title
-  $('#wiki-title-text') && ($('#wiki-title-text').textContent = TITLE);
-  document.title = TITLE;
-
-  // Sidebar tree
-  buildTree();
-
-  // Theme
-  themeInit();
-
-  // Mini graph: build lazily on first visibility
-  const miniEl = $('#mini');
-  if (miniEl) {
-    new IntersectionObserver((entries, obs) => {
-      if (entries[0]?.isIntersecting) {
-        buildGraph();
-        obs.disconnect();
-      }
-    }).observe(miniEl);
-  }
-
-  // Graph fullscreen toggle
-  const expandBtn = $('#expand');
-  if (expandBtn && miniEl) {
-    expandBtn.onclick = () => {
-      const full = miniEl.classList.toggle('fullscreen');
-      expandBtn.setAttribute('aria-pressed', String(full));
-      updateMiniViewport();
-      requestAnimationFrame(() => highlightCurrent(true));
+// Initialize UI after data is loaded
+export function initUI() {
+    try { attachLinkPreviews(); } catch (_) {}
+    if (window.__kmUIInited) return;
+    window.__kmUIInited = true;
+    $('#wiki-title-text').textContent = document.title = (window.KM_TITLE || TITLE || 'Wiki');
+    buildTree();
+    // Trigger mini-graph build when it comes into view
+    const miniEl = $('#mini');
+    if (miniEl) {
+        new IntersectionObserver((entries, obs) => {
+            if (entries[0]?.isIntersecting) {
+                buildGraph();
+                obs.disconnect();
+            }
+        }).observe(miniEl);
+    }
+    // Theme and accent initialization
+    const btn = $('#theme-toggle'),
+          rootEl = document.documentElement,
+          media = matchMedia('(prefers-color-scheme: dark)');
+    const stored = localStorage.getItem('km-theme');
+    const cfgTheme = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
+    let dark = stored ? (stored === 'dark') : (cfgTheme ? cfgTheme === 'dark' : media.matches);
+    if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
+    function applyTheme(isDark) {
+        rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
+        rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
+        // Swap highlight.js theme CSS asynchronously (via highlight dynamic loading)
+        ensureHighlight();
+        // Sync Mermaid diagrams to new theme
+        ensureMarkdown().then(() => KM.syncMermaidThemeWithPage?.());
+    }
+    applyTheme(dark);
+    if (btn) {
+        btn.setAttribute('aria-pressed', String(dark));
+        btn.onclick = () => {
+            dark = !dark;
+            applyTheme(dark);
+            btn.setAttribute('aria-pressed', String(dark));
+            localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+        };
+    }
+    media.addEventListener('change', (e) => {
+        const hasUserPref = !!localStorage.getItem('km-theme');
+        if (!hasUserPref && !cfgTheme) {
+            dark = e.matches;
+            applyTheme(dark);
+        }
+    });
+    addEventListener('storage', (e) => {
+        if (e.key === 'km-theme') {
+            dark = e.newValue === 'dark';
+            applyTheme(dark);
+        }
+    });
+    // Search input behavior
+    const searchInput = $('#search'),
+          searchClear = $('#search-clear');
+    let debounce = 0;
+    if (searchInput && searchClear) {
+        searchInput.oninput = e => {
+            clearTimeout(debounce);
+            const val = e.target.value;
+            searchClear.style.display = val ? '' : 'none';
+            debounce = setTimeout(() => search(val), 150);
+        };
+        searchClear.onclick = () => {
+            searchInput.value = '';
+            searchClear.style.display = 'none';
+            search('');
+            searchInput.focus();
+        };
+    }
+    // Panel toggle controls
+    const togglePanel = sel => {
+        const elx = $(sel);
+        if (!elx) return;
+        const wasOpen = elx.classList.contains('open');
+        closePanels();
+        if (!wasOpen) {
+            elx.classList.add('open');
+            if (!elx.querySelector('.panel-close')) {
+                elx.append(el('button', {
+                    type: 'button',
+                    class: 'panel-close',
+                    'aria-label': 'Close panel',
+                    textContent: '✕',
+                    onclick: closePanels
+                }));
+            }
+        }
     };
-  }
-
-  // Panels toggles
-  $('#sidebar-toggle')?.addEventListener('click', () => $('#sidebar')?.classList.toggle('open'));
-  $('#util-toggle')?.addEventListener('click', () => $('#util')?.classList.toggle('open'));
-
-  // Search wiring
-  const si = $('#search');
-  si?.addEventListener('input', () => search(si.value));
-  $('#search-clear')?.addEventListener('click', () => { si.value = ''; search(''); si.focus(); });
-
-  // Keyboard
-  wireKeyboard();
-
-  // Rebuild ToC whenever the main content is (re)rendered
-  document.addEventListener('km:content-rendered', (e) => {
-    const page = e?.detail?.page || parseTarget(location.hash)?.page || root;
-    buildToc(page);
-  });
-
-  // Resize hook → keep graph viewBox correct
-  addEventListener('resize', () => updateMiniViewport(), { passive: true });
-
-  // Copy buttons in side panels (if any snippets there later)
-  whenIdle(() => wireCopyButtons($('#util'), () => {
-    const t = parseTarget(location.hash);
-    return buildDeepURL(t?.page || root, '') || (baseURLNoHash() + '#');
-  }));
+    window.__kmToggleSidebar = () => togglePanel('#sidebar');
+    window.__kmToggleUtil = () => togglePanel('#util');
+    window.__kmToggleCrumb = () => togglePanel('#crumb');
+    const burgerSidebar = $('#burger-sidebar');
+    const burgerUtil = $('#burger-util');
+    if (burgerSidebar) burgerSidebar.onclick = () => togglePanel('#sidebar');
+    if (burgerUtil) burgerUtil.onclick = () => togglePanel('#util');
+    // Update layout on resize
+    const updateViewport = () => { window.__VPW = window.innerWidth; window.__VPH = window.innerHeight; };
+    const onResize = () => {
+        updateViewport();
+        if (matchMedia('(min-width:1001px)').matches) {
+            closePanels();
+            highlightCurrent(true);
+        }
+        if ($('#mini')?.classList.contains('fullscreen')) {
+            updateMiniViewport();
+            highlightCurrent(true);
+        }
+    };
+    updateViewport();
+    addEventListener('resize', onResize, { passive: true });
+    // Close panels when clicking sidebar or search results links
+    $('#tree').addEventListener('click', e => {
+        const caretBtn = e.target.closest('button.caret');
+        if (caretBtn) {
+            const li = caretBtn.closest('li.folder'),
+                  sub = li.querySelector('ul');
+            const open = !li.classList.contains('open');
+            setFolderOpen(li, open);
+            return;
+        }
+        if (e.target.closest('a')) closePanels();
+    }, { passive: true });
+    $('#results').addEventListener('click', e => {
+        if (e.target.closest('a')) closePanels();
+    }, { passive: true });
+    // Help icon next to watermark opens keyboard shortcuts help panel
+    $('#kb-btn')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        const open = (window.openHelp || (() => {}));
+        open();
+    });
+    // Preload resources when main thread is idle
+    whenIdle(() => {
+        ensureHighlight();
+        ensureMarkdown();
+        ensureKatex();
+    });
 }
