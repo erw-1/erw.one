@@ -896,12 +896,28 @@
   .katex-display {
     width: fit-content;
     max-width: 100%;
+    border-bottom-left-radius: var(--r-sm);
+    border-bottom-right-radius: var(--r-sm);
+    box-shadow: var(--color-shadow) 3px 4px 11px -9px;
   }
 
   code {
     background: var(--color-lowest-contrast) !important;
     padding: 0 var(--g-xs);
-    border-radius: var(--r-sm);
+  }
+
+  span.lang {
+    padding-left: 10px;
+  }
+
+  .code-tools {
+    background: var(--color-lowest-contrast) !important;
+    border-top-left-radius: var(--r-sm);
+    border-top-right-radius: var(--r-sm);
+  }
+
+  details .code-tools {
+    background: var(--color-low-contrast) !important;
   }
 
   details code,
@@ -1485,9 +1501,7 @@
 
   iframe,
   details,
-  code,
   .katex-display .katex-html,
-  #content img,
   table,
   .dropdown ul,
   #prev-next a,
