@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $, el } from '../core/dom.js';
+import { $, el } from '../core/namespace_dom.js';
 import { hashOf, nav } from '../model/bundle.js';
 
 const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
