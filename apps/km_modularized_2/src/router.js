@@ -45,7 +45,6 @@ export function resetScrollTop() {
   document.getElementById('content')?.scrollTo?.(0, 0);
 }
 
-
 export function route() {
   closePanels();
   const t = parseTarget(location.hash) ?? { page: __model.root, anchor: '' };
