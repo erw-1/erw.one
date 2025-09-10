@@ -8,7 +8,7 @@ import { route, parseTarget } from './router.js';
 
 import { initSidebar, highlightSidebar } from '../ui/sidebar.js';
 import { buildToc } from '../ui/toc.js';
-import { renderBreadcrumb } from '../ui/breadcrumb.js';
+import { breadcrumb } from '../ui/breadcrumb.js';
 import { initLinkPreviews } from '../ui/previews.js';
 import { initSearch } from '../search/search.js';
 import { buildGraph, highlightCurrent } from '../graph/mini.js';
@@ -53,7 +53,7 @@ async function boot() {
   const { page } = parseTarget(location.hash);
   highlightSidebar(page);
   buildToc();
-  renderBreadcrumb(null, page);
+  breadcrumb(page);
   highlightCurrent(page);
 
   // Réagir à la navigation
@@ -61,7 +61,7 @@ async function boot() {
     const { page } = parseTarget(location.hash);
     highlightSidebar(page);
     buildToc();
-    renderBreadcrumb(null, page);
+    breadcrumb(page);
     highlightCurrent(page);
   }, { passive: true });
 }
@@ -71,3 +71,4 @@ boot().catch(err => {
   const el = document.getElementById('content') || document.body;
   el.innerHTML = `<p style="color:crimson">Startup error: ${String(err)}</p>`;
 });
+
