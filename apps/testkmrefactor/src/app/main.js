@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { domReady, $ } from '../core/dom.js';
+import { domReady, $ } from '../core/namespace_dom.js';
 import { MD, CACHE_MIN } from '../core/config.js';
 import { readCache, writeCache } from '../core/cache.js';
 import { parseMarkdownBundle, computeHashes } from '../model/bundle.js';
@@ -89,3 +89,4 @@ boot().catch(err => {
   const el = document.getElementById('content') || document.body;
   el.innerHTML = `<p style="color:crimson">Startup error: ${String(err)}</p>`;
 });
+
