@@ -1,3 +1,4 @@
+/* eslint-env browser, es2022 */
 import { DOC } from './dom.js';
 
 const CFG_EL = DOC.getElementById('km-config');
@@ -13,5 +14,5 @@ export const {
   CACHE_MD
 } = CFG;
 
-export const CACHE_MIN = Number(CACHE_MD) || 0;        // 0 → désactivé
+export const CACHE_MIN = Number(CACHE_MD) || 0;
 export const CACHE_KEY = (url) => `km:md:v2:${url}`;
