@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $, DOC, el } from '../core/dom.js';
+import { $, DOC, el } from '../core/namespace_dom.js';
 import { root, hashOf } from '../model/bundle.js';
 
 export function buildTree() {
@@ -124,3 +124,4 @@ export function initSidebar() {
     { passive: true }
   );
 }
+
