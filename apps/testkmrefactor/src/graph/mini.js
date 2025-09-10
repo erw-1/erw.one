@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $, DOC } from '../core/dom.js';
+import { $, DOC } from '../core/namespace_dom.js';
 import { pages, root, find, hashOf } from '../model/bundle.js';
 
 /* ───────────────────────────── mini graph (D3) ─────────────────────────── */
@@ -227,3 +227,4 @@ function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
