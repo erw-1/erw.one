@@ -1,4 +1,4 @@
-import { el } from '../core/dom.js';
+import { el } from '../core/namespace_dom.js';
 
 // Expressions utilitaires (précompilées)
 const RE_FENCE = /^(?:```|~~~)/;
@@ -122,4 +122,5 @@ export async function getParsedHTML(page, parser) {
     pageHTMLLRU.delete(firstKey);
   }
   return html;
+
 }
