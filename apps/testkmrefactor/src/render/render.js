@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $, $$ } from '../core/dom.js';
+import { $, $$ } from '../core/namespace_dom.js';
 import { getParsedHTML, numberHeadings } from '../model/bundle.js';
 import { highlightVisible } from './highlight.js';
 import { renderMathSafe } from './katex.js';
@@ -50,3 +50,4 @@ export async function render(contentEl, page, mdParser) {
   numberHeadings(contentEl);
   await enhanceRendered(contentEl, page, mdParser);
 }
+
