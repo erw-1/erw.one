@@ -1,426 +1,598 @@
-/* eslint-env browser, es2022 */
-'use strict';
+// src/ui.js
+import {
+  DOC, $, $$, el,
+  __VPW, __VPH, updateViewport,
+  escapeRegex, whenIdle, domReady, clearSelection, baseURLNoHash,
+  ICONS, iconBtn, wireCopyButtons, HEADINGS_SEL,
+} from './dom.js';
 
-/**
- * ui.js
- *  - Sidebar tree (expand/collapse + active highlight)
- *  - Header bits (title sync, theme toggle)
- *  - Search (client-side across heading sections)
- *  - TOC for current page (anchors)
- *  - Optional mini graph (if #graph canvas exists)
- *
- * Exported API:
- *   init({ data: { root, hashOf, nav } })
- *   onRoute(page, anchor)  // keep UI in sync with router
- */
+import {
+  TITLE, DEFAULT_THEME, ACCENT,
+  root, pages, descendants, byId,
+  hashOf, buildDeepURL, parseTarget, nav,
+} from './data.js';
 
-import { $, $$, el, on, whenIdle, clearSelection } from './dom.js';
-import { CFG, pages as ALL_PAGES } from './data.js';
+import {
+  getParsedHTML, enhanceRendered,
+  normalizeAnchors, annotatePreviewableLinks,
+  ensureHLJSTheme, syncMermaidThemeWithPage,
+} from './render.js';
 
-let ctx = null;
-let ROOT = null;
-let hashOf = null;
-let nav = null;
+/* ───────────────────────────── Utilities ───────────────────────────── */
 
-let $tree, $toc, $results, $search, $headerTitle, $graph;
+const ensureOnce = (fn) => { let p; return () => (p ??= fn()); };
 
-/* ─────────────────────────────── init ──────────────────────────────────── */
-export async function init(incoming) {
-  ctx = incoming || {};
-  ROOT = ctx.data?.root || null;
-  hashOf = ctx.data?.hashOf || ((p) => p?.hash ?? '');
-  nav = ctx.data?.nav || ((p) => (location.hash = '#' + hashOf(p)));
+/* Minimal d3 loader: selection + force + drag (smaller payload) */
+const ensureD3 = ensureOnce(async () => {
+  const [sel, force, drag] = await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm'),
+    import('https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm'),
+  ]);
+  return {
+    select: sel.select,
+    selectAll: sel.selectAll,
+    forceSimulation: force.forceSimulation,
+    forceLink: force.forceLink,
+    forceManyBody: force.forceManyBody,
+    forceCenter: force.forceCenter,
+    drag: drag.drag,
+  };
+});
 
-  // Cache common nodes if present (all optional, code no-ops if missing)
-  $tree = $('#tree');
-  $toc = $('#toc');
-  $results = $('#results');
-  $search = $('#search');
-  $headerTitle = $('#header-title');
-  $graph = $('#graph');
+/* ───────────────────────────── Panels ───────────────────────────── */
 
-  // Header title / document title
-  if (CFG?.TITLE && $headerTitle) $headerTitle.textContent = CFG.TITLE;
-  if (CFG?.TITLE && !document.title) document.title = CFG.TITLE;
-
-  // Theme toggle (expects a button with [data-theme-toggle])
-  setupThemeToggle();
-
-  // Sidebar tree
-  if ($tree && ROOT) buildTree($tree, ROOT);
-
-  // Search wiring (input#search and container#results)
-  if ($search && $results) setupSearch($search, $results);
-
-  // Optional small relationship graph if a <canvas id="graph"> exists
-  if ($graph && ROOT && $graph.tagName === 'CANVAS') whenIdle(() => drawGraph($graph, ROOT));
-
-  // Delegate clicks for links with data-nav (optional convenience)
-  on(document, 'click', '[data-nav]', (ev, a) => {
-    ev.preventDefault();
-    const id = a.getAttribute('data-nav');
-    const page = findById(id);
-    if (page) nav(page);
-  });
+export function closePanels() {
+  $('#sidebar')?.classList.remove('open');
+  $('#util')?.classList.remove('open');
 }
 
-/* ────────────────────────────── onRoute ────────────────────────────────── */
-export function onRoute(page, anchor) {
-  if (!page) return;
-  // Sidebar: mark active + expand branch
-  if ($tree) markActiveInTree(page);
+/* ───────────────────────────── Header / Breadcrumb ───────────────────────── */
 
-  // TOC: rebuild for current page
-  if ($toc) buildTOC($toc, page, anchor);
+export function breadcrumb(page) {
+  const bar = $('#crumb');
+  if (!bar) return;
+  bar.innerHTML = '';
 
-  // If a search result was clicked, clear selection to avoid weird focus styles
-  clearSelection();
-}
+  const path = [];
+  for (let n = page; n; n = n.parent) path.unshift(n);
+  if (path[0] !== root) path.unshift(root);
 
-/* ──────────────────────────── Sidebar Tree ─────────────────────────────── */
-function buildTree(container, root) {
-  container.innerHTML = '';
-  container.append(renderNode(root, { depth: 0, isRoot: true }));
-
-  // Toggle handlers
-  on(container, 'click', '.km-toggle', (_ev, btn) => {
-    const li = btn.closest('li');
-    if (!li) return;
-    const open = li.getAttribute('aria-expanded') === 'true';
-    li.setAttribute('aria-expanded', open ? 'false' : 'true');
-  });
-
-  // Navigation
-  on(container, 'click', '.km-node', (ev, a) => {
-    ev.preventDefault();
-    const id = a.getAttribute('data-id');
-    const page = findById(id);
-    if (page) nav(page);
-  });
-}
-
-function renderNode(node, { depth, isRoot }) {
-  const hasKids = (node.children || []).length > 0;
-  const li = el('li', {
-    class: `km-li depth-${depth}` + (isRoot ? ' km-root' : ''),
-    'aria-expanded': hasKids ? 'true' : null
-  });
-
-  if (hasKids) {
-    li.append(
-      el('button', { class: 'km-toggle', title: 'Expand/collapse', 'aria-label': 'Toggle' }, '▸')
-    );
-  } else {
-    li.append(el('span', { class: 'km-spacer' }, '•'));
-  }
-
-  li.append(
-    el('a', {
-      class: 'km-node',
-      href: '#' + hashOf(node),
-      'data-id': node.id
-    }, node.title || node.id)
-  );
-
-  if (hasKids) {
-    const ul = el('ul', { class: 'km-ul' });
-    for (const c of node.children) {
-      ul.append(renderNode(c, { depth: depth + 1 }));
+  path.forEach((n, i) => {
+    if (i) bar.append(' › ');
+    if (i === path.length - 1) {
+      bar.append(el('span', { class: 'current', textContent: n.title }));
+    } else {
+      bar.append(el('a', { href: '#' + hashOf(n), textContent: n.title }));
     }
-    li.append(ul);
-  }
-  return (isRoot ? el('ul', { class: 'km-ul km-tree' }, [li]) : li);
-}
-
-function markActiveInTree(page) {
-  if (!$tree) return;
-  // Remove previous active
-  $$('.km-node.active', $tree).forEach(a => a.classList.remove('active'));
-
-  // Add active and expand ancestors
-  const ids = [];
-  for (let n = page; n; n = n.parent) ids.unshift(n.id);
-  // Query all links and match by data-id
-  ids.forEach((id, i) => {
-    const a = $(`.km-node[data-id="${cssEscape(id)}"]`, $tree);
-    if (!a) return;
-    if (i === ids.length - 1) a.classList.add('active');
-    const li = a.closest('li[km-li], li') || a.closest('li');
-    (li || a.closest('li'))?.setAttribute?.('aria-expanded', 'true');
-    // Also expand the parent li
-    const pli = li?.parentElement?.closest?.('li');
-    pli?.setAttribute?.('aria-expanded', 'true');
-    // Ensure visibility
-    a.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   });
 }
 
-/* ──────────────────────────────── TOC ──────────────────────────────────── */
-function buildTOC(container, page, currentAnchor) {
-  container.innerHTML = '';
-  const secs = page.sections || [];
-  if (!secs.length) {
-    container.append(el('div', { class: 'km-toc-empty' }, 'No headings on this page.'));
+/* ───────────────────────────── Sidebar Tree ───────────────────────────── */
+
+function isOpenKey(id) { return `km.open.${id}`; }
+function getStoredOpen(id) { return localStorage.getItem(isOpenKey(id)) === '1'; }
+function setStoredOpen(id, v) { localStorage.setItem(isOpenKey(id), v ? '1' : '0'); }
+
+function makeNodeLink(p) {
+  const a = el('a', { href: '#' + hashOf(p), textContent: p.title, title: p.title });
+  a.dataset.pid = p.id;
+  return a;
+}
+
+function buildTreeNode(p) {
+  const li = el('li', { 'data-id': p.id });
+  const hasKids = (p.children && p.children.length);
+  if (hasKids) {
+    const toggle = el('button', { class: 'twisty', 'aria-label': 'Toggle section', 'aria-expanded': 'false' }, [ICONS.caret]);
+    const head = el('div', { class: 'head' }, [toggle, makeNodeLink(p)]);
+    const ul = el('ul', { class: 'children' });
+    p.children.forEach(c => ul.append(buildTreeNode(c)));
+    li.append(head, ul);
+
+    const applyOpen = (open) => {
+      li.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', String(open));
+    };
+    const initial = getStoredOpen(p.id);
+    applyOpen(initial);
+
+    toggle.addEventListener('click', (e) => {
+      const now = !li.classList.contains('open');
+      applyOpen(now);
+      setStoredOpen(p.id, now);
+      e.stopPropagation();
+    });
+  } else {
+    li.append(el('div', { class: 'head leaf' }, [makeNodeLink(p)]));
+  }
+  return li;
+}
+
+export function buildTree() {
+  const tree = $('#tree');
+  if (!tree) return;
+  tree.innerHTML = '';
+  const ul = el('ul', { class: 'root' });
+  root.children.forEach(p => ul.append(buildTreeNode(p)));
+  tree.append(ul);
+}
+
+export function highlightSidebar(page) {
+  const tree = $('#tree'); if (!tree) return;
+  tree.querySelector('.current')?.classList.remove('current');
+
+  const a = tree.querySelector(`a[data-pid="${page.id}"]`);
+  if (a) {
+    a.classList.add('current');
+    // open ancestors
+    for (let n = a.closest('li'); n; n = n.parentElement?.closest('li')) {
+      n.classList.add('open');
+      const btn = n.querySelector(':scope > .head > .twisty');
+      btn?.setAttribute('aria-expanded', 'true');
+      setStoredOpen(n.dataset.id, true);
+    }
+  }
+}
+
+/* ───────────────────────────── ToC ───────────────────────────── */
+
+let tocObserver;
+export function buildToc(page) {
+  const toc = $('#toc');
+  if (!toc) return;
+  toc.innerHTML = '';
+
+  const hs = $$(HEADINGS_SEL, $('#content'));
+  if (!hs.length) return;
+
+  const ul = el('ul');
+  hs.forEach(h => {
+    const li = el('li', { 'data-hid': h.id, class: h.tagName.toLowerCase() }, [
+      el('a', { href: buildDeepURL(page, h.id), textContent: h.textContent || '' })
+    ]);
+    ul.append(li);
+  });
+  toc.append(ul);
+
+  // Scroll spy
+  tocObserver?.disconnect();
+  tocObserver = new IntersectionObserver((entries) => {
+    const vis = entries.filter(e => e.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+    const id = (vis[0] && vis[0].target && vis[0].target.id) || '';
+    if (id) {
+      const curr = toc.querySelector('.toc-current');
+      const next = toc.querySelector(`li[data-hid="${id}"] > a`);
+      if (curr !== next) {
+        curr?.classList.remove('toc-current');
+        next?.classList.add('toc-current');
+      }
+    }
+  }, { root: null, rootMargin: '0px 0px -70% 0px', threshold: 0 });
+
+  hs.forEach(h => tocObserver.observe(h));
+}
+
+/* ───────────────────────────── Search ───────────────────────────── */
+
+function tokenize(q) {
+  return (q || '').toLowerCase().trim().split(/\s+/).filter(Boolean);
+}
+
+export function search(q) {
+  const resultsEl = $('#results');
+  if (!resultsEl) return;
+
+  const terms = tokenize(q);
+  const reFull = new RegExp(escapeRegex(q).replace(/\s+/g, '\\s+'), 'i');
+  const tokenRes = terms.map(t => new RegExp(escapeRegex(t), 'i'));
+
+  const out = [];
+
+  for (const page of pages) {
+    let t = 0;
+    if (reFull.test(page.title)) t += 8;
+    if (page.tags && reFull.test(page.tags.join(' '))) t += 2;
+    if (reFull.test(page.content || '')) t += 4;
+
+    const matchedSecs = [];
+    if (terms.length && Array.isArray(page.sections)) {
+      for (const sec of page.sections) {
+        let hits = 0;
+        for (const r of tokenRes) if (r.test(sec.search)) hits++;
+        if (hits) matchedSecs.push({ sec, hits });
+      }
+    }
+
+    const score =
+      Math.log(1 + 4 * t) +
+      Math.log(1 + matchedSecs.length) +
+      (terms.length ? terms.length * 0.1 : 0);
+
+    if (t || matchedSecs.length) out.push({ page, score, matchedSecs });
+  }
+
+  out.sort((a, b) => b.score - a.score);
+  renderSearchResults(out, q || '');
+}
+
+function highlightText(txt, terms) {
+  if (!terms.length) return txt;
+  let s = txt;
+  for (const t of terms) {
+    const re = new RegExp(`(${escapeRegex(t)})`, 'ig');
+    s = s.replace(re, '<mark>$1</mark>');
+  }
+  return s;
+}
+
+function renderSearchResults(list, q) {
+  const resultsEl = $('#results');
+  const terms = tokenize(q);
+  resultsEl.innerHTML = '';
+
+  if (!list.length) {
+    resultsEl.append(el('p', { class: 'empty', textContent: 'No results.' }));
     return;
   }
 
-  const ul = el('ul', { class: 'km-toc' });
-  for (const s of secs) {
-    const a = el('a', {
-      href: '#' + hashOf(page) + (s.id ? '#' + s.id : ''),
-      class: 'km-toc-link' + (currentAnchor === s.id ? ' active' : ''),
-      'data-page-id': page.id,
-      'data-anchor': s.id || ''
-    }, s.txt || s.id);
-    ul.append(el('li', null, a));
-  }
-  container.append(ul);
+  const ol = el('ol', { class: 'search-list' });
+  for (const { page, matchedSecs } of list.slice(0, 100)) {
+    const li = el('li', { class: 'res' });
+    const title = el('a', { class: 'page', href: '#' + hashOf(page) });
+    title.innerHTML = highlightText(page.title, terms);
+    li.append(title);
 
-  // Delegate clicks to avoid full navigation reflow
-  on(container, 'click', 'a.km-toc-link', (ev, a) => {
-    ev.preventDefault();
-    const pid = a.getAttribute('data-page-id');
-    const pageNode = findById(pid);
-    const anchor = a.getAttribute('data-anchor');
-    if (pageNode) location.hash = '#' + hashOf(pageNode) + (anchor ? '#' + anchor : '');
-  });
+    if (matchedSecs.length) {
+      const ul = el('ul', { class: 'sections' });
+      matchedSecs.slice(0, 6).forEach(({ sec }) => {
+        const a = el('a', { href: buildDeepURL(page, sec.id) });
+        a.innerHTML = highlightText(sec.txt || sec.id, terms);
+        const sli = el('li', {}, [a]);
+        ul.append(sli);
+      });
+      li.append(ul);
+    }
+
+    ol.append(li);
+  }
+  resultsEl.append(ol);
 }
 
-/* ──────────────────────────────── Search ───────────────────────────────── */
-let SEARCH_INDEX = null;
+/* ───────────────────────────── Mini Graph (D3) ───────────────────────────── */
 
-function setupSearch($input, $out) {
-  buildSearchIndexOnce();
+const graph = {
+  built: false,
+  nodeSel: null,
+  linkSel: null,
+  sim: null,
+  data: null,
+  svg: null,
+  g: null,
+};
 
-  const run = () => {
-    const q = ($input.value || '').trim().toLowerCase();
-    $out.innerHTML = '';
-    if (!q) return;
+export async function buildGraph() {
+  const mini = $('#mini'); if (!mini || graph.built) return;
+  const d3 = await ensureD3();
 
-    const results = search(q, 60); // cap results
-    if (!results.length) {
-      $out.append(el('div', { class: 'km-nores' }, 'No results.'));
-      return;
+  // data
+  const nodes = [];
+  const links = [];
+  const idIdx = new Map();
+  let i = 0;
+  for (const p of descendants(root)) {
+    idIdx.set(p.id, i++);
+    nodes.push({ id: p.id, page: p, title: p.title });
+    if (p.parent) links.push({ source: p.parent.id, target: p.id });
+  }
+
+  const svg = d3.select('#mini').append('svg')
+    .attr('role', 'img')
+    .attr('aria-label', 'Site map');
+
+  const g = svg.append('g');
+
+  const link = g.selectAll('line')
+    .data(links)
+    .enter().append('line')
+    .attr('class', 'link');
+
+  const node = g.selectAll('circle')
+    .data(nodes)
+    .enter().append('circle')
+    .attr('class', 'node')
+    .attr('r', d => d.page === root ? 6 : 4)
+    .on('click', (e, d) => nav(d.page))
+    .call(d3.drag()
+      .on('start', (event, d) => {
+        if (!event.active) sim.alphaTarget(0.3).restart();
+        d.fx = d.x; d.fy = d.y;
+      })
+      .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y; })
+      .on('end', (event, d) => {
+        if (!event.active) sim.alphaTarget(0);
+        d.fx = null; d.fy = null;
+      }));
+
+  const sim = d3.forceSimulation(nodes)
+    .force('link', d3.forceLink(links).id(d => d.id).distance(30).strength(0.12))
+    .force('charge', d3.forceManyBody().strength(-60))
+    .force('center', d3.forceCenter(0, 0))
+    .on('tick', () => {
+      link
+        .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+      node.attr('cx', d => d.x).attr('cy', d => d.y);
+    });
+
+  graph.built = true;
+  graph.nodeSel = node;
+  graph.linkSel = link;
+  graph.sim = sim;
+  graph.svg = svg;
+  graph.g = g;
+
+  updateMiniViewport();
+  highlightCurrent(true);
+}
+
+export function updateMiniViewport() {
+  const wrap = $('#mini');
+  if (!wrap || !graph.svg) return;
+  updateViewport();
+  const w = Math.max(120, wrap.clientWidth || 300);
+  const h = Math.max(80, wrap.clientHeight || 200);
+  graph.svg.attr('width', w).attr('height', h);
+  // fit content (we keep coordinates around 0,0)
+  graph.svg.attr('viewBox', [-w / 2, -h / 2, w, h].join(' '));
+}
+
+export function highlightCurrent(force = false) {
+  if (!graph.nodeSel) return;
+  const { page } = parseTarget(location.hash) || { page: root };
+  graph.nodeSel.classed('current', d => d.page === page);
+  if (force) graph.sim?.alpha(0.05).restart();
+}
+
+/* ───────────────────────────── Link previews ───────────────────────────── */
+
+(function attachLinkPreviews() {
+  const stack = []; // { el, body, link }
+
+  function remove(el) {
+    const i = stack.findIndex(p => p.el === el);
+    if (i >= 0) stack.splice(i, 1);
+    el.remove();
+  }
+
+  function position(panel, linkEl) {
+    const rect = linkEl.getBoundingClientRect();
+    const gap = 8;
+    const W = Math.max(1, panel.offsetWidth || 1);
+    const H = Math.max(1, panel.offsetHeight || 1);
+    const preferRight = rect.right + gap + W <= __VPW;
+    const left = preferRight ? (rect.right + gap) : Math.max(8, rect.left - gap - W);
+    const top = Math.min(__VPH - H - 8, Math.max(8, rect.top));
+    panel.style.left = left + 'px';
+    panel.style.top = top + 'px';
+  }
+
+  async function openPreview(linkEl) {
+    const href = linkEl.getAttribute('href') || '';
+    if (!href.startsWith('#')) return;
+    const { page, anchor } = parseTarget(href);
+    if (!page) return;
+
+    const wrapper = el('div', { class: 'km-link-preview', role: 'dialog' });
+    const head = el('div', { class: 'kp-head' }, [
+      el('span', { class: 'kp-title', textContent: page.title }),
+      iconBtn('Close', ICONS.close, 'kp-close'),
+    ]);
+    const bodyWrap = el('div', { class: 'kp-body-wrap' });
+    const body = el('div'); // content root (so mermaid can rerender later)
+    bodyWrap.append(body);
+    wrapper.append(head, bodyWrap);
+    document.body.appendChild(wrapper);
+
+    head.querySelector('.kp-close')?.addEventListener('click', () => remove(wrapper));
+
+    // Fill content via render pipeline (but off-DOM HTML)
+    const html = await getParsedHTML(page);
+    body.innerHTML = html;
+    await enhanceRendered(body, page);
+    normalizeAnchors(body, page);
+    annotatePreviewableLinks(body);
+
+    if (anchor) {
+      const tgt = body.querySelector('#' + CSS.escape(anchor));
+      tgt?.scrollIntoView?.({ block: 'start' });
     }
-    const list = el('ul', { class: 'km-results' });
-    for (const r of results) {
-      list.append(renderResult(r));
-    }
-    $out.append(list);
-  };
 
-  $input.addEventListener('input', run);
-  // Enter → go to first result
-  $input.addEventListener('keydown', (ev) => {
-    if (ev.key === 'Enter') {
-      const first = $('.km-results a', $out);
-      if (first) {
-        ev.preventDefault();
-        first.click();
+    position(wrapper, linkEl);
+    stack.push({ el: wrapper, body, link: linkEl });
+  }
+
+  // Delegated hover/focus on in-article previewable links
+  document.addEventListener('mouseover', (e) => {
+    const a = (e.target && e.target.closest?.('a.km-previewable'));
+    if (!a) return;
+    // avoid popping multiple for same link
+    if (!stack.some(p => p.link === a)) openPreview(a);
+  }, { passive: true });
+
+  document.addEventListener('focusin', (e) => {
+    const a = (e.target && e.target.closest?.('a.km-previewable'));
+    if (!a) return;
+    if (!stack.some(p => p.link === a)) openPreview(a);
+  });
+
+  document.addEventListener('click', (e) => {
+    const btn = e.target && e.target.closest?.('.kp-close');
+    if (btn) e.preventDefault();
+  });
+
+  addEventListener('scroll', () => {
+    // reposition visible panels relative to their link
+    stack.forEach(p => position(p.el, p.link));
+  }, { passive: true });
+})();
+
+/* ───────────────────────────── Keyboard shortcuts ───────────────────────── */
+
+function nextPrevHeading(dir = 1) {
+  const hs = $$(HEADINGS_SEL, $('#content'));
+  if (!hs.length) return;
+  const y = (document.scrollingElement || document.documentElement).scrollTop + 2;
+  const idx = hs.findIndex(h => h.getBoundingClientRect().top + scrollY >= y);
+  const tgt = dir > 0 ? (hs[Math.min(hs.length - 1, (idx < 0 ? 0 : idx + 1))]) : (hs[Math.max(0, (idx <= 0 ? 0 : idx - 1))]);
+  tgt?.scrollIntoView({ behavior: 'smooth' });
+}
+
+function goSiblingPage(dir = 1) {
+  const t = parseTarget(location.hash);
+  const page = t?.page || root;
+  const parent = page.parent || root;
+  const sibs = parent.children || [];
+  const idx = sibs.indexOf(page);
+  const next = sibs[idx + dir];
+  if (next) nav(next);
+}
+
+function openSidebar() { $('#sidebar')?.classList.add('open'); }
+function openUtil() { $('#util')?.classList.add('open'); }
+
+function wireKeyboard() {
+  document.addEventListener('keydown', (e) => {
+    // ignore when typing in inputs/textareas or a modifier is pressed
+    const tag = (e.target && e.target.tagName) || '';
+    if (/(INPUT|TEXTAREA|SELECT)/.test(tag)) return;
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    switch (e.key) {
+      case 'j': e.preventDefault(); nextPrevHeading(+1); break;
+      case 'k': e.preventDefault(); nextPrevHeading(-1); break;
+      case 'J': e.preventDefault(); goSiblingPage(+1); break;
+      case 'K': e.preventDefault(); goSiblingPage(-1); break;
+      case '/': e.preventDefault(); openUtil(); $('#search')?.focus(); break;
+      case '[': e.preventDefault(); openSidebar(); break;
+      case 'Escape': closePanels(); break;
+      case '?': {
+        const o = $('#kb-overlay'); if (o) { o.hidden = !o.hidden; }
+        break;
       }
     }
   });
 }
 
-function buildSearchIndexOnce() {
-  if (SEARCH_INDEX) return;
-  const rows = [];
-  for (const p of ALL_PAGES) {
-    const secs = p.sections && p.sections.length ? p.sections : [{
-      id: '',
-      txt: p.title || p.id,
-      body: (p.content || '').slice(0, 10_000),
-      search: ((p.title || p.id) + ' ' + (p.content || '')).toLowerCase()
-    }];
-    for (const s of secs) {
-      rows.push({
-        page: p,
-        sec: s,
-        text: s.search || ((s.txt + ' ' + s.body).toLowerCase())
-      });
+/* ───────────────────────────── Theme (toggle + sync) ─────────────────────── */
+
+function themeInit() {
+  const btn = $('#theme-toggle');
+  const rootEl = DOC.documentElement;
+  const media = matchMedia('(prefers-color-scheme: dark)');
+  const stored = localStorage.getItem('km-theme'); // 'dark' | 'light' | null
+  const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
+  let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
+
+  if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
+
+  apply(dark);
+  if (btn) {
+    btn.setAttribute('aria-pressed', String(dark));
+    btn.onclick = () => {
+      dark = !dark; apply(dark);
+      btn.setAttribute('aria-pressed', String(dark));
+      localStorage.setItem('km-theme', dark ? 'dark' : 'light');
+    };
+  }
+
+  media.addEventListener?.('change', (e) => {
+    const hasUserPref = !!localStorage.getItem('km-theme');
+    if (!hasUserPref && !cfg) {
+      dark = e.matches; apply(dark);
     }
-  }
-  SEARCH_INDEX = rows;
-}
-
-function search(q, limit = 50) {
-  // naive AND search on tokens
-  const toks = q.split(/\s+/).filter(Boolean);
-  const out = [];
-  for (const row of SEARCH_INDEX) {
-    let ok = true;
-    for (const t of toks) {
-      if (!row.text.includes(t)) { ok = false; break; }
-    }
-    if (ok) out.push(scoreRow(row, toks));
-    if (out.length >= limit) break;
-  }
-  // sort by simple score desc
-  out.sort((a, b) => b.score - a.score);
-  return out;
-}
-
-function scoreRow(row, toks) {
-  // simple score: sum of term frequencies (title hits weigh more)
-  const hayTitle = (row.sec.txt || '').toLowerCase();
-  const hay = row.text;
-  let score = 0;
-  for (const t of toks) {
-    const re = new RegExp(escapeRegex(t), 'g');
-    score += (hay.match(re)?.length || 0);
-    score += (hayTitle.match(re)?.length || 0) * 2;
-  }
-  return { ...row, score };
-}
-
-function renderResult(r) {
-  const url = '#' + hashOf(r.page) + (r.sec.id ? '#' + r.sec.id : '');
-  const title = (r.page.title || r.page.id) + (r.sec.txt ? ' — ' + r.sec.txt : '');
-  const snip = snippet(r.sec.body || '', r.text, 160);
-
-  const a = el('a', { href: url }, title);
-  a.addEventListener('click', (ev) => {
-    ev.preventDefault();
-    location.hash = url;
   });
 
-  return el('li', { class: 'km-result' }, [
-    el('div', { class: 'km-result-title' }, a),
-    el('div', { class: 'km-result-snip' }, snip)
-  ]);
-}
-
-/* ─────────────────────────────── Graph (mini) ──────────────────────────── */
-/** Simple radial tree plot; nodes clickable. */
-function drawGraph(canvas, root) {
-  const dpr = window.devicePixelRatio || 1;
-  const w = canvas.clientWidth || 320;
-  const h = canvas.clientHeight || 240;
-  canvas.width = Math.round(w * dpr);
-  canvas.height = Math.round(h * dpr);
-  const cx = canvas.getContext('2d');
-  cx.scale(dpr, dpr);
-  cx.clearRect(0, 0, w, h);
-
-  // BFS to collect nodes with depth
-  const nodes = [];
-  const edges = [];
-  const q = [{ n: root, d: 0, parent: null }];
-  const maxDepth = 6;
-  while (q.length) {
-    const { n, d, parent } = q.shift();
-    nodes.push({ n, d });
-    if (parent) edges.push([parent, n]);
-    if (d < maxDepth) for (const c of n.children || []) q.push({ n: c, d: d + 1, parent: n });
-  }
-
-  const byDepth = new Map();
-  for (const it of nodes) (byDepth.get(it.d) || byDepth.set(it.d, []).get(it.d)).push(it);
-
-  // Layout: circles per depth
-  const R0 = 24;
-  const step = Math.min(w, h) / (2 * (Math.max(...[...byDepth.keys()]) + 2));
-  const center = { x: w / 2, y: h / 2 };
-  const positions = new Map();
-
-  for (const [d, arr] of byDepth) {
-    const r = R0 + d * step;
-    const k = arr.length;
-    for (let i = 0; i < k; i++) {
-      const theta = (i / k) * Math.PI * 2;
-      const x = center.x + r * Math.cos(theta);
-      const y = center.y + r * Math.sin(theta);
-      positions.set(arr[i].n, { x, y });
+  addEventListener('storage', (e) => {
+    if (e.key === 'km-theme') {
+      dark = e.newValue === 'dark'; apply(dark);
     }
-  }
-
-  // Draw edges
-  cx.lineWidth = 1;
-  cx.strokeStyle = '#888';
-  for (const [a, b] of edges) {
-    const pa = positions.get(a), pb = positions.get(b);
-    if (!pa || !pb) continue;
-    cx.beginPath(); cx.moveTo(pa.x, pa.y); cx.lineTo(pb.x, pb.y); cx.stroke();
-  }
-
-  // Draw nodes
-  cx.fillStyle = '#222';
-  for (const { n } of nodes) {
-    const p = positions.get(n);
-    cx.beginPath(); cx.arc(p.x, p.y, 4, 0, Math.PI * 2); cx.fill();
-  }
-
-  // Hit map for clicks
-  const pick = (x, y) => {
-    let hit = null, best = 9e9;
-    for (const { n } of nodes) {
-      const p = positions.get(n);
-      const dx = p.x - x, dy = p.y - y;
-      const d2 = dx * dx + dy * dy;
-      if (d2 < best && d2 < 9 * 9) { best = d2; hit = n; }
-    }
-    return hit;
-  };
-
-  canvas.addEventListener('click', (ev) => {
-    const rect = canvas.getBoundingClientRect();
-    const x = ev.clientX - rect.left;
-    const y = ev.clientY - rect.top;
-    const n = pick(x, y);
-    if (n) nav(n);
   });
+
+  function apply(isDark) {
+    rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
+    rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    ensureHLJSTheme();
+    syncMermaidThemeWithPage();
+  }
 }
 
-/* ─────────────────────────────── Utilities ─────────────────────────────── */
-function cssEscape(s) {
-  // minimal css.escape
-  return String(s).replace(/["\\]/g, '\\$&');
-}
-function escapeRegex(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-function stripTags(s) {
-  const div = el('div'); div.innerHTML = s; return div.textContent || '';
-}
-function snippet(body, hay, max = 160) {
-  const plain = stripTags(body).replace(/\s+/g, ' ').trim();
-  if (!plain) return '';
-  const q = hay.split(/\s+/)[0] || '';
-  const i = q ? plain.toLowerCase().indexOf(q.toLowerCase()) : -1;
-  const start = Math.max(0, (i > 40 ? i - 40 : 0));
-  const end = Math.min(plain.length, start + max);
-  let out = plain.slice(start, end);
-  if (start > 0) out = '…' + out;
-  if (end < plain.length) out += '…';
-  // light highlight (first token only)
-  if (q) out = out.replace(new RegExp(escapeRegex(q), 'ig'), m => `<mark>${m}</mark>`);
-  const span = el('span'); span.innerHTML = out; return span;
-}
-function findById(id) {
-  // quick direct lookup by id across parsed pages
-  for (const p of ALL_PAGES) if (p.id === id) return p;
-  return null;
-}
+/* ───────────────────────────── Init ───────────────────────────── */
 
-/* ───────────────────────────── Theme toggle ────────────────────────────── */
-function setupThemeToggle() {
-  const btn = $('[data-theme-toggle]');
-  if (!btn) return;
+let inited = false;
 
-  const key = 'km:theme';
-  const apply = (t) => {
-    if (!t) return;
-    document.documentElement.setAttribute('data-theme', t);
-  };
+export async function initUI() {
+  if (inited) return;
+  inited = true;
 
-  // load stored
-  const stored = localStorage.getItem(key) || CFG?.DEFAULT_THEME || '';
-  if (stored) apply(stored);
+  await domReady();
 
-  btn.addEventListener('click', () => {
-    const cur = document.documentElement.getAttribute('data-theme') || 'light';
-    const nxt = cur === 'dark' ? 'light' : 'dark';
-    apply(nxt);
-    localStorage.setItem(key, nxt);
+  // Title
+  $('#wiki-title-text') && ($('#wiki-title-text').textContent = TITLE);
+  document.title = TITLE;
+
+  // Sidebar tree
+  buildTree();
+
+  // Theme
+  themeInit();
+
+  // Mini graph: build lazily on first visibility
+  const miniEl = $('#mini');
+  if (miniEl) {
+    new IntersectionObserver((entries, obs) => {
+      if (entries[0]?.isIntersecting) {
+        buildGraph();
+        obs.disconnect();
+      }
+    }).observe(miniEl);
+  }
+
+  // Graph fullscreen toggle
+  const expandBtn = $('#expand');
+  if (expandBtn && miniEl) {
+    expandBtn.onclick = () => {
+      const full = miniEl.classList.toggle('fullscreen');
+      expandBtn.setAttribute('aria-pressed', String(full));
+      updateMiniViewport();
+      requestAnimationFrame(() => highlightCurrent(true));
+    };
+  }
+
+  // Panels toggles
+  $('#sidebar-toggle')?.addEventListener('click', () => $('#sidebar')?.classList.toggle('open'));
+  $('#util-toggle')?.addEventListener('click', () => $('#util')?.classList.toggle('open'));
+
+  // Search wiring
+  const si = $('#search');
+  si?.addEventListener('input', () => search(si.value));
+  $('#search-clear')?.addEventListener('click', () => { si.value = ''; search(''); si.focus(); });
+
+  // Keyboard
+  wireKeyboard();
+
+  // Rebuild ToC whenever the main content is (re)rendered
+  document.addEventListener('km:content-rendered', (e) => {
+    const page = e?.detail?.page || parseTarget(location.hash)?.page || root;
+    buildToc(page);
   });
+
+  // Resize hook → keep graph viewBox correct
+  addEventListener('resize', () => updateMiniViewport(), { passive: true });
+
+  // Copy buttons in side panels (if any snippets there later)
+  whenIdle(() => wireCopyButtons($('#util'), () => {
+    const t = parseTarget(location.hash);
+    return buildDeepURL(t?.page || root, '') || (baseURLNoHash() + '#');
+  }));
 }

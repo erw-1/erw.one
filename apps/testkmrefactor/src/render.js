@@ -1,387 +1,441 @@
-/* eslint-env browser, es2022 */
-'use strict';
+// src/render.js
+import {
+  KM, DOC, $, $$, el,
+  __VPW, __VPH, __trackObserver, __cleanupObservers,
+  baseURLNoHash, whenIdle, clearSelection,
+  ICONS, iconBtn, wireCopyButtons, numberHeadings, decorateExternalLinks,
+  HEADINGS_SEL,
+} from './dom.js';
 
-/**
- * render.js
- *  - Turns Markdown from data.js into HTML
- *  - Enhances code (hljs + “copy” buttons), math (KaTeX), and Mermaid
- *  - Renders into #content and scrolls to in-page anchors
- *
- * Exported API:
- *   showPage(page, anchor)
- */
+import {
+  CFG, TITLE, ALLOW_JS_FROM_MD,
+  PAGE_HTML_LRU_MAX, pageHTMLLRU,
+  root, hashOf, buildDeepURL, parseTarget,
+} from './data.js';
 
-import { $, $$, el, whenIdle } from './dom.js';
-import { CFG, hashOf, parseTarget } from './data.js';
+/* ───────────────────────────── Markdown + Mermaid ─────────────────────────── */
 
-/* ───────────────────────── small utilities ─────────────────────────────── */
-const DOC = document;
-const HEADINGS_SEL = '#content h1, #content h2, #content h3, #content h4, #content h5, #content h6';
+let __mdOnce;
+function ensureOnce(fn) { let p; return () => (p ??= fn()); }
 
-const ensureOnce = (fn) => {
-  let p; return () => (p ??= fn());
+export const ensureMarkdown = ensureOnce(async () => {
+  // marked + plugins (via ESM from CDN)
+  const [{ marked }, { default: mkAlert }, { markedFootnote }, { markedEmoji }, emojilib] = await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/marked@14.1.2/lib/marked.esm.js'),
+    import('https://cdn.jsdelivr.net/npm/marked-alert@2.0.1/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.2.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/marked-emoji@1.2.2/+esm'),
+    import('https://cdn.jsdelivr.net/npm/emojilib@3.0.12/index.js'),
+  ]);
+
+  // Mermaid (lazy; we’ll drive rendering explicitly)
+  let __mermaid;
+  async function getMermaid() {
+    if (__mermaid) return __mermaid;
+    const { default: mermaid } = await import('https://cdn.jsdelivr.net/npm/mermaid@11.3.0/dist/mermaid.esm.min.mjs');
+    mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'default' });
+    __mermaid = mermaid;
+    return mermaid;
+  }
+
+  function setMermaidTheme(theme) {
+    if (!__mermaid) return;
+    __mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme });
+  }
+
+  async function renderMermaidLazy(container) {
+    const blocks = [...container.querySelectorAll('pre.mermaid, .mermaid')];
+    if (!blocks.length) return;
+    const mermaid = await getMermaid();
+    // Render sequentially to avoid layout thrash; still non-blocking overall.
+    for (const src of blocks) {
+      if (src.dataset.mRendered === '1') continue;
+      try {
+        const txt = src.tagName === 'PRE' ? (src.textContent || '') : src.textContent || '';
+        const wrap = el('div', { class: 'mermaid' });
+        wrap.textContent = txt;
+        src.replaceWith(wrap);
+        await mermaid.run({ nodes: [wrap] });
+        wrap.dataset.mRendered = '1';
+      } catch (e) {
+        console.warn('Mermaid render failed:', e);
+      }
+    }
+  }
+
+  // Small inline extensions (mark, sup, sub, underline)
+  const markExt = {
+    name: 'mark',
+    level: 'inline',
+    start: (src) => src.indexOf('=='),
+    tokenizer(src) {
+      const m = src.match(/^==([\s\S]+?)==/);
+      if (m) return { type: 'mark', raw: m[0], text: m[1] };
+    },
+    renderer(tok) { return `<mark>${marked.parseInline(tok.text)}</mark>`; }
+  };
+  const supExt = {
+    name: 'sup',
+    level: 'inline',
+    start: (src) => src.indexOf('^('),
+    tokenizer(src) {
+      const m = src.match(/^\^\((.+?)\)/);
+      if (m) return { type: 'sup', raw: m[0], text: m[1] };
+    },
+    renderer(tok) { return `<sup>${marked.parseInline(tok.text)}</sup>`; }
+  };
+  const subExt = {
+    name: 'sub',
+    level: 'inline',
+    start: (src) => src.indexOf('~('),
+    tokenizer(src) {
+      const m = src.match(/^~\((.+?)\)/);
+      if (m) return { type: 'sub', raw: m[0], text: m[1] };
+    },
+    renderer(tok) { return `<sub>${marked.parseInline(tok.text)}</sub>`; }
+  };
+  const underlineExt = {
+    name: 'underline',
+    level: 'inline',
+    start: (src) => src.indexOf('__'),
+    tokenizer(src) {
+      const m = src.match(/^__([\s\S]+?)__/);
+      if (m) return { type: 'underline', raw: m[0], text: m[1] };
+    },
+    renderer(tok) { return `<u>${marked.parseInline(tok.text)}</u>`; }
+  };
+
+  // Mermaid fence extension → emit <pre class="mermaid"> to be rendered later
+  const mermaidExt = {
+    name: 'fence_mermaid',
+    level: 'block',
+    tokenizer(src) {
+      const m = src.match(/^```mermaid\s*?\n([\s\S]*?)\n```/);
+      if (!m) return;
+      return { type: 'fence_mermaid', raw: m[0], text: m[1] };
+    },
+    renderer(tok) { return `<pre class="mermaid">${tok.text.replaceAll('&', '&amp;').replaceAll('<', '&lt;')}</pre>`; }
+  };
+
+  marked.use(
+    mkAlert(), // :::info/warn/...
+    markedFootnote(),
+    markedEmoji({ emojis: emojilib, unicode: true }),
+    { extensions: [markExt, supExt, subExt, underlineExt, mermaidExt] },
+  );
+  marked.setOptions({
+    gfm: true,
+    mangle: false,
+    breaks: false,
+    headerIds: false, // we generate deterministic ids ourselves
+  });
+
+  function parse(md) { return marked.parse(md || ''); }
+
+  return { parse, renderMermaidLazy, setMermaidTheme };
+});
+
+/* Mermaid theme swap used by UI theme toggle */
+export async function syncMermaidThemeWithPage() {
+  const { setMermaidTheme } = await ensureMarkdown();
+  const isDark = DOC.documentElement.getAttribute('data-theme') === 'dark';
+  setMermaidTheme(isDark ? 'dark' : 'default');
+}
+
+/* ─────────────────────────────── KaTeX (math) ─────────────────────────────── */
+
+const KATEX_OPTS = {
+  throwOnError: false,
+  strict: 'ignore',
+  trust: false,
+  output: 'html',
+  globalGroup: true,
+  macros: {},
 };
 
-const escapeRegex = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+export const ensureKatex = ensureOnce(async () => {
+  const [{ default: renderMathInElement }, katex] = await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.mjs'),
+    import('https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.mjs'),
+  ]);
+  // CSS theme is handled via site CSS (you likely already include KaTeX CSS)
+  return { renderMathInElement, katex };
+});
 
-/* ───────────────────────── external loaders ────────────────────────────── */
-// highlight.js core + languages from CFG.LANGS, plus a light/dark theme CSS
-const ensureHighlight = ensureOnce(async () => {
-  const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
+export async function renderMathSafe(container = $('#content')) {
+  if (!container || container.dataset.mathRendered === '1') return;
+  try {
+    const { renderMathInElement } = await ensureKatex();
+    renderMathInElement(container, {
+      delimiters: [
+        { left: '$$', right: '$$', display: true },
+        { left: '$', right: '$', display: false },
+        { left: '\\[', right: '\\]', display: true },
+        { left: '\\(', right: '\\)', display: false },
+      ],
+      ...KATEX_OPTS
+    });
+    container.dataset.mathRendered = '1';
+  } catch (e) {
+    console.warn('KaTeX render failed:', e);
+  }
+}
 
-  const langs = Array.isArray(CFG.LANGS) ? CFG.LANGS : [];
-  if (langs.length) {
-    await Promise.allSettled(langs.map(async lang => {
-      try {
-        const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
-        hljs.registerLanguage(lang, mod.default);
-      } catch { /* ignore missing languages */ }
-    }));
-  }
-  // Theme CSS (GitHub)
-  const THEME = {
-    light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
-    dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark-dimmed.min.css',
-  };
-  const mode = DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
-  let link = DOC.querySelector('link[data-hljs-theme]');
-  if (!link) {
-    link = DOC.createElement('link');
-    link.rel = 'stylesheet';
-    link.setAttribute('data-hljs-theme', '');
-    DOC.head.appendChild(link);
-  }
-  if (link.getAttribute('href') !== THEME[mode]) {
-    await new Promise(res => { link.onload = link.onerror = res; link.href = THEME[mode]; });
-  }
+/* ───────────────────────────── Highlight.js (code) ─────────────────────────── */
 
-  // expose for convenience
+export const ensureHighlight = ensureOnce(async () => {
+  // core + common languages
+  const [{ default: hljs }] = await Promise.all([
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/core.min.js'),
+    // languages (on demand if you want specific ones)
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/javascript.min.js').then(m => hljs.registerLanguage('javascript', m.default)),
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/typescript.min.js').then(m => hljs.registerLanguage('typescript', m.default)),
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/json.min.js').then(m => hljs.registerLanguage('json', m.default)),
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/shell.min.js').then(m => hljs.registerLanguage('shell', m.default)),
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/bash.min.js').then(m => hljs.registerLanguage('bash', m.default)),
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/markdown.min.js').then(m => hljs.registerLanguage('markdown', m.default)),
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/xml.min.js').then(m => hljs.registerLanguage('xml', m.default)),
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/css.min.js').then(m => hljs.registerLanguage('css', m.default)),
+    import('https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/es/languages/python.min.js').then(m => hljs.registerLanguage('python', m.default)),
+  ]);
+  // expose for highlightElement
   window.hljs = hljs;
   return hljs;
 });
 
-// KaTeX auto-render
-const ensureKatex = ensureOnce(async () => {
-  const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/';
-  if (!DOC.getElementById('katex-css')) {
-    const link = Object.assign(DOC.createElement('link'), {
-      id: 'katex-css', rel: 'stylesheet', href: BASE + 'katex.min.css'
-    });
+export async function ensureHLJSTheme() {
+  // swap stylesheet depending on theme
+  const id = 'hljs-theme';
+  const dark = DOC.documentElement.getAttribute('data-theme') === 'dark';
+  const href = dark
+    ? 'https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css'
+    : 'https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github.min.css';
+  let link = DOC.getElementById(id);
+  if (!link) {
+    link = el('link', { id, rel: 'stylesheet', href });
     DOC.head.appendChild(link);
+  } else if (link.href !== href) {
+    link.href = href;
   }
-  const [katex, auto] = await Promise.all([
-    import(BASE + 'katex.min.js/+esm'),
-    import(BASE + 'contrib/auto-render.min.js/+esm'),
-  ]);
-  window.katex = katex;
-  window.renderMathInElement = auto.default;
-});
-
-// Marked + plugins + our custom extensions (Mermaid, mark, sup/sub, underline, callouts, spoiler)
-let _mdReady = null;
-async function ensureMarkdown() {
-  if (_mdReady) return _mdReady;
-  _mdReady = Promise.all([
-    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
-    import('https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/mermaid@11.11.0/+esm'),
-  ]).then(([markedMod, alertMod, footnoteMod, emojiMod, emojiLibMod, mermaidMod]) => {
-    const marked = markedMod;
-    // Build emoji keyword map → glyph
-    const emojiLib = emojiLibMod.default ?? emojiLibMod;
-    const Emojis = Object.entries(emojiLib).reduce((d, [emoji, keywords]) => {
-      if (Array.isArray(keywords)) for (const k of keywords) if (d[k] == null) d[k] = emoji;
-      return d;
-    }, {});
-
-    // Mermaid
-    const mermaid = (mermaidMod.default ?? mermaidMod);
-    mermaid.initialize({ startOnLoad: false });
-
-    // --- custom Marked extensions ---
-    const createInline = ({ name, delimiter, tag, hint = delimiter, notAfterOpen = '', notBeforeClose = '' }) => {
-      const d = escapeRegex(delimiter);
-      const after = notAfterOpen ? `(?!${notAfterOpen})` : '';
-      const before = notBeforeClose ? `(?!${notBeforeClose})` : '';
-      const re = new RegExp(`^${d}${after}(?=\\S)([\\s\\S]*?\\S)${d}${before}`);
-      return {
-        name, level: 'inline',
-        start(src) { return src.indexOf(hint); },
-        tokenizer(src) {
-          const m = re.exec(src); if (!m) return;
-          return { type: name, raw: m[0], text: m[1], tokens: this.lexer.inlineTokens(m[1]) };
-        },
-        renderer(tok) { return `<${tag}>${this.parser.parseInline(tok.tokens)}</${tag}>`; }
-      };
-    };
-
-    const calloutExt = {
-      name: 'callout', level: 'block',
-      start(src) { return src.indexOf(':::'); },
-      tokenizer(src) {
-        const re = /^:::(success|info|warning|danger)(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
-        const m = re.exec(src); if (!m) return;
-        const [, kind, title = '', body] = m;
-        return { type: 'callout', raw: m[0], kind, title, titleTokens: this.lexer.inlineTokens(title), tokens: this.lexer.blockTokens(body) };
-      },
-      renderer(tok) {
-        const inner = this.parser.parse(tok.tokens);
-        const map = { info: 'note', success: 'tip', warning: 'warning', danger: 'caution' };
-        const cls = map[tok.kind] || 'note';
-        const title = tok.title ? `<div class="md-callout-title">${this.parser.parseInline(tok.titleTokens)}</div>` : '';
-        return `<div class="md-callout md-${cls}">${title}${inner}</div>\n`;
-      }
-    };
-
-    const spoilerExt = {
-      name: 'spoiler', level: 'block',
-      start(src) { return src.indexOf(':::spoiler'); },
-      tokenizer(src) {
-        const re = /^:::spoiler(?:[ \t]+([^\n]*))?[ \t]*\n([\s\S]*?)\n:::[ \t]*(?=\n|$)/;
-        const m = re.exec(src); if (!m) return;
-        const [, title = 'spoiler', body] = m;
-        return { type: 'spoiler', raw: m[0], title, titleTokens: this.lexer.inlineTokens(title), tokens: this.lexer.blockTokens(body) };
-      },
-      renderer(tok) {
-        const summary = this.parser.parseInline(tok.titleTokens);
-        const inner = this.parser.parse(tok.tokens);
-        return `<details class="md-spoiler"><summary>${summary}</summary>\n${inner}\n</details>\n`;
-      }
-    };
-
-    const mermaidExt = {
-      name: 'mermaid', level: 'block',
-      start(src) { return src.indexOf('```'); },
-      tokenizer(src) {
-        const m = /^```(?:mermaid|Mermaid)[ \t]*\n([\s\S]*?)\n```[ \t]*(?=\n|$)/.exec(src);
-        if (!m) return; return { type: 'mermaid', raw: m[0], text: m[1] };
-      },
-      renderer(tok) {
-        const esc = (s) => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        return `<div class="mermaid">${esc(tok.text)}</div>\n`;
-      }
-    };
-
-    const md = new marked.Marked()
-      .use((footnoteMod.default ?? footnoteMod)())
-      .use((alertMod.default ?? alertMod)()) // keeps the nice “Note/Tip/Warning/Danger” syntax
-      .use((emojiMod.markedEmoji ?? emojiMod.default)({ emojis: Emojis, renderer: t => t.emoji }))
-      .use({ extensions: [
-        mermaidExt,
-        createInline({ name: 'mark', delimiter: '==', tag: 'mark', hint: '=' }),
-        createInline({ name: 'sup',  delimiter: '^',  tag: 'sup',  notAfterOpen: '\\[|\\^' }),
-        createInline({ name: 'sub',  delimiter: '~',  tag: 'sub' }),
-        createInline({ name: 'u',    delimiter: '++', tag: 'u',    hint: '+' }),
-        calloutExt,
-        spoilerExt,
-      ]});
-
-    // Lazy render Mermaid nodes inside a container, sequentially for reliability
-    async function renderMermaidLazy(root) {
-      const nodes = [...(root || DOC).querySelectorAll('.mermaid')];
-      if (!nodes.length) return;
-      async function renderOne(el) {
-        if (el.dataset.mmdDone === '1') return;
-        if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
-        // reset any previous render
-        if (el.querySelector('svg')) el.innerHTML = el.dataset.mmdSrc;
-        el.removeAttribute('data-processed'); // mermaid’s own flag
-        el.dataset.mmdDone = '1';
-        // wait until Mermaid marks processed or svg appears
-        const done = new Promise(res => {
-          const t = setInterval(() => {
-            if (el.getAttribute('data-processed') === 'true' || el.querySelector('svg')) {
-              clearInterval(t); res();
-            }
-          }, 50);
-          setTimeout(() => { clearInterval(t); res(); }, 4000);
-        });
-        try { await mermaid.run({ nodes: [el] }); } catch {}
-        await done;
-      }
-      for (const el of nodes) { try { await renderOne(el); } catch {} }
-    }
-
-    function setMermaidTheme(mode) { mermaid.initialize({ startOnLoad: false, theme: mode }); }
-
-    return {
-      parse: (src, opt) => md.parse(src, { ...opt, mangle: false }),
-      renderMermaidLazy,
-      setMermaidTheme,
-    };
-  });
-
-  return _mdReady;
 }
 
-/* ───────────────────── page HTML cache + helpers ───────────────────────── */
-const PAGE_HTML_LRU_MAX = 40;
-const pageHTMLLRU = new Map(); // page.id -> html
+export async function highlightVisibleCode(root = document) {
+  await ensureHighlight();
+  const blocks = [...root.querySelectorAll('pre code')];
+  if (!blocks.length) return;
+  const obs = __trackObserver(new IntersectionObserver((entries, o) => {
+    for (const en of entries) {
+      if (!en.isIntersecting) continue;
+      const elx = en.target;
+      if (!elx.dataset.hlDone) {
+        window.hljs.highlightElement(elx);
+        elx.dataset.hlDone = '1';
+      }
+      o.unobserve(elx);
+    }
+  }, { rootMargin: '200px 0px', threshold: 0 }), root);
+  blocks.forEach(elx => { if (!elx.dataset.hlDone) obs.observe(elx); });
+}
 
-async function getParsedHTML(page) {
-  if (pageHTMLLRU.has(page.id)) {
-    const html = pageHTMLLRU.get(page.id);
-    // refresh LRU order
-    pageHTMLLRU.delete(page.id);
-    pageHTMLLRU.set(page.id, html);
+/* ───────────────────────────── HTML parse + LRU ───────────────────────────── */
+
+export async function getParsedHTML(page) {
+  // LRU get
+  if (pageHTMLLRU.has(page)) {
+    const html = pageHTMLLRU.get(page);
+    // refresh recency
+    pageHTMLLRU.delete(page);
+    pageHTMLLRU.set(page, html);
     return html;
   }
   const { parse } = await ensureMarkdown();
+  const html = parse(page.content || '');
+  // post-process ids deterministically so deep links remain stable
   const tmp = el('div');
-  tmp.innerHTML = parse(page.content, { headerIds: false });
-  numberHeadings(tmp); // generate deterministic IDs h1..h6 → 1, 1_1, 1_2, 2, ...
-
-  const html = tmp.innerHTML;
-  pageHTMLLRU.set(page.id, html);
-  if (pageHTMLLRU.size > PAGE_HTML_LRU_MAX) {
-    const firstKey = pageHTMLLRU.keys().next().value;
-    pageHTMLLRU.delete(firstKey);
+  tmp.innerHTML = html;
+  numberHeadings(tmp);
+  const out = tmp.innerHTML;
+  pageHTMLLRU.set(page, out);
+  // cap size
+  while (pageHTMLLRU.size > PAGE_HTML_LRU_MAX) {
+    const k = pageHTMLLRU.keys().next().value;
+    pageHTMLLRU.delete(k);
   }
-  return html;
+  return out;
 }
 
-/** Number headings deterministically for deep-linking. */
-function numberHeadings(rootEl) {
-  const counters = [0,0,0,0,0,0,0]; // H1..H6
-  $$('#content h1, #content h2, #content h3, #content h4, #content h5, #content h6', rootEl).forEach(h => {
-    if (h.id) return; // honor precomputed ids if any
-    const level = +h.tagName[1] - 1;
-    counters[level]++;
-    for (let i = level + 1; i < 7; i++) counters[i] = 0;
-    h.id = counters.slice(0, level + 1).filter(Boolean).join('_');
-  });
-}
+/* ───────────────────────────── Content decoration ─────────────────────────── */
 
-/** Rewrite bare #anchors to be page-local (and fix footnote links). */
-function normalizeAnchors(container, page, { onlyFootnotes = false } = {}) {
-  const base = hashOf(page);
-  if (!base) return;
-  $$('a[href^="#"]', container).forEach(a => {
+export function normalizeAnchors(containerEl, page, { onlyFootnotes = false } = {}) {
+  $$('a[href]', containerEl).forEach(a => {
     const href = a.getAttribute('href') || '';
-    if (!href) return;
-    if (onlyFootnotes) {
-      if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) {
-        a.setAttribute('href', `#${base}${href}`);
-      }
-      return;
-    }
-    // If the hash doesn't resolve to a page path, make it local to this page
-    if (!parseTarget(href)) {
-      const frag = href.length > 1 ? ('#' + href.slice(1)) : '';
-      a.setAttribute('href', '#' + base + frag);
-    }
+    if (!href.startsWith('#')) return;
+    // skip footnote refs if not requested
+    const isFoot = /^#fn/.test(href) || /^#fnref/.test(href);
+    if (onlyFootnotes && !isFoot) return;
+    a.setAttribute('href', buildDeepURL(page, href.slice(1)));
   });
 }
 
-/** Add copy buttons to code blocks and heading-anchor copy buttons. */
-function enhanceCopyUX(container) {
-  // code blocks
-  $$('pre', container).forEach(pre => {
-    if (pre.querySelector('.km-copy')) return;
-    const btn = el('button', { class: 'km-copy', type: 'button', title: 'Copy code', 'aria-label': 'Copy code' }, 'Copy');
-    btn.addEventListener('click', () => {
-      const code = pre.querySelector('code');
-      copyText(code ? code.innerText : pre.innerText || '', btn);
-    });
-    pre.append(btn);
+export function annotatePreviewableLinks(containerEl) {
+  $$('a[href^="#"]', containerEl).forEach(a => {
+    const h = a.getAttribute('href') || '';
+    // avoid footnote jumps (not previewed)
+    if (/^#fn/.test(h) || /^#fnref/.test(h)) return;
+    a.classList.add('km-previewable');
   });
-  // headings
+}
+
+export function decorateHeadings(page, container = $('#content')) {
+  const base = () => buildDeepURL(page, '') || (baseURLNoHash() + '#');
   $$(HEADINGS_SEL, container).forEach(h => {
-    if (h.querySelector('.km-copy-anchor')) return;
-    const btn = el('button', { class: 'km-copy-anchor', type: 'button', title: 'Copy link', 'aria-label': 'Copy link' }, '¶');
-    btn.addEventListener('click', () => {
-      const base = (location.href.replace(/#.*$/, '') + '#' + (h.id || ''));
-      copyText(base, btn);
-    });
+    if (h.querySelector('button.heading-copy')) return; // idempotent
+    const btn = iconBtn('Copy link', ICONS.link, 'heading-copy');
     h.append(btn);
+    // a11y + quick copy via middle click on heading text
+    h.addEventListener('auxclick', (e) => {
+      if (e.button !== 1) return;
+      if (window.getSelection && String(window.getSelection()).length) return;
+      clearSelection();
+      const url = base() + h.id;
+      navigator.clipboard?.writeText?.(url);
+    }, { passive: true });
+  });
+  wireCopyButtons(container, base);
+}
+
+export function decorateCodeBlocks(container = $('#content')) {
+  $$('pre', container).forEach(pre => {
+    if (pre.classList.contains('mermaid')) return; // will render later
+    if (pre.querySelector('button.code-copy')) return;
+    pre.append(iconBtn('Copy code', ICONS.code, 'code-copy'));
   });
 }
 
-async function highlightCode(container) {
-  const hljs = await ensureHighlight();
-  $$('pre code', container).forEach(block => {
-    try { hljs.highlightElement(block); } catch {}
+/* ───────────────────────────── Prev/Next + See also ───────────────────────── */
+
+export function prevNext(page) {
+  $('#prev-next')?.remove();
+  if (!page.parent) return;
+  if (page.parent === root) { if (page.isSecondary) return; } // no prev/next for promoted reps
+
+  const siblings = page.parent.children.filter(c => !(page.parent === root && c.isSecondary));
+  const idx = siblings.indexOf(page);
+  const prev = siblings[idx - 1];
+  const next = siblings[idx + 1];
+
+  if (!prev && !next) return;
+
+  const nav = el('nav', { id: 'prev-next', 'aria-label': 'Article navigation' });
+  if (prev) nav.append(el('a', { class: 'prev', href: '#' + hashOf(prev) }, ['← ', prev.title]));
+  if (next) nav.append(el('a', { class: 'next', href: '#' + hashOf(next) }, [next.title, ' →']));
+  $('#content')?.append(nav);
+}
+
+export function seeAlso(page) {
+  $('#see-also')?.remove();
+  const list = page?.seeAlso || [];
+  if (!list.length) return;
+
+  const sec = el('section', { id: 'see-also' }, [
+    el('h3', { textContent: 'See also' })
+  ]);
+  const ul = el('ul');
+  for (const p of list) {
+    ul.append(el('li', {}, [
+      el('a', { href: '#' + hashOf(p), textContent: p.title })
+    ]));
+  }
+  sec.append(ul);
+  $('#content')?.append(sec);
+}
+
+/* ───────────────────────────── Inline <script> opt-in ─────────────────────── */
+
+function runInlineScripts(root) {
+  root.querySelectorAll('script').forEach(old => {
+    const s = document.createElement('script');
+    for (const { name, value } of [...old.attributes]) s.setAttribute(name, value);
+    s.textContent = old.textContent || '';
+    old.replaceWith(s); // new <script> executes when inserted
   });
 }
 
-function renderMathSafe(container) {
-  try {
-    if (container.dataset.mathRendered === '1') return;
-    window.renderMathInElement?.(container, {
-      delimiters: [
-        { left: '$$',  right: '$$',  display: true  },
-        { left: '\\[', right: '\\]', display: true  },
-        { left: '\\(', right: '\\)', display: false },
-      ],
-      throwOnError: false,
-    });
-    container.dataset.mathRendered = '1';
-  } catch {}
-}
+/* ───────────────────────────── Enhance + Render + Scroll ─────────────────── */
 
-/* ───────────────────────────── public API ──────────────────────────────── */
-export async function showPage(page, anchor = '') {
-  const host = $('#content') || DOC.body;
+export async function enhanceRendered(containerEl, page) {
+  decorateExternalLinks(containerEl);
 
-  // 1) Parse (or reuse cached) HTML and inject
-  const html = await getParsedHTML(page);
-  host.innerHTML = html;
+  // Progressive images
+  $$('img', containerEl).forEach((img, i) => {
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    if (!img.hasAttribute('fetchpriority') && i < 2) img.setAttribute('fetchpriority', 'high');
+  });
 
-  // 2) Mermaid diagrams (sequential + lazy)
-  const { renderMermaidLazy } = await ensureMarkdown();
-  await renderMermaidLazy(host);
+  // Normalize footnotes only for main content pass
+  normalizeAnchors(containerEl, page, { onlyFootnotes: true });
 
-  // 3) Footnote + internal anchor normalization
-  normalizeAnchors(host, page);
-  normalizeAnchors(host, page, { onlyFootnotes: true });
+  // mark in-article hash links as previewable
+  annotatePreviewableLinks(containerEl);
 
-  // 4) Syntax highlighting + copy UX
-  await highlightCode(host);
-  enhanceCopyUX(host);
+  // Start non-critical work without blocking
+  highlightVisibleCode(containerEl); // lazy HLJS
 
-  // 5) KaTeX (optional)
-  await ensureKatex();
-  renderMathSafe(host);
+  ensureMarkdown().then(({ renderMermaidLazy }) => renderMermaidLazy(containerEl));
 
-  // 6) Scroll to anchor (if any)
-  if (anchor) {
-    const h = $(HEADINGS_SEL, host.parentElement) && DOC.getElementById(anchor);
-    if (h) {
-      // slight delay helps after images/formulas render
-      whenIdle(() => { h.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 250);
-    }
-  } else {
-    host.scrollTop = 0;
-    window.scrollTo({ top: 0, behavior: 'auto' });
+  // Defer math; render once visible-ish
+  if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content || '')) {
+    const obs = __trackObserver(new IntersectionObserver((entries, o) => {
+      if (entries.some(en => en.isIntersecting)) {
+        ensureKatex().then(() => renderMathSafe(containerEl));
+        o.disconnect();
+      }
+    }, { root: null, rootMargin: '200px 0px', threshold: 0 }), containerEl);
+    obs.observe(containerEl);
   }
 
-  // 7) Optional: click on internal links should route through hash
-  host.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', (ev) => {
-      // Allow default; index.js router will handle hashchange and re-render.
-      // This handler exists mainly to avoid full page reloads on malformed hrefs.
-      ev.stopPropagation();
-    });
-  });
+  decorateHeadings(page, containerEl);
+  decorateCodeBlocks(containerEl);
 }
 
-/* ───────────────────────── clipboard helper ────────────────────────────── */
-async function copyText(text, btn) {
-  try {
-    await navigator.clipboard.writeText(text);
-    if (btn) flash(btn, 'Copied!');
-  } catch {
-    // Fallback (older browsers)
-    const ta = el('textarea', { style: 'position:fixed;opacity:0' }, text);
-    DOC.body.appendChild(ta); ta.select();
-    try { DOC.execCommand('copy'); if (btn) flash(btn, 'Copied!'); } catch {}
-    ta.remove();
+export async function render(page, anchor) {
+  const contentEl = $('#content');
+  if (!contentEl) return;
+  __cleanupObservers(); // avoid leaks between renders
+
+  contentEl.dataset.mathRendered = '0';
+  contentEl.innerHTML = await getParsedHTML(page);
+
+  if (ALLOW_JS_FROM_MD === 'true') {
+    runInlineScripts(contentEl);
   }
+
+  await enhanceRendered(contentEl, page);
+
+  // ToC lives in UI module → it can react to this event and rebuild.
+  document.dispatchEvent(new CustomEvent('km:content-rendered', { detail: { page } }));
+
+  prevNext(page);
+  seeAlso(page);
+
+  scrollToAnchor(anchor);
 }
-function flash(btn, msg) {
-  const prev = btn.textContent; btn.textContent = msg;
-  setTimeout(() => { btn.textContent = prev; }, 900);
+
+export function scrollToAnchor(anchor) {
+  if (!anchor) return;
+  const target = DOC.getElementById(anchor);
+  if (target) target.scrollIntoView({ behavior: 'smooth' });
 }
+
+// Convenience wiring for copy buttons in main content (same as monolith init did)
+whenIdle(() => {
+  wireCopyButtons($('#content'), () => {
+    const t = parseTarget(location.hash);
+    return buildDeepURL(t?.page || root, '') || (baseURLNoHash() + '#');
+  });
+});
+
+export {
+  KATEX_OPTS, // exported for parity/testing if needed
+};
