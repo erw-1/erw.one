@@ -37,7 +37,7 @@ function resetScrollTop() {
   $('#content')?.scrollTo?.(0, 0);
 }
 
-function closePanels() {
+export function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
 }
@@ -46,17 +46,18 @@ export async function route(mdParser) {
   closePanels();
   const t = parseTarget(location.hash) ?? { page: root, anchor: '' };
   const { page, anchor } = t;
+  const contentEl = $('#content');
+  if (!contentEl) return;
 
   if (currentPage !== page) {
     currentPage = page;
 
     breadcrumb(page);
-    await renderContent($('#content'), page, mdParser);
-    highlightCurrent(page);
+    await renderContent(contentEl, page, mdParser);
+    highlightCurrent(true);
     highlightSidebar(page);
 
     if (!anchor) requestAnimationFrame(() => resetScrollTop());
-    else scrollToAnchor(anchor);
   } else if (anchor) {
     scrollToAnchor(anchor);
     const a = $(`#toc li[data-hid="${anchor}"] > a`);
