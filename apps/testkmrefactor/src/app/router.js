@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $, baseURLNoHash } from '../core/dom.js';
+import { $, baseURLNoHash } from '../core/namespace_dom.js';
 import { root, find, hashOf } from '../model/bundle.js';
 import { render as renderContent } from '../render/render.js';
 import { breadcrumb } from '../ui/breadcrumb.js';
@@ -67,3 +67,4 @@ export async function route(mdParser) {
     }
   }
 }
+
