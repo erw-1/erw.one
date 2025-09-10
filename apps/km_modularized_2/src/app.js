@@ -8,7 +8,7 @@ import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreview
 import { buildTree, highlightSidebar, setFolderOpen } from './ui-sidebar.js';
 import { search, buildToc, prevNext, seeAlso } from './ui-search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
-import { buildDeepURL, parseTarget, resetScrollTop } from './router.js';
+import { route, buildDeepURL, parseTarget, resetScrollTop } from './router.js';
 import './loaders.js'; // registers KM.ensure* on window
 
 const KM = (window.KM = window.KM || {});
@@ -76,29 +76,6 @@ async function render(page, anchor) {
   prevNext(page);
   seeAlso(page);
   scrollToAnchor(anchor);
-}
-
-function route() {
-  closePanels();
-  const t = parseTarget(location.hash) ?? { page: __model.root, anchor: '' };
-  const page = t.page;
-  const anchor = t.anchor;
-
-  if (currentPage !== page) {
-    currentPage = page;
-    breadcrumb(page);
-    render(page, anchor);
-    highlightCurrent(true);
-    highlightSidebar(page);
-    if (!anchor) requestAnimationFrame(() => resetScrollTop());
-  } else if (anchor) {
-    scrollToAnchor(anchor);
-    const a = $(`#toc li[data-hid="${anchor}"] > a`);
-    if (a) {
-      $('#toc .toc-current')?.classList.remove('toc-current');
-      a.classList.add('toc-current');
-    }
-  }
 }
 
 // ───────────────────────────── breadcrumb ────────────────────────────────
@@ -677,3 +654,4 @@ function initUI() {
     if (elc) elc.innerHTML = `<h1>Content failed to load</h1><p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p><pre>${String(err?.message || err)}</pre>`;
   }
 })();
+
