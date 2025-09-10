@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $$ } from '../core/dom.js';
+import { $$ } from '../core/namespace_dom.js';
 
 let katex, cssLoaded = false;
 const KATEX_OPTS = { throwOnError: false, output: 'html' };
@@ -44,3 +44,4 @@ export async function renderMathSafe(root = document) {
   };
   walk(root);
 }
+
