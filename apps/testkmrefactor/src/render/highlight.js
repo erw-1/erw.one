@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $$ } from '../core/dom.js';
+import { $$ } from '../core/namespace_dom.js';
 
 let hljs, cssLoaded = false;
 
@@ -31,3 +31,4 @@ export async function highlightVisible(root = document) {
   }, { rootMargin: '200px 0px' });
   blocks.forEach(b => io.observe(b));
 }
+
