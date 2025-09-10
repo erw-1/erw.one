@@ -1,17 +1,30 @@
 /* eslint-env browser, es2022 */
-let linkEl;
+export async function syncMermaidThemeWithPage() {
+  const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
 
-const THEMES = {
-  light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github.min.css',
-  dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.10.0/styles/github-dark.min.css'
-};
+  // Pull helpers from the markdown loader, like the original does.
+  const { setMermaidTheme, renderMermaidLazy } = await (window.KM?.ensureMarkdown?.() || Promise.resolve({}));
 
-export function ensureHLJSTheme(mode) {
-  const m = mode || (document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
-  if (!linkEl) {
-    linkEl = document.createElement('link');
-    linkEl.rel = 'stylesheet';
-    document.head.append(linkEl);
+  // Update Mermaid's config to the new theme
+  setMermaidTheme?.(mode);
+
+  // Reset → re-run Mermaid for a given container
+  async function resetAndRerender(root) {
+    if (!root) return;
+    root.querySelectorAll('.mermaid').forEach(el => {
+      if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
+      if (el.querySelector('svg')) el.innerHTML = el.dataset.mmdSrc;
+      el.removeAttribute('data-processed'); // Mermaid's own flag
+      delete el.dataset.mmdDone;            // allow re-render guard to run again
+    });
+    await renderMermaidLazy?.(root);
   }
-  linkEl.href = THEMES[m] || THEMES.light;
+
+  // Main content
+  await resetAndRerender(document.getElementById('content'));
+
+  // Link previews (the preview HTML container is the first-level div)
+  document.querySelectorAll('.km-link-preview').forEach(p => {
+    resetAndRerender(p.querySelector(':scope > div'));
+  });
 }
