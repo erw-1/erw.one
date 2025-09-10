@@ -12,8 +12,7 @@ import { breadcrumb } from '../ui/breadcrumb.js';
 import { initLinkPreviews } from '../ui/previews.js';
 import { initSearch } from '../search/search.js';
 import { buildGraph, highlightCurrent } from '../graph/mini.js';
-import { ensureHLJSTheme } from '../theme/hljsTheme.js';
-import { syncMermaidThemeWithPage } from '../theme/mermaidTheme.js';
+import { syncMermaidThemeWithPage, ensureHLJSTheme } from '../theme/theme.js';
 
 /* side-effect modules faithful to original behavior */
 import '../theme/theme.js';
@@ -89,4 +88,5 @@ boot().catch(err => {
   const el = document.getElementById('content') || document.body;
   el.innerHTML = `<p style="color:crimson">Startup error: ${String(err)}</p>`;
 });
+
 
