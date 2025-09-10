@@ -907,7 +907,8 @@
   }
 
   span.lang {
-    padding-left: 10px;
+    padding-left: var(--g-md);
+    color: var(--color-quarter-contrast);
   }
 
   .code-tools {
