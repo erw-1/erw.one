@@ -930,6 +930,8 @@
     text-wrap-mode: nowrap;
     overflow-x: scroll;
     padding-right: calc(var(--g-lg) * 2) !important;
+    border-bottom-left-radius: var(--r-sm);
+    border-bottom-right-radius: var(--r-sm);
   }
 
   pre {
