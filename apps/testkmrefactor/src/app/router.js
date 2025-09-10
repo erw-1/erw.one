@@ -1,6 +1,10 @@
+/* eslint-env browser, es2022 */
 import { $, baseURLNoHash } from '../core/dom.js';
 import { root, find, hashOf } from '../model/bundle.js';
-import { render } from '../render/render.js';
+import { render as renderContent } from '../render/render.js';
+import { breadcrumb } from '../ui/breadcrumb.js';
+import { highlightSidebar } from '../ui/sidebar.js';
+import { highlightCurrent } from '../graph/mini.js';
 
 let currentPage = null;
 
@@ -28,20 +32,37 @@ export function scrollToAnchor(anchor) {
   if (target) target.scrollIntoView({ behavior: 'smooth' });
 }
 
+function resetScrollTop() {
+  (document.scrollingElement || document.documentElement).scrollTop = 0;
+  $('#content')?.scrollTo?.(0, 0);
+}
+
+function closePanels() {
+  $('#sidebar')?.classList.remove('open');
+  $('#util')?.classList.remove('open');
+}
+
 export async function route(mdParser) {
-  const contentEl = $('#content');
-  if (!contentEl) return;
+  closePanels();
   const t = parseTarget(location.hash) ?? { page: root, anchor: '' };
   const { page, anchor } = t;
 
   if (currentPage !== page) {
     currentPage = page;
-    await render(contentEl, page, mdParser);
-    if (!anchor) requestAnimationFrame(() => {
-      (document.scrollingElement || document.documentElement).scrollTop = 0;
-      $('#content')?.scrollTo?.(0, 0);
-    });
+
+    breadcrumb(page);
+    await renderContent($('#content'), page, mdParser);
+    highlightCurrent(page);
+    highlightSidebar(page);
+
+    if (!anchor) requestAnimationFrame(() => resetScrollTop());
+    else scrollToAnchor(anchor);
   } else if (anchor) {
     scrollToAnchor(anchor);
+    const a = $(`#toc li[data-hid="${anchor}"] > a`);
+    if (a) {
+      $('#toc .toc-current')?.classList.remove('toc-current');
+      a.classList.add('toc-current');
+    }
   }
 }
