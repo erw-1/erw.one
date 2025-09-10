@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { $, $$, el } from '../core/dom.js';
+import { $, $$, el } from '../core/namespace_dom.js';
 
 let tocEl, io;
 
@@ -35,3 +35,4 @@ export function buildToc(contentEl = $('#content')) {
 
   heads.forEach(h => io.observe(h));
 }
+
