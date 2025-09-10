@@ -1,3 +1,4 @@
+/* eslint-env browser, es2022 */
 import { CACHE_KEY } from './config.js';
 
 export function readCache(url) {
@@ -7,7 +8,9 @@ export function readCache(url) {
     const obj = JSON.parse(raw);
     if (!obj || typeof obj.ts !== 'number' || typeof obj.txt !== 'string') return null;
     return obj;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 export function writeCache(url, txt) {
