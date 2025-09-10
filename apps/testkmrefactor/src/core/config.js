@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { DOC } from './dom.js';
+import { DOC } from './namespace_dom.js';
 
 const CFG_EL = DOC.getElementById('km-config');
 const CFG = CFG_EL ? (JSON.parse(CFG_EL.textContent || '{}') || {}) : {};
@@ -16,3 +16,4 @@ export const {
 
 export const CACHE_MIN = Number(CACHE_MD) || 0;
 export const CACHE_KEY = (url) => `km:md:v2:${url}`;
+
