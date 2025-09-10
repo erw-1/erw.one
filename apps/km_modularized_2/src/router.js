@@ -44,3 +44,27 @@ export function resetScrollTop() {
   (document.scrollingElement || document.documentElement).scrollTop = 0;
   document.getElementById('content')?.scrollTo?.(0, 0);
 }
+
+
+export function route() {
+  closePanels();
+  const t = parseTarget(location.hash) ?? { page: __model.root, anchor: '' };
+  const page = t.page;
+  const anchor = t.anchor;
+
+  if (currentPage !== page) {
+    currentPage = page;
+    breadcrumb(page);
+    render(page, anchor);
+    highlightCurrent(true);
+    highlightSidebar(page);
+    if (!anchor) requestAnimationFrame(() => resetScrollTop());
+  } else if (anchor) {
+    scrollToAnchor(anchor);
+    const a = $(`#toc li[data-hid="${anchor}"] > a`);
+    if (a) {
+      $('#toc .toc-current')?.classList.remove('toc-current');
+      a.classList.add('toc-current');
+    }
+  }
+}
