@@ -1,5 +1,5 @@
 /* eslint-env browser, es2022 */
-import { domReady } from '../core/dom.js';
+import { domReady, $ } from '../core/dom.js';
 import { MD, CACHE_MIN } from '../core/config.js';
 import { readCache, writeCache } from '../core/cache.js';
 import { parseMarkdownBundle, computeHashes } from '../model/bundle.js';
@@ -15,9 +15,12 @@ import { buildGraph, highlightCurrent } from '../graph/mini.js';
 import { ensureHLJSTheme } from '../theme/hljsTheme.js';
 import { syncMermaidThemeWithPage } from '../theme/mermaidTheme.js';
 
+/* side-effect modules faithful to original behavior */
+import '../theme/theme.js';
+import '../app/keybinds.js';
+
 async function fetchBundle(url) {
   if (!url) throw new Error('CFG.MD manquant');
-  // cache localStorage optionnel
   const cached = readCache(url);
   if (cached && CACHE_MIN > 0) {
     const ageMin = (Date.now() - cached.ts) / 60000;
@@ -30,40 +33,55 @@ async function fetchBundle(url) {
   return txt;
 }
 
+/* faithful global toggles used by keybinds/help */
+function toggleClass(sel, cls) { const el = $(sel); if (el) el.classList.toggle(cls); }
+window.__kmToggleSidebar = () => toggleClass('#sidebar', 'open');
+window.__kmToggleUtil    = () => toggleClass('#util', 'open');
+window.__kmToggleCrumb   = () => toggleClass('#crumb', 'closed');
+
 async function boot() {
   await domReady();
-  const [txt, md] = await Promise.all([ fetchBundle(MD), ensureMarkdown() ]);
+  const [txt, md] = await Promise.all([fetchBundle(MD), ensureMarkdown()]);
   parseMarkdownBundle(txt);
   computeHashes();
 
-  // Première route (affiche la page courante)
+  // expose theme hooks for theme.js (faithful to original globals)
+  window.KM = window.KM || {};
+  window.KM.ensureHLJSTheme = () => ensureHLJSTheme();
+  window.KM.syncMermaidThemeWithPage = () => syncMermaidThemeWithPage(md);
+
+  // first route render
   await route(md);
 
-  // Init UI (une seule fois)
-  initSidebar({ onNav: () => {/* hook si besoin */} });
+  // one-time UI init
+  initSidebar({ onNav: () => {} });
   initSearch();
   initLinkPreviews();
   await buildGraph();
 
-  // Thèmes dépendants
-  ensureHLJSTheme();               // light/dark initial
-  syncMermaidThemeWithPage(md);    // mermaid suit le thème
+  // initial theme-dependent sync
+  ensureHLJSTheme();
+  syncMermaidThemeWithPage(md);
 
-  // Synchronisation initiale des éléments dépendants de la page
+  // initial per-page sync
   const { page } = parseTarget(location.hash);
   highlightSidebar(page);
   buildToc();
   breadcrumb(page);
   highlightCurrent(page);
 
-  // Réagir à la navigation
-  window.addEventListener('hashchange', () => {
-    const { page } = parseTarget(location.hash);
-    highlightSidebar(page);
-    buildToc();
-    breadcrumb(page);
-    highlightCurrent(page);
-  }, { passive: true });
+  // react to navigation
+  window.addEventListener(
+    'hashchange',
+    () => {
+      const { page } = parseTarget(location.hash);
+      highlightSidebar(page);
+      buildToc();
+      breadcrumb(page);
+      highlightCurrent(page);
+    },
+    { passive: true }
+  );
 }
 
 boot().catch(err => {
@@ -71,4 +89,3 @@ boot().catch(err => {
   const el = document.getElementById('content') || document.body;
   el.innerHTML = `<p style="color:crimson">Startup error: ${String(err)}</p>`;
 });
-
