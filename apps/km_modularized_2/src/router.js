@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { baseURLNoHash } from './dom.js';
+import { baseURLNoHash } from './config-dom.js';
 import { __model, find, hashOf } from './model.js';
 
 // Build a deep-link URL for a given page + anchor id

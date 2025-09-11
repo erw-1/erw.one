@@ -1,9 +1,9 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { $, $$ } from './dom.js';
-import { __model, descendants, hashOf, find } from './model.js';
-import { whenIdle } from './dom.js';
+import { $ } from './config-dom.js';
+import { __model, descendants, find } from './model.js';
+
 
 const KM = (window.KM = window.KM || {});
 

@@ -1,10 +1,9 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, whenIdle, __getVP, __updateViewport, baseURLNoHash } from './dom.js';
-import { CFG, TITLE, MD, DEFAULT_THEME, ACCENT, ALLOW_JS_FROM_MD, CACHE_MIN, readCache, writeCache } from './config.js';
+import { TITLE, MD, DEFAULT_THEME, ACCENT, ALLOW_JS_FROM_MD, CACHE_MIN, readCache, writeCache, DOC, $, $$, el, whenIdle, __getVP, __updateViewport, baseURLNoHash } from './config-dom.js';
 import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
-import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, numberHeadings, decorateHeadings, decorateCodeBlocks, wireCopyButtons, __trackObserver, __cleanupObservers } from './markdown.js';
+import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, decorateHeadings, decorateCodeBlocks, wireCopyButtons, __trackObserver, __cleanupObservers } from './markdown.js';
 import { buildTree, highlightSidebar, setFolderOpen } from './ui-sidebar.js';
 import { search, buildToc, prevNext, seeAlso } from './ui-search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';

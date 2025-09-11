@@ -1,13 +1,8 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, escapeRegex, whenIdle, copyText } from './dom.js';
+import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config-dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
-import { buildDeepURL } from './router.js';
-import { ALLOW_JS_FROM_MD } from './config.js';
-
-// Exported so other modules (previews, renderer) can reuse the same wiring
-export const HEADINGS_SEL = 'h1, h2, h3, h4, h5';
 
 // ───────────────────── Observer tracking (prevents leaks) ─────────────────────
 const __OBS_BY_ROOT = new WeakMap();
@@ -194,20 +189,19 @@ export function renderMathSafe(container = DOC) {
 
 /** Copy-button wiring shared across main content and previews. */
 export function wireCopyButtons(root, getBaseUrl) {
-  if (!root) return;
-  root.addEventListener('click', (e) => {
-    const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
-    if (!btn) return;
-    if (btn.classList.contains('heading-copy')) {
-      const h = btn.closest(HEADINGS_SEL);
-      if (!h) return;
-      const base = getBaseUrl() || (location.href.replace(/#.*$/, '') + '#');
-      copyText(base + h.id, btn);
-    } else {
-      const pre = btn.closest('pre');
-      const code = pre?.querySelector('code');
-      const txt = code ? code.innerText : pre?.innerText || '';
-      copyText(txt, btn);
-    }
-  });
+    if (!root) return;
+    root.addEventListener('click', (e) => {
+        const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
+        if (!btn) return;
+        if (btn.classList.contains('heading-copy')) {
+            const h = btn.closest(HEADINGS_SEL);
+            if (!h) return;
+            const base = getBaseUrl() || (baseURLNoHash() + '#');
+            copyText(base + h.id, btn);
+        } else {
+            const pre = btn.closest('pre');
+            const code = pre?.querySelector('code');
+            copyText(code ? code.innerText : pre?.innerText || '', btn);
+        }
+    });
 }

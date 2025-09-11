@@ -1,10 +1,8 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el } from './dom.js';
+import { DOC, $, $$, el, HEADINGS_SEL } from './config-dom.js';
 import { __model, sortByTitle, hashOf } from './model.js';
-import { HEADINGS_SEL, wireCopyButtons } from './markdown.js';
-import { buildDeepURL } from './router.js';
 
 // ===== Search (ranked; pages + section hits) =====
 export function search(q) {
