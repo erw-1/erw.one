@@ -34,13 +34,47 @@ let _miniKick = 0;
 export function updateMiniViewport() {
   if (!graphs.mini) return;
   const { svg, sim } = graphs.mini;
-  const { w, h } = getMiniSize();
+
+  // If the element isn't measured yet, bail gracefully and retry shortly.
+  const size = getMiniSize();
+  const { w, h } = size.w && size.h ? size : { w: 1, h: 1 };
+
   graphs.mini.w = w;
   graphs.mini.h = h;
-  svg.attr('viewBox', `0 0 ${w} ${h}`).attr('width', w).attr('height', h).attr('preserveAspectRatio', 'xMidYMid meet');
+  svg.attr('viewBox', `0 0 ${w} ${h}`)
+     .attr('width', w)
+     .attr('height', h)
+     .attr('preserveAspectRatio', 'xMidYMid meet');
+
   sim.force('center', KM.d3.forceCenter(w / 2, h / 2));
+
   clearTimeout(_miniKick);
-  _miniKick = setTimeout(() => { sim.alpha(0.2).restart(); }, 50);
+  _miniKick = setTimeout(() => {
+    // Hard recenter, then wake the sim and re-highlight after layout
+    recenterNodes();
+    sim.alpha(0.35).restart();
+    requestAnimationFrame(() => highlightCurrent(true));
+  }, 60);
+}
+
+function recenterNodes() {
+  if (!graphs.mini) return;
+  const { sim, view, w, h } = graphs.mini;
+  const nodes = sim.nodes();
+  if (!nodes.length) return;
+
+  // Compute centroid of current nodes
+  let sx = 0, sy = 0;
+  for (const d of nodes) { sx += d.x; sy += d.y; }
+  const cx = sx / nodes.length, cy = sy / nodes.length;
+
+  // Translate nodes so centroid = svg center
+  const tx = (w / 2) - cx, ty = (h / 2) - cy;
+
+  // Clear any previous pan so we don't accumulate transforms
+  view.attr('transform', 'translate(0,0)');
+
+  for (const d of nodes) { d.x += tx; d.y += ty; }
 }
 
 /** Build nodes/links for the visualization. */
@@ -192,3 +226,4 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
