@@ -1,181 +1,337 @@
-/* eslint-env browser, es2022 */
-'use strict';
-
 import { DOC, $, $$, el, HEADINGS_SEL, __getVP, baseURLNoHash } from './config_dom.js';
 import { __model, hashOf } from './model.js';
 import { getParsedHTML, normalizeAnchors, wireCopyButtons, __cleanupObservers } from './markdown.js';
 import { buildDeepURL, parseTarget, enhanceRendered } from './router_renderer.js';
 
-/** Close all open panels (sidebars, overlays). */
 export function closePanels() {
-  $('.panel-close')?.remove();
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
 }
 
-/** Open/close a folder in the sidebar. */
 export function setFolderOpen(li, open) {
-  li.classList.toggle('open', !!open);
-}
-
-/** Build the collapsible page tree in the sidebar. */
-export function buildTree() {
-  const { root, pages } = __model;
-  const elTree = $('#tree');
-  if (!root || !elTree) return;
-  elTree.innerHTML = '';
-
-  function rec(parentEl, depth, page) {
-    if (page.isSecondary && page.parent === root) return; // skip sec. homes
-    const open = depth < 2;
-    const li = el('li', {
-      class: 'folder' + (open ? ' open' : '')
-    });
-    const gid = page.parent ? page.parent.id || '' : '';
-    li.dataset.kmGroup = gid;
-    li.dataset.kmHid = page.id;
-    const a = el('a', { href: '#' + hashOf(page), textContent: page.title });
-    li.append(a);
-
-    if (page.children && page.children.length) {
-      const caret = el('button', { type: 'button', class: 'caret', title: 'Toggle' }, '▸');
-      const sub = el('ul', {});
-      caret.onclick = () => setFolderOpen(li, !li.classList.contains('open'));
-      li.prepend(caret);
-      li.append(sub);
-      if (open) page.children.forEach(c => rec(sub, depth + 1, c));
-    }
-    parentEl.append(li);
-  }
-
-  rec(elTree, 0, root);
-}
-
-/** Highlight the active page in the sidebar. */
-export function highlightSidebar(page) {
-  if (!page) return;
-  $$('#tree li').forEach(li => li.classList.remove('sidebar-current'));
-  const li = $(`#tree li[data-hid="${page.id}"]`);
   if (!li) return;
-  li.classList.add('sidebar-current');
-  li.scrollIntoView({ block: 'center', inline: 'nearest' });
+  li.classList.toggle('open', !!open);
+  li.setAttribute('aria-expanded', String(!!open));
+  const caret = li.querySelector('button.caret');
+  if (caret) {
+    caret.setAttribute('aria-expanded', String(!!open));
+    caret.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
+  }
+  const sub = li.querySelector('ul[role="group"]');
+  if (sub) sub.style.display = open ? 'block' : 'none';
 }
 
-/** Update the breadcrumb navigation. */
+export function buildTree() {
+  const ul = $('#tree');
+  const { root } = __model;
+  if (!ul || !root) return;
+  ul.setAttribute('role', 'tree');
+  ul.innerHTML = '';
+  const prim = root.children.filter(c => !c.isSecondary);
+  const secs = root.children.filter(c => c.isSecondary).sort((a, b) => a.clusterId - b.clusterId);
+  const rec = (nodes, container, depth = 0) => {
+    nodes.forEach(p => {
+      const li = el('li');
+      li.setAttribute('role', 'treeitem');
+      if (p.children.length) {
+        const open = depth < 2;
+        li.className = 'folder' + (open ? ' open' : '');
+        li.setAttribute('aria-expanded', String(open));
+        const groupId = `group-${p.id}`;
+        const caret = el('button', {
+          type: 'button', class: 'caret',
+          'aria-controls': groupId,
+          'aria-expanded': String(open),
+          'aria-label': open ? 'Collapse' : 'Expand',
+          textContent: '▸'
+        });
+        const lbl = el('a', {
+          class: 'lbl',
+          dataset: { page: p.id },
+          href: '#' + hashOf(p),
+          textContent: p.title
+        });
+        const sub = el('ul', {
+          id: groupId,
+          role: 'group',
+          style: `display:${open ? 'block' : 'none'}`
+        });
+        li.append(caret, lbl, sub);
+        container.append(li);
+        rec(p.children, sub, depth + 1);
+      } else {
+        li.className = 'article';
+        li.append(el('a', {
+          dataset: { page: p.id },
+          href: '#' + hashOf(p),
+          textContent: p.title
+        }));
+        container.append(li);
+      }
+    });
+  };
+
+  const frag = DOC.createDocumentFragment();
+  rec(prim, frag);
+  secs.forEach(rep => {
+    const sep = el('div', { class: 'group-sep', role: 'presentation', 'aria-hidden': 'true' },
+                    [ el('hr', { role: 'presentation', 'aria-hidden': 'true' }) ]);
+    frag.append(sep);
+    rec([rep], frag);
+  });
+  ul.append(frag);
+}
+
+export function highlightSidebar(page) {
+  const rootEl = $('#tree');
+  if (!rootEl || !page) return;
+  rootEl.querySelectorAll('.sidebar-current').forEach(a => a.classList.remove('sidebar-current'));
+  const a = rootEl.querySelector(`a[data-page="${page.id}"]`);
+  if (!a) return;
+  a.classList.add('sidebar-current');
+  let li = a.closest('li');
+  while (li) {
+    if (li.classList.contains('folder')) setFolderOpen(li, true);
+    li = li.parentElement?.closest('li') || null;
+  }
+  const tree = $('#tree');
+  if (tree) {
+    const r = a.getBoundingClientRect();
+    const tr = tree.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      if (r.top < tr.top || r.bottom > tr.bottom) {
+        a.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
+}
+
 export function breadcrumb(page) {
-  const nav = $('#breadcrumbs');
-  if (!nav) return;
+  const dyn = $('#crumb-dyn');
+  if (!dyn) return;
+  dyn.innerHTML = '';
   const chain = [];
-  let n = page;
-  while (n) {
-    chain.unshift(n);
-    n = n.parent;
-  }
-  // Drop root label
+  for (let n = page; n; n = n.parent) chain.unshift(n);
   if (chain.length) chain.shift();
-  nav.innerHTML = '';
-  if (!chain.length) return;
-
-  let ptr = nav;
-  chain.forEach((p, i) => {
-    const a = el('a', { href: '#' + hashOf(p), textContent: p.title });
-    const li = el('li', {}, a);
-    ptr.append(li);
-
-    // Siblings dropdown
-    if (p.parent && p.parent.children.length > 1) {
-      const parent = p.parent;
-      const siblings = parent.children.slice().sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
-      const sub = el('ul', {});
-      siblings.forEach(sib => {
-        sub.append(el('li', {}, el('a', {
-          href: '#' + hashOf(sib), textContent: sib.title
-        })));
+  chain.forEach((n, i) => {
+    if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
+    const wrap = el('span', { class: 'dropdown' });
+    const a = el('a', { textContent: n.title, href: '#' + n.hash });
+    if (n === page) a.className = 'crumb-current';
+    wrap.append(a);
+    const siblings = n.parent.children.filter(s => s !== n);
+    if (siblings.length) {
+      const ul = el('ul');
+      siblings.forEach(s => {
+        ul.append(el('li', { textContent: s.title, onclick: () => KM.nav(s) }));
       });
-      li.append(sub);
+      wrap.append(ul);
     }
-
-    // Direct children list (for all but last)
-    if (i !== chain.length - 1) {
-      const nextList = el('ul', {});
-      li.append(nextList);
-      ptr = nextList;
-    }
+    dyn.append(wrap);
   });
+  if (page.children.length) {
+    const box = el('span', { class: 'childbox' }, [
+      el('span', { class: 'toggle', textContent: '▾' }),
+      el('ul')
+    ]);
+    const ul = box.querySelector('ul');
+    page.children.slice().sort((a,b)=>a.title.localeCompare(b.title))
+                .forEach(ch => {
+                  ul.append(el('li', { textContent: ch.title, onclick: () => KM.nav(ch) }));
+                });
+    dyn.append(box);
+  }
 }
 
-/** Build the Table of Contents for the page. */
+let tocObserver = null;
 export function buildToc(page) {
-  const toc = $('#toc');
-  if (!toc) return;
-  toc.innerHTML = '';
-  toc.removeAttribute('hidden');
+  const tocEl = $('#toc');
+  if (!tocEl) return;
+  tocEl.innerHTML = '';
+  const heads = $$('#content ' + HEADINGS_SEL);
+  if (!heads.length) return;
+  const ul = el('ul');
+  heads.forEach(h => {
+    const id = h.id || '';
+    const lvl = Math.min(6, Math.max(1, parseInt(h.tagName.slice(1), 10) || 1));
+    const li = el('li', {
+      'data-hid': id,
+      'data-lvl': String(lvl)
+    }, [
+      el('a', {
+        href: '#' + (page.hash ? page.hash + '#' : '') + id,
+        textContent: h.textContent || ''
+      })
+    ]);
+    ul.append(li);
+  });
+  tocEl.append(ul);
+  tocObserver?.disconnect();
+  tocObserver = new IntersectionObserver((entries) => {
+    entries.forEach(en => {
+      if (!en.isIntersecting) return;
+      const id = en.target.id;
+      const a = $(`#toc li[data-hid="${id}"] > a`);
+      if (!a) return;
+      $('#toc .toc-current')?.classList.remove('toc-current');
+      a.classList.add('toc-current');
+    });
+  }, { root: null, rootMargin: '0px 0px -70% 0px', threshold: 0 });
+  heads.forEach(h => tocObserver.observe(h));
+}
 
-  if (!page.sections.length) {
-    toc.hidden = true;
-    return;
+export function prevNext(page) {
+  const elx = $('#prevnext');
+  if (!elx) return;
+  const siblings = page.parent ? page.parent.children.slice() : [];
+  const i = siblings.indexOf(page);
+  const prev = i > 0 ? siblings[i - 1] : null;
+  const next = i >= 0 && i < siblings.length - 1 ? siblings[i + 1] : null;
+  elx.innerHTML = '';
+  if (prev) elx.append(el('a', { href: '#' + hashOf(prev), class: 'prev', textContent: '← ' + prev.title }));
+  if (next) elx.append(el('a', { href: '#' + hashOf(next), class: 'next', textContent: next.title + ' →' }));
+}
+
+export function seeAlso(page) {
+  const elx = $('#seealso');
+  if (!elx) return;
+  elx.innerHTML = '';
+  const tags = page.tagsSet || new Set();
+  if (!tags.size) return;
+  const same = __model.pages
+    .filter(p => p !== page && p.parent !== page.parent && [...p.tagsSet].some(t => tags.has(t)))
+    .slice(0, 6);
+  same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
+}
+
+export function attachLinkPreviews() {
+  const previewStack = [];
+  let hoverDelay = null;
+  const resizeObserver = new ResizeObserver(scheduleTrim);
+
+  function rewriteRelativeAnchors(panel, page) {
+    normalizeAnchors(panel.body, page);
+  }
+  function positionPreview(panel, linkEl) {
+    const rect = linkEl.getBoundingClientRect();
+    const { __VPW: vw, __VPH: vh } = __getVP();
+    const gap = 8;
+    const elx = panel.el;
+    const W = Math.max(1, elx.offsetWidth || 1);
+    const H = Math.max(1, elx.offsetHeight || 1);
+    const preferRight = rect.right + gap + W <= vw;
+    const left = preferRight ? Math.min(rect.right + gap, vw - W - gap) : Math.max(gap, rect.left - gap - W);
+    const top = Math.min(Math.max(gap, rect.top), Math.max(gap, vh - H - gap));
+    Object.assign(panel.el.style, { left: left + 'px', top: top + 'px' });
+  }
+  function closeFrom(indexInclusive = 0) {
+    for (let i = previewStack.length - 1; i >= indexInclusive; i--) {
+      const p = previewStack[i];
+      clearTimeout(p.timer);
+      __cleanupObservers(p.el);
+      p.el.remove();
+      previewStack.pop();
+    }
+  }
+  function anyPreviewOrTriggerActive() {
+    const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
+    if (anyHoverPreview) return true;
+    const active = document.activeElement;
+    const activeIsTrigger = !!(active && active.closest && window.KM.isInternalPageLink?.(active.closest('a[href^="#"]')));
+    if (activeIsTrigger) return true;
+    const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
+    return hoveringTrigger;
+  }
+  let trimTimer;
+  function scheduleTrim() {
+    clearTimeout(trimTimer);
+    trimTimer = setTimeout(() => { if (!anyPreviewOrTriggerActive()) closeFrom(0); }, 220);
   }
 
-  page.sections.forEach(sec => {
-    const li = el('li', { 'data-hid': sec.id });
-    const a = el('a', { href: '#' + sec.id, textContent: sec.txt });
-    li.append(a);
-    toc.append(li);
-  });
-
-  // Highlight current section in view
-  const observer = new IntersectionObserver((entries, obs) => {
-    let current = toc.querySelector('.toc-current');
-    current?.classList.remove('toc-current');
-    for (const e of entries) {
-      if (e.isIntersecting) {
-        const id = e.target.id;
-        const a = toc.querySelector(`a[href="#${id}"]`);
-        if (a) {
-          a.classList.add('toc-current');
-          break;
-        }
+  async function fillPanel(panel, page, anchor) {
+    panel.body.dataset.mathRendered = '0';
+    panel.body.innerHTML = await getParsedHTML(page);
+    rewriteRelativeAnchors(panel, page);
+    await enhanceRendered(panel.body, page);
+    if (anchor) {
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const t = panel.body.querySelector('#' + CSS.escape(anchor));
+      if (t) {
+        const header = panel.el.querySelector('header');
+        const headerH = header ? header.offsetHeight : 0;
+        const cRect = panel.el.getBoundingClientRect();
+        const tRect = t.getBoundingClientRect();
+        const y = tRect.top - cRect.top + panel.el.scrollTop;
+        const top = Math.max(0, y - headerH - 6);
+        panel.el.scrollTo({ top, behavior: 'auto' });
+        t.classList.add('km-preview-focus');
       }
     }
-  }, { rootMargin: '200px 0px 0 0' });
-  $$(HEADINGS_SEL).forEach(h => observer.observe(h));
-}
+  }
 
-/** Set up "previous" and "next" page links at bottom of content. */
-export function prevNext(page) {
-  const prevEl = $('#prev');
-  const nextEl = $('#next');
-  if (!prevEl || !nextEl) return;
-  const { pages, root } = __model;
-  const list = (p) => p.parent ? p.parent.children : (p === root ? [p] : []);
-  const siblings = list(page);
-  const idx = siblings.indexOf(page);
-  const prevPage = idx > 0 ? siblings[idx - 1] : null;
-  const nextPage = idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
-  if (prevPage) {
-    prevEl.href = '#' + hashOf(prevPage);
-    prevEl.hidden = false;
-  }
-  if (nextPage) {
-    nextEl.href = '#' + hashOf(nextPage);
-    nextEl.hidden = false;
-  }
-}
+  function createPanel(linkEl) {
+    const container = el('div', { class: 'km-link-preview', role: 'dialog', 'aria-label': 'Preview' });
+    const header = el('header', {}, [
+      el('button', { type: 'button', class: 'km-preview-close', title: 'Close', 'aria-label': 'Close', innerHTML: '✕' })
+    ]);
+    const body = el('div');
+    container.append(header, body);
+    document.body.appendChild(container);
 
-/** Build "See also" links (based on tags) at bottom. */
-export function seeAlso(page) {
-  const seeb = $('#see-also');
-  if (!seeb) return;
-  seeb.innerHTML = '';
-  const related = Array.from(__model.pages)
-    .filter(p => p !== page && p.parent === page.parent)
-    .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }));
-  if (!related.length) {
-    seeb.hidden = true;
-    return;
+    const panel = { el: container, body, link: linkEl, timer: null };
+    const idx = previewStack.push(panel) - 1;
+
+    container.addEventListener('mouseenter', () => { clearTimeout(panel.timer); clearTimeout(trimTimer); }, { passive: true });
+    container.addEventListener('mouseleave', e => {
+      const to = e.relatedTarget;
+      if (to && (to.closest && to.closest('.km-link-preview'))) return;
+      panel.timer = setTimeout(() => { closeFrom(idx); }, 240);
+    }, { passive: true });
+    header.querySelector('button').addEventListener('click', () => closeFrom(idx));
+    container.addEventListener('mouseover', maybeOpenFromEvent, true);
+    container.addEventListener('focusin', maybeOpenFromEvent, true);
+
+    positionPreview(panel, linkEl);
+
+    wireCopyButtons(panel.el, () => {
+      const t = parseTarget(panel.link.getAttribute('href') || '');
+      return buildDeepURL(t?.page, '') || (baseURLNoHash() + '#');
+    });
+
+    return panel;
   }
-  seeb.hidden = false;
-  related.forEach(p => {
-    seeb.append(el('li', {}, el('a', { href: '#' + hashOf(p), textContent: p.title })));
-  });
+
+  async function openPreviewForLink(a) {
+    const href = a.getAttribute('href') || '';
+    const theTarget = parseTarget(href);
+    if (!theTarget) return;
+    const existingIdx = previewStack.findIndex(p => p.link === a);
+    if (existingIdx >= 0) {
+      const existing = previewStack[existingIdx];
+      clearTimeout(existing.timer);
+      positionPreview(existing, a);
+      return;
+    }
+    const panel = createPanel(a);
+    previewStack.forEach(p => clearTimeout(p.timer));
+    await fillPanel(panel, theTarget.page, theTarget.anchor);
+  }
+
+  function isInternalPageLink(a) {
+    const href = a?.getAttribute('href') || '';
+    return !!parseTarget(href);
+  }
+  window.KM.isInternalPageLink = isInternalPageLink;
+
+  function maybeOpenFromEvent(e) {
+    const a = e.target?.closest?.('a[href^="#"]');
+    if (!a || !isInternalPageLink(a)) return;
+    clearTimeout(hoverDelay);
+    const openNow = e.type === 'focusin';
+    if (openNow) openPreviewForLink(a);
+    else hoverDelay = setTimeout(() => openPreviewForLink(a), 400);
+  }
+
+  document.body.addEventListener('mouseover', maybeOpenFromEvent, true);
+  document.body.addEventListener('focusin', maybeOpenFromEvent, true);
 }
