@@ -9,7 +9,7 @@ import {
 
 import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
 import { wireCopyButtons } from './markdown.js';
-import { buildTree, setFolderOpen, closePanels, attachLinkPreviews, initKeybinds } from './ui.js';
+import { buildTree, setFolderOpen, closePanels, attachLinkPreviews, initKeybinds, initPanelToggles } from './ui.js';
 import { search } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
 import { buildDeepURL, route } from './router_renderer.js';
@@ -121,7 +121,7 @@ function initUI() {
     };
   }
 
-  // Panels: exclusive toggles
+  // Panels: exclusive toggles (mobile slide-in)
   const togglePanel = sel => {
     const elx = $(sel);
     if (!elx) return;
@@ -188,7 +188,10 @@ function initUI() {
     if (acted) e.preventDefault();
   }, { capture: true });
 
-  // Raccourcis clavier (déplacés dans UI)
+  // Toggling functions for desktop (now in UI)
+  initPanelToggles();
+
+  // Raccourcis clavier (désormais en UI, mais ils appuient sur les __kmToggle*)
   initKeybinds();
 }
 
