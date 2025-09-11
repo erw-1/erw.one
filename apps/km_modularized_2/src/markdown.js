@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, escapeRegex, whenIdle } from './dom.js';
+import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, escapeRegex, whenIdle, copyText } from './dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
 import { buildDeepURL } from './router.js';
 import { ALLOW_JS_FROM_MD } from './config.js';
@@ -181,7 +181,7 @@ export function renderMathSafe(container = DOC) {
     if (typeof window.renderMathInElement === 'function') {
       window.renderMathInElement(container, {
         delimiters: [
-          { left: '$$', right: '$$', display: true },
+        { left: '$$', right: '$$', display: true },
         { left: '\\[', right: '\\]', display: true },
         { left: '$', right: '$', display: false },
         { left: '\\(', right: '\\)', display: false },
@@ -202,12 +202,12 @@ export function wireCopyButtons(root, getBaseUrl) {
       const h = btn.closest(HEADINGS_SEL);
       if (!h) return;
       const base = getBaseUrl() || (location.href.replace(/#.*$/, '') + '#');
-      navigator.clipboard.writeText(base + h.id).catch(() => {});
+      copyText(base + h.id, btn);
     } else {
       const pre = btn.closest('pre');
       const code = pre?.querySelector('code');
       const txt = code ? code.innerText : pre?.innerText || '';
-      navigator.clipboard.writeText(txt).catch(() => {});
+      copyText(txt, btn);
     }
   });
 }
