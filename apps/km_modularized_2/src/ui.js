@@ -342,8 +342,7 @@ export function attachLinkPreviews() {
 
   async function openPreviewForLink(a) {
     const href = a.getAttribute('href') || '';
-    theTarget = parseTarget(href);
-    const target = theTarget;
+    const target = parseTarget(href);
     if (!target) return;
 
     const existingIdx = previewStack.findIndex(p => p.link === a);
@@ -509,3 +508,4 @@ export function initKeybinds() {
 
   $$('#kb-icon').forEach(icon => icon.addEventListener('click', (e) => { e.preventDefault(); openHelp(); }));
 }
+
