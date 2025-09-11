@@ -1,0 +1,51 @@
+/* ---------------------------------------------------------------------------
+     2. RESET: minimal & opinionated
+     ------------------------------------------------------------------------ */
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    position: fixed;
+    width: 100%;
+  }
+
+  body {
+    margin: 0;
+    display: flex;
+    height: 100dvh;
+    overflow: hidden;
+    font-family: system-ui, Segoe UI, Roboto, sans-serif;
+    background: var(--color-main);
+    color: var(--color-text);
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  a {
+    text-decoration: none;
+    color: var(--color-accent);
+  }
+
+  h6 {
+    font-size: clamp(1rem, 0.98rem + 0.2vw, 1.125rem);
+  } /* 16    → ~18px */
+  h5 {
+    font-size: clamp(1.08rem, 1rem + 0.3vw, 1.25rem);
+  } /* ~17.3 → 20px */
+  h4 {
+    font-size: clamp(1.16rem, 1.05rem + 0.4vw, 1.375rem);
+  } /* ~18.6 → 22px */
+  h3 {
+    font-size: clamp(1.28rem, 1.1rem + 0.55vw, 1.5rem);
+  } /* ~20.5 → 24px */
+  h2 {
+    font-size: clamp(1.44rem, 1.2rem + 0.75vw, 1.75rem);
+  } /* ~23   → 28px */
+  #content h1 {
+    font-size: clamp(1.6rem, 1.3rem + 1vw, 2rem);
+  } /* 25.6  → 32px */
+}
