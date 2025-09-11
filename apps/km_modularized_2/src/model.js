@@ -20,7 +20,7 @@ export function parseMarkdownBundle(txt) {
   descMemo.clear();
   pageHTMLLRU.clear();
 
-  const m = txt.matchAll(/(?![\s\S]*?```(?:[\s\S]*?```[\s\S]*?```)*[\s\S]*$)<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
+  const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
@@ -163,6 +163,7 @@ export const __model = {
   get root() { return root; },
   get byId() { return byId; }
 };
+
 
 
 
