@@ -25,14 +25,16 @@ export function parseMarkdownBundle(txt) {
   const HCLOSE = '\uE001';
   
   const sanitized = txt.replace(/```[\s\S]*?```/g, block =>
-    block.replace(/<!--km/g, HOPEN).replace(/-->/g, HCLOSE)
+    block.replace(/<!--/g, HOPEN).replace(/-->/g, HCLOSE)
   );
   
-  // 2) Your original matcher works unchanged
-  const m = sanitized.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
-  for (const [, hdr, body] of m) {
+  // 2) Match only <!--km ... --> headers; body runs until the next <!--km ... --> or EOF
+  const kmRe = /<!--\s*km\b([\s\S]*?)-->\s*([\s\S]*?)(?=<!--\s*km\b|$)/g;
+  
+  for (const [, hdr, body] of sanitized.matchAll(kmRe)) {
     const meta = {};
-    hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
+    // allow key:"value" or key="value"
+    hdr.replace(/(\w+)\s*[:=]\s*"([^"]*)"/g, (_, k, v) => (meta[k] = v.trim()));
   
     // 3) Restore markers in the captured body
     const content = (body || '')
@@ -42,7 +44,7 @@ export function parseMarkdownBundle(txt) {
   
     const page = { ...meta, content, children: [] };
     pages.push(page);
-    byId.set(page.id, page);
+    if (page.id) byId.set(page.id, page);
   }
   
   if (!pages.length) throw new Error('No pages parsed from MD bundle.');
@@ -180,6 +182,7 @@ export const __model = {
   get root() { return root; },
   get byId() { return byId; }
 };
+
 
 
 
