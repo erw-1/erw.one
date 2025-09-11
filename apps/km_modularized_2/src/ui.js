@@ -1,8 +1,15 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, HEADINGS_SEL } from './config_dom.js';
+import { DOC, $, $$, el, HEADINGS_SEL, __getVP, baseURLNoHash } from './config_dom.js';
 import { __model, hashOf } from './model.js';
+import { getParsedHTML, normalizeAnchors, wireCopyButtons, __cleanupObservers } from './markdown.js';
+import { buildDeepURL, parseTarget, enhanceRendered } from './router_renderer.js';
+
+export function closePanels() {
+  $('#sidebar')?.classList.remove('open');
+  $('#util')?.classList.remove('open');
+}
 
 export function setFolderOpen(li, open) {
   if (!li) return;
@@ -179,7 +186,7 @@ export function buildToc(page) {
     const lvl = Math.min(6, Math.max(1, parseInt(h.tagName.slice(1), 10) || 1));
     const li  = el('li', {
       'data-hid': id,
-      'data-lvl': String(lvl)   // ← level indicator for CSS indenting
+      'data-lvl': String(lvl)   // level indicator for CSS indenting
     }, [
       el('a', { href: '#' + (page.hash ? page.hash + '#' : '') + id, textContent: h.textContent || '' })
     ]);
@@ -206,7 +213,7 @@ export function buildToc(page) {
 export function prevNext(page) {
   const elx = $('#prevnext');
   if (!elx) return;
-  const siblings = page.parent ? page.parent.children.slice().sort(sortByTitle) : [];
+  const siblings = page.parent ? page.parent.children.slice() : [];
   const i = siblings.indexOf(page);
   const prev = i > 0 ? siblings[i - 1] : null;
   const next = i >= 0 && i < siblings.length - 1 ? siblings[i + 1] : null;
@@ -221,20 +228,284 @@ export function seeAlso(page) {
   if (!elx) return;
   elx.innerHTML = '';
 
-  // naive: pages sharing at least one tag; skip self and direct siblings
   const tags = page.tagsSet || new Set();
   if (!tags.size) return;
 
   const same = __model.pages
     .filter(p => p !== page && p.parent !== page.parent && [...p.tagsSet].some(t => tags.has(t)))
-    .slice(0, 6)
-    .sort(sortByTitle);
+    .slice(0, 6);
 
   same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
 }
 
-export function closePanels() {
-  $('#sidebar')?.classList.remove('open');
-  $('#util')?.classList.remove('open');
+// ───────────────────────────── link previews (moved) ─────────────────────
+export function attachLinkPreviews() {
+  const previewStack = []; // stack of { el, body, link, timer }
+  let hoverDelay = null;
+
+  function rewriteRelativeAnchors(panel, page) { normalizeAnchors(panel.body, page); }
+
+  function positionPreview(panel, linkEl) {
+    const rect = linkEl.getBoundingClientRect();
+    const { __VPW: vw, __VPH: vh } = __getVP();
+    const gap = 8;
+    const elx = panel.el;
+    const W = Math.max(1, elx.offsetWidth || 1);
+    const H = Math.max(1, elx.offsetHeight || 1);
+    const preferRight = rect.right + gap + W <= vw;
+    const left = preferRight ? Math.min(rect.right + gap, vw - W - gap) : Math.max(gap, rect.left - gap - W);
+    const top = Math.min(Math.max(gap, rect.top), Math.max(gap, vh - H - gap));
+    Object.assign(panel.el.style, { left: left + 'px', top: top + 'px' });
+  }
+
+  function closeFrom(indexInclusive = 0) {
+    for (let i = previewStack.length - 1; i >= indexInclusive; i--) {
+      const p = previewStack[i];
+      clearTimeout(p.timer);
+      __cleanupObservers(p.el);
+      p.el.remove();
+      previewStack.pop();
+    }
+  }
+
+  function anyPreviewOrTriggerActive() {
+    const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
+    if (anyHoverPreview) return true;
+    const active = document.activeElement;
+    const activeIsTrigger = !!(active && active.closest && window.KM.isInternalPageLink?.(active.closest('a[href^="#"]')));
+    if (activeIsTrigger) return true;
+    const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
+    return hoveringTrigger;
+  }
+
+  let trimTimer;
+  function scheduleTrim() {
+    clearTimeout(trimTimer);
+    trimTimer = setTimeout(() => { if (!anyPreviewOrTriggerActive()) closeFrom(0); }, 220);
+  }
+
+  async function fillPanel(panel, page, anchor) {
+    panel.body.dataset.mathRendered = '0';
+    panel.body.innerHTML = await getParsedHTML(page);
+    rewriteRelativeAnchors(panel, page);
+    await enhanceRendered(panel.body, page);
+
+    if (anchor) {
+      const container = panel.el;
+      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+      const t = panel.body.querySelector('#' + CSS.escape(anchor));
+      if (t) {
+        const header = container.querySelector('header');
+        const headerH = header ? header.offsetHeight : 0;
+        const cRect = container.getBoundingClientRect();
+        const tRect = t.getBoundingClientRect();
+        const y = tRect.top - cRect.top + container.scrollTop;
+        const top = Math.max(0, y - headerH - 6);
+        container.scrollTo({ top, behavior: 'auto' });
+        t.classList.add('km-preview-focus');
+      }
+    }
+  }
+
+  function createPanel(linkEl) {
+    const container = el('div', { class: 'km-link-preview', role: 'dialog', 'aria-label': 'Preview' });
+    const header = el('header', {}, [
+      el('button', { type: 'button', class: 'km-preview-close', title: 'Close', 'aria-label': 'Close', innerHTML: '✕' })
+    ]);
+    const body = el('div');
+    container.append(header, body);
+    document.body.appendChild(container);
+
+    const panel = { el: container, body, link: linkEl, timer: null };
+    const idx = previewStack.push(panel) - 1;
+
+    container.addEventListener('mouseenter', () => { clearTimeout(panel.timer); clearTimeout(trimTimer); }, { passive: true });
+    container.addEventListener('mouseleave', (e) => {
+      const to = e.relatedTarget;
+      if (to && (to.closest && to.closest('.km-link-preview'))) return;
+      panel.timer = setTimeout(() => { closeFrom(idx); }, 240);
+    }, { passive: true });
+    header.querySelector('button').addEventListener('click', () => closeFrom(idx));
+
+    container.addEventListener('mouseover', (e) => maybeOpenFromEvent(e), true);
+    container.addEventListener('focusin',  (e) => maybeOpenFromEvent(e), true);
+
+    positionPreview(panel, linkEl);
+
+    wireCopyButtons(panel.el, () => {
+      const t = parseTarget(panel.link.getAttribute('href') || '');
+      return buildDeepURL(t?.page, '') || (baseURLNoHash() + '#');
+    });
+
+    return panel;
+  }
+
+  async function openPreviewForLink(a) {
+    const href = a.getAttribute('href') || '';
+    theTarget = parseTarget(href);
+    const target = theTarget;
+    if (!target) return;
+
+    const existingIdx = previewStack.findIndex(p => p.link === a);
+    if (existingIdx >= 0) {
+      const existing = previewStack[existingIdx];
+      clearTimeout(existing.timer);
+      positionPreview(existing, a);
+      return;
+    }
+
+    const panel = createPanel(a);
+    previewStack.forEach(p => clearTimeout(p.timer));
+    await fillPanel(panel, target.page, target.anchor);
+  }
+
+  function isInternalPageLink(a) {
+    const href = a?.getAttribute('href') || '';
+    return !!parseTarget(href);
+  }
+  window.KM.isInternalPageLink = isInternalPageLink;
+
+  function maybeOpenFromEvent(e) {
+    const a = e.target?.closest?.('a[href^="#"]');
+    if (!a || !isInternalPageLink(a)) return;
+    clearTimeout(hoverDelay);
+    const openNow = e.type === 'focusin';
+    if (openNow) openPreviewForLink(a);
+    else hoverDelay = setTimeout(() => openPreviewForLink(a), 220);
+  }
+
+  let __lpGlobalBound = false;
+  const root = $('#content');
+  if (!root) return;
+  if (root.dataset.kmPreviewsBound === '1') return;
+  root.dataset.kmPreviewsBound = '1';
+  root.addEventListener('mouseover', maybeOpenFromEvent, true);
+  root.addEventListener('focusin',  maybeOpenFromEvent, true);
+  root.addEventListener('mouseout', (e) => {
+    const to = e.relatedTarget;
+    if (to && (to.closest && to.closest('.km-link-preview'))) return;
+    scheduleTrim();
+  }, true);
+
+  if (!__lpGlobalBound) {
+    addEventListener('hashchange', () => closeFrom(0), { passive: true });
+    addEventListener('scroll', () => scheduleTrim(), { passive: true });
+    __lpGlobalBound = true;
+  }
 }
 
+// ───────────────────────────── keybinds (moved) ──────────────────────────
+export function initKeybinds() {
+  const $search = $('#search');
+  const $theme = $('#theme-toggle');
+  const $expand = $('#expand');
+  const $kbIcon = $('#kb-icon');
+
+  const isEditable = (el) => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
+  const key = (e, k) => e.key === k || e.key.toLowerCase() === (k + '').toLowerCase();
+  const keyIn = (e, list) => list.some((k) => key(e, k));
+  const isMod = (e) => e.ctrlKey || e.metaKey;
+  const noMods = (e) => !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
+
+  const actions = {
+    focusSearch: () => $search?.focus(),
+    toggleTheme: () => $theme?.click(),
+    toggleSidebar: () => window.__kmToggleSidebar?.(),
+    toggleUtil: () => window.__kmToggleUtil?.(),
+    toggleCrumb: () => window.__kmToggleCrumb?.(),
+    fullscreenGraph: () => $expand?.click(),
+    openHelp,
+    closeHelp,
+  };
+
+  const bindings = [
+    { id: 'search-ctrlk', when: (e) => isMod(e) && key(e, 'k'), action: 'focusSearch', inEditable: true, help: 'Ctrl/Cmd + K' },
+    { id: 'search-slash', when: (e) => key(e, '/') && !e.shiftKey && !isMod(e), action: 'focusSearch', help: '/' },
+    { id: 'search-s', when: (e) => key(e, 's') && noMods(e), action: 'focusSearch', help: 'S' },
+    { id: 'left', when: (e) => keyIn(e, ['a', 'q']) && noMods(e), action: 'toggleSidebar', help: 'A or Q' },
+    { id: 'right', when: (e) => key(e, 'd') && noMods(e), action: 'toggleUtil', help: 'D' },
+    { id: 'crumb', when: (e) => keyIn(e, ['w', 'z']) && noMods(e), action: 'toggleCrumb', help: 'W or Z' },
+    { id: 'theme', when: (e) => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
+    { id: 'graph', when: (e) => key(e, 'g') && noMods(e), action: 'fullscreenGraph', help: 'G' },
+    { id: 'help', when: (e) => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
+    { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true }
+  ];
+
+  function ensureKbHelp() {
+    let host = document.getElementById('kb-help');
+    if (host) return host;
+    host = el('div', { id: 'kb-help', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', hidden: true, tabIndex: '-1' });
+    const panel = el('div', { class: 'panel' });
+    const title = el('h2', { textContent: 'Keyboard shortcuts' });
+    const closeBtn = el('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: '✕', onclick: () => actions.closeHelp() });
+    const header = el('header', {}, [title, closeBtn]);
+
+    const items = [
+      { desc: 'Focus search', ids: ['search-slash', 'search-ctrlk', 'search-s'] },
+      { desc: 'Toggle header (breadcrumbs)', ids: ['crumb'] },
+      { desc: 'Toggle left sidebar (pages & search)', ids: ['left'] },
+      { desc: 'Toggle right sidebar (graph & ToC)', ids: ['right'] },
+      { desc: 'Cycle theme (light / dark)', ids: ['theme'] },
+      { desc: 'Toggle fullscreen graph', ids: ['graph'] },
+      { desc: 'Close panels & overlays', keys: ['Esc'] },
+      { desc: 'Show this help panel', ids: ['help'] }
+    ];
+
+    const list = el('ul');
+    const kb = (s) => `<kbd>${s}</kbd>`;
+
+    for (const { desc, ids, keys } of items) {
+      const li = el('li');
+      const left = el('span', { class: 'desc', textContent: desc });
+      let rightHTML = '';
+      if (keys) rightHTML = keys.map(kb).join(', ');
+      else if (ids) {
+        const shows = ids.map((id) => bindings.find((b) => b.id === id)?.help).filter(Boolean);
+        rightHTML = shows.map(kb).join(', ');
+      }
+      const right = el('span', { innerHTML: rightHTML });
+      li.append(left, right);
+      list.append(li);
+    }
+
+    panel.append(header, list);
+    host.append(panel);
+    document.body.appendChild(host);
+    return host;
+  }
+
+  function openHelp() {
+    const host = ensureKbHelp();
+    window.openHelp = openHelp;
+    host.hidden = false;
+    const focusables = host.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    host.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+    });
+    (first || host).focus();
+  }
+
+  function closeHelp() {
+    const host = document.getElementById('kb-help');
+    if (host) host.hidden = true;
+  }
+
+  addEventListener('keydown', (e) => {
+    const tgt = e.target;
+    if (isEditable(tgt)) {
+      for (const b of bindings) {
+        if (!b.inEditable) continue;
+        if (b.when(e)) { e.preventDefault(); typeof b.action === 'string' ? actions[b.action]() : b.action(e); return; }
+      }
+      return;
+    }
+    for (const b of bindings) {
+      if (b.when(e)) { e.preventDefault(); typeof b.action === 'string' ? actions[b.action]() : b.action(e); return; }
+    }
+  }, { capture: true });
+
+  $$('#kb-icon').forEach(icon => icon.addEventListener('click', (e) => { e.preventDefault(); openHelp(); }));
+}
