@@ -1,6 +1,9 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
+// Intentionally small helpers to keep call sites terse and readable.
+export const DOC = document;
+
 // Read inline JSON config from index.html (faithful)
 const CFG_EL = DOC.getElementById('km-config');
 export const CFG = CFG_EL ? (JSON.parse(CFG_EL.textContent || '{}') || {}) : {};
@@ -55,9 +58,6 @@ const KM = window.KM;
 // ── Viewport cache (updated on resize) ─────────
 let __VPW = window.innerWidth;
 let __VPH = window.innerHeight;
-
-// Intentionally small helpers to keep call sites terse and readable.
-export const DOC = document;
 
 /** Query a single element within an optional context (defaults to document) */
 export const $ = (sel, c = DOC) => c.querySelector(sel);
