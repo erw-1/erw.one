@@ -1,145 +1,137 @@
-// router_renderer.js
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, baseURLNoHash } from './config_dom.js';
+import { DOC, $, $$, baseURLNoHash, ALLOW_JS_FROM_MD } from './config_dom.js';
 import { __model, find, hashOf } from './model.js';
-import { getParsedHTML, normalizeAnchors, wireCopyButtons } from './markdown.js';
-import { buildToc, prevNext, seeAlso, breadcrumb, highlightSidebar } from './ui.js';
+import { highlightCurrent } from './graph.js'
+import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels }
+  from './ui.js';
+import {
+  getParsedHTML, decorateExternalLinks, normalizeAnchors,
+  annotatePreviewableLinks, highlightVisibleCode, renderMathSafe,
+  decorateHeadings, decorateCodeBlocks, __trackObserver, __cleanupObservers,
+  runInlineScripts
+} from './markdown.js';
 
-// ───────────────────────────── targets & URLs ─────────────────────────────
-export function parseTarget(href) {
-  const raw = String((href ?? location.hash) || '').replace(/^#/, '');
-  if (!raw) {
-    const first = __model.root?.children?.[0] || __model.pages.find(p => p !== __model.root);
-    return first ? { page: first, anchor: '' } : null;
+let currentPage = null;
+
+// Build a deep-link URL for a given page + anchor id
+export const buildDeepURL = (page, anchorId = '') => {
+  const pageHash = hashOf(page) || '';
+  const base = baseURLNoHash() + '#' + pageHash;
+  return anchorId ? base + (pageHash ? '#' : '') + anchorId : (pageHash ? base + '#' : base);
+};
+
+/**
+ * Parse a hash/href into {page, anchor}:
+ * Accepts full hrefs or hash-only fragments.
+ */
+export function parseTarget(hashOrHref = location.hash) {
+  const { root } = __model;
+  const href = (hashOrHref || '').startsWith('#')
+    ? hashOrHref
+    : new URL(hashOrHref || '', location.href).hash;
+
+  if (href === '') return { page: root, anchor: '' };
+
+  const seg = href.slice(1).split('#').filter(Boolean);
+  const page = seg.length ? find(seg) : root;
+  const base = hashOf(page);
+  const baseSegs = base ? base.split('#') : [];
+
+  // If not found beyond root, treat remainder as in-page anchor on root.
+  if (seg.length && !baseSegs.length) {
+    return { page: root, anchor: seg.join('#') };
   }
-  const parts = raw.split('#');
-  // Cases:
-  //   '#page#anchor' -> [page, anchor]
-  //   '#page'        -> [page]
-  //   '#anchor'      -> [anchor] (same page)
-  let page = null, anchor = '';
-  if (parts.length === 1) {
-    // ambiguous: could be page or anchor → prefer page match
-    page = find(parts[0]) || null;
-    if (!page) anchor = parts[0];
-  } else {
-    page = find(parts[0]) || null;
-    anchor = parts.slice(1).join('#'); // preserve nested ids if any
-  }
-  if (!page) page = __model.root?.children?.[0] || __model.pages.find(p => p !== __model.root) || null;
-  return page ? { page, anchor } : null;
+
+  const anchor = seg.slice(baseSegs.length).join('#');
+  return { page, anchor };
 }
 
-export function buildDeepURL(page, anchor) {
-  const t = page ? { page, anchor: anchor ?? '' } : parseTarget(location.hash);
-  const h = t?.page ? hashOf(t.page) : '';
-  const a = anchor;
-  const base = baseURLNoHash();
-  if (!h) return base + '#';
-  if (a === '') return `${base}#${h}#`;       // force trailing '#'
-  if (a) return `${base}#${h}#${a}`;
-  return `${base}#${h}`;
+/** Scroll to top of window and content. */
+export function resetScrollTop() {
+  (document.scrollingElement || document.documentElement).scrollTop = 0;
+  document.getElementById('content')?.scrollTo?.(0, 0);
 }
 
-// ───────────────────────────── rendering helpers ─────────────────────────
-export async function enhanceRendered(root, page) {
-  if (!root) return;
+export function scrollToAnchor(anchor) {
+  if (!anchor) return;
+  const target = DOC.getElementById(anchor);
+  if (target) target.scrollIntoView({ behavior: 'smooth' });
+}
 
-  // Syntax highlighting
-  try {
-    await window.KM.ensureHighlight?.();
-    await window.KM.ensureHLJSTheme?.();
-    $$(root, 'pre code').forEach((c) => {
-      try { window.hljs?.highlightElement?.(c); } catch {}
-    });
-  } catch {}
-
-  // KaTeX (only once per container)
-  try {
-    if (root.dataset.mathRendered !== '1') {
-      await window.KM.ensureKatex?.();
-      window.renderMathInElement?.(root, {
-        delimiters: [
-          { left: '$$', right: '$$', display: true },
-          { left: '\\[', right: '\\]', display: true },
-          { left: '$',  right: '$',  display: false },
-          { left: '\\(', right: '\\)', display: false },
-        ],
-        throwOnError: false,
-      });
-      root.dataset.mathRendered = '1';
+export function route() {
+  closePanels();
+  const { page, anchor } = parseTarget(location.hash);
+  if (currentPage !== page) {
+    currentPage = page;
+    breadcrumb(page);
+    render(page, anchor);
+    highlightCurrent(true);
+    highlightSidebar(page);
+    if (!anchor) requestAnimationFrame(() => resetScrollTop());
+  } else if (anchor) {
+    scrollToAnchor(anchor);
+    const a = $(`#toc li[data-hid="${anchor}"] > a`);
+    if (a) {
+      $('#toc .toc-current')?.classList.remove('toc-current');
+      a.classList.add('toc-current');
     }
-  } catch {}
-
-  // Mermaid
-  try {
-    const { renderMermaidLazy } = await window.KM.ensureMarkdown?.();
-    await renderMermaidLazy(root);
-  } catch {}
+  }
 }
 
-async function renderPageInto(page, anchor) {
-  const host = $('#content');
-  if (!host) return;
+// ─────────────────────────── renderer + route ────────────────────────────
+async function render(page, anchor) {
+  const contentEl = $('#content');
+  if (!contentEl) return;
+  __cleanupObservers();
 
-  host.setAttribute('aria-busy', 'true');
+  contentEl.dataset.mathRendered = '0';
+  contentEl.innerHTML = await getParsedHTML(page);
 
-  // Parse and inject HTML
-  const html = await getParsedHTML(page);
-  host.innerHTML = html;
-  normalizeAnchors(host, page);
+  if (ALLOW_JS_FROM_MD === 'true') {
+    // Execute <script> tags in the content
+    runInlineScripts(contentEl);
+  }
 
-  // Enhance (hljs, katex, mermaid)
-  await enhanceRendered(host, page);
+  await enhanceRendered(contentEl, page);
 
-  // Copy buttons for headings/code
-  wireCopyButtons(host, () => buildDeepURL(page, ''));
-
-  // Ancillaries
-  buildToc();
+  buildToc(page);
   prevNext(page);
   seeAlso(page);
-  breadcrumb(page);
-  highlightSidebar(page);
+  scrollToAnchor(anchor);
+}
 
-  // Scroll to anchor if present
-  await new Promise(r => requestAnimationFrame(r));
-  if (anchor) {
-    const t = host.querySelector('#' + CSS.escape(anchor));
-    if (t) t.scrollIntoView({ block: 'start' });
-  } else {
-    // If the hash had no deep anchor, reset scroll near top
-    host.scrollTo?.({ top: 0, behavior: 'auto' });
+export async function enhanceRendered(containerEl, page) {
+  decorateExternalLinks(containerEl);
+
+  const imgs = $$('img', containerEl);
+  imgs.forEach((img, i) => {
+    img.loading = 'lazy';
+    img.decoding = 'async';
+    if (!img.hasAttribute('fetchpriority') && i < 2) {
+      img.setAttribute('fetchpriority', 'high');
+    }
+  });
+
+  normalizeAnchors(containerEl, page, { onlyFootnotes: true });
+  annotatePreviewableLinks(containerEl);
+
+  highlightVisibleCode(containerEl); // async
+
+  KM.ensureMarkdown().then(({ renderMermaidLazy }) =>
+    renderMermaidLazy(containerEl)
+  );
+  if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
+    const obs = __trackObserver(new IntersectionObserver((entries, o) => {
+      if (entries.some(en => en.isIntersecting)) {
+        KM.ensureKatex().then(() => renderMathSafe(containerEl));
+        o.disconnect();
+      }
+    }, { root: null, rootMargin: '200px 0px', threshold: 0 }), containerEl);
+    obs.observe(containerEl);
   }
 
-  host.setAttribute('aria-busy', 'false');
-
-  // Announce
-  host.setAttribute('aria-live', 'polite');
-  host.setAttribute('aria-label', page.title || 'Page');
-}
-
-// ───────────────────────────── router ───────────────────────────────────
-export async function route() {
-  const t = parseTarget(location.hash);
-  if (!t?.page) {
-    showNotFound();
-    return;
-  }
-  try { await renderPageInto(t.page, t.anchor); }
-  catch (e) { showError(e); }
-}
-
-function showNotFound() {
-  const host = $('#content');
-  if (!host) return;
-  host.innerHTML = `<h1>Not found</h1><p>The requested page does not exist.</p>`;
-}
-
-function showError(err) {
-  const host = $('#content');
-  if (!host) return;
-  host.innerHTML = `<h1>Failed to render</h1><pre>${String(err?.message || err)}</pre>`;
+  decorateHeadings(page, containerEl);
+  decorateCodeBlocks(containerEl);
 }
