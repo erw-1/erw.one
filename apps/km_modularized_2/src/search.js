@@ -1,101 +1,91 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, el } from './config_dom.js';
+import { DOC, $, el, escapeRegex } from './config_dom.js';
 import { __model, sortByTitle, hashOf } from './model.js';
 
 export function search(q) {
-  const results = $('#results');
-  const tree = $('#tree');
-  if (!results || !tree) return;
+  const resUL = $('#results');
+  const treeUL = $('#tree');
+  const { pages } = __model;
+  if (!resUL || !treeUL) return;
+  const val = (q || '').trim().toLowerCase();
 
-  const query = String(q || '').trim().toLowerCase();
-  results.setAttribute('aria-live', 'polite');
-  results.setAttribute('aria-busy', 'true');
+  resUL.setAttribute('aria-live', 'polite');
+  resUL.setAttribute('aria-busy', 'true');
 
-  // Empty query → hide results, show tree
-  if (!query) {
-    results.style.display = 'none';
-    results.innerHTML = '';
-    tree.style.display = '';
-    results.setAttribute('aria-busy', 'false');
+  if (!val) {
+    resUL.style.display = 'none';
+    resUL.innerHTML = '';
+    treeUL.style.display = '';
+    resUL.setAttribute('aria-busy', 'false');
     return;
   }
 
-  // Prep
-  const tokens = query.split(/\s+/).filter(t => t.length >= 2);
-  const tokenREs = tokens.map(t => new RegExp('\\b' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'));
-  const phrase = tokens.length > 1 ? query : null;
-  results.innerHTML = '';
-  results.style.display = '';
-  tree.style.display = 'none';
+  const tokens = val.split(/\s+/).filter(t => t.length >= 2);
+  const tokenRegexes = tokens.map(t => new RegExp(`\\b${escapeRegex(t)}\\b`));
+  resUL.innerHTML = '';
+  resUL.style.display = '';
+  treeUL.style.display = 'none';
 
-  // Weights
-  const W = {
-    title: 5, tag: 3, body: 1,
-    secTitle: 3, secBody: 1,
-    phraseTitle: 5, phraseBody: 2,
-    secCountCap: 4
-  };
+  const W = { title: 5, tag: 3, body: 1, secTitle: 3, secBody: 1, phraseTitle: 5, phraseBody: 2, secCountCap: 4 };
+  const phrase = tokens.length > 1 ? val : null;
 
-  // Score pages
   const scored = [];
-  for (const p of __model.pages) {
-    if (!tokens.every(t => p.searchStr.includes(t))) continue;
-
+  for (const p of pages) {
+    if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
     let score = 0;
-    for (const r of tokenREs) {
+
+    for (const r of tokenRegexes) {
       if (r.test(p.titleL)) score += W.title;
       if (r.test(p.tagsL))  score += W.tag;
       if (r.test(p.bodyL))  score += W.body;
     }
-    if (phrase) score += p.titleL.includes(phrase) ? W.phraseTitle : (p.bodyL.includes(phrase) ? W.phraseBody : 0);
 
-    // Section hits
-    const matches = [];
-    for (const sec of p.sections) {
-      if (!tokens.every(t => sec.search.includes(t))) continue;
-      const tL = sec.txt.toLowerCase();
-      const bL = sec.body.toLowerCase();
-      let s = 0;
-      for (const r of tokenREs) {
-        if (r.test(tL)) s += W.secTitle;
-        if (r.test(bL)) s += W.secBody;
-      }
-      if (phrase && (tL.includes(phrase) || bL.includes(phrase))) s += 1;
-      matches.push({ sec, s });
+    if (phrase) {
+      if (p.titleL.includes(phrase)) score += W.phraseTitle;
+      else if (p.bodyL.includes(phrase)) score += W.phraseBody;
     }
-    matches.sort((a, b) => b.s - a.s);
-    score += Math.min(W.secCountCap, matches.length);
 
-    scored.push({ p, score, matches });
+    const matchedSecs = [];
+    for (const sec of p.sections) {
+      if (!tokens.every(tok => sec.search.includes(tok))) continue;
+      const secTitle = sec.txt.toLowerCase();
+      const secBody = sec.body.toLowerCase();
+      let s = 0;
+      for (const r of tokenRegexes) {
+        if (r.test(secTitle)) s += W.secTitle;
+        if (r.test(secBody))  s += W.secBody;
+      }
+      if (phrase && (secTitle.includes(phrase) || secBody.includes(phrase))) s += 1;
+      matchedSecs.push({ sec, s });
+    }
+
+    matchedSecs.sort((a, b) => b.s - a.s);
+    score += Math.min(W.secCountCap, matchedSecs.length);
+    scored.push({ p, score, matchedSecs });
   }
 
-  // Sort and render
   scored.sort((a, b) => b.score - a.score || sortByTitle(a.p, b.p));
 
   const frag = DOC.createDocumentFragment();
-  for (const { p, matches } of scored) {
+  for (const { p, matchedSecs } of scored) {
     const li = el('li', { class: 'page-result' }, [
       el('a', { href: '#' + hashOf(p), textContent: p.title })
     ]);
-
-    if (matches.length) {
+    if (matchedSecs.length) {
       const base = hashOf(p);
       const sub = el('ul', { class: 'sub-results' });
-      for (const { sec } of matches) {
+      matchedSecs.forEach(({ sec }) => {
         sub.append(el('li', { class: 'heading-result' }, [
           el('a', { href: `#${base ? base + '#' : ''}${sec.id}`, textContent: sec.txt })
         ]));
-      }
+      });
       li.append(sub);
     }
-
     frag.append(li);
   }
-
-  results.append(frag);
-  if (!results.children.length) results.innerHTML = '<li id="no_result">No result</li>';
-  results.setAttribute('aria-busy', 'false');
+  resUL.append(frag);
+  if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
+  resUL.setAttribute('aria-busy', 'false');
 }
-
