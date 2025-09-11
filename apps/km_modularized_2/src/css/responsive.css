@@ -1,0 +1,172 @@
+/* ---------------------------------------------------------------------------
+     6. RESPONSIVE: burgers & slide-in panels (≤1000 px or portrait)
+     ------------------------------------------------------------------------ */
+@layer responsive {
+  .theme-toggle,
+  li.folder {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .theme-toggle:focus:not(:focus-visible) {
+    outline: none;
+  }
+  /* Burgers hidden on wide viewports */
+  .burger {
+    display: none;
+    border: none;
+    background: none;
+    color: var(--color-text);
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  @media (min-width: 1000px) {
+    span#crumb-dyn {
+      white-space: nowrap;
+      max-width: 0px;
+    }
+    body.hide-sidebar #sidebar {
+      display: none !important;
+    }
+    body.hide-util #util {
+      display: none !important;
+    }
+    body.hide-crumb #crumb {
+      display: none !important;
+    }
+  }
+
+  @media (min-width: 1000px), (orientation: landscape) {
+    #sidebar {
+      display: flex;
+    }
+  }
+
+  .burger:hover {
+    color: var(--color-accent);
+  }
+
+  .panel-close {
+    display: none;
+  }
+
+  @media (max-width: 1000px), (orientation: portrait) {
+    iframe {
+      width: 100%;
+    }
+
+    .kb-keycap {
+      display: none;
+    }
+
+    div#prev-next {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--g-md);
+    }
+
+    /* Show burgers */
+    .burger {
+      display: inline-flex;
+      align-items: center;
+    }
+
+    /* Collapse panels by default */
+    #sidebar,
+    #util {
+      display: none;
+    }
+
+    /* Full-viewport when opened via JS */
+    #sidebar.open,
+    #util.open {
+      display: flex;
+      flex-direction: column;
+      width: 100dvw;
+      padding-top: var(--h-header);
+
+      position: fixed;
+      inset: 0;
+      z-index: var(--z-sky);
+    }
+
+    #util.open {
+      background: var(--color-main);
+      padding-left: var(--g-md);
+    }
+
+    #crumb-dyn {
+      transform: translate(0px, 3px);
+      height: 60%;
+      max-width: 75dvw;
+      margin-right: 10px;
+      overflow-x: scroll;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      touch-action: pan-x;
+      overscroll-behavior-y: contain;
+      -webkit-mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--g-lg),
+        #000 calc(100% - var(--g-lg)),
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to right,
+        transparent 0,
+        #000 var(--g-lg),
+        #000 calc(100% - var(--g-lg)),
+        transparent 100%
+      );
+      -webkit-mask-size: 100% 100%;
+      mask-size: 100% 100%;
+    }
+
+    #crumb-dyn a {
+      padding: 0 var(--g-xs) var(--g-xs) var(--g-xs);
+    }
+
+    #crumb-dyn ul,
+    #crumb-dyn .toggle {
+      display: none;
+    }
+
+    #util {
+      background: var(--color-main);
+    }
+
+    #crumb-dyn::-webkit-scrollbar {
+      display: none;
+    }
+
+    /* Content column stacks when util is hidden */
+    #content-area {
+      flex-direction: column;
+    }
+
+    /* Close button for sliding panels */
+    #util.open .panel-close,
+    #sidebar.open .panel-close {
+      display: block !important;
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-weight: bolder !important;
+
+      border: none;
+      background: none;
+      font: 2rem/1 monospace;
+      color: var(--color-mid-contrast);
+      cursor: pointer;
+      z-index: calc(var(--z-menu) + 1);
+    }
+
+    .panel-close:hover {
+      color: var(--color-accent);
+    }
+  }
+}
