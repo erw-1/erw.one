@@ -177,18 +177,22 @@ export async function buildGraph() {
     link.style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
-  sim.on('tick', () => {
-    link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-        .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  const tick = () => {
     node.attr('cx', d => d.x).attr('cy', d => d.y);
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
-  });
+    link
+      .attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+  };
 
-  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H };
-  observeMiniResize();
+  sim.on('tick', tick);
+
+  graphs.mini = { svg, sim, link, node, label, view, w: W, h: H, adj };
+  updateMiniViewport();
+  requestAnimationFrame(() => highlightCurrent(true));
 }
 
-/** Highlight the current page’s node and pull it towards the center. */
+/** Highlight the current page node in the mini-graph and nudge it to center. */
 export function highlightCurrent(force = false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -215,15 +219,3 @@ export function highlightCurrent(force = false) {
   setTimeout(() => g.sim.alphaTarget(0), 250);
   CURRENT = id;
 }
-
-/** Keep mini-graph responsive to container size and fullscreen changes. */
-export function observeMiniResize() {
-  const elx = $('#mini');
-  if (!elx) return;
-  new ResizeObserver(() => {
-    if (!graphs.mini) return;
-    updateMiniViewport();
-    highlightCurrent(true);
-  }).observe(elx);
-}
-
