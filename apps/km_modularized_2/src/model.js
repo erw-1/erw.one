@@ -20,12 +20,11 @@ export function parseMarkdownBundle(txt) {
   descMemo.clear();
   pageHTMLLRU.clear();
 
+  // Extract pages separated by HTML comment blocks
   const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
     const meta = {};
-    for (const [, k, v] of hdr.matchAll(/(\w+):"([^"]+)"/g)) {
-      meta[k] = v.trim();
-    }
+    hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
     const page = { ...meta, content: (body || '').trim(), children: [] };
     pages.push(page);
     byId.set(page.id, page);
@@ -34,6 +33,7 @@ export function parseMarkdownBundle(txt) {
 
   root = byId.get('home') || pages[0];
 
+  // Link children and prepare search fields
   pages.forEach(p => {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
@@ -44,12 +44,12 @@ export function parseMarkdownBundle(txt) {
     }
     p.tagsSet = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.titleL = (p.title || '').toLowerCase();
-    p.tagsL  = [...p.tagsSet].join(' ').toLowerCase();
-    p.bodyL  = (p.content || '').toLowerCase();
+    p.tagsL = [...p.tagsSet].join(' ').toLowerCase();
+    p.bodyL = (p.content || '').toLowerCase();
     p.searchStr = p.titleL + ' ' + p.tagsL + ' ' + p.bodyL;
   });
 
-  // sections
+  // Extract sections and assign ids
   pages.forEach(p => {
     const counters = [0, 0, 0, 0, 0, 0];
     const sections = [];
@@ -104,7 +104,8 @@ export function attachSecondaryHomes() {
   }
 
   let cid = 0;
-  for (const [, members] of clusters) {
+  for (const members of clusters.values()) {
+    // Representative is page with most descendants
     const rep = members.reduce((a, b) => (descendants(b) > descendants(a) ? b : a), members[0]);
     if (!rep.parent) {
       rep.parent = root;
@@ -137,8 +138,9 @@ export const find = segs => {
 export function nav(page) {
   if (page) location.hash = '#' + hashOf(page);
 }
-window.KM.nav = nav;
+window.KM.nav = nav; // expose for interop/testing
 
+// LRU cache for parsed page HTML
 export function getFromHTMLLRU(pageId) {
   if (!pageHTMLLRU.has(pageId)) return null;
   const html = pageHTMLLRU.get(pageId);
@@ -154,13 +156,13 @@ export function setHTMLLRU(pageId, html) {
   }
 }
 
-// Simple title sort collator
+// Collator for sorting by title (case-insensitive)
 export const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
 export const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
 
-// Expose read-only model
+// Expose model state (read-only)
 export const __model = {
   get pages() { return pages; },
-  get root() { return root; },
-  get byId() { return byId; }
+  get root()  { return root; },
+  get byId()  { return byId; }
 };
