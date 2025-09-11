@@ -20,41 +20,32 @@ export function parseMarkdownBundle(txt) {
   descMemo.clear();
   pageHTMLLRU.clear();
 
-  // Parse MD bundle but ignore <!-- ... --> that live inside ``` fenced code blocks.
-  const pages = [];
-  const byId = new Map();
+  // 1) Hide HTML-comment markers only inside ``` fenced blocks
+  const HOPEN = '\uE000';   // private-use chars, unlikely to appear
+  const HCLOSE = '\uE001';
   
-  // 1) Find all fenced code block ranges so we can skip them.
-  const codeRanges = [];
-  const codeRe = /```[\s\S]*?```/g; // supports ```lang\n...\n```
-  for (let m; (m = codeRe.exec(txt)); ) {
-    codeRanges.push([m.index, m.index + m[0].length]);
-  }
-  const insideCode = i => codeRanges.some(([s, e]) => i >= s && i < e);
+  const sanitized = txt.replace(/```[\s\S]*?```/g, block =>
+    block.replace(/<!--/g, HOPEN).replace(/-->/g, HCLOSE)
+  );
   
-  // 2) Collect only the HTML comments that are *not* inside code.
-  const hdrRe = /<!--([\s\S]*?)-->/g;
-  const headers = [];
-  for (let m; (m = hdrRe.exec(txt)); ) {
-    if (!insideCode(m.index)) {
-      headers.push({ start: m.index, end: m.index + m[0].length, hdr: m[1] });
-    }
-  }
-  if (!headers.length) throw new Error('No pages parsed from MD bundle.');
-  
-  // 3) For each header, take the body until the next header (or end of file).
-  for (let i = 0; i < headers.length; i++) {
-    const { end, hdr } = headers[i];
-    const nextStart = i + 1 < headers.length ? headers[i + 1].start : txt.length;
-    const body = txt.slice(end, nextStart).trim();
-  
+  // 2) Your original matcher works unchanged
+  const m = sanitized.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
+  for (const [, hdr, body] of m) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
   
-    const page = { ...meta, content: body, children: [] };
+    // 3) Restore markers in the captured body
+    const content = (body || '')
+      .replace(new RegExp(HOPEN, 'g'), '<!--')
+      .replace(new RegExp(HCLOSE, 'g'), '-->')
+      .trim();
+  
+    const page = { ...meta, content, children: [] };
     pages.push(page);
     byId.set(page.id, page);
   }
+  
+  if (!pages.length) throw new Error('No pages parsed from MD bundle.');
 
   root = byId.get('home') || pages[0];
 
@@ -189,6 +180,7 @@ export const __model = {
   get root() { return root; },
   get byId() { return byId; }
 };
+
 
 
 
