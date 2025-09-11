@@ -3,7 +3,7 @@
 
 import { baseURLNoHash, ALLOW_JS_FROM_MD } from './config_dom.js';
 import { __model, find, hashOf } from './model.js';
-import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext} from './ui.js';
+import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels} from './ui.js';
 import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, decorateHeadings, decorateCodeBlocks, __trackObserver, __cleanupObservers } from './markdown.js';
 
 
