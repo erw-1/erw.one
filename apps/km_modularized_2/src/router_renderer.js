@@ -9,7 +9,7 @@ import { buildToc, prevNext, seeAlso, breadcrumb, highlightSidebar } from './ui.
 
 // ───────────────────────────── targets & URLs ─────────────────────────────
 export function parseTarget(href) {
-  const raw = String(href ?? location.hash || '').replace(/^#/, '');
+  const raw = String((href ?? location.hash) || '').replace(/^#/, '');
   if (!raw) {
     const first = __model.root?.children?.[0] || __model.pages.find(p => p !== __model.root);
     return first ? { page: first, anchor: '' } : null;
