@@ -1,11 +1,17 @@
+/* eslint-env browser, es2022 */
+'use strict';
+
 import { RE_FENCE, RE_HEADING, RE_HEADING_FULL } from './config_dom.js';
 
+// In-memory wiki model
 let pages = [];
 let byId = new Map();
 let root = null;
 const descMemo = new Map();
+
+// HTML LRU cache
 const PAGE_HTML_LRU_MAX = 40;
-const pageHTMLLRU = new Map();
+const pageHTMLLRU = new Map(); // pageId -> html
 
 export function parseMarkdownBundle(txt) {
   pages = [];
@@ -36,11 +42,12 @@ export function parseMarkdownBundle(txt) {
     }
     p.tagsSet = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.titleL = (p.title || '').toLowerCase();
-    p.tagsL = [...p.tagsSet].join(' ').toLowerCase();
-    p.bodyL = (p.content || '').toLowerCase();
-    p.searchStr = `${p.titleL} ${p.tagsL} ${p.bodyL}`;
+    p.tagsL  = [...p.tagsSet].join(' ').toLowerCase();
+    p.bodyL  = (p.content || '').toLowerCase();
+    p.searchStr = (p.titleL + ' ' + p.tagsL + ' ' + p.bodyL);
   });
 
+  // sections
   pages.forEach(p => {
     const counters = [0, 0, 0, 0, 0, 0];
     const sections = [];
@@ -51,7 +58,7 @@ export function parseMarkdownBundle(txt) {
       if (!inFence && RE_HEADING.test(line)) {
         if (prev) {
           prev.body = p.content.slice(prev.bodyStart, offset).trim();
-          prev.search = `${prev.txt} ${prev.body}`.toLowerCase();
+          prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
           sections.push(prev);
         }
         const [, hashes, txt] = line.match(RE_HEADING_FULL);
@@ -68,7 +75,7 @@ export function parseMarkdownBundle(txt) {
     }
     if (prev) {
       prev.body = p.content.slice(prev.bodyStart).trim();
-      prev.search = `${prev.txt} ${prev.body}`.toLowerCase();
+      prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
       sections.push(prev);
     }
     p.sections = sections;
@@ -128,12 +135,9 @@ export const find = segs => {
 export function nav(page) {
   if (page) location.hash = '#' + hashOf(page);
 }
-export const __model = {
-  get pages() { return pages; },
-  get root() { return root; },
-  get byId() { return byId; }
-};
+window.KM.nav = nav; // faithful exposure for interop/testing
 
+// LRU for parsed page HTML
 export function getFromHTMLLRU(pageId) {
   if (!pageHTMLLRU.has(pageId)) return null;
   const html = pageHTMLLRU.get(pageId);
@@ -141,7 +145,6 @@ export function getFromHTMLLRU(pageId) {
   pageHTMLLRU.set(pageId, html);
   return html;
 }
-
 export function setHTMLLRU(pageId, html) {
   pageHTMLLRU.set(pageId, html);
   if (pageHTMLLRU.size > PAGE_HTML_LRU_MAX) {
@@ -150,5 +153,13 @@ export function setHTMLLRU(pageId, html) {
   }
 }
 
+// Simple title sort collator (shared)
 export const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
 export const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
+
+// Expose for other modules (read-only where needed)
+export const __model = {
+  get pages() { return pages; },
+  get root() { return root; },
+  get byId() { return byId; }
+};

@@ -1,12 +1,17 @@
+/* eslint-env browser, es2022 */
+'use strict';
+
 import { DOC, $, el } from './config_dom.js';
 import { __model, sortByTitle, hashOf } from './model.js';
 
+// ===== Search (ranked; pages + section hits) =====
 export function search(q) {
   const resUL = $('#results');
   const treeUL = $('#tree');
   const { pages } = __model;
   if (!resUL || !treeUL) return;
   const val = (q || '').trim().toLowerCase();
+
   resUL.setAttribute('aria-live', 'polite');
   resUL.setAttribute('aria-busy', 'true');
 
@@ -31,15 +36,18 @@ export function search(q) {
   for (const p of pages) {
     if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
     let score = 0;
+
     for (const r of tokenRegexes) {
       if (r.test(p.titleL)) score += W.title;
       if (r.test(p.tagsL))  score += W.tag;
       if (r.test(p.bodyL))  score += W.body;
     }
+
     if (phrase) {
       if (p.titleL.includes(phrase)) score += W.phraseTitle;
       else if (p.bodyL.includes(phrase)) score += W.phraseBody;
     }
+
     const matchedSecs = [];
     for (const sec of p.sections) {
       if (!tokens.every(tok => sec.search.includes(tok))) continue;
@@ -53,12 +61,14 @@ export function search(q) {
       if (phrase && (secTitle.includes(phrase) || secBody.includes(phrase))) s += 1;
       matchedSecs.push({ sec, s });
     }
+
     matchedSecs.sort((a, b) => b.s - a.s);
     score += Math.min(W.secCountCap, matchedSecs.length);
     scored.push({ p, score, matchedSecs });
   }
 
   scored.sort((a, b) => b.score - a.score || sortByTitle(a.p, b.p));
+
   const frag = DOC.createDocumentFragment();
   for (const { p, matchedSecs } of scored) {
     const li = el('li', { class: 'page-result' }, [
