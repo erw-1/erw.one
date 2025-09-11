@@ -1,4 +1,3 @@
-// search.js
 /* eslint-env browser, es2022 */
 'use strict';
 
@@ -99,3 +98,4 @@ export function search(q) {
   if (!results.children.length) results.innerHTML = '<li id="no_result">No result</li>';
   results.setAttribute('aria-busy', 'false');
 }
+
