@@ -175,8 +175,14 @@ export function buildToc(page) {
   // entries
   const ul = el('ul');
   heads.forEach(h => {
-    const id = h.id || '';
-    const li = el('li', { 'data-hid': id }, [el('a', { href: '#' + (page.hash ? page.hash + '#' : '') + id, textContent: h.textContent || '' })]);
+    const id  = h.id || '';
+    const lvl = Math.min(6, Math.max(1, parseInt(h.tagName.slice(1), 10) || 1));
+    const li  = el('li', {
+      'data-hid': id,
+      'data-lvl': String(lvl)   // ← level indicator for CSS indenting
+    }, [
+      el('a', { href: '#' + (page.hash ? page.hash + '#' : '') + id, textContent: h.textContent || '' })
+    ]);
     ul.append(li);
   });
   tocEl.append(ul);
@@ -231,3 +237,4 @@ export function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
 }
+
