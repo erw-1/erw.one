@@ -1,17 +1,11 @@
-/* eslint-env browser, es2022 */
-'use strict';
-
 import { RE_FENCE, RE_HEADING, RE_HEADING_FULL } from './config_dom.js';
 
-// In-memory wiki model
 let pages = [];
 let byId = new Map();
 let root = null;
 const descMemo = new Map();
-
-// HTML LRU cache
 const PAGE_HTML_LRU_MAX = 40;
-const pageHTMLLRU = new Map(); // pageId -> html
+const pageHTMLLRU = new Map();
 
 export function parseMarkdownBundle(txt) {
   pages = [];
@@ -20,7 +14,6 @@ export function parseMarkdownBundle(txt) {
   descMemo.clear();
   pageHTMLLRU.clear();
 
-  // Extract pages separated by HTML comment blocks
   const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
     const meta = {};
@@ -33,7 +26,6 @@ export function parseMarkdownBundle(txt) {
 
   root = byId.get('home') || pages[0];
 
-  // Link children and prepare search fields
   pages.forEach(p => {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
@@ -46,10 +38,9 @@ export function parseMarkdownBundle(txt) {
     p.titleL = (p.title || '').toLowerCase();
     p.tagsL = [...p.tagsSet].join(' ').toLowerCase();
     p.bodyL = (p.content || '').toLowerCase();
-    p.searchStr = p.titleL + ' ' + p.tagsL + ' ' + p.bodyL;
+    p.searchStr = `${p.titleL} ${p.tagsL} ${p.bodyL}`;
   });
 
-  // Extract sections and assign ids
   pages.forEach(p => {
     const counters = [0, 0, 0, 0, 0, 0];
     const sections = [];
@@ -60,7 +51,7 @@ export function parseMarkdownBundle(txt) {
       if (!inFence && RE_HEADING.test(line)) {
         if (prev) {
           prev.body = p.content.slice(prev.bodyStart, offset).trim();
-          prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+          prev.search = `${prev.txt} ${prev.body}`.toLowerCase();
           sections.push(prev);
         }
         const [, hashes, txt] = line.match(RE_HEADING_FULL);
@@ -77,7 +68,7 @@ export function parseMarkdownBundle(txt) {
     }
     if (prev) {
       prev.body = p.content.slice(prev.bodyStart).trim();
-      prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+      prev.search = `${prev.txt} ${prev.body}`.toLowerCase();
       sections.push(prev);
     }
     p.sections = sections;
@@ -104,8 +95,7 @@ export function attachSecondaryHomes() {
   }
 
   let cid = 0;
-  for (const members of clusters.values()) {
-    // Representative is page with most descendants
+  for (const [, members] of clusters) {
     const rep = members.reduce((a, b) => (descendants(b) > descendants(a) ? b : a), members[0]);
     if (!rep.parent) {
       rep.parent = root;
@@ -138,9 +128,12 @@ export const find = segs => {
 export function nav(page) {
   if (page) location.hash = '#' + hashOf(page);
 }
-window.KM.nav = nav; // expose for interop/testing
+export const __model = {
+  get pages() { return pages; },
+  get root() { return root; },
+  get byId() { return byId; }
+};
 
-// LRU cache for parsed page HTML
 export function getFromHTMLLRU(pageId) {
   if (!pageHTMLLRU.has(pageId)) return null;
   const html = pageHTMLLRU.get(pageId);
@@ -148,6 +141,7 @@ export function getFromHTMLLRU(pageId) {
   pageHTMLLRU.set(pageId, html);
   return html;
 }
+
 export function setHTMLLRU(pageId, html) {
   pageHTMLLRU.set(pageId, html);
   if (pageHTMLLRU.size > PAGE_HTML_LRU_MAX) {
@@ -156,13 +150,5 @@ export function setHTMLLRU(pageId, html) {
   }
 }
 
-// Collator for sorting by title (case-insensitive)
 export const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
 export const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
-
-// Expose model state (read-only)
-export const __model = {
-  get pages() { return pages; },
-  get root()  { return root; },
-  get byId()  { return byId; }
-};
