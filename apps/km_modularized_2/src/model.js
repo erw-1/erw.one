@@ -1,145 +1,166 @@
-// model.js
 /* eslint-env browser, es2022 */
 'use strict';
 
-// Minimal in-memory wiki model that other modules depend on.
-// Focuses on a stable API: __model, parseMarkdownBundle, attachSecondaryHomes,
-// computeHashes, hashOf, sortByTitle, find.
+import { RE_FENCE, RE_HEADING, RE_HEADING_FULL } from './config_dom.js';
 
-const slug = (s) =>
-  String(s || '')
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'section';
-
-const collator = new Intl.Collator(undefined, { sensitivity: 'base' });
-
-// ───────────────────────────── storage ─────────────────────────────
+// In-memory wiki model
 let pages = [];
 let byId = new Map();
 let root = null;
+const descMemo = new Map();
 
-// ───────────────────────────── helpers ─────────────────────────────
-function parseSections(md) {
-  const lines = String(md || '').split(/\r?\n/);
-  const sections = [];
-  let cur = null;
-  let inFence = false;
+// HTML LRU cache
+const PAGE_HTML_LRU_MAX = 40;
+const pageHTMLLRU = new Map(); // pageId -> html
 
-  const flush = (untilIndex) => {
-    if (!cur) return;
-    cur.body = lines.slice(cur.bodyStart, untilIndex).join('\n').trim();
-    cur.search = (cur.txt + ' ' + cur.body).toLowerCase();
-    sections.push(cur);
-    cur = null;
-  };
-
-  lines.forEach((line, idx) => {
-    if (/^```/.test(line)) inFence = !inFence;
-    const m = !inFence && /^(#{1,6})[ \t]+(.+?)\s*$/.exec(line);
-    if (m) {
-      flush(idx);
-      const level = m[1].length;
-      const txt = m[2].trim();
-      const id = slug(txt);
-      cur = { id, lvl: level, txt, body: '', bodyStart: idx + 1, search: '' };
-    }
-  });
-  flush(lines.length);
-  return sections;
-}
-
-function prepSearchFields(p) {
-  p.titleL = (p.title || '').toLowerCase();
-  p.tagsL = [...(p.tagsSet || [])].join(' ').toLowerCase();
-  const raw = String(p.md || p.body || '');
-  p.bodyL = raw.toLowerCase();
-  p.searchStr = (p.titleL + ' ' + p.tagsL + ' ' + p.bodyL).trim();
-}
-
-// ───────────────────────────── API ─────────────────────────────────
 export function parseMarkdownBundle(txt) {
-  // Very tolerant parser: one "main" page out of the bundle.
-  // If the file contains an H1, use it as the page title.
-  const md = String(txt || '');
-  const h1 = md.match(/^\s*#\s+(.+?)\s*$/m)?.[1]?.trim();
-  const title = h1 || 'Home';
-
-  // Reset model
   pages = [];
   byId = new Map();
-  root = { id: 'root', title: 'Root', hash: '', parent: null, children: [], isSecondary: false };
+  root = null;
+  descMemo.clear();
+  pageHTMLLRU.clear();
 
-  const page = {
-    id: 'p1',
-    title,
-    md,
-    body: md,
-    parent: root,
-    children: [],
-    isSecondary: false,
-    clusterId: 0,
-    tagsSet: new Set(),
-    sections: parseSections(md),
-    hash: '', // set later
-  };
-  prepSearchFields(page);
+  const m = txt.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
+  for (const [, hdr, body] of m) {
+    const meta = {};
+    for (const [, k, v] of hdr.matchAll(/(\w+):"([^"]+)"/g)) {
+      meta[k] = v.trim();
+    }
+    const page = { ...meta, content: (body || '').trim(), children: [] };
+    pages.push(page);
+    byId.set(page.id, page);
+  }
+  if (!pages.length) throw new Error('No pages parsed from MD bundle.');
 
-  root.children.push(page);
-  pages.push(root, page);
-  byId.set(root.id, root);
-  byId.set(page.id, page);
+  root = byId.get('home') || pages[0];
+
+  pages.forEach(p => {
+    if (p !== root) {
+      const parent = byId.get((p.parent || '').trim());
+      p.parent = parent || null;
+      if (parent) parent.children.push(p);
+    } else {
+      p.parent = null;
+    }
+    p.tagsSet = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
+    p.titleL = (p.title || '').toLowerCase();
+    p.tagsL  = [...p.tagsSet].join(' ').toLowerCase();
+    p.bodyL  = (p.content || '').toLowerCase();
+    p.searchStr = p.titleL + ' ' + p.tagsL + ' ' + p.bodyL;
+  });
+
+  // sections
+  pages.forEach(p => {
+    const counters = [0, 0, 0, 0, 0, 0];
+    const sections = [];
+    let inFence = false, offset = 0, prev = null;
+
+    for (const line of p.content.split(/\r?\n/)) {
+      if (RE_FENCE.test(line)) inFence = !inFence;
+      if (!inFence && RE_HEADING.test(line)) {
+        if (prev) {
+          prev.body = p.content.slice(prev.bodyStart, offset).trim();
+          prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+          sections.push(prev);
+        }
+        const [, hashes, txt] = line.match(RE_HEADING_FULL);
+        const level = hashes.length - 1;
+        counters[level]++;
+        for (let i = level + 1; i < 6; i++) counters[i] = 0;
+        prev = {
+          id: counters.slice(0, level + 1).filter(Boolean).join('_'),
+          txt: txt.trim(),
+          bodyStart: offset + line.length + 1
+        };
+      }
+      offset += line.length + 1;
+    }
+    if (prev) {
+      prev.body = p.content.slice(prev.bodyStart).trim();
+      prev.search = (prev.txt + ' ' + prev.body).toLowerCase();
+      sections.push(prev);
+    }
+    p.sections = sections;
+  });
+}
+
+export function descendants(page) {
+  if (descMemo.has(page)) return descMemo.get(page);
+  let n = 0;
+  (function rec(x) { x.children.forEach(c => { n++; rec(c); }); })(page);
+  descMemo.set(page, n);
+  return n;
 }
 
 export function attachSecondaryHomes() {
-  // No-op placeholder to preserve API surface; structure already simple.
-}
-
-export function computeHashes() {
-  // Ensure unique, stable hashes for pages and section ids.
-  const used = new Set();
-
-  const unique = (base) => {
-    let h = slug(base || 'page');
-    if (!h) h = 'page';
-    let u = h, i = 2;
-    while (used.has(u)) u = `${h}-${i++}`;
-    used.add(u);
-    return u;
-  };
+  const topOf = p => { while (p.parent) p = p.parent; return p; };
+  const clusters = new Map();
 
   for (const p of pages) {
-    if (p === root) { p.hash = ''; continue; }
-    p.hash = unique(p.title || p.id);
-    // ensure unique section ids within a page
-    const secUsed = new Set();
-    for (const s of p.sections || []) {
-      let id = slug(s.txt);
-      if (!id) id = 'section';
-      let u = id, i = 2;
-      while (secUsed.has(u)) u = `${id}-${i++}`;
-      secUsed.add(u);
-      s.id = u;
+    const top = topOf(p);
+    if (top === root) continue;
+    if (!clusters.has(top)) clusters.set(top, []);
+    clusters.get(top).push(p);
+  }
+
+  let cid = 0;
+  for (const [, members] of clusters) {
+    const rep = members.reduce((a, b) => (descendants(b) > descendants(a) ? b : a), members[0]);
+    if (!rep.parent) {
+      rep.parent = root;
+      rep.isSecondary = true;
+      rep.clusterId = cid++;
+      root.children.push(rep);
     }
   }
 }
 
-export const hashOf = (p) => (p && p.hash) || '';
+export function computeHashes() {
+  pages.forEach(p => {
+    const segs = [];
+    for (let n = p; n && n.parent; n = n.parent) segs.unshift(n.id);
+    p.hash = segs.join('#');
+  });
+}
+export const hashOf = page => page?.hash ?? '';
 
-export const sortByTitle = (a, b) => collator.compare(a.title || '', b.title || '');
+export const find = segs => {
+  let n = root;
+  for (const id of segs) {
+    const c = n.children.find(k => k.id === id);
+    if (!c) break;
+    n = c;
+  }
+  return n;
+};
 
-export function find(key) {
-  if (!key) return null;
-  if (typeof key === 'object') return key;
-  const s = String(key);
-  return byId.get(s) || pages.find((p) => p.hash === s) || null;
+export function nav(page) {
+  if (page) location.hash = '#' + hashOf(page);
+}
+window.KM.nav = nav;
+
+export function getFromHTMLLRU(pageId) {
+  if (!pageHTMLLRU.has(pageId)) return null;
+  const html = pageHTMLLRU.get(pageId);
+  pageHTMLLRU.delete(pageId);
+  pageHTMLLRU.set(pageId, html);
+  return html;
+}
+export function setHTMLLRU(pageId, html) {
+  pageHTMLLRU.set(pageId, html);
+  if (pageHTMLLRU.size > PAGE_HTML_LRU_MAX) {
+    const firstKey = pageHTMLLRU.keys().next().value;
+    pageHTMLLRU.delete(firstKey);
+  }
 }
 
-// Expose model read-only getters
+// Simple title sort collator
+export const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
+export const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
+
+// Expose read-only model
 export const __model = {
   get pages() { return pages; },
   get root() { return root; },
-  get byId() { return byId; },
+  get byId() { return byId; }
 };
