@@ -1,0 +1,143 @@
+/* ---------------------------------------------------------------------------
+     7. GADGETS: effects
+     ------------------------------------------------------------------------ */
+@layer gadgets {
+  #loading {
+    max-width: fit-content;
+    background: linear-gradient(
+      130deg,
+      var(--color-lowest-contrast) 5%,
+      var(--color-quarter-contrast) 60%,
+      var(--color-mid-contrast) 70%,
+      var(--color-text) 85%,
+      var(--color-lowest-contrast) 95%
+    );
+    background-size: 200% auto;
+    background-clip: text;
+    text-fill-color: transparent;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: loading 1.5s linear infinite;
+  }
+  @keyframes loading {
+    to {
+      background-position: -200% center;
+    }
+  }
+
+  #crumb {
+    box-shadow: var(--color-shadow) 3px -15px 30px 0px;
+    clip-path: inset(0 0 -10000px 3px);
+  }
+
+  #sidebar {
+    box-shadow: var(--color-shadow) -23px 4px 35px 0px;
+  }
+
+  #graph-box,
+  #toc {
+    box-shadow: var(--color-shadow) 3px 4px 23px -15px;
+  }
+
+  iframe,
+  details,
+  .katex-display .katex-html,
+  table,
+  .dropdown ul,
+  #prev-next a,
+  .dropdown ul,
+  .childbox ul,
+  header a:not(#home-link):hover {
+    box-shadow: var(--color-shadow) 3px 4px 11px -9px;
+  }
+
+  #search {
+    box-shadow: inset var(--color-shadow) 3px 4px 11px -10px;
+  }
+
+  button:hover svg,
+  button:hover,
+  circle:hover,
+  #home-link:hover svg,
+  #results .heading-result:hover,
+  #search-clear:hover,
+  #search-clear:focus,
+  .childbox .toggle:hover,
+  a.watermark:hover {
+    fill: var(--color-accent);
+    stroke: var(--color-accent);
+    color: var(--color-accent);
+  }
+
+  .sidebar-current,
+  .toc-current {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  details:not([open]):hover {
+    animation: shake 0.82s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    transform: translate3d(0, 0, 0);
+    perspective: 1000px;
+  }
+
+  @keyframes shake {
+    10%,
+    90% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    20%,
+    80% {
+      transform: translate3d(1px, 0, 0);
+    }
+
+    30%,
+    50%,
+    70% {
+      transform: translate3d(-1px, 0, 0);
+    }
+    40%,
+    60% {
+      transform: translate3d(1px, 0, 0);
+    }
+  }
+  /* ===== easter egg ===== */
+  a.watermark {
+    position: relative;
+    z-index: 0;
+  }
+
+  a.watermark::before {
+    content: "";
+    position: absolute;
+    inset: -0.55em;
+    background: radial-gradient(
+      circle,
+      var(--color-accent) 0%,
+      rgba(0, 0, 0, 0) 50%
+    );
+    opacity: 0;
+  }
+
+  @keyframes charge {
+    0% {
+      opacity: 0;
+      transform: scale(0);
+      filter: blur(1px);
+    }
+    80% {
+      opacity: 0.5;
+      transform: scale(1.2);
+      filter: blur(9px);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(40);
+      filter: blur(12px);
+    }
+  }
+
+  a.watermark:hover::before {
+    animation: charge 13s cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+  }
+}
