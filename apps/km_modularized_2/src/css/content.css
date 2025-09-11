@@ -1,0 +1,348 @@
+/* ---------------------------------------------------------------------------
+     4. CONTENT: md and populated content
+     ------------------------------------------------------------------------ */
+@layer content {
+  p {
+    text-align: left;
+  }
+
+  #content h1,
+  #content h2,
+  #content h3,
+  #content h4,
+  #content h5,
+  #content h6 {
+    scroll-margin-top: calc(var(--g-lg) * 2);
+  }
+
+  #content a {
+    color: var(--color-accent);
+    /* Wrap text inside links */
+    white-space: normal;
+    word-break: break-word; /* alternative to word-wrap */
+    display: inline-block;
+  }
+
+  #content a:hover {
+    color: var(--color-text);
+  }
+
+  /* ===== Tables – original look restored ===== */
+  table {
+    width: auto;
+    background: var(--color-lowest-contrast);
+    padding: 1px;
+    border-radius: var(--r-sm);
+  }
+
+  th,
+  td {
+    padding: var(--g-sm);
+  }
+  th {
+    background: var(--color-lowest-contrast);
+  }
+  td {
+    background: var(--color-main);
+  }
+
+  img {
+    max-width: 100%;
+    border-radius: var(--r-sm);
+  }
+  hr {
+    height: var(--g-sm);
+    border: none;
+    background: var(--color-low-contrast);
+    border-radius: var(--r-sm);
+  }
+
+  /* Typography & code */
+  blockquote {
+    color: var(--color-mid-contrast);
+    margin: 0
+  }
+  summary:hover {
+    color: var(--color-accent);
+  }
+
+  pre:not(.mermaid),
+  .katex-display {
+    width: fit-content;
+    max-width: 100%;
+    border-bottom-left-radius: var(--r-sm);
+    border-bottom-right-radius: var(--r-sm);
+    box-shadow: var(--color-shadow) 3px 4px 11px -9px;
+  }
+
+  code {
+    background: var(--color-lowest-contrast) !important;
+    padding: 0 var(--g-xs);
+  }
+
+  span.lang {
+    padding-left: var(--g-md);
+    color: var(--color-quarter-contrast);
+  }
+
+  .code-tools {
+    background: var(--color-lowest-contrast) !important;
+    border-top-left-radius: var(--r-sm);
+    border-top-right-radius: var(--r-sm);
+  }
+
+  details .code-tools {
+    background: var(--color-low-contrast) !important;
+  }
+
+  details code,
+  details .katex-html {
+    background-color: var(--color-low-contrast) !important;
+  }
+
+  pre code {
+    text-wrap-mode: nowrap;
+    overflow-x: scroll;
+    padding-right: calc(var(--g-lg) * 2) !important;
+    border-bottom-left-radius: var(--r-sm);
+    border-bottom-right-radius: var(--r-sm);
+  }
+
+  pre {
+    border-radius: var(--r-sm);
+    position: relative;
+    margin-right: -100dvh;
+  }
+
+  details {
+    background: var(--color-lowest-contrast);
+    padding: var(--g-md) var(--g-lg);
+    border-radius: var(--r-sm);
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  details[open] pre:has(code)::after,
+  pre:has(code)::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10%;
+    height: 100%;
+    background: linear-gradient(
+      to left,
+      var(--color-low-contrast) 0,
+      var(--color-low-contrast) var(--g-lg),
+      transparent
+    );
+    pointer-events: none;
+    border-radius: var(--r-sm);
+  }
+
+  pre:has(code)::after {
+    background: linear-gradient(
+      to left,
+      var(--color-lowest-contrast) 0,
+      var(--color-lowest-contrast) var(--g-lg),
+      transparent
+    );
+  }
+
+  iframe {
+    width: 50dvw;
+    height: auto;
+    max-width: 100%;
+    min-width: 200px;
+    aspect-ratio: 1.777778;
+    resize: both;
+    border: none;
+    border: solid 1px var(--color-low-contrast);
+    border-radius: var(--r-sm);
+    padding: calc(var(--g-sm) * 1.6);
+    background: var(--color-lowest-contrast);
+  }
+
+  .katex-display .katex-html {
+    text-align: left;
+    padding: var(--g-lg);
+    background: var(--color-lowest-contrast) !important;
+    border-radius: var(--r-sm);
+    max-width: max-content;
+  }
+
+  /* Checkbox patch */
+  input[type="checkbox"] {
+    width: var(--g-lg);
+    height: var(--g-lg);
+    vertical-align: calc(var(--g-xs) * -1.5);
+    filter: brightness(1.2) contrast(1.5);
+  }
+
+  html[data-theme="light"] input[type="checkbox"] {
+    filter: invert(1);
+  }
+
+  ul:has(li > input) {
+    list-style: none;
+    padding-left: 0 !important;
+  }
+
+  /* ===== Copy-code icons ================================================== */
+
+  .code-copy {
+    position: absolute;
+    top: calc(var(--g-sm));
+    right: var(--g-xs);
+    z-index: var(--z-mid);
+  }
+
+  /* quick “flash” feedback when something was copied */
+  @keyframes flash {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+  }
+  .flash {
+    animation: flash 0.2s ease;
+  }
+
+  .markdown-alert p {
+    margin: var(--g-sm) 0;
+  }
+
+  .markdown-alert {
+    position: relative;
+    padding-left: var(--g-lg);
+    margin: var(--g-lg) 0;
+  }
+
+  .markdown-alert::before {
+    content: "";
+    position: absolute;
+    top: var(--g-xs);
+    bottom: 0;
+    left: calc(var(--g-xs) * 2);
+    width: 3px;
+    opacity: 0.6;
+    border-radius: var(--r-sm);
+  }
+
+  .markdown-alert svg {
+    padding-top: var(--g-sm);
+    fill: currentcolor;
+  }
+
+  .markdown-alert-note::before {
+    background: var(--note);
+  }
+  .markdown-alert-note p:first-child {
+    color: var(--note);
+  }
+
+  .markdown-alert-important::before {
+    background: var(--important);
+  }
+  .markdown-alert-important p:first-child {
+    color: var(--important);
+  }
+
+  .markdown-alert-tip::before {
+    background: var(--tip);
+  }
+  .markdown-alert-tip p:first-child {
+    color: var(--tip);
+  }
+
+  .markdown-alert-warning::before {
+    background: var(--warning);
+  }
+  .markdown-alert-warning p:first-child {
+    color: var(--warning);
+  }
+
+  .markdown-alert-caution::before {
+    background: var(--caution);
+  }
+  .markdown-alert-caution p:first-child {
+    color: var(--caution);
+  }
+
+  #see-also {
+    color: var(--color-mid-contrast);
+    margin-top: calc(var(--g-lg) * 2);
+  }
+
+  #see-also h2 {
+    margin-bottom: var(--g-xs);
+  }
+
+  #see-also ul {
+    padding-left: var(--g-lg);
+  }
+
+  /* ===== preview ===================================== */
+  .km-link-preview {
+    position: fixed;
+    max-width: min(520px, 48vw);
+    max-height: min(480px, 72vh);
+    overflow: auto;
+    padding: 0 var(--g-md);
+    background: var(--color-main);
+    border: 1px solid var(--color-low-contrast);
+    border-radius: var(--r-md);
+    box-shadow: var(--color-shadow) 3px 4px 23px -15px;
+    z-index: var(--z-mid);
+  }
+
+  .km-link-preview header {
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: flex-end;
+    z-index: var(--z-sky);
+  }
+
+  .km-link-preview button.km-preview-close {
+    line-height: 1;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+    color: var(--color-text);
+    background: radial-gradient(
+      var(--color-lowest-contrast) var(--g-xs),
+      transparent var(--g-md)
+    );
+    padding: var(--g-lg);
+    border-radius: var(--r-md);
+  }
+
+  .km-link-preview .km-preview-focus {
+    outline: 2px dashed var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* ===== Copy-link icons on headings ===================================== */
+  .heading-copy,
+  .code-copy {
+    opacity: 0.3;
+    cursor: pointer;
+    color: var(--color-text);
+    background: none;
+    border: none;
+  }
+
+  h1:hover .heading-copy,
+  h2:hover .heading-copy,
+  h3:hover .heading-copy,
+  h4:hover .heading-copy,
+  h5:hover .heading-copy,
+  h6:hover .heading-copy,
+  pre:hover .code-copy {
+    opacity: 1;
+  }
+}
