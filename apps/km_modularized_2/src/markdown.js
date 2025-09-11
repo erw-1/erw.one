@@ -1,20 +1,40 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
+import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS,
+         copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
 
-/** Parse + postprocess a page into HTML once, with a small in-memory LRU. */
+// Observer tracking (prevent leaks)
+const __OBS_BY_ROOT = new WeakMap();
+export function __trackObserver(o, root = document) {
+  if (!o || typeof o.disconnect !== 'function') return o;
+  const set = __OBS_BY_ROOT.get(root) || new Set();
+  set.add(o);
+  __OBS_BY_ROOT.set(root, set);
+  return o;
+}
+export function __cleanupObservers(root = document) {
+  const set = __OBS_BY_ROOT.get(root);
+  if (!set) return;
+  for (const o of set) {
+    try { o.disconnect?.(); } catch {}
+  }
+  set.clear();
+}
+
+/** Parse and postprocess a page into HTML with LRU caching. */
 export async function getParsedHTML(page) {
   const cached = getFromHTMLLRU(page.id);
   if (cached) return cached;
 
   const { parse } = await window.KM.ensureMarkdown();
+  // Parse markdown into HTML
   const html = parse(page.content);
   const div = DOC.createElement('div');
   div.innerHTML = html;
 
-  // Deterministic heading ids (only if not already present)
+  // Add deterministic heading ids
   numberHeadings(div);
 
   const out = div.innerHTML;
@@ -22,7 +42,7 @@ export async function getParsedHTML(page) {
   return out;
 }
 
-/** Ensure external links open safely. */
+/** Make external links open in new tab safely. */
 export function decorateExternalLinks(containerEl = DOC) {
   $$('a[href^="http"]', containerEl).forEach(a => {
     try {
@@ -38,7 +58,10 @@ export function decorateExternalLinks(containerEl = DOC) {
   });
 }
 
-/** Turn in-article anchors into page-local ones when they wouldn’t resolve. */
+/**
+ * Normalize anchor links. In-page links that point outside this page
+ * are rewritten to include the page's hash prefix.
+ */
 export function normalizeAnchors(container = $('#content'), page, { onlyFootnotes = false } = {}) {
   const base = page?.hash || '';
   if (!base) return;
@@ -46,7 +69,7 @@ export function normalizeAnchors(container = $('#content'), page, { onlyFootnote
     const href = a.getAttribute('href') || '';
     if (!href) return;
     if (onlyFootnotes) {
-      if (/^#(?:fn|footnote)/.test(href) && !href.includes(base + '#')) {
+      if (/^#(?:fn|footnote)/.test(href) && !href.includes(`${base}#`)) {
         a.setAttribute('href', `#${base}${href}`);
       }
       return;
@@ -54,13 +77,15 @@ export function normalizeAnchors(container = $('#content'), page, { onlyFootnote
     try {
       const target = window.location.href.replace(/#.*$/, '') + href;
       const u = new URL(target);
-      const looksLikeOnlyAnchor = !href.slice(1).includes('#');
-      if (looksLikeOnlyAnchor) a.setAttribute('href', `#${base}${href}`);
+      const looksLikeOnlyAnchor = !href.slice(1).includes('#'); // "#something"
+      if (looksLikeOnlyAnchor) {
+        a.setAttribute('href', `#${base}${href}`);
+      }
     } catch {}
   });
 }
 
-/** Mark internal hash links as previewable (hover-to-preview). */
+/** Mark internal hash links as previewable (used for hover previews). */
 export function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
   let seq = 0, stamp = Date.now().toString(36);
@@ -74,7 +99,7 @@ export function annotatePreviewableLinks(container = $('#content')) {
   });
 }
 
-/** Number headings h1–h6 in a deterministic "1_2_3" style if no id exists. */
+/** Assign stable numeric ids to headings (h1-h6) if they have none. */
 export function numberHeadings(elm) {
   const counters = [0, 0, 0, 0, 0, 0, 0];
   $$(HEADINGS_SEL, elm).forEach(h => {
@@ -86,7 +111,7 @@ export function numberHeadings(elm) {
   });
 }
 
-/** Lazy-highlight code blocks with highlight.js when they enter the viewport. */
+/** Lazy-highlight code blocks when they enter the viewport. */
 export async function highlightVisibleCode(root = document) {
   await window.KM.ensureHighlight();
   const blocks = [...root.querySelectorAll('pre code')];
@@ -102,20 +127,22 @@ export async function highlightVisibleCode(root = document) {
       o.unobserve(elx);
     }
   }, { rootMargin: '200px 0px', threshold: 0 }), root);
-  blocks.forEach(elx => { if (!elx.dataset.hlDone) obs.observe(elx); });
+  blocks.forEach(elx => {
+    if (!elx.dataset.hlDone) obs.observe(elx);
+  });
 }
 
-/** Optional execution of <script> tags inside rendered Markdown. */
+/** Execute inline <script> tags in the given element. */
 export function runInlineScripts(root) {
   root.querySelectorAll('script').forEach(old => {
     const s = document.createElement('script');
     for (const { name, value } of [...old.attributes]) s.setAttribute(name, value);
     s.textContent = old.textContent || '';
-    old.replaceWith(s); // inserting a new <script> runs it
+    old.replaceWith(s);
   });
 }
 
-/** Add anchor-copy buttons on headings. */
+/** Add "copy link" buttons to each heading. */
 export function decorateHeadings(page, container = DOC) {
   $$(HEADINGS_SEL, container).forEach(h => {
     if (h.dataset.kmHeadDone === '1') return;
@@ -126,7 +153,7 @@ export function decorateHeadings(page, container = DOC) {
   });
 }
 
-/** Add "Copy code" buttons and language badges to code blocks. */
+/** Add copy buttons (and optional language label) to code blocks. */
 export function decorateCodeBlocks(container = DOC) {
   container.querySelectorAll('pre').forEach(pre => {
     if (pre.dataset.kmCodeDone === '1') return;
@@ -138,12 +165,11 @@ export function decorateCodeBlocks(container = DOC) {
     // Optional language label
     const lang = first?.className?.match(/\blanguage-([\w-]+)/)?.[1];
     if (lang) header.prepend(el('span', { class: 'lang', textContent: lang }));
-
     pre.prepend(header);
   });
 }
 
-/** Render KaTeX math inline/block safely when/if loaded. */
+/** Render KaTeX math when loaded. */
 export function renderMathSafe(container = DOC) {
   try {
     if (!container || container.dataset.mathRendered === '1') return;
@@ -153,19 +179,19 @@ export function renderMathSafe(container = DOC) {
           { left: '$$', right: '$$', display: true },
           { left: '\\[', right: '\\]', display: true },
           { left: '$', right: '$', display: false },
-          { left: '\\(', right: '\\)', display: false },
-        ],
+          { left: '\\(', right: '\\)', display: false }
+        ]
       });
       container.dataset.mathRendered = '1';
     }
   } catch {}
 }
 
-/** Copy-button wiring shared across main content and previews. */
+/** Wire up copy buttons for headings and code blocks. */
 export function wireCopyButtons(root, getBaseUrl) {
   if (!root) return;
   root.addEventListener('click', (e) => {
-    const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
+    const btn = e.target?.closest('button.heading-copy, button.code-copy');
     if (!btn) return;
     if (btn.classList.contains('heading-copy')) {
       const h = btn.closest(HEADINGS_SEL);
