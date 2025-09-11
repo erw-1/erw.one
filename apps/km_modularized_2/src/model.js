@@ -25,11 +25,11 @@ export function parseMarkdownBundle(txt) {
   const HCLOSE = '\uE001';
   
   const sanitized = txt.replace(/```[\s\S]*?```/g, block =>
-    block.replace(/<!--/g, HOPEN).replace(/-->/g, HCLOSE)
+    block.replace(/<!--km/g, HOPEN).replace(/-->/g, HCLOSE)
   );
   
   // 2) Your original matcher works unchanged
-  const m = sanitized.matchAll(/<!--km([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
+  const m = sanitized.matchAll(/<!--([\s\S]*?)-->\s*([\s\S]*?)(?=<!--|$)/g);
   for (const [, hdr, body] of m) {
     const meta = {};
     hdr.replace(/(\w+):"([^"]+)"/g, (_, k, v) => (meta[k] = v.trim()));
@@ -180,6 +180,7 @@ export const __model = {
   get root() { return root; },
   get byId() { return byId; }
 };
+
 
 
 
