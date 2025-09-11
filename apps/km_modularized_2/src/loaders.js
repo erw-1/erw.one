@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, LANGS } from './config-dom.js';
+import { DOC, LANGS } from './config_dom.js';
 
 // Keep tiny global surface
 const KM = (window.KM = window.KM || {});

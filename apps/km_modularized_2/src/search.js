@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, el } from './config-dom.js';
+import { DOC, $, el } from './config_dom.js';
 import { __model, sortByTitle, hashOf } from './model.js';
 
 // ===== Search (ranked; pages + section hits) =====

@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { $ } from './config-dom.js';
+import { $ } from './config_dom.js';
 import { __model, descendants, find } from './model.js';
 
 
@@ -145,7 +145,7 @@ export async function buildGraph() {
 
   sim.on('tick', () => {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
-      .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });

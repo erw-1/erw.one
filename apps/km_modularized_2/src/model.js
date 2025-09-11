@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { RE_FENCE, RE_HEADING, RE_HEADING_FULL } from './config-dom.js';
+import { RE_FENCE, RE_HEADING, RE_HEADING_FULL } from './config_dom.js';
 
 // In-memory wiki model
 let pages = [];

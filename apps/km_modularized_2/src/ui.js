@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, HEADINGS_SEL } from './config-dom.js';
+import { DOC, $, $$, el, HEADINGS_SEL } from './config_dom.js';
 import { __model, hashOf } from './model.js';
 
 export function setFolderOpen(li, open) {
@@ -225,4 +225,9 @@ export function seeAlso(page) {
     .sort(sortByTitle);
 
   same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
+}
+
+export function closePanels() {
+  $('#sidebar')?.classList.remove('open');
+  $('#util')?.classList.remove('open');
 }

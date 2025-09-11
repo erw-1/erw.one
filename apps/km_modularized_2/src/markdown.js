@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config-dom.js';
+import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
 
 // ───────────────────── Observer tracking (prevents leaks) ─────────────────────
