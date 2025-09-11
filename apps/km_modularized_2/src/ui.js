@@ -6,6 +6,20 @@ import { __model, hashOf } from './model.js';
 import { getParsedHTML, normalizeAnchors, wireCopyButtons, __cleanupObservers } from './markdown.js';
 import { buildDeepURL, parseTarget, enhanceRendered } from './router_renderer.js';
 
+// ───────────────────────────── utilities ────────────────────────────────
+const pageLink = (p, cls = '') =>
+  el('a', { class: cls, dataset: { page: p.id }, href: '#' + hashOf(p), textContent: p.title });
+
+const ensureInView = (node, container) => {
+  if (!node || !container) return;
+  const r = node.getBoundingClientRect();
+  const tr = container.getBoundingClientRect();
+  requestAnimationFrame(() => {
+    if (r.top < tr.top || r.bottom > tr.bottom) node.scrollIntoView({ block: 'nearest' });
+  });
+};
+
+// ───────────────────────────── panels ───────────────────────────────────
 export function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
@@ -13,18 +27,19 @@ export function closePanels() {
 
 export function setFolderOpen(li, open) {
   if (!li) return;
-  li.classList.toggle('open', !!open);
-  li.setAttribute('aria-expanded', String(!!open));
+  const on = !!open;
+  li.classList.toggle('open', on);
+  li.setAttribute('aria-expanded', String(on));
   const caret = li.querySelector('button.caret');
   if (caret) {
-    caret.setAttribute('aria-expanded', String(!!open));
-    caret.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
+    caret.setAttribute('aria-expanded', String(on));
+    caret.setAttribute('aria-label', on ? 'Collapse' : 'Expand');
   }
   const sub = li.querySelector('ul[role="group"]');
-  if (sub) sub.style.display = open ? 'block' : 'none';
+  if (sub) sub.style.display = on ? 'block' : 'none';
 }
 
-/** Build the collapsible tree in the sidebar (faithful to original). */
+// ───────────────────────────── sidebar tree ─────────────────────────────
 export function buildTree() {
   const ul = $('#tree');
   const { root } = __model;
@@ -33,57 +48,40 @@ export function buildTree() {
   ul.setAttribute('role', 'tree');
   ul.innerHTML = '';
 
-  // Preserve MD order for primary (non-secondary) children of root
   const prim = root.children.filter(c => !c.isSecondary);
-  const secs = root.children.filter(c => c.isSecondary)
-                            .sort((a, b) => a.clusterId - b.clusterId); // cluster order
+  const secs = root.children.filter(c => c.isSecondary).sort((a, b) => a.clusterId - b.clusterId);
 
   const rec = (nodes, container, depth = 0) => {
     nodes.forEach(p => {
-      const li = el('li');
-      li.setAttribute('role', 'treeitem');
-
+      const li = el('li', { role: 'treeitem' });
       if (p.children.length) {
-        const open = depth < 2; // auto-open top levels
+        const open = depth < 2;
         li.className = 'folder' + (open ? ' open' : '');
         li.setAttribute('aria-expanded', String(open));
 
         const groupId = `group-${p.id}`;
-
         const caret = el('button', {
           type: 'button',
           class: 'caret',
           'aria-controls': groupId,
           'aria-expanded': String(open),
           'aria-label': open ? 'Collapse' : 'Expand',
-          textContent: '▸'
+          textContent: '▸',
+          onclick: (e) => {
+            e.preventDefault();
+            setFolderOpen(li, !li.classList.contains('open'));
+          }
         });
 
-        const lbl = el('a', {
-          class: 'lbl',
-          dataset: { page: p.id },
-          href: '#' + hashOf(p),
-          textContent: p.title
-        });
-
-        const sub = el('ul', {
-          id: groupId,
-          role: 'group',
-          style: `display:${open ? 'block' : 'none'}`
-        });
+        const lbl = pageLink(p, 'lbl');
+        const sub = el('ul', { id: groupId, role: 'group', style: `display:${open ? 'block' : 'none'}` });
 
         li.append(caret, lbl, sub);
         container.append(li);
-
-        // IMPORTANT: Preserve MD order as authored (no sorting)
-        rec(p.children, sub, depth + 1);
+        rec(p.children, sub, depth + 1); // authored order
       } else {
         li.className = 'article';
-        li.append(el('a', {
-          dataset: { page: p.id },
-          href: '#' + hashOf(p),
-          textContent: p.title
-        }));
+        li.append(pageLink(p));
         container.append(li);
       }
     });
@@ -92,14 +90,10 @@ export function buildTree() {
   const frag = DOC.createDocumentFragment();
   rec(prim, frag);
 
-  // Secondary clusters are separated visually and rendered in cluster order
+  // secondary clusters with separators, cluster order
   secs.forEach(rep => {
-    const sep = el('div', {
-      class: 'group-sep',
-      role: 'presentation',
-      'aria-hidden': 'true'
-    }, [el('hr', { role: 'presentation', 'aria-hidden': 'true' })]);
-    frag.append(sep);
+    frag.append(el('div', { class: 'group-sep', role: 'presentation', 'aria-hidden': 'true' },
+      [el('hr', { role: 'presentation', 'aria-hidden': 'true' })]));
     rec([rep], frag);
   });
 
@@ -117,24 +111,14 @@ export function highlightSidebar(page) {
 
   a.classList.add('sidebar-current');
 
-  // Ensure ancestors are open
+  // open ancestors
   let li = a.closest('li');
   while (li) {
     if (li.classList.contains('folder')) setFolderOpen(li, true);
     li = li.parentElement?.closest?.('li') || null;
   }
 
-  // Keep the current item in view (without jumping page scroll)
-  const tree = $('#tree');
-  if (tree) {
-    const r = a.getBoundingClientRect();
-    const tr = tree.getBoundingClientRect();
-    requestAnimationFrame(() => {
-      if (r.top < tr.top || r.bottom > tr.bottom) {
-        a.scrollIntoView({ block: 'nearest' });
-      }
-    });
-  }
+  ensureInView(a, $('#tree'));
 }
 
 // ───────────────────────────── breadcrumb ────────────────────────────────
@@ -142,9 +126,10 @@ export function breadcrumb(page) {
   const dyn = $('#crumb-dyn');
   if (!dyn) return;
   dyn.innerHTML = '';
+
   const chain = [];
   for (let n = page; n; n = n.parent) chain.unshift(n);
-  if (chain.length) chain.shift(); // drop root label
+  if (chain.length) chain.shift(); // drop root
 
   chain.forEach((n, i) => {
     if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
@@ -161,34 +146,22 @@ export function breadcrumb(page) {
     }
     dyn.append(wrap);
   });
-
-  if (page.children.length) {
-    const box = el('span', { class: 'childbox' }, [el('span', { class: 'toggle', textContent: '▾' }), el('ul')]);
-    const ul = box.querySelector('ul');
-    page.children.slice().sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => KM.nav(ch) })));
-    dyn.append(box);
-  }
 }
 
-// ===== Table of Contents + live highlight =====
-let tocObserver = null;
-export function buildToc(page) {
+// ───────────────────────────── table of contents ────────────────────────
+export function buildToc() {
   const tocEl = $('#toc');
   if (!tocEl) return;
   tocEl.innerHTML = '';
   const heads = $$('#content ' + HEADINGS_SEL);
   if (!heads.length) return;
 
-  // entries
   const ul = el('ul');
   heads.forEach(h => {
-    const id  = h.id || '';
+    const id = h.id || '';
     const lvl = Math.min(6, Math.max(1, parseInt(h.tagName.slice(1), 10) || 1));
-    const li  = el('li', {
-      'data-hid': id,
-      'data-lvl': String(lvl)   // level indicator for CSS indenting
-    }, [
-      el('a', { href: '#' + (page.hash ? page.hash + '#' : '') + id, textContent: h.textContent || '' })
+    const li = el('li', { 'data-hid': id, 'data-lvl': String(lvl) }, [
+      el('a', { href: '#' + (id || ''), textContent: h.textContent || '' })
     ]);
     ul.append(li);
   });
@@ -208,11 +181,13 @@ export function buildToc(page) {
   }, { root: null, rootMargin: '0px 0px -70% 0px', threshold: 0 });
   heads.forEach(h => tocObserver.observe(h));
 }
+let tocObserver = null;
 
-// ===== Prev / Next and "See also" =====
+// ───────────────────────────── prev / next & see also ───────────────────
 export function prevNext(page) {
   const elx = $('#prevnext');
   if (!elx) return;
+
   const siblings = page.parent ? page.parent.children.slice() : [];
   const i = siblings.indexOf(page);
   const prev = i > 0 ? siblings[i - 1] : null;
@@ -238,12 +213,13 @@ export function seeAlso(page) {
   same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
 }
 
-// ───────────────────────────── link previews (moved) ─────────────────────
+// ───────────────────────────── link previews ─────────────────────────────
 export function attachLinkPreviews() {
   const previewStack = []; // stack of { el, body, link, timer }
   let hoverDelay = null;
+  let trimTimer;
 
-  function rewriteRelativeAnchors(panel, page) { normalizeAnchors(panel.body, page); }
+  const rewriteRelativeAnchors = (panel, page) => normalizeAnchors(panel.body, page);
 
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
@@ -269,20 +245,17 @@ export function attachLinkPreviews() {
   }
 
   function anyPreviewOrTriggerActive() {
-    const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
-    if (anyHoverPreview) return true;
+    if ([...document.querySelectorAll('.km-link-preview')].some(p => p.matches(':hover'))) return true;
     const active = document.activeElement;
     const activeIsTrigger = !!(active && active.closest && window.KM.isInternalPageLink?.(active.closest('a[href^="#"]')));
     if (activeIsTrigger) return true;
-    const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
-    return hoveringTrigger;
+    return previewStack.some(p => p.link && p.link.matches(':hover'));
   }
 
-  let trimTimer;
-  function scheduleTrim() {
+  const scheduleTrim = () => {
     clearTimeout(trimTimer);
     trimTimer = setTimeout(() => { if (!anyPreviewOrTriggerActive()) closeFrom(0); }, 220);
-  }
+  };
 
   async function fillPanel(panel, page, anchor) {
     panel.body.dataset.mathRendered = '0';
@@ -342,8 +315,7 @@ export function attachLinkPreviews() {
 
   async function openPreviewForLink(a) {
     const href = a.getAttribute('href') || '';
-    theTarget = parseTarget(href);
-    const target = theTarget;
+    const target = parseTarget(href);
     if (!target) return;
 
     const existingIdx = previewStack.findIndex(p => p.link === a);
@@ -374,7 +346,6 @@ export function attachLinkPreviews() {
     else hoverDelay = setTimeout(() => openPreviewForLink(a), 220);
   }
 
-  let __lpGlobalBound = false;
   const root = $('#content');
   if (!root) return;
   if (root.dataset.kmPreviewsBound === '1') return;
@@ -387,19 +358,15 @@ export function attachLinkPreviews() {
     scheduleTrim();
   }, true);
 
-  if (!__lpGlobalBound) {
-    addEventListener('hashchange', () => closeFrom(0), { passive: true });
-    addEventListener('scroll', () => scheduleTrim(), { passive: true });
-    __lpGlobalBound = true;
-  }
+  addEventListener('hashchange', () => closeFrom(0), { passive: true });
+  addEventListener('scroll', () => scheduleTrim(), { passive: true });
 }
 
-// ───────────────────────────── keybinds (moved) ──────────────────────────
+// ───────────────────────────── keybinds ─────────────────────────────────
 export function initKeybinds() {
   const $search = $('#search');
   const $theme = $('#theme-toggle');
   const $expand = $('#expand');
-  const $kbIcon = $('#kb-icon');
 
   const isEditable = (el) => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
   const key = (e, k) => e.key === k || e.key.toLowerCase() === (k + '').toLowerCase();
@@ -428,7 +395,10 @@ export function initKeybinds() {
     { id: 'theme', when: (e) => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
     { id: 'graph', when: (e) => key(e, 'g') && noMods(e), action: 'fullscreenGraph', help: 'G' },
     { id: 'help', when: (e) => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
-    { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true }
+    { id: 'escape', when: (e) => key(e, 'Escape'), inEditable: true, action: (e) => {
+      const host = document.getElementById('kb-help');
+      if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); }
+    } },
   ];
 
   function ensureKbHelp() {
@@ -437,7 +407,7 @@ export function initKeybinds() {
     host = el('div', { id: 'kb-help', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', hidden: true, tabIndex: '-1' });
     const panel = el('div', { class: 'panel' });
     const title = el('h2', { textContent: 'Keyboard shortcuts' });
-    const closeBtn = el('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: '✕', onclick: () => actions.closeHelp() });
+    const closeBtn = el('button', { type: 'button', class: 'close help', textContent: '✕', onclick: () => actions.closeHelp() });
     const header = el('header', {}, [title, closeBtn]);
 
     const items = [
