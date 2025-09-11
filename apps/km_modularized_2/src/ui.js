@@ -240,8 +240,20 @@ export function seeAlso(page) {
 
 // ───────────────────────────── link previews (moved) ─────────────────────
 export function attachLinkPreviews() {
-  const previewStack = []; // stack of { el, body, link, timer }
-  let hoverDelay = null;
+  const previewStack = []; // stack de { el, body, link, timer }
+  const HOVER_DELAY_MS = 500;
+  let hoverTimer = null;
+  let hoverLinkEl = null;
+
+  function cancelPendingHover() {
+    if (hoverTimer) clearTimeout(hoverTimer);
+    if (hoverLinkEl) {
+      hoverLinkEl.style.cursor = '';
+      delete hoverLinkEl.dataset.previewPending;
+    }
+    hoverTimer = null;
+    hoverLinkEl = null;
+  }
 
   function rewriteRelativeAnchors(panel, page) { normalizeAnchors(panel.body, page); }
 
@@ -367,12 +379,40 @@ export function attachLinkPreviews() {
   function maybeOpenFromEvent(e) {
     const a = e.target?.closest?.('a[href^="#"]');
     if (!a || !isInternalPageLink(a)) return;
-    clearTimeout(hoverDelay);
-    const openNow = e.type === 'focusin';
-    if (openNow) openPreviewForLink(a);
-    else hoverDelay = setTimeout(() => openPreviewForLink(a), 220);
+
+    // focus → immédiat (pas de délai)
+    if (e.type === 'focusin') {
+      cancelPendingHover();
+      openPreviewForLink(a);
+      return;
+    }
+
+    // hover → délai + curseur “progress”
+    if (hoverLinkEl !== a) cancelPendingHover();
+    hoverLinkEl = a;
+    a.dataset.previewPending = '1';
+    a.style.cursor = 'progress';
+
+    cancelPendingHover(); // éviter doublons si on reçoit plusieurs mouseover en rafale
+    hoverLinkEl = a;
+    a.dataset.previewPending = '1';
+    a.style.cursor = 'progress';
+
+    hoverTimer = setTimeout(() => {
+      // termine l'état d’attente et ouvre
+      a.style.cursor = '';
+      delete a.dataset.previewPending;
+      openPreviewForLink(a);
+      hoverTimer = null;
+      hoverLinkEl = null;
+    }, HOVER_DELAY_MS);
+
+    // annulations locales
+    a.addEventListener('mouseleave', cancelPendingHover, { once: true });
+    a.addEventListener('blur', cancelPendingHover, { once: true });
   }
 
+  // Bind racine
   let __lpGlobalBound = false;
   const root = $('#content');
   if (!root) return;
@@ -382,15 +422,17 @@ export function attachLinkPreviews() {
   root.addEventListener('focusin',  maybeOpenFromEvent, true);
   root.addEventListener('mouseout', (e) => {
     const to = e.relatedTarget;
+    // annuler l’attente si on sort du lien
+    if (e.target?.closest?.('a[href^="#"]') && (!to || !to.closest || !to.closest('a[href^="#"]'))) {
+      cancelPendingHover();
+    }
     if (to && (to.closest && to.closest('.km-link-preview'))) return;
     scheduleTrim();
   }, true);
 
-  if (!__lpGlobalBound) {
-    addEventListener('hashchange', () => closeFrom(0), { passive: true });
-    addEventListener('scroll', () => scheduleTrim(), { passive: true });
-    __lpGlobalBound = true;
-  }
+  // annuler si le contexte change
+  addEventListener('hashchange', () => { cancelPendingHover(); closeFrom(0); }, { passive: true });
+  addEventListener('scroll', () => { cancelPendingHover(); scheduleTrim(); }, { passive: true });
 }
 
 // ───────────────────────────── keybinds (moved) ──────────────────────────
@@ -534,3 +576,4 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
+
