@@ -676,6 +676,7 @@
   #kb-help[hidden] {
     display: none;
   }
+   
   #kb-help {
     position: fixed;
     inset: 0;
@@ -685,6 +686,7 @@
     background: var(--color-backdrop);
     z-index: calc(var(--z-sky) + 1);
   }
+   
   #kb-help .panel {
     background: var(--color-main);
     color: var(--color-text);
@@ -696,16 +698,19 @@
     max-height: 80dvh;
     overflow: auto;
   }
+   
   #kb-help header {
     display: flex;
     align-items: center;
     gap: var(--g-md);
     margin-bottom: var(--g-lg);
   }
+   
   #kb-help h2 {
     margin: 0;
     font-size: 1.1rem;
   }
+   
   #kb-help .close {
     margin-left: auto;
     border: 0;
@@ -715,11 +720,13 @@
     font-size: 1.25rem;
     line-height: 1;
   }
+   
   #kb-help ul {
     margin: 0;
     padding-left: 0;
     list-style: none;
   }
+   
   #kb-help li {
     display: grid;
     grid-template-columns: 1fr auto;
@@ -727,21 +734,42 @@
     padding: var(--g-sm) 0;
     border-bottom: 1px solid var(--color-lowest-contrast);
   }
+   
   #kb-help li:last-child {
     border-bottom: 0;
   }
+   
   #kb-help .desc {
     opacity: 0.9;
   }
+   
   kbd {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
     font-size: 0.9rem;
     border: 1px solid var(--color-low-contrast);
-    border-bottom-width: 2px;
     padding: 0.1rem 0.45rem;
     border-radius: var(--r-sm);
     background: var(--color-lowest-contrast);
     white-space: nowrap;
+
+    /* pressable look */
+    display: inline-block;
+    line-height: 1.1;
+    box-shadow: 0 2px 0 var(--color-low-contrast); /* “raised” */
+    transition:
+      transform 120ms ease,
+      box-shadow 120ms ease,
+      background-color 120ms ease,
+      border-color 120ms ease,
+      filter 120ms ease;
+  }
+
+  /* Pressed on hover */
+  kbd:hover {
+    transform: translateY(2px);
+    box-shadow: 0 0 0 var(--color-low-contrast), inset 0 1px 0 var(--color-quarter-contrast);
+    background-color: color-mix(in srgb, var(--color-lowest-contrast) 88%, #000 12%);
+    border-color: color-mix(in srgb, var(--color-low-contrast) 85%, #000 15%);
   }
 
   /* --- "?" keycap icon next to theme toggle --- */
@@ -820,7 +848,6 @@
    /* keeps layout from jumping before SVG appears */
    .mermaid { min-height: 1.5em; visibility: hidden; }
    .mermaid[data-processed="true"] { visibility: visible; }
-
 }
 
 /* ---------------------------------------------------------------------------
