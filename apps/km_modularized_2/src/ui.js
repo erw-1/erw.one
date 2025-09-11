@@ -6,20 +6,6 @@ import { __model, hashOf } from './model.js';
 import { getParsedHTML, normalizeAnchors, wireCopyButtons, __cleanupObservers } from './markdown.js';
 import { buildDeepURL, parseTarget, enhanceRendered } from './router_renderer.js';
 
-// ───────────────────────────── utilities ────────────────────────────────
-const pageLink = (p, cls = '') =>
-  el('a', { class: cls, dataset: { page: p.id }, href: '#' + hashOf(p), textContent: p.title });
-
-const ensureInView = (node, container) => {
-  if (!node || !container) return;
-  const r = node.getBoundingClientRect();
-  const tr = container.getBoundingClientRect();
-  requestAnimationFrame(() => {
-    if (r.top < tr.top || r.bottom > tr.bottom) node.scrollIntoView({ block: 'nearest' });
-  });
-};
-
-// ───────────────────────────── panels ───────────────────────────────────
 export function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
@@ -27,19 +13,18 @@ export function closePanels() {
 
 export function setFolderOpen(li, open) {
   if (!li) return;
-  const on = !!open;
-  li.classList.toggle('open', on);
-  li.setAttribute('aria-expanded', String(on));
+  li.classList.toggle('open', !!open);
+  li.setAttribute('aria-expanded', String(!!open));
   const caret = li.querySelector('button.caret');
   if (caret) {
-    caret.setAttribute('aria-expanded', String(on));
-    caret.setAttribute('aria-label', on ? 'Collapse' : 'Expand');
+    caret.setAttribute('aria-expanded', String(!!open));
+    caret.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
   }
   const sub = li.querySelector('ul[role="group"]');
-  if (sub) sub.style.display = on ? 'block' : 'none';
+  if (sub) sub.style.display = open ? 'block' : 'none';
 }
 
-// ───────────────────────────── sidebar tree ─────────────────────────────
+/** Build the collapsible tree in the sidebar. */
 export function buildTree() {
   const ul = $('#tree');
   const { root } = __model;
@@ -49,39 +34,54 @@ export function buildTree() {
   ul.innerHTML = '';
 
   const prim = root.children.filter(c => !c.isSecondary);
-  const secs = root.children.filter(c => c.isSecondary).sort((a, b) => a.clusterId - b.clusterId);
+  const secs = root.children.filter(c => c.isSecondary)
+                        .sort((a, b) => a.clusterId - b.clusterId);
 
   const rec = (nodes, container, depth = 0) => {
     nodes.forEach(p => {
-      const li = el('li', { role: 'treeitem' });
+      const li = el('li');
+      li.setAttribute('role', 'treeitem');
+
       if (p.children.length) {
         const open = depth < 2;
         li.className = 'folder' + (open ? ' open' : '');
         li.setAttribute('aria-expanded', String(open));
 
         const groupId = `group-${p.id}`;
+
         const caret = el('button', {
           type: 'button',
           class: 'caret',
           'aria-controls': groupId,
           'aria-expanded': String(open),
           'aria-label': open ? 'Collapse' : 'Expand',
-          textContent: '▸',
-          onclick: (e) => {
-            e.preventDefault();
-            setFolderOpen(li, !li.classList.contains('open'));
-          }
+          textContent: '▸'
         });
 
-        const lbl = pageLink(p, 'lbl');
-        const sub = el('ul', { id: groupId, role: 'group', style: `display:${open ? 'block' : 'none'}` });
+        const lbl = el('a', {
+          class: 'lbl',
+          dataset: { page: p.id },
+          href: '#' + hashOf(p),
+          textContent: p.title
+        });
+
+        const sub = el('ul', {
+          id: groupId,
+          role: 'group',
+          style: `display:${open ? 'block' : 'none'}`
+        });
 
         li.append(caret, lbl, sub);
         container.append(li);
-        rec(p.children, sub, depth + 1); // authored order
+
+        rec(p.children, sub, depth + 1);
       } else {
         li.className = 'article';
-        li.append(pageLink(p));
+        li.append(el('a', {
+          dataset: { page: p.id },
+          href: '#' + hashOf(p),
+          textContent: p.title
+        }));
         container.append(li);
       }
     });
@@ -90,17 +90,20 @@ export function buildTree() {
   const frag = DOC.createDocumentFragment();
   rec(prim, frag);
 
-  // secondary clusters with separators, cluster order
   secs.forEach(rep => {
-    frag.append(el('div', { class: 'group-sep', role: 'presentation', 'aria-hidden': 'true' },
-      [el('hr', { role: 'presentation', 'aria-hidden': 'true' })]));
+    const sep = el('div', {
+      class: 'group-sep',
+      role: 'presentation',
+      'aria-hidden': 'true'
+    }, [el('hr', { role: 'presentation', 'aria-hidden': 'true' })]);
+    frag.append(sep);
     rec([rep], frag);
   });
 
   ul.append(frag);
 }
 
-/** Highlight current page in the tree and ensure its ancestors are open. */
+/** Highlight current page in the tree and ensure ancestors open. */
 export function highlightSidebar(page) {
   const rootEl = $('#tree');
   if (!rootEl || !page) return;
@@ -111,25 +114,31 @@ export function highlightSidebar(page) {
 
   a.classList.add('sidebar-current');
 
-  // open ancestors
   let li = a.closest('li');
   while (li) {
     if (li.classList.contains('folder')) setFolderOpen(li, true);
     li = li.parentElement?.closest?.('li') || null;
   }
 
-  ensureInView(a, $('#tree'));
+  const tree = $('#tree');
+  if (tree) {
+    const r = a.getBoundingClientRect();
+    const tr = tree.getBoundingClientRect();
+    requestAnimationFrame(() => {
+      if (r.top < tr.top || r.bottom > tr.bottom) {
+        a.scrollIntoView({ block: 'nearest' });
+      }
+    });
+  }
 }
 
-// ───────────────────────────── breadcrumb ────────────────────────────────
 export function breadcrumb(page) {
   const dyn = $('#crumb-dyn');
   if (!dyn) return;
   dyn.innerHTML = '';
-
   const chain = [];
   for (let n = page; n; n = n.parent) chain.unshift(n);
-  if (chain.length) chain.shift(); // drop root
+  if (chain.length) chain.shift();
 
   chain.forEach((n, i) => {
     if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
@@ -146,10 +155,18 @@ export function breadcrumb(page) {
     }
     dyn.append(wrap);
   });
+
+  if (page.children.length) {
+    const box = el('span', { class: 'childbox' }, [el('span', { class: 'toggle', textContent: '▾' }), el('ul')]);
+    const ul = box.querySelector('ul');
+    page.children.slice().sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch =>
+      ul.append(el('li', { textContent: ch.title, onclick: () => KM.nav(ch) })));
+    dyn.append(box);
+  }
 }
 
-// ───────────────────────────── table of contents ────────────────────────
-export function buildToc() {
+let tocObserver = null;
+export function buildToc(page) {
   const tocEl = $('#toc');
   if (!tocEl) return;
   tocEl.innerHTML = '';
@@ -158,16 +175,19 @@ export function buildToc() {
 
   const ul = el('ul');
   heads.forEach(h => {
-    const id = h.id || '';
+    const id  = h.id || '';
     const lvl = Math.min(6, Math.max(1, parseInt(h.tagName.slice(1), 10) || 1));
-    const li = el('li', { 'data-hid': id, 'data-lvl': String(lvl) }, [
-      el('a', { href: '#' + (id || ''), textContent: h.textContent || '' })
+
+    const li  = el('li', {
+      'data-hid': id,
+      'data-lvl': String(lvl)
+    }, [
+      el('a', { href: '#' + (page.hash ? page.hash + '#' : '') + id, textContent: h.textContent || '' })
     ]);
     ul.append(li);
   });
   tocEl.append(ul);
 
-  // live highlight
   tocObserver?.disconnect?.();
   tocObserver = new IntersectionObserver((entries) => {
     entries.forEach(en => {
@@ -181,13 +201,10 @@ export function buildToc() {
   }, { root: null, rootMargin: '0px 0px -70% 0px', threshold: 0 });
   heads.forEach(h => tocObserver.observe(h));
 }
-let tocObserver = null;
 
-// ───────────────────────────── prev / next & see also ───────────────────
 export function prevNext(page) {
   const elx = $('#prevnext');
   if (!elx) return;
-
   const siblings = page.parent ? page.parent.children.slice() : [];
   const i = siblings.indexOf(page);
   const prev = i > 0 ? siblings[i - 1] : null;
@@ -213,13 +230,11 @@ export function seeAlso(page) {
   same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
 }
 
-// ───────────────────────────── link previews ─────────────────────────────
 export function attachLinkPreviews() {
-  const previewStack = []; // stack of { el, body, link, timer }
+  const previewStack = [];
   let hoverDelay = null;
-  let trimTimer;
 
-  const rewriteRelativeAnchors = (panel, page) => normalizeAnchors(panel.body, page);
+  function rewriteRelativeAnchors(panel, page) { normalizeAnchors(panel.body, page); }
 
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
@@ -245,17 +260,20 @@ export function attachLinkPreviews() {
   }
 
   function anyPreviewOrTriggerActive() {
-    if ([...document.querySelectorAll('.km-link-preview')].some(p => p.matches(':hover'))) return true;
+    const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
+    if (anyHoverPreview) return true;
     const active = document.activeElement;
     const activeIsTrigger = !!(active && active.closest && window.KM.isInternalPageLink?.(active.closest('a[href^="#"]')));
     if (activeIsTrigger) return true;
-    return previewStack.some(p => p.link && p.link.matches(':hover'));
+    const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
+    return hoveringTrigger;
   }
 
-  const scheduleTrim = () => {
+  let trimTimer;
+  function scheduleTrim() {
     clearTimeout(trimTimer);
     trimTimer = setTimeout(() => { if (!anyPreviewOrTriggerActive()) closeFrom(0); }, 220);
-  };
+  }
 
   async function fillPanel(panel, page, anchor) {
     panel.body.dataset.mathRendered = '0';
@@ -295,13 +313,13 @@ export function attachLinkPreviews() {
     container.addEventListener('mouseenter', () => { clearTimeout(panel.timer); clearTimeout(trimTimer); }, { passive: true });
     container.addEventListener('mouseleave', (e) => {
       const to = e.relatedTarget;
-      if (to && (to.closest && to.closest('.km-link-preview'))) return;
+      if (to && to.closest && to.closest('.km-link-preview')) return;
       panel.timer = setTimeout(() => { closeFrom(idx); }, 240);
     }, { passive: true });
     header.querySelector('button').addEventListener('click', () => closeFrom(idx));
 
     container.addEventListener('mouseover', (e) => maybeOpenFromEvent(e), true);
-    container.addEventListener('focusin',  (e) => maybeOpenFromEvent(e), true);
+    container.addEventListener('focusin', (e) => maybeOpenFromEvent(e), true);
 
     positionPreview(panel, linkEl);
 
@@ -315,7 +333,8 @@ export function attachLinkPreviews() {
 
   async function openPreviewForLink(a) {
     const href = a.getAttribute('href') || '';
-    const target = parseTarget(href);
+    const theTarget = parseTarget(href);
+    const target = theTarget;
     if (!target) return;
 
     const existingIdx = previewStack.findIndex(p => p.link === a);
@@ -346,30 +365,34 @@ export function attachLinkPreviews() {
     else hoverDelay = setTimeout(() => openPreviewForLink(a), 220);
   }
 
+  let __lpGlobalBound = false;
   const root = $('#content');
   if (!root) return;
   if (root.dataset.kmPreviewsBound === '1') return;
   root.dataset.kmPreviewsBound = '1';
   root.addEventListener('mouseover', maybeOpenFromEvent, true);
-  root.addEventListener('focusin',  maybeOpenFromEvent, true);
+  root.addEventListener('focusin', maybeOpenFromEvent, true);
   root.addEventListener('mouseout', (e) => {
     const to = e.relatedTarget;
-    if (to && (to.closest && to.closest('.km-link-preview'))) return;
+    if (to && to.closest && to.closest('.km-link-preview')) return;
     scheduleTrim();
   }, true);
 
-  addEventListener('hashchange', () => closeFrom(0), { passive: true });
-  addEventListener('scroll', () => scheduleTrim(), { passive: true });
+  if (!__lpGlobalBound) {
+    addEventListener('hashchange', () => closeFrom(0), { passive: true });
+    addEventListener('scroll', () => scheduleTrim(), { passive: true });
+    __lpGlobalBound = true;
+  }
 }
 
-// ───────────────────────────── keybinds ─────────────────────────────────
 export function initKeybinds() {
   const $search = $('#search');
   const $theme = $('#theme-toggle');
   const $expand = $('#expand');
+  const $kbIcon = $('#kb-icon');
 
   const isEditable = (el) => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
-  const key = (e, k) => e.key === k || e.key.toLowerCase() === (k + '').toLowerCase();
+  const key = (e, k) => e.key === k || e.key.toLowerCase() === k.toLowerCase();
   const keyIn = (e, list) => list.some((k) => key(e, k));
   const isMod = (e) => e.ctrlKey || e.metaKey;
   const noMods = (e) => !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
@@ -395,10 +418,8 @@ export function initKeybinds() {
     { id: 'theme', when: (e) => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
     { id: 'graph', when: (e) => key(e, 'g') && noMods(e), action: 'fullscreenGraph', help: 'G' },
     { id: 'help', when: (e) => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
-    { id: 'escape', when: (e) => key(e, 'Escape'), inEditable: true, action: (e) => {
-      const host = document.getElementById('kb-help');
-      if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); }
-    } },
+    { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => { const host =
+     document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true }
   ];
 
   function ensureKbHelp() {
@@ -407,7 +428,7 @@ export function initKeybinds() {
     host = el('div', { id: 'kb-help', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', hidden: true, tabIndex: '-1' });
     const panel = el('div', { class: 'panel' });
     const title = el('h2', { textContent: 'Keyboard shortcuts' });
-    const closeBtn = el('button', { type: 'button', class: 'close help', textContent: '✕', onclick: () => actions.closeHelp() });
+    const closeBtn = el('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: '✕', onclick: () => actions.closeHelp() });
     const header = el('header', {}, [title, closeBtn]);
 
     const items = [
@@ -479,3 +500,11 @@ export function initKeybinds() {
 
   $$('#kb-icon').forEach(icon => icon.addEventListener('click', (e) => { e.preventDefault(); openHelp(); }));
 }
+
+// Attach UI functions to global KM for router access
+window.KM.highlightSidebar = highlightSidebar;
+window.KM.breadcrumb = breadcrumb;
+window.KM.buildToc = buildToc;
+window.KM.prevNext = prevNext;
+window.KM.seeAlso = seeAlso;
+window.KM.closePanels = closePanels;
