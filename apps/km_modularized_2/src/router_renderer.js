@@ -6,6 +6,7 @@ import { __model, find, hashOf } from './model.js';
 import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels} from './ui.js';
 import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, decorateHeadings, decorateCodeBlocks, __trackObserver, __cleanupObservers } from './markdown.js';
 
+let currentPage = null;  
 
 // Build a deep-link URL for a given page + anchor id
 export const buildDeepURL = (page, anchorId = '') => {
