@@ -186,7 +186,7 @@ export function buildToc(page) {
     const lvl = Math.min(6, Math.max(1, parseInt(h.tagName.slice(1), 10) || 1));
     const li  = el('li', {
       'data-hid': id,
-      'data-lvl': String(lvl)   // level indicator for CSS indenting
+      'data-lvl': String(lvl)
     }, [
       el('a', { href: '#' + (page.hash ? page.hash + '#' : '') + id, textContent: h.textContent || '' })
     ]);
@@ -398,7 +398,6 @@ export function initKeybinds() {
   const $search = $('#search');
   const $theme = $('#theme-toggle');
   const $expand = $('#expand');
-  const $kbIcon = $('#kb-icon');
 
   const isEditable = (el) => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
   const key = (e, k) => e.key === k || e.key.toLowerCase() === (k + '').toLowerCase();
@@ -505,7 +504,33 @@ export function initKeybinds() {
       if (b.when(e)) { e.preventDefault(); typeof b.action === 'string' ? actions[b.action]() : b.action(e); return; }
     }
   }, { capture: true });
-
-  $$('#kb-icon').forEach(icon => icon.addEventListener('click', (e) => { e.preventDefault(); openHelp(); }));
 }
 
+// ───────────────────── Desktop “hide-*” toggles (NEW/RESTORED) ───────────
+export function initPanelToggles() {
+  const MQ_DESKTOP = window.matchMedia('(min-width: 1000px), (orientation: landscape)');
+  const ROOT = document.body;
+
+  function setHidden(flag, cls, region) {
+    ROOT.classList.toggle(cls, !!flag);
+    if (region) region.setAttribute('aria-hidden', flag ? 'true' : 'false');
+  }
+
+  window.__kmToggleSidebar = () =>
+    setHidden(!ROOT.classList.contains('hide-sidebar'), 'hide-sidebar', $('#sidebar'));
+
+  window.__kmToggleUtil = () =>
+    setHidden(!ROOT.classList.contains('hide-util'), 'hide-util', $('#util'));
+
+  window.__kmToggleCrumb = () =>
+    setHidden(!ROOT.classList.contains('hide-crumb'), 'hide-crumb', $('#crumb'));
+
+  // When switching to condensed layouts, reset to visible
+  function resetForCondensed() {
+    ROOT.classList.remove('hide-sidebar', 'hide-util', 'hide-crumb');
+    $('#sidebar')?.setAttribute('aria-hidden', 'false');
+    $('#util')?.setAttribute('aria-hidden', 'false');
+    $('#crumb')?.setAttribute('aria-hidden', 'false');
+  }
+  MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
+}
