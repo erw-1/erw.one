@@ -6,7 +6,7 @@ import { CFG, TITLE, MD, DEFAULT_THEME, ACCENT, ALLOW_JS_FROM_MD, CACHE_MIN, rea
 import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
 import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, numberHeadings, decorateHeadings, decorateCodeBlocks, wireCopyButtons, __trackObserver, __cleanupObservers } from './markdown.js';
 import { buildTree, highlightSidebar, setFolderOpen } from './ui-sidebar.js';
-import { search, buildToc, prevNext, seeAlso } from './ui-search.js';
+import { search, buildToc, prevNext, seeAlso } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
 import { buildDeepURL, parseTarget, resetScrollTop } from './router.js';
 import './loaders.js'; // registers KM.ensure* on window
@@ -677,3 +677,4 @@ function initUI() {
     if (elc) elc.innerHTML = `<h1>Content failed to load</h1><p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p><pre>${String(err?.message || err)}</pre>`;
   }
 })();
+
