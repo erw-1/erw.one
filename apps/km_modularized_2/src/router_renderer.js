@@ -5,7 +5,7 @@ import { DOC, $, $$, baseURLNoHash, ALLOW_JS_FROM_MD } from './config_dom.js';
 import { __model, find, hashOf } from './model.js';
 import { highlightCurrent } from './graph.js'
 import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels} from './ui.js';
-import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, decorateHeadings, decorateCodeBlocks, __trackObserver, __cleanupObservers } from './markdown.js';
+import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, decorateHeadings, decorateCodeBlocks, __trackObserver, __cleanupObservers, runInlineScripts } from './markdown.js';
 
 let currentPage = null;  
 
@@ -24,15 +24,7 @@ async function render(page, anchor) {
   contentEl.dataset.mathRendered = '0';
   contentEl.innerHTML = await getParsedHTML(page);
 
-  if (ALLOW_JS_FROM_MD === 'true') {
-    // Run scripts embedded in the Markdown (main content only)
-    contentEl.querySelectorAll('script').forEach(old => {
-      const s = document.createElement('script');
-      for (const { name, value } of [...old.attributes]) s.setAttribute(name, value);
-      s.textContent = old.textContent || '';
-      old.replaceWith(s);
-    });
-  }
+  if (ALLOW_JS_FROM_MD === 'true') runInlineScripts(contentEl);
 
   await enhanceRendered(contentEl, page);
 
