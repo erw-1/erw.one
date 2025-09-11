@@ -1,10 +1,8 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el } from './dom.js';
+import { DOC, $, el } from './config-dom.js';
 import { __model, sortByTitle, hashOf } from './model.js';
-import { HEADINGS_SEL, wireCopyButtons } from './markdown.js';
-import { buildDeepURL } from './router.js';
 
 // ===== Search (ranked; pages + section hits) =====
 export function search(q) {
@@ -91,68 +89,4 @@ export function search(q) {
   resUL.append(frag);
   if (!resUL.children.length) resUL.innerHTML = '<li id="no_result">No result</li>';
   resUL.setAttribute('aria-busy', 'false');
-}
-
-// ===== Table of Contents + live highlight =====
-let tocObserver = null;
-export function buildToc(page) {
-  const tocEl = $('#toc');
-  if (!tocEl) return;
-  tocEl.innerHTML = '';
-  const heads = $$('#content ' + HEADINGS_SEL);
-  if (!heads.length) return;
-
-  // entries
-  const ul = el('ul');
-  heads.forEach(h => {
-    const id = h.id || '';
-    const li = el('li', { 'data-hid': id }, [el('a', { href: '#' + (page.hash ? page.hash + '#' : '') + id, textContent: h.textContent || '' })]);
-    ul.append(li);
-  });
-  tocEl.append(ul);
-
-  // live highlight
-  tocObserver?.disconnect?.();
-  tocObserver = new IntersectionObserver((entries) => {
-    entries.forEach(en => {
-      if (!en.isIntersecting) return;
-      const id = en.target.id;
-      const a = $(`#toc li[data-hid="${id}"] > a`);
-      if (!a) return;
-      $('#toc .toc-current')?.classList.remove('toc-current');
-      a.classList.add('toc-current');
-    });
-  }, { root: null, rootMargin: '0px 0px -70% 0px', threshold: 0 });
-  heads.forEach(h => tocObserver.observe(h));
-}
-
-// ===== Prev / Next and "See also" =====
-export function prevNext(page) {
-  const elx = $('#prevnext');
-  if (!elx) return;
-  const siblings = page.parent ? page.parent.children.slice().sort(sortByTitle) : [];
-  const i = siblings.indexOf(page);
-  const prev = i > 0 ? siblings[i - 1] : null;
-  const next = i >= 0 && i < siblings.length - 1 ? siblings[i + 1] : null;
-
-  elx.innerHTML = '';
-  if (prev) elx.append(el('a', { href: '#' + hashOf(prev), class: 'prev', textContent: '← ' + prev.title }));
-  if (next) elx.append(el('a', { href: '#' + hashOf(next), class: 'next', textContent: next.title + ' →' }));
-}
-
-export function seeAlso(page) {
-  const elx = $('#seealso');
-  if (!elx) return;
-  elx.innerHTML = '';
-
-  // naive: pages sharing at least one tag; skip self and direct siblings
-  const tags = page.tagsSet || new Set();
-  if (!tags.size) return;
-
-  const same = __model.pages
-    .filter(p => p !== page && p.parent !== page.parent && [...p.tagsSet].some(t => tags.has(t)))
-    .slice(0, 6)
-    .sort(sortByTitle);
-
-  same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
 }

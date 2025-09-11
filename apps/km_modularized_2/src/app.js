@@ -4,8 +4,8 @@
 import { TITLE, MD, DEFAULT_THEME, ACCENT, ALLOW_JS_FROM_MD, CACHE_MIN, readCache, writeCache, DOC, $, $$, el, whenIdle, __getVP, __updateViewport, baseURLNoHash } from './config-dom.js';
 import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
 import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, decorateHeadings, decorateCodeBlocks, wireCopyButtons, __trackObserver, __cleanupObservers } from './markdown.js';
-import { buildTree, highlightSidebar, setFolderOpen } from './ui-sidebar.js';
-import { search, buildToc, prevNext, seeAlso } from './ui-search.js';
+import { buildTree, highlightSidebar, setFolderOpen, breadcrumb, buildToc, prevNext, seeAlso } from './ui.js';
+import { search } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
 import { buildDeepURL, parseTarget, resetScrollTop } from './router.js';
 import './loaders.js'; // registers KM.ensure* on window
@@ -100,38 +100,7 @@ function route() {
   }
 }
 
-// ───────────────────────────── breadcrumb ────────────────────────────────
-function breadcrumb(page) {
-  const dyn = $('#crumb-dyn');
-  if (!dyn) return;
-  dyn.innerHTML = '';
-  const chain = [];
-  for (let n = page; n; n = n.parent) chain.unshift(n);
-  if (chain.length) chain.shift(); // drop root label
 
-  chain.forEach((n, i) => {
-    if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
-    const wrap = el('span', { class: 'dropdown' });
-    const a = el('a', { textContent: n.title, href: '#' + n.hash });
-    if (n === page) a.className = 'crumb-current';
-    wrap.append(a);
-
-    const siblings = n.parent.children.filter(s => s !== n);
-    if (siblings.length) {
-      const ul = el('ul');
-      siblings.forEach(s => ul.append(el('li', { textContent: s.title, onclick: () => KM.nav(s) })));
-      wrap.append(ul);
-    }
-    dyn.append(wrap);
-  });
-
-  if (page.children.length) {
-    const box = el('span', { class: 'childbox' }, [el('span', { class: 'toggle', textContent: '▾' }), el('ul')]);
-    const ul = box.querySelector('ul');
-    page.children.slice().sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => KM.nav(ch) })));
-    dyn.append(box);
-  }
-}
 
 // ───────────────────────────── link previews ─────────────────────────────
 (function linkPreviews() {
