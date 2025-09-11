@@ -544,10 +544,6 @@
     cursor: pointer;
   }
 
-  #see-also h2 {
-    cursor: unset;
-  }
-
   /* ─── graph colour theme (SVG) ─── */
   #node_current {
     fill: var(--color-accent);
