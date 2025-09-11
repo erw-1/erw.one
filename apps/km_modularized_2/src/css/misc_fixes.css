@@ -1,0 +1,114 @@
+/* ---------------------------------------------------------------------------
+     5. MISC: scrollbars • fixes
+     ------------------------------------------------------------------------ */
+@layer misc {
+  /* Custom scrollbars (WebKit only) */
+  ::-webkit-scrollbar,
+  code::-webkit-scrollbar {
+    width: 25px;
+    background: transparent !important;
+  }
+
+  ::-webkit-scrollbar-thumb,
+  code::-webkit-scrollbar-thumb {
+    background: var(--color-low-contrast);
+    border-radius: 999px;
+    border: 10px solid transparent;
+    background-clip: padding-box !important;
+  }
+
+  ::-webkit-scrollbar-thumb:hover,
+  code::-webkit-scrollbar-thumb:hover {
+    background: var(--color-quarter-contrast);
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
+
+  code::-webkit-scrollbar-thumb {
+    border: 5px solid transparent;
+  }
+
+  details code::-webkit-scrollbar-thumb,
+  code::-webkit-scrollbar-thumb {
+    background: var(--color-low-contrast);
+  }
+
+  details code::-webkit-scrollbar-thumb {
+    background: var(--color-quarter-contrast);
+  }
+
+  details code::-webkit-scrollbar-thumb:hover {
+    background: var(--color-mid-contrast);
+  }
+
+  /* moz scrollbar patch */
+  @-moz-document url-prefix() {
+    :root {
+      scrollbar-color: var(--color-mid-contrast) rgba(0, 0, 0, 0) !important;
+      scrollbar-width: thin !important;
+    }
+  }
+  
+  /* ===== A11Y additions ===== */
+  :where(button, a, [role="button"], .caret, .theme-toggle):focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  #content { content-visibility: auto; contain-intrinsic-size: 1000px 800px; }
+  .km-link-preview > div { content-visibility: auto; contain-intrinsic-size: 800px 600px; }
+   
+  mark {
+     border-radius: var(--r-sm);
+     color: var(--color-accent);
+     background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+     padding: var(--g-sm) var(--g-md);
+     box-decoration-break: clone;        /* keep padding on wrapped lines */
+     -webkit-box-decoration-break: clone;
+   }
+   
+   /* optional: make super/sub look crisper */
+   sup, sub { font-size: .75em; line-height: 0; }
+   u{ text-underline-offset: .15em; }
+   
+   /* Callouts */
+   .md-callout{
+     --_c: var(--note);
+     border-radius: var(--r-md);
+     padding: var(--g-md);
+     margin: var(--g-md) 0;
+     background: color-mix(in srgb, var(--_c) 12%, transparent);
+     border-left: 2px solid color-mix(in srgb, var(--_c) 40%, transparent);
+   }
+   
+   .md-callout p:first-child{ margin-top: 0; }
+   .md-callout p:last-child{ margin-bottom: 0; }
+   
+   .md-note   { --_c: var(--note); }
+   .md-tip    { --_c: var(--tip); }
+   .md-warning{ --_c: var(--warning); }
+   .md-caution{ --_c: var(--caution); }
+   
+   /* Spoiler */
+   details.md-spoiler{
+     border-radius: var(--r-md);
+     border-left: 2px solid color-mix(in srgb, var(--color-text) 18%, transparent);
+   }
+   details.md-spoiler > summary{
+     user-select: none;
+   }
+   details.md-spoiler > summary::-webkit-details-marker{ display:none; }
+   
+   .mermaid button.code-copy {
+       display: none;
+   }
+}
