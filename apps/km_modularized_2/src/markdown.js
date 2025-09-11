@@ -2,7 +2,7 @@
 'use strict';
 
 import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
-import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
+import { setHTMLLRU, getFromHTMLLRU } from './model.js';
 
 // ───────────────────── Observer tracking (prevents leaks) ─────────────────────
 const __OBS_BY_ROOT = new WeakMap();
@@ -77,7 +77,6 @@ export function normalizeAnchors(container = $('#content'), page, { onlyFootnote
     try {
       const target = window.location.href.replace(/#.*$/, '') + href;
       const u = new URL(target);
-      // If our router wouldn’t resolve this hash as a page, rewrite to local anchor
       const looksLikeOnlyAnchor = !href.slice(1).includes('#'); // "#something"
       if (looksLikeOnlyAnchor) a.setAttribute('href', `#${base}${href}`);
     } catch {}
@@ -139,10 +138,9 @@ export function runInlineScripts(root) {
   });
 }
 
-/** Add anchor-copy buttons on headings and small polish for headings content. */
+/** Add anchor-copy buttons and small polish for headings. */
 export function decorateHeadings(page, container = DOC) {
   $$(HEADINGS_SEL, container).forEach(h => {
-    // Avoid double-wiring
     if (h.dataset.kmHeadDone === '1') return;
     h.dataset.kmHeadDone = '1';
 
@@ -176,10 +174,10 @@ export function renderMathSafe(container = DOC) {
     if (typeof window.renderMathInElement === 'function') {
       window.renderMathInElement(container, {
         delimiters: [
-        { left: '$$', right: '$$', display: true },
-        { left: '\\[', right: '\\]', display: true },
-        { left: '$', right: '$', display: false },
-        { left: '\\(', right: '\\)', display: false },
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '$', right: '$', display: false },
+          { left: '\\(', right: '\\)', display: false },
         ],
       });
       container.dataset.mathRendered = '1';
@@ -189,19 +187,21 @@ export function renderMathSafe(container = DOC) {
 
 /** Copy-button wiring shared across main content and previews. */
 export function wireCopyButtons(root, getBaseUrl) {
-    if (!root) return;
-    root.addEventListener('click', (e) => {
-        const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
-        if (!btn) return;
-        if (btn.classList.contains('heading-copy')) {
-            const h = btn.closest(HEADINGS_SEL);
-            if (!h) return;
-            const base = getBaseUrl() || (baseURLNoHash() + '#');
-            copyText(base + h.id, btn);
-        } else {
-            const pre = btn.closest('pre');
-            const code = pre?.querySelector('code');
-            copyText(code ? code.innerText : pre?.innerText || '', btn);
-        }
-    });
+  if (!root || root.dataset.copyWired === '1') return;
+  root.dataset.copyWired = '1';
+
+  root.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
+    if (!btn) return;
+    if (btn.classList.contains('heading-copy')) {
+      const h = btn.closest(HEADINGS_SEL);
+      if (!h) return;
+      const base = getBaseUrl() || (baseURLNoHash() + '#');
+      copyText(base + h.id, btn);
+    } else {
+      const pre = btn.closest('pre');
+      const code = pre?.querySelector('code');
+      copyText(code ? code.innerText : pre?.innerText || '', btn);
+    }
+  });
 }
