@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el } from './dom.js';
+import { DOC, $, el } from './config-dom.js';
 import { __model, hashOf } from './model.js';
 
 export function setFolderOpen(li, open) {
