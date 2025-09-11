@@ -2,7 +2,37 @@
 'use strict';
 
 import { DOC, $, el } from './config_dom.js';
-import { __model, sortByTitle, hashOf } from './model.js';
+import { __model, sortByTitle, hashOf, extractHeadings } from './model.js';
+
+// ───────────────────────────── Search index ─────────────────────────────
+function scoreOne(q, page) {
+  const ql = q.toLowerCase();
+  const inTitle = page.title.toLowerCase().includes(ql);
+  const titleScore = inTitle ? 10 : 0;
+
+  const body = page.content.toLowerCase();
+  let bodyScore = 0;
+  const idx = body.indexOf(ql);
+  if (idx !== -1) {
+    // basic term frequency weight
+    let count = 0, pos = idx;
+    while (pos !== -1 && count < 5) { count++; pos = body.indexOf(ql, pos + ql.length); }
+    bodyScore = count * 2;
+  }
+
+  const tagScore = page.tags?.some(t => t.toLowerCase() === ql) ? 3 : 0;
+  return titleScore + bodyScore + tagScore;
+}
+
+function findSectionMatches(q, page) {
+  const ql = q.toLowerCase();
+  const heads = extractHeadings(page);
+  const matches = [];
+  heads.forEach(h => {
+    if (h.txt.toLowerCase().includes(ql)) matches.push({ sec: h });
+  });
+  return matches;
+}
 
 // ===== Search (ranked; pages + section hits) =====
 export function search(q) {
@@ -10,74 +40,40 @@ export function search(q) {
   const treeUL = $('#tree');
   const { pages } = __model;
   if (!resUL || !treeUL) return;
-  const val = (q || '').trim().toLowerCase();
+  const val = (q || '').trim();
 
   resUL.setAttribute('aria-live', 'polite');
   resUL.setAttribute('aria-busy', 'true');
 
   if (!val) {
-    resUL.style.display = 'none';
     resUL.innerHTML = '';
     treeUL.style.display = '';
+    resUL.style.display = 'none';
     resUL.setAttribute('aria-busy', 'false');
     return;
   }
-
-  const tokens = val.split(/\s+/).filter(t => t.length >= 2);
-  const tokenRegexes = tokens.map(t => new RegExp('\\b' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'));
-  resUL.innerHTML = '';
   resUL.style.display = '';
   treeUL.style.display = 'none';
+  resUL.innerHTML = '';
 
-  const W = { title: 5, tag: 3, body: 1, secTitle: 3, secBody: 1, phraseTitle: 5, phraseBody: 2, secCountCap: 4 };
-  const phrase = tokens.length > 1 ? val : null;
-
+  // rank pages
   const scored = [];
   for (const p of pages) {
-    if (!tokens.every(tok => p.searchStr.includes(tok))) continue;
-    let score = 0;
-
-    for (const r of tokenRegexes) {
-      if (r.test(p.titleL)) score += W.title;
-      if (r.test(p.tagsL))  score += W.tag;
-      if (r.test(p.bodyL))  score += W.body;
-    }
-
-    if (phrase) {
-      if (p.titleL.includes(phrase)) score += W.phraseTitle;
-      else if (p.bodyL.includes(phrase)) score += W.phraseBody;
-    }
-
-    const matchedSecs = [];
-    for (const sec of p.sections) {
-      if (!tokens.every(tok => sec.search.includes(tok))) continue;
-      const secTitle = sec.txt.toLowerCase();
-      const secBody = sec.body.toLowerCase();
-      let s = 0;
-      for (const r of tokenRegexes) {
-        if (r.test(secTitle)) s += W.secTitle;
-        if (r.test(secBody))  s += W.secBody;
-      }
-      if (phrase && (secTitle.includes(phrase) || secBody.includes(phrase))) s += 1;
-      matchedSecs.push({ sec, s });
-    }
-
-    matchedSecs.sort((a, b) => b.s - a.s);
-    score += Math.min(W.secCountCap, matchedSecs.length);
-    scored.push({ p, score, matchedSecs });
+    const s = scoreOne(val, p);
+    if (s > 0) scored.push({ p, s });
   }
-
-  scored.sort((a, b) => b.score - a.score || sortByTitle(a.p, b.p));
+  scored.sort((a, b) => b.s - a.s || sortByTitle(a.p, b.p));
 
   const frag = DOC.createDocumentFragment();
-  for (const { p, matchedSecs } of scored) {
-    const li = el('li', { class: 'page-result' }, [
-      el('a', { href: '#' + hashOf(p), textContent: p.title })
-    ]);
+  for (const { p } of scored.slice(0, 50)) {
+    const li = el('li', { class: 'page-result' });
+    li.append(el('a', { href: '#' + p.hash, textContent: p.title }));
+
+    const matchedSecs = findSectionMatches(val, p);
     if (matchedSecs.length) {
       const base = hashOf(p);
       const sub = el('ul', { class: 'sub-results' });
-      matchedSecs.forEach(({ sec }) => {
+      matchedSecs.slice(0, 5).forEach(({ sec }) => {
         sub.append(el('li', { class: 'heading-result' }, [
           el('a', { href: `#${base ? base + '#' : ''}${sec.id}`, textContent: sec.txt })
         ]));
