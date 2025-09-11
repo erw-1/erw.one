@@ -16,7 +16,7 @@ import { buildDeepURL, route } from './router_renderer.js';
 import './loaders.js'; // registers KM.ensure* on window
 
 const KM = (window.KM = window.KM || {});
-let currentPage = null;   // debounces redundant renders on hash changes
+/* debounced renders handled in router_renderer.js */
 let uiInited = false;
 
 // ───────────────────────────── theme + UI init ───────────────────────────
@@ -101,7 +101,7 @@ function initUI() {
   }
 
   // Copy buttons (main)
-  wireCopyButtons($('#content'), () => buildDeepURL(currentPage, '') || (baseURLNoHash() + '#'));
+  wireCopyButtons($('#content'), () => baseURLNoHash() + '#');
 
   // Search box
   const searchInput = $('#search'), searchClear = $('#search-clear');
@@ -188,10 +188,10 @@ function initUI() {
     if (acted) e.preventDefault();
   }, { capture: true });
 
-  // Toggling functions for desktop (now in UI)
+  // Toggling functions for desktop
   initPanelToggles();
 
-  // Raccourcis clavier (désormais en UI, mais ils appuient sur les __kmToggle*)
+  // Keyboard shortcuts
   initKeybinds();
 }
 
@@ -230,11 +230,11 @@ function initUI() {
     attachSecondaryHomes();
     computeHashes();
 
-    // Public nav (faithful small surface)
+    // Keep historical API available for any external integrations
     KM.nav = (page) => { if (page) location.hash = '#' + (page.hash || ''); };
 
     // DOM ready + init UI
-    if (DOC.readyState === 'loading') await new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
+    await (await import('./config_dom.js')).domReady();
     initUI();
 
     await new Promise(res => setTimeout(res, 120));
@@ -242,6 +242,6 @@ function initUI() {
   } catch (err) {
     console.warn('Markdown load failed:', err);
     const elc = $('#content');
-    if (elc) elc.innerHTML = `<h1>Content failed to load</h1><p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p><pre>${String(err?.message || err)}</pre>`;
+    if (elc) elc.innerHTML = `<h1>Content failed to load</h1><p>Try reloading or check network access.</p><pre>${String(err?.message || err)}</pre>`;
   }
 })();
