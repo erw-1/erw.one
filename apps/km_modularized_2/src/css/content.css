@@ -46,10 +46,11 @@
     background: var(--color-main);
   }
 
-  img {
+  #content img {
     max-width: 100%;
     border-radius: var(--r-sm);
   }
+     
   hr {
     height: var(--g-sm);
     border: none;
@@ -62,6 +63,7 @@
     color: var(--color-mid-contrast);
     margin: 0
   }
+     
   summary:hover {
     color: var(--color-accent);
   }
