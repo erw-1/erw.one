@@ -2,13 +2,9 @@
 User-agent: *
 Disallow:
 
-# Example: keep internal search and previews out
-Disallow: /search
+# Example: keep internal previews out
 Disallow: /preview
 Disallow: /_internal
 
 # Point crawlers to your sitemaps (absolute URLs)
 Sitemap: https://example.com/sitemap.xml
-
-# Optional: multiple sitemaps or a sitemap index
-# Sitemap: https://example.com/sitemap-index.xml
