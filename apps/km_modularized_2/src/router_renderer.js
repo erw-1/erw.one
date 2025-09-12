@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, baseURLNoHash, ALLOW_JS_FROM_MD } from './config_dom.js';
+import { DOC, $, $$, el, baseURLNoHash, ALLOW_JS_FROM_MD } from './config_dom.js';
 import { __model, find, hashOf } from './model.js';
 import { highlightCurrent } from './graph.js';
 import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels } from './ui.js';
