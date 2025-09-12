@@ -3,11 +3,12 @@
 
 import { DOC, $, $$, baseURLNoHash, ALLOW_JS_FROM_MD } from './config_dom.js';
 import { __model, find, hashOf } from './model.js';
-import { highlightCurrent } from './graph.js'
-import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels} from './ui.js';
+import { highlightCurrent } from './graph.js';
+import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels } from './ui.js';
 import { getParsedHTML, decorateExternalLinks, normalizeAnchors, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, decorateHeadings, decorateCodeBlocks, __trackObserver, __cleanupObservers } from './markdown.js';
 
-let currentPage = null;  
+// Current page used to debounce renders
+let currentPage = null;
 
 // Build a deep-link URL for a given page + anchor id
 export const buildDeepURL = (page, anchorId = '') => {
@@ -42,6 +43,19 @@ async function render(page, anchor) {
   scrollToAnchor(anchor);
 }
 
+/** Enhance rendered content: decorations, previews, math, etc. */
+export async function enhanceRendered(contentEl, page) {
+  decorateExternalLinks(contentEl);
+  decorateHeadings(page, contentEl);
+  decorateCodeBlocks(contentEl);
+  decorateExternalLinks(contentEl);
+  annotatePreviewableLinks(contentEl);
+  highlightVisibleCode(contentEl);
+  await ensureKatex(); // in case math rendering needed
+  renderMathSafe(contentEl);
+  await window.KM.ensureMarkdown().then(m => m.renderMermaidLazy(contentEl));
+}
+
 /**
  * Parse a hash/href into {page, anchor} | null (faithful to original behavior)
  * - Accepts full hrefs or hash-only fragments.
@@ -61,7 +75,7 @@ export function parseTarget(hashOrHref = location.hash) {
   const base = hashOf(page);
   const baseSegs = base ? base.split('#') : [];
 
-  // If segments didn't resolve beyond root, treat the remainder as an in-page anchor on root.
+  // If segments didn't resolve beyond root, treat remainder as in-page anchor on root.
   if (seg.length && !baseSegs.length) {
     return { page: root, anchor: seg.join('#') };
   }
@@ -82,56 +96,22 @@ export function scrollToAnchor(anchor) {
   if (target) target.scrollIntoView({ behavior: 'smooth' });
 }
 
-export function route() {
-  closePanels();
-  const t = parseTarget(location.hash) ?? { page: __model.root, anchor: '' };
-  const page = t.page;
-  const anchor = t.anchor;
-
-  if (currentPage !== page) {
-    currentPage = page;
-    breadcrumb(page);
-    render(page, anchor);
-    highlightCurrent(true);
-    highlightSidebar(page);
-    if (!anchor) requestAnimationFrame(() => resetScrollTop());
-  } else if (anchor) {
+/** Main routing: render the page (if changed) on hash updates. */
+export async function route() {
+  const { page, anchor } = parseTarget();
+  if (!page || page === currentPage) {
+    // Still scroll to anchor or close panels if needed
     scrollToAnchor(anchor);
-    const a = $(`#toc li[data-hid="${anchor}"] > a`);
-    if (a) {
-      $('#toc .toc-current')?.classList.remove('toc-current');
-      a.classList.add('toc-current');
-    }
+    return;
   }
-}
+  currentPage = page;
 
-// ─────────────────────────── renderer + route ────────────────────────────
-export async function enhanceRendered(containerEl, page) {
-  decorateExternalLinks(containerEl);
+  // Close panels on page change
+  closePanels();
+  resetScrollTop();
+  highlightSidebar(page);
+  breadcrumb(page);
 
-  const imgs = $$('img', containerEl);
-  imgs.forEach((img, i) => {
-    img.loading = 'lazy';
-    img.decoding = 'async';
-    if (!img.hasAttribute('fetchpriority') && i < 2) img.setAttribute('fetchpriority', 'high');
-  });
-
-  normalizeAnchors(containerEl, page, { onlyFootnotes: true });
-  annotatePreviewableLinks(containerEl);
-
-  highlightVisibleCode(containerEl); // async
-
-  KM.ensureMarkdown().then(({ renderMermaidLazy }) => renderMermaidLazy(containerEl));
-  if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
-    const obs = __trackObserver(new IntersectionObserver((entries, o) => {
-      if (entries.some(en => en.isIntersecting)) {
-        KM.ensureKatex().then(() => renderMathSafe(containerEl));
-        o.disconnect();
-      }
-    }, { root: null, rootMargin: '200px 0px', threshold: 0 }), containerEl);
-    obs.observe(containerEl);
-  }
-
-  decorateHeadings(page, containerEl);
-  decorateCodeBlocks(containerEl);
+  // Render content
+  await render(page, anchor);
 }
