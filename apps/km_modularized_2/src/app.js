@@ -7,7 +7,7 @@ import { wireCopyButtons } from './markdown.js';
 import { buildTree, setFolderOpen, closePanels, initKeybinds, initPanelToggles } from './ui.js';
 import { search } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
-import { buildDeepURL, route, attachLinkPreviews } from './router_renderer.js';
+import { buildDeepURL, route, attachLinkPreviews, parseTarget } from './router_renderer.js';
 import './loaders.js'; // registers KM.ensure* on window
 
 const KM = (window.KM = window.KM || {});
@@ -98,7 +98,10 @@ function initUI() {
   }
 
   // Copy buttons (main content)
-  wireCopyButtons($('#content'), () => buildDeepURL(currentPage, '') || (baseURLNoHash() + '#'));
+  wireCopyButtons($('#content'), () => {
+    const t = parseTarget(location.hash);
+    return buildDeepURL(t?.page, '') || (baseURLNoHash() + '#');
+  });
 
   // Search box
   const searchInput = $('#search'), searchClear = $('#search-clear');
