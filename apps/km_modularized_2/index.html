@@ -42,17 +42,13 @@
         }
       </script>
       
-      <title>Title of your wiki</title>
-      <meta name="description"      content="Short description of this wiki/docs/etc.">
-      <link id="favicon-el" rel="icon" href="assets/logo.webp">
-      <meta name="theme-color"      content="#1e1e1e">
-      <link rel="canonical"            href="https://example.com/"> <!-- Your URL, if needed -->
- 
+      <title>Title of your wiki</title>                          <!-- tab title -->
+      <link id="favicon-el" rel="icon" href="assets/logo.webp">  <!-- tab icon -->
     
       <!-- Additional things to change in the body: 
             - line 283 - img src, if you change the "logo.webp" filename.                                                         - (situational)
-            - line 283 - title, will be replaced by the one in the JS config, but will help SEO and reduce layout shift if edited - (optional)
-            - line 346 - Static content for SEO for search engines that don't render JS                                           - (optional)
+            - line 283 - title, will be replaced by the one in the JS config, but will help SEO and reduce layout shift if edited - (optional, seo, layout shift)
+            - line 346 - Static content for SEO for search engines that don't render JS                                           - (optional, ancient seo)
       -->
 
     <!-- ===== SEO block, to be referenced on search engines (optional) =============================================================
@@ -60,10 +56,14 @@
     ============================================================================================================================= -->
 
       <!-- if you want search engines to index/follow & show big previews → robots -->
-        <!-- <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1"> -->
+       <!-- <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+       <meta name="referrer" content="no-referrer"> -->
 
-      <!-- if you want to add meta keywords: don't, major search engines ignore it in 2025 -->
-        <!-- <meta name="keywords" content="ignore,this,tag"> -->
+      <!-- if you want to add meta keywords, description, theme description -->
+      <!-- <meta name="keywords"     content="tag, second tag">
+      <meta name="description"  content="Short description of this wiki/docs/etc.">
+      <meta name="theme-color"  content="#1e1e1e">
+      <meta name="color-scheme" content="light dark"> -->
 
       <!-- if you want the canonical to consolidate duplicates → canonical -->
         <!-- <link rel="canonical" href="https://example.com/current-page"> -->
@@ -247,8 +247,6 @@
   <!-- ——— Core meta ——— -->
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="color-scheme" content="light dark">
-  <meta name="referrer" content="no-referrer">
 
   <!-- ——— Perf ——— -->
   <link rel="dns-prefetch"  href="https://cdn.jsdelivr.net">
