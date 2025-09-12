@@ -167,9 +167,9 @@ KM.ensureMarkdown = () => {
   };
 
   // Inline extension instances
-  const markExt = createInline({ name: 'mark', delimiter: '==', tag: 'mark', hint: '=' });
-  const supExt  = createInline({ name: 'sup',  delimiter: '^', tag: 'sup',  notAfterOpen: '\\[|\\^' });
-  const subExt  = createInline({ name: 'sub',  delimiter: '~', tag: 'sub',  notAfterOpen: '~', notBeforeClose: '~' });
+  const markExt =      createInline({ name: 'mark', delimiter: '==', tag: 'mark', hint: '=' });
+  const supExt  =      createInline({ name: 'sup',  delimiter: '^', tag: 'sup',  notAfterOpen: '\\[|\\^' });
+  const subExt  =      createInline({ name: 'sub',  delimiter: '~', tag: 'sub',  notAfterOpen: '~', notBeforeClose: '~' });
   const underlineExt = createInline({ name: 'underline', delimiter: '++', tag: 'u', hint: '+', notAfterOpen: '\\+', notBeforeClose: '\\+' });
 
   const calloutExt = createCallouts();

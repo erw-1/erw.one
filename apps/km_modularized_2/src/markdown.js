@@ -170,9 +170,9 @@ export function renderMathSafe(container = DOC) {
     if (typeof window.renderMathInElement === 'function') {
       window.renderMathInElement(container, {
         delimiters: [
-          { left: '$$', right: '$$', display: true },
+          { left: '$$', right: '$$',   display: true },
           { left: '\\[', right: '\\]', display: true },
-          { left: '$', right: '$', display: false },
+          { left: '$', right: '$',     display: false },
           { left: '\\(', right: '\\)', display: false }
         ]
       });

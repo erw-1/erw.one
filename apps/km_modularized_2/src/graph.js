@@ -82,6 +82,7 @@ function buildGraphData() {
     (adj.get(a) || adj.set(a, new Set()).get(a)).add(b);
     (adj.get(b) || adj.set(b, new Set()).get(b)).add(a);
   };
+  
   const tierOf = n => n < 3 ? 1 : n < 6 ? 2 : n < 11 ? 3 : n < 21 ? 4 : 5;
 
   pages.forEach((p, i) => {
@@ -109,6 +110,7 @@ function buildGraphData() {
       tagToPages.get(t).push(p._i);
     }
   });
+
   const shared = new Map();
   const MAX_PER_TAG = 80;
   for (const arr0 of tagToPages.values()) {

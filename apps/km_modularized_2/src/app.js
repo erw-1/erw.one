@@ -4,10 +4,10 @@
 import { TITLE, MD, DEFAULT_THEME, ACCENT, CACHE_MIN, readCache, writeCache, DOC, $, el, __updateViewport, baseURLNoHash} from './config_dom.js';
 import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
 import { wireCopyButtons } from './markdown.js';
-import { buildTree, setFolderOpen, closePanels, attachLinkPreviews, initKeybinds, initPanelToggles } from './ui.js';
+import { buildTree, setFolderOpen, closePanels, initKeybinds, initPanelToggles } from './ui.js';
 import { search } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
-import { buildDeepURL, route } from './router_renderer.js';
+import { buildDeepURL, route, attachLinkPreviews } from './router_renderer.js';
 import './loaders.js'; // registers KM.ensure* on window
 
 const KM = (window.KM = window.KM || {});
@@ -38,6 +38,7 @@ function initUI() {
     if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
 
     apply(dark);
+
     if (btn) {
       btn.setAttribute('aria-pressed', String(dark));
       btn.onclick = () => {
@@ -76,6 +77,7 @@ function initUI() {
 
   // Lazy-build mini-graph
   const miniElForObserver = $('#mini');
+
   if (miniElForObserver) {
     new IntersectionObserver((entries, obs) => {
       if (entries[0]?.isIntersecting) { buildGraph(); obs.disconnect(); }
@@ -85,6 +87,7 @@ function initUI() {
   // Graph fullscreen toggle
   const mini = $('#mini');
   const expandBtn = $('#expand');
+
   if (expandBtn && mini) {
     expandBtn.onclick = () => {
       const full = mini.classList.toggle('fullscreen');
@@ -100,6 +103,7 @@ function initUI() {
   // Search box
   const searchInput = $('#search'), searchClear = $('#search-clear');
   let debounce = 0;
+
   if (searchInput && searchClear) {
     searchInput.oninput = e => {
       clearTimeout(debounce);
@@ -118,9 +122,11 @@ function initUI() {
   // Panels: exclusive toggles (mobile slide-in)
   const togglePanel = sel => {
     const elx = $(sel);
+
     if (!elx) return;
     const wasOpen = elx.classList.contains('open');
     closePanels();
+
     if (!wasOpen) {
       elx.classList.add('open');
       if (!elx.querySelector('.panel-close')) {
@@ -134,10 +140,12 @@ function initUI() {
   // Resize handling
   const onResize = () => {
     __updateViewport();
+
     if (matchMedia('(min-width:1001px)').matches) {
       closePanels();
       highlightCurrent(true);
     }
+
     if ($('#mini')?.classList.contains('fullscreen')) {
       updateMiniViewport();
       highlightCurrent(true);
@@ -149,12 +157,14 @@ function initUI() {
   // Close panels on nav clicks
   $('#tree')?.addEventListener('click', e => {
     const caret = e.target.closest('button.caret');
+
     if (caret) {
       const li = caret.closest('li.folder'), sub = li.querySelector('ul');
       const open = !li.classList.contains('open');
       setFolderOpen(li, open);
       return;
     }
+
     if (e.target.closest('a')) closePanels();
   }, { passive: true });
   $('#results')?.addEventListener('click', e => { if (e.target.closest('a')) closePanels(); }, { passive: true });
@@ -167,11 +177,14 @@ function initUI() {
     if (e.key !== 'Escape') return;
     let acted = false;
     const kb = $('#kb-help');
+
     if (kb && !kb.hidden) { kb.hidden = true; acted = true; }
     const sidebarOpen = $('#sidebar')?.classList.contains('open');
     const utilOpen = $('#util')?.classList.contains('open');
+
     if (sidebarOpen || utilOpen) { closePanels(); acted = true; }
     const mini = $('#mini'); const expandBtn = $('#expand');
+
     if (mini && mini.classList.contains('fullscreen')) {
       mini.classList.remove('fullscreen');
       if (expandBtn) expandBtn.setAttribute('aria-pressed', 'false');
@@ -179,6 +192,7 @@ function initUI() {
       requestAnimationFrame(() => highlightCurrent(true));
       acted = true;
     }
+    
     if (acted) e.preventDefault();
   }, { capture: true });
 
@@ -209,6 +223,7 @@ function initUI() {
       }
     } catch (err) {
       clearTimeout(timeout);
+
       if (cached?.txt) {
         console.warn('Network failed; using stale cached Markdown');
         txt = cached.txt;
@@ -233,6 +248,7 @@ function initUI() {
   } catch (err) {
     console.warn('Markdown load failed:', err);
     const elc = $('#content');
+
     if (elc) {
       elc.innerHTML = `<h1>Content failed to load</h1><p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p><pre>${String(err?.message || err)}</pre>`;
     }

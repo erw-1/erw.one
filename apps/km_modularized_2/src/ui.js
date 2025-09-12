@@ -1,10 +1,8 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, HEADINGS_SEL, __getVP, baseURLNoHash } from './config_dom.js';
+import { DOC, $, $$, el, HEADINGS_SEL } from './config_dom.js';
 import { __model, hashOf } from './model.js';
-import { getParsedHTML, normalizeAnchors, wireCopyButtons, __cleanupObservers } from './markdown.js';
-import { buildDeepURL, parseTarget, enhanceRendered } from './router_renderer.js';
 
 export function closePanels() {
   $('#sidebar')?.classList.remove('open');
@@ -16,10 +14,12 @@ export function setFolderOpen(li, open) {
   li.classList.toggle('open', !!open);
   li.setAttribute('aria-expanded', String(!!open));
   const caret = li.querySelector('button.caret');
+
   if (caret) {
     caret.setAttribute('aria-expanded', String(!!open));
     caret.setAttribute('aria-label', open ? 'Collapse' : 'Expand');
   }
+
   const sub = li.querySelector('ul[role="group"]');
   if (sub) sub.style.display = open ? 'block' : 'none';
 }
@@ -33,8 +33,8 @@ export function buildTree() {
   ul.setAttribute('role', 'tree');
   ul.innerHTML = '';
 
-  const prim = root.children.filter(c => !c.isSecondary);
-  const secs = root.children.filter(c => c.isSecondary)
+  const prim = root.children.filter(c    => !c.isSecondary);
+  const secs = root.children.filter(c    => c.isSecondary)
                             .sort((a, b) => a.clusterId - b.clusterId);
 
   const rec = (nodes, container, depth = 0) => {
@@ -228,199 +228,12 @@ export function seeAlso(page) {
   same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
 }
 
-/** Hover link previews */
-export function attachLinkPreviews() {
-  const previewStack = [];
-  const HOVER_DELAY_MS = 500;
-  let hoverTimer = null;
-  let hoverLinkEl = null;
-
-  function cancelPendingHover() {
-    if (hoverTimer) clearTimeout(hoverTimer);
-    if (hoverLinkEl) {
-      hoverLinkEl.style.cursor = '';
-      delete hoverLinkEl.dataset.previewPending;
-    }
-    hoverTimer = null;
-    hoverLinkEl = null;
-  }
-
-  function rewriteRelativeAnchors(panel, page) {
-    normalizeAnchors(panel.body, page);
-  }
-
-  function positionPreview(panel, linkEl) {
-    const rect = linkEl.getBoundingClientRect();
-    const { __VPW: vw, __VPH: vh } = __getVP();
-    const gap = 8;
-    const elx = panel.el;
-    const W = Math.max(1, elx.offsetWidth);
-    const H = Math.max(1, elx.offsetHeight);
-    const preferRight = rect.right + gap + W <= vw;
-    const left = preferRight
-      ? Math.min(rect.right + gap, vw - W - gap)
-      : Math.max(gap, rect.left - gap - W);
-    const top = Math.min(Math.max(gap, rect.top), Math.max(gap, vh - H - gap));
-    Object.assign(panel.el.style, { left: left + 'px', top: top + 'px' });
-  }
-
-  function closeFrom(indexInclusive = 0) {
-    for (let i = previewStack.length - 1; i >= indexInclusive; i--) {
-      const p = previewStack[i];
-      clearTimeout(p.timer);
-      __cleanupObservers(p.el);
-      p.el.remove();
-      previewStack.pop();
-    }
-  }
-
-  function anyPreviewOrTriggerActive() {
-    const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
-    if (anyHoverPreview) return true;
-    const active = document.activeElement;
-    const activeIsTrigger = active && active.closest && window.KM.isInternalPageLink?.(active.closest('a[href^="#"]'));
-    if (activeIsTrigger) return true;
-    const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
-    return hoveringTrigger;
-  }
-
-  let trimTimer;
-  function scheduleTrim() {
-    clearTimeout(trimTimer);
-    trimTimer = setTimeout(() => { if (!anyPreviewOrTriggerActive()) closeFrom(0); }, 220);
-  }
-
-  async function fillPanel(panel, page, anchor) {
-    panel.body.dataset.mathRendered = '0';
-    panel.body.innerHTML = await getParsedHTML(page);
-    rewriteRelativeAnchors(panel, page);
-    await enhanceRendered(panel.body, page);
-
-    if (anchor) {
-      const container = panel.el;
-      await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
-      const t = panel.body.querySelector('#' + CSS.escape(anchor));
-      if (t) {
-        const header = container.querySelector('header');
-        const headerH = header ? header.offsetHeight : 0;
-        const cRect = container.getBoundingClientRect();
-        const tRect = t.getBoundingClientRect();
-        const y = tRect.top - cRect.top + container.scrollTop;
-        const top = Math.max(0, y - headerH - 6);
-        container.scrollTo({ top, behavior: 'auto' });
-        t.classList.add('km-preview-focus');
-      }
-    }
-  }
-
-  function createPanel(linkEl) {
-    const container = el('div', { class: 'km-link-preview', role: 'dialog', 'aria-label': 'Preview' });
-    const header = el('header', {}, [
-      el('button', { type: 'button', class: 'km-preview-close', title: 'Close', 'aria-label': 'Close', innerHTML: '✕' })
-    ]);
-    const body = el('div');
-    container.append(header, body);
-    DOC.body.appendChild(container);
-
-    const panel = { el: container, body, link: linkEl, timer: null };
-    const idx = previewStack.push(panel) - 1;
-
-    container.addEventListener('mouseenter', () => { clearTimeout(panel.timer); clearTimeout(trimTimer); }, { passive: true });
-    container.addEventListener('mouseleave', e => {
-      const to = e.relatedTarget;
-      if (to && to.closest && to.closest('.km-link-preview')) return;
-      panel.timer = setTimeout(() => closeFrom(idx), 240);
-    }, { passive: true });
-    header.querySelector('button').addEventListener('click', () => closeFrom(idx));
-    container.addEventListener('mouseover', e => maybeOpenFromEvent(e), true);
-    container.addEventListener('focusin', e => maybeOpenFromEvent(e), true);
-
-    positionPreview(panel, linkEl);
-
-    wireCopyButtons(panel.el, () => {
-      const t = parseTarget(panel.link.getAttribute('href') || '');
-      return buildDeepURL(t?.page, '') || (baseURLNoHash() + '#');
-    });
-
-    return panel;
-  }
-
-  async function openPreviewForLink(a) {
-    const href = a.getAttribute('href') || '';
-    const target = parseTarget(href);
-    if (!target) return;
-
-    const existingIdx = previewStack.findIndex(p => p.link === a);
-    if (existingIdx >= 0) {
-      const existing = previewStack[existingIdx];
-      clearTimeout(existing.timer);
-      positionPreview(existing, a);
-      return;
-    }
-
-    const panel = createPanel(a);
-    previewStack.forEach(p => clearTimeout(p.timer));
-    await fillPanel(panel, target.page, target.anchor);
-  }
-
-  function isInternalPageLink(a) {
-    const href = a?.getAttribute('href') || '';
-    return !!parseTarget(href);
-  }
-  window.KM.isInternalPageLink = isInternalPageLink;
-
-  function maybeOpenFromEvent(e) {
-    const a = e.target?.closest('a[href^="#"]');
-    if (!a || !isInternalPageLink(a)) return;
-
-    if (e.type === 'focusin') {
-      cancelPendingHover();
-      openPreviewForLink(a);
-      return;
-    }
-
-    // hover
-    cancelPendingHover();
-    hoverLinkEl = a;
-    a.dataset.previewPending = '1';
-    a.style.cursor = 'progress';
-
-    hoverTimer = setTimeout(() => {
-      a.style.cursor = '';
-      delete a.dataset.previewPending;
-      openPreviewForLink(a);
-      hoverTimer = null;
-      hoverLinkEl = null;
-    }, HOVER_DELAY_MS);
-
-    a.addEventListener('mouseleave', cancelPendingHover, { once: true });
-    a.addEventListener('blur', cancelPendingHover, { once: true });
-  }
-
-  const root = $('#content');
-  if (!root) return;
-  if (root.dataset.kmPreviewsBound === '1') return;
-  root.dataset.kmPreviewsBound = '1';
-  root.addEventListener('mouseover', maybeOpenFromEvent, true);
-  root.addEventListener('focusin', maybeOpenFromEvent, true);
-  root.addEventListener('mouseout', e => {
-    const to = e.relatedTarget;
-    if (e.target?.closest('a[href^="#"]') && (!to || !to.closest || !to.closest('a[href^="#"]'))) {
-      cancelPendingHover();
-    }
-    if (to && (to.closest && to.closest('.km-link-preview'))) return;
-    scheduleTrim();
-  }, true);
-
-  addEventListener('hashchange', () => { cancelPendingHover(); closeFrom(0); }, { passive: true });
-  addEventListener('scroll', () => { cancelPendingHover(); scheduleTrim(); }, { passive: true });
-}
-
 /** Initialize keyboard shortcuts */
 export function initKeybinds() {
   const $search = $('#search');
   const $theme  = $('#theme-toggle');
   const $expand = $('#expand');
+  const $kbIcon = $('#kb-icon'); 
 
   const isEditable = el => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
   const key = (e, k) => e.key === k || e.key.toLowerCase() === k.toLowerCase();
@@ -437,6 +250,8 @@ export function initKeybinds() {
     fullscreenGraph: () => $expand?.click(),
     openHelp, closeHelp
   };
+
+  $kbIcon?.addEventListener('click', (e) => { e.preventDefault(); actions.openHelp(); });
 
   const bindings = [
     { id: 'search-ctrlk', when: e => isMod(e) && key(e, 'k'), action: 'focusSearch', inEditable: true, help: 'Ctrl/Cmd + K' },
@@ -506,6 +321,7 @@ export function initKeybinds() {
     });
     (first || host).focus();
   }
+
   function closeHelp() {
     const host = document.getElementById('kb-help');
     if (host) host.hidden = true;
@@ -543,19 +359,16 @@ export function initPanelToggles() {
     if (region) region.setAttribute('aria-hidden', flag ? 'true' : 'false');
   }
 
-  window.__kmToggleSidebar = () =>
-    setHidden(!ROOT.classList.contains('hide-sidebar'), 'hide-sidebar', $('#sidebar'));
-  window.__kmToggleUtil = () =>
-    setHidden(!ROOT.classList.contains('hide-util'), 'hide-util', $('#util'));
-  window.__kmToggleCrumb = () =>
-    setHidden(!ROOT.classList.contains('hide-crumb'), 'hide-crumb', $('#crumb'));
+  window.__kmToggleSidebar = () => setHidden(!ROOT.classList.contains('hide-sidebar'), 'hide-sidebar', $('#sidebar'));
+  window.__kmToggleUtil = () =>    setHidden(!ROOT.classList.contains('hide-util'),    'hide-util',    $('#util'));
+  window.__kmToggleCrumb = () =>   setHidden(!ROOT.classList.contains('hide-crumb'),   'hide-crumb',   $('#crumb'));
 
   // Reset toggles when switching to condensed layouts
   function resetForCondensed() {
     ROOT.classList.remove('hide-sidebar', 'hide-util', 'hide-crumb');
     $('#sidebar')?.setAttribute('aria-hidden', 'false');
-    $('#util')?.setAttribute('aria-hidden', 'false');
-    $('#crumb')?.setAttribute('aria-hidden', 'false');
+    $('#util')?.setAttribute   ('aria-hidden', 'false');
+    $('#crumb')?.setAttribute  ('aria-hidden', 'false');
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }

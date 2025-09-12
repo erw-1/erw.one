@@ -33,7 +33,7 @@ export function parseMarkdownBundle(txt) {
     hdr.replace(/(\w+)\s*[:=]\s*"([^"]*)"/g, (_, k, v) => (meta[k] = v.trim()));
     // Restore markers in body
     const content = (body || '')
-      .replace(new RegExp(HOPEN, 'g'), '<!--')
+      .replace(new RegExp(HOPEN,  'g'), '<!--')
       .replace(new RegExp(HCLOSE, 'g'), '-->')
       .trim();
 
@@ -175,6 +175,6 @@ export const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
 
 export const __model = {
   get pages() { return pages; },
-  get root() { return root; },
-  get byId() { return byId; }
+  get root()  { return root; },
+  get byId()  { return byId; }
 };
