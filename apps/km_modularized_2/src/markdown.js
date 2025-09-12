@@ -1,8 +1,8 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
-import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
+import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
+import { setHTMLLRU, getFromHTMLLRU } from './model.js';
 
 // ───────────────────── Observer tracking (prevent leaks) ─────────────────────
 
@@ -143,7 +143,7 @@ export function decorateHeadings(page, container = DOC) {
     if (h.dataset.kmHeadDone === '1') return;
     h.dataset.kmHeadDone = '1';
 
-    const btn = iconBtn('Copy link', ICONS.link, 'heading-copy');
+    const btn = iconBtn('Copy link', ICONS_PUBLIC.link, 'heading-copy');
     const wrap = el('span', { class: 'heading-tools' }, btn);
     h.append(wrap);
   });
@@ -155,7 +155,7 @@ export function decorateCodeBlocks(container = DOC) {
     if (pre.dataset.kmCodeDone === '1') return;
     pre.dataset.kmCodeDone = '1';
     const first = pre.querySelector('code');
-    const btn = iconBtn('Copy code', ICONS.code, 'code-copy');
+    const btn = iconBtn('Copy code', ICONS_PUBLIC.code, 'code-copy');
     const header = el('div', { class: 'code-tools' }, btn);
 
     // Optional language label

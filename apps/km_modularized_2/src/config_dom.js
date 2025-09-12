@@ -58,6 +58,13 @@ const KM = window.KM;
 let __VPW = window.innerWidth;
 let __VPH = window.innerHeight;
 
+// These are updated by app.js resize listener (kept faithful)
+export function __updateViewport() {
+  __VPW = window.innerWidth;
+  __VPH = window.innerHeight;
+}
+export const __getVP = () => ({ __VPW, __VPH });
+
 /** Query a single element (default context = document) */
 export const $ = (sel, c = DOC) => c.querySelector(sel);
 
