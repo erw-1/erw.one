@@ -521,7 +521,7 @@ export function initKeybinds() {
     const focusables = host.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
     const first = focusables[0], last = focusables[focusables.length - 1];
     host.addEventListener('keydown', (e) => {
-      if (e.key !== 'Tab') retur
+      if (e.key !== 'Tab') return;
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
     });
@@ -576,3 +576,4 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
+
