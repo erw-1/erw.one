@@ -1,9 +1,10 @@
+// loaders.js
 /* eslint-env browser, es2022 */
 'use strict';
 
 import { DOC, LANGS } from './config_dom.js';
 
-// Keep tiny global surface
+// Keep tiny global surface (for storing loaded libs)
 const KM = (window.KM = window.KM || {});
 
 // ensureOnce: run async initializer at most once
@@ -28,7 +29,9 @@ KM.ensureD3 = ensureOnce(async () => {
     forceCenter: force.forceCenter,
     drag: drag.drag
   };
+  return KM.d3;
 });
+export const ensureD3 = KM.ensureD3;
 
 // ───────── highlight.js (core + optional languages) ─────────
 KM.ensureHighlight = ensureOnce(async () => {
@@ -43,10 +46,12 @@ KM.ensureHighlight = ensureOnce(async () => {
     }));
   }
   window.hljs = hljs; // expose for highlightElement()
+  return hljs;
 });
+export const ensureHighlight = KM.ensureHighlight;
 
 // Theme swap for highlight.js (not memoized by design)
-KM.ensureHLJSTheme = async () => {
+export const ensureHLJSTheme = async () => {
   const THEME = {
     light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
     dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
@@ -81,6 +86,7 @@ KM.ensureKatex = ensureOnce(async () => {
   window.katex = katex;
   window.renderMathInElement = auto.default;
 });
+export const ensureKatex = KM.ensureKatex;
 
 // ───────── Marked + Mermaid + extensions bundle ─────────
 let mdReady = null;
@@ -164,7 +170,8 @@ KM.ensureMarkdown = () => {
       return { type: "mermaid", raw: m[0], text: m[1] };
     },
     renderer(tok) {
-      const escHTML = (s) => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+      const escHTML = (s) =>
+        s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
       return `<div class="mermaid">${escHTML(tok.text)}</div>\n`;
     }
   };
@@ -253,6 +260,7 @@ KM.ensureMarkdown = () => {
 
   return mdReady;
 };
+export const ensureMarkdown = KM.ensureMarkdown;
 
 // Sync Mermaid theme with page (exported utility)
 KM.syncMermaidThemeWithPage = async () => {
@@ -276,3 +284,4 @@ KM.syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
+export const syncMermaidThemeWithPage = KM.syncMermaidThemeWithPage;
