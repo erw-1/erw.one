@@ -2,10 +2,11 @@
 'use strict';
 
 import { DOC, $, $$, el, HEADINGS_SEL, __getVP, baseURLNoHash } from './config_dom.js';
-import { __model, hashOf } from './model.js';
+import { __model, hashOf, nav } from './model.js';
 import { getParsedHTML, normalizeAnchors, wireCopyButtons, __cleanupObservers } from './markdown.js';
 import { buildDeepURL, parseTarget, enhanceRendered } from './router_renderer.js';
 
+// Hide panels (non-mobile)
 export function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
@@ -156,7 +157,7 @@ export function breadcrumb(page) {
     const siblings = n.parent.children.filter(s => s !== n);
     if (siblings.length) {
       const ul = el('ul');
-      siblings.forEach(s => ul.append(el('li', { textContent: s.title, onclick: () => KM.nav(s) })));
+      siblings.forEach(s => ul.append(el('li', { textContent: s.title, onclick: () => nav(s) })));
       wrap.append(ul);
     }
     dyn.append(wrap);
@@ -165,7 +166,9 @@ export function breadcrumb(page) {
   if (page.children.length) {
     const box = el('span', { class: 'childbox' }, [el('span', { class: 'toggle', textContent: '▾' }), el('ul')]);
     const ul = box.querySelector('ul');
-    page.children.slice().sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => KM.nav(ch) })));
+    page.children.slice().sort((a,b) => a.title.localeCompare(b.title)).forEach(ch =>
+      ul.append(el('li', { textContent: ch.title, onclick: () => nav(ch) }))
+    );
     dyn.append(box);
   }
 }
@@ -240,7 +243,7 @@ export function seeAlso(page) {
 
 // ───────────────────────────── link previews (moved) ─────────────────────
 export function attachLinkPreviews() {
-  const previewStack = []; // stack de { el, body, link, timer }
+  const previewStack = []; // stack of { el, body, link, timer }
   const HOVER_DELAY_MS = 500;
   let hoverTimer = null;
   let hoverLinkEl = null;
@@ -255,7 +258,9 @@ export function attachLinkPreviews() {
     hoverLinkEl = null;
   }
 
-  function rewriteRelativeAnchors(panel, page) { normalizeAnchors(panel.body, page); }
+  function rewriteRelativeAnchors(panel, page) {
+    normalizeAnchors(panel.body, page);
+  }
 
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
@@ -284,7 +289,7 @@ export function attachLinkPreviews() {
     const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
     if (anyHoverPreview) return true;
     const active = document.activeElement;
-    const activeIsTrigger = !!(active && active.closest && window.KM.isInternalPageLink?.(active.closest('a[href^="#"]')));
+    const activeIsTrigger = !!(active && active.closest && parseTarget(active.closest('a[href^="#"]')?.getAttribute('href')) != null);
     if (activeIsTrigger) return true;
     const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
     return hoveringTrigger;
@@ -370,36 +375,29 @@ export function attachLinkPreviews() {
     await fillPanel(panel, target.page, target.anchor);
   }
 
-  function isInternalPageLink(a) {
-    const href = a?.getAttribute('href') || '';
-    return !!parseTarget(href);
-  }
-  window.KM.isInternalPageLink = isInternalPageLink;
-
   function maybeOpenFromEvent(e) {
     const a = e.target?.closest?.('a[href^="#"]');
-    if (!a || !isInternalPageLink(a)) return;
+    if (!a || !parseTarget(a.getAttribute('href'))) return;
 
-    // focus → immédiat (pas de délai)
+    // focus → immediate (no delay)
     if (e.type === 'focusin') {
       cancelPendingHover();
       openPreviewForLink(a);
       return;
     }
 
-    // hover → délai + curseur “progress”
+    // hover → delay + cursor "progress"
     if (hoverLinkEl !== a) cancelPendingHover();
     hoverLinkEl = a;
     a.dataset.previewPending = '1';
     a.style.cursor = 'progress';
 
-    cancelPendingHover(); // éviter doublons si on reçoit plusieurs mouseover en rafale
+    cancelPendingHover(); // avoid duplicates if multiple mouseover in burst
     hoverLinkEl = a;
     a.dataset.previewPending = '1';
     a.style.cursor = 'progress';
 
     hoverTimer = setTimeout(() => {
-      // termine l'état d’attente et ouvre
       a.style.cursor = '';
       delete a.dataset.previewPending;
       openPreviewForLink(a);
@@ -407,13 +405,10 @@ export function attachLinkPreviews() {
       hoverLinkEl = null;
     }, HOVER_DELAY_MS);
 
-    // annulations locales
     a.addEventListener('mouseleave', cancelPendingHover, { once: true });
     a.addEventListener('blur', cancelPendingHover, { once: true });
   }
 
-  // Bind racine
-  let __lpGlobalBound = false;
   const root = $('#content');
   if (!root) return;
   if (root.dataset.kmPreviewsBound === '1') return;
@@ -422,7 +417,7 @@ export function attachLinkPreviews() {
   root.addEventListener('focusin',  maybeOpenFromEvent, true);
   root.addEventListener('mouseout', (e) => {
     const to = e.relatedTarget;
-    // annuler l’attente si on sort du lien
+    // cancel pending hover if leaving a link
     if (e.target?.closest?.('a[href^="#"]') && (!to || !to.closest || !to.closest('a[href^="#"]'))) {
       cancelPendingHover();
     }
@@ -430,7 +425,7 @@ export function attachLinkPreviews() {
     scheduleTrim();
   }, true);
 
-  // annuler si le contexte change
+  // cancel if context changes
   addEventListener('hashchange', () => { cancelPendingHover(); closeFrom(0); }, { passive: true });
   addEventListener('scroll', () => { cancelPendingHover(); scheduleTrim(); }, { passive: true });
 }
@@ -468,7 +463,12 @@ export function initKeybinds() {
     { id: 'theme', when: (e) => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
     { id: 'graph', when: (e) => key(e, 'g') && noMods(e), action: 'fullscreenGraph', help: 'G' },
     { id: 'help', when: (e) => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
-    { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true }
+    { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => {
+        const host = document.getElementById('kb-help');
+        if (host && !host.hidden) {
+          e.preventDefault(); actions.closeHelp();
+        }
+      }, inEditable: true }
   ];
 
   function ensureKbHelp() {
@@ -521,7 +521,7 @@ export function initKeybinds() {
     const focusables = host.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
     const first = focusables[0], last = focusables[focusables.length - 1];
     host.addEventListener('keydown', (e) => {
-      if (e.key !== 'Tab') return;
+      if (e.key !== 'Tab') retur
       if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
       else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
     });
@@ -576,4 +576,3 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
-
