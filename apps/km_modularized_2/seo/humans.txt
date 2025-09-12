@@ -1,0 +1,8 @@
+/* TEAM */
+Developer: Your Name
+Twitter: https://x.com/your
+Website: https://example.com
+
+/* SITE */
+Standards: HTML5, CSS3, ES2022
+Software: Static site generator XYZ
