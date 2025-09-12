@@ -1,0 +1,6 @@
+Contact: mailto:security@example.com
+Policy: https://example.com/security
+Hiring: https://example.com/careers
+Encryption: https://example.com/pgp.txt
+Acknowledgments: https://example.com/hall-of-fame
+Expires: 2026-01-01T00:00:00Z
