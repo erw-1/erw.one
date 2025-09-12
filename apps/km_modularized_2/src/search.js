@@ -24,7 +24,8 @@ export function search(q) {
   }
 
   const tokens = val.split(/\s+/).filter(t => t.length >= 2);
-  const tokenRegexes = tokens.map(t => new RegExp('\\b' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'));
+  const tokenRegexes = tokens.map(t => new RegExp('\\b' + 
+    t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'));
   resUL.innerHTML = '';
   resUL.style.display = '';
   treeUL.style.display = 'none';
