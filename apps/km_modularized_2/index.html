@@ -13,8 +13,9 @@
     5. Access your km here! > https://{github_username}.github.io/{repo_name}
     
 ============================================================================= -->
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
+  <meta name="referrer" content="no-referrer"> 
   <link rel="modulepreload" href="dist/km.min.js">
   <!-- =====================================================================================================================================
   Configuration - Edit all this !
@@ -55,40 +56,39 @@
           Replace example values. Uncomment what you need. Delete what you don't want.  
     ============================================================================================================================= -->
 
-      <!-- if you want search engines to index/follow & show big previews → robots -->
-       <!-- <meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
-       <meta name="referrer" content="no-referrer"> -->
-
       <!-- if you want to add meta keywords, description, theme description -->
-      <!-- <meta name="keywords"     content="tag, second tag">
-      <meta name="description"  content="Short description of this wiki/docs/etc.">
-      <meta name="theme-color"  content="#1e1e1e">
-      <meta name="color-scheme" content="light dark"> -->
+        <meta name="keywords"              content="tag, second tag">
+        <meta name="description"           content="Short description of this wiki/docs/etc.">
+        <link rel="manifest"               href="/site.webmanifest">
+        <link rel="icon"                   href="/favicon.ico" sizes="any">
+        <link rel="icon"                   href="/icon.svg" type="image/svg+xml">
+        <link rel="apple-touch-icon"       href="/apple-touch-icon.png">
+        <link rel="icon" type="image/png"  href="/favicon-32.png" sizes="32x32">
+        <link rel="icon" type="image/webp" href="/favicon.webp" sizes="32x32">
+        <link rel="mask-icon"              href="/safari-pinned-tab.svg" color="#111111">
+        <meta name="theme-color"           content="#111111">
+        <meta name="color-scheme"          content="light dark">      
 
       <!-- if you want the canonical to consolidate duplicates → canonical -->
         <!-- <link rel="canonical" href="https://example.com/current-page"> -->
 
-      <!-- if you want international versions (intl SEO) → hreflang alternates -->
-        <!-- <link rel="alternate" href="https://example.com/page"    hreflang="x-default"> -->
-        <!-- <link rel="alternate" href="https://example.com/page"    hreflang="en"> -->
-        <!-- <link rel="alternate" href="https://example.com/fr/page" hreflang="fr"> -->
-        <!-- <link rel="alternate" href="https://example.com/es/page" hreflang="es"> -->
-
-      <!-- if you want embedded-only pages to be indexable → indexifembedded -->
-      <!-- use together with noindex on the canonical page that only loads in an <iframe> -->
-        <!-- <meta name="robots" content="noindex,indexifembedded"> -->
-
-      <!-- if you want to prevent Google translations for this page -->
-        <!-- <meta name="robots" content="notranslate"> -->
-      
       <!-- if you want to control snippets/images/videos on this page (legal/privacy) -->
-      <!-- Examples (UNCOMMENT ONE PER NEED): -->
+        <!-- <meta name="robots"    content="index,follow"> -->
         <!-- <meta name="robots"    content="nosnippet"> -->
         <!-- <meta name="googlebot" content="noimageindex"> -->
         <!-- <meta name="robots"    content="max-snippet:0"> -->
         <!-- <meta name="robots"    content="max-image-preview:standard"> -->
         <!-- <meta name="robots"    content="max-video-preview:0"> -->
+ 
+      <!-- if you want to prevent Google translations for this page -->
+        <!-- <meta name="robots" content="notranslate"> -->
 
+       <!-- if you want international versions (intl SEO) → hreflang alternates -->
+        <!-- <link rel="alternate" href="https://example.com/page"    hreflang="x-default"> -->
+        <!-- <link rel="alternate" href="https://example.com/page"    hreflang="en"> -->
+        <!-- <link rel="alternate" href="https://example.com/fr/page" hreflang="fr"> -->
+        <!-- <link rel="alternate" href="https://example.com/es/page" hreflang="es"> -->
+ 
       <!-- if you want to verify ownership → search engine verifications -->
         <!-- <meta name="google-site-verification" content="GOOGLE_TOKEN"> -->
         <!-- <meta name="msvalidate.01"            content="BING_TOKEN"> -->
@@ -96,19 +96,23 @@
         <!-- <meta name="p:domain_verify"          content="PINTEREST_TOKEN"> -->
 
       <!-- if you want rich sharing on Facebook/LinkedIn/X → Open Graph -->
-        <!-- <meta property="og:type"        content="website">
-        <meta property="og:site_name"   content="Your Wiki Name">
-        <meta property="og:title"       content="Page Title (≈60 chars)">
-        <meta property="og:description" content="Compelling description (≤200 chars)">
-        <meta property="og:url"         content="https://example.com/current-page">
-        <meta property="og:image"       content="https://example.com/social/cover.jpg">
-        <meta property="og:image:alt"   content="Accessible alt text for the cover image"> -->
+        <!-- <meta property="og:type"         content="website">
+        <meta property="og:site_name"    content="Your Wiki Name">
+        <meta property="og:title"        content="Page Title (≈60 chars)">
+        <meta property="og:description"  content="Compelling description (≤200 chars)">
+        <meta property="og:url"          content="https://example.com/current-page">
+        <meta property="og:image"        content="https://example.com/social/cover.jpg">
+        <meta property="og:image:width"  content="1200">
+        <meta property="og:image:height" content="630">
+        <meta property="og:image:alt"    content="Accessible alt text for the cover image"> -->
 
       <!-- if you want rich sharing on X (Twitter) → Twitter cards -->
         <!-- <meta name="twitter:card"        content="summary_large_image">
         <meta name="twitter:title"       content="Page Title">
         <meta name="twitter:description" content="Same as meta description">
-        <meta name="twitter:image"       content="https://example.com/social/cover.jpg"> -->
+        <meta name="twitter:image"       content="https://example.com/social/cover.jpg">
+        <meta name="twitter:card"        content="summary_large_image">
+        <meta name="twitter:site"        content="@yourhandle">-->
 
       <!-- if you want automatic embeds on other sites → oEmbed discovery -->
         <!-- <link rel="alternate" type="application/json+oembed" href="https://example.com/oembed.json?url={encoded_page_url}" title="oEmbed">
@@ -119,6 +123,7 @@
         {
           "@context": "https://schema.org",
           "@type": "Organization",
+          "@id":"https://example.com/#org",
           "name": "Your Org",
           "url": "https://example.com/",
           "logo": "https://example.com/logo.png",
@@ -131,6 +136,7 @@
         {
           "@context": "https://schema.org",
           "@type": "WebSite",
+          "@id":"https://example.com/#website",
           "name": "Your Wiki",
           "url": "https://example.com/",
           "potentialAction": {
@@ -144,15 +150,24 @@
       <!-- if you want breadcrumbs in rich results → BreadcrumbList JSON-LD -->
         <!-- <script type="application/ld+json">
         {
-          "@context": "https://schema.org",
-          "@type": "BreadcrumbList",
-          "itemListElement": [
-            {"@type": "ListItem","position": 1,"name": "Home","item": "https://example.com/"},
-            {"@type": "ListItem","position": 2,"name": "Topic","item": "https://example.com/topic/"},
-            {"@type": "ListItem","position": 3,"name": "Current Page","item": "https://example.com/topic/current-page"}
-          ]
-        }
-        </script> -->
+         "@context":"https://schema.org",
+         "@type":"TechArticle",
+         "headline":"Getting Started",
+         "description":"Install, configure, and use Your Wiki.",
+         "author":{"@type":"Organization","@id":"https://example.com/#org"},
+         "datePublished":"2025-01-15",
+         "dateModified":"2025-01-15",
+         "image":["https://example.com/social/getting-started.jpg"],
+         "mainEntityOfPage":{"@type":"WebPage","@id":"https://example.com/docs/getting-started"},
+         "breadcrumb":{
+           "@type":"BreadcrumbList",
+           "itemListElement":[
+             {"@type":"ListItem","position":1,"name":"Docs","item":"https://example.com/docs/"},
+             {"@type":"ListItem","position":2,"name":"Getting Started","item":"https://example.com/docs/getting-started"}
+           ]
+         }
+       }
+       </script> -->
 
       <!-- if you want a person/bio page → Person/ProfilePage JSON-LD -->
         <!-- <script type="application/ld+json">
@@ -224,16 +239,6 @@
           "offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}
         }
         </script> -->
-
-      <!-- if you want PWA install & better SERP icons → manifest & icons -->
-        <!-- <link rel="manifest" href="/site.webmanifest">
-        <link rel="icon" href="/favicon.ico" sizes="any">
-        <link rel="icon" href="/icon.svg" type="image/svg+xml">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-        <link rel="icon" type="image/png" href="/favicon-32.png" sizes="32x32">
-        <link rel="icon" type="image/webp" href="/favicon.webp" sizes="32x32">
-        <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#111111">
-        <meta name="theme-color" content="#111111"> -->      
 
       <!-- if you want Mastodon/identity verification → rel=me (not SEO, but useful) -->
         <!-- <link rel="me" href="https://mastodon.social/@yourhandle"> -->
