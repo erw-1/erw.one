@@ -14,6 +14,15 @@
   #content h6 {
     scroll-margin-top: calc(var(--g-lg) * 2);
   }
+     
+  h1:not(#wiki-title-text), h2 {
+    padding-bottom: var(--g-xs);
+    border-bottom: 2px solid var(--color-low-contrast);
+  }
+
+  blockquote:before {
+    background: var(--color-quarter-contrast);
+  }   
 
   #content a {
     color: var(--color-accent);
