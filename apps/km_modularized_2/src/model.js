@@ -28,20 +28,20 @@ export function parseMarkdownBundle(txt) {
     block.replace(/<!--/g, HOPEN).replace(/-->/g, HCLOSE)
   );
   
-  // 2) Match only <!--km ... --> headers; body runs until the next <!--km ... --> or EOF
+  // 2) Match only <!--km ... --> headers; body runs until next <!--km ... -->
   const kmRe = /<!--\s*km\b([\s\S]*?)-->\s*([\s\S]*?)(?=<!--\s*km\b|$)/g;
   
   for (const [, hdr, body] of sanitized.matchAll(kmRe)) {
     const meta = {};
     // allow key:"value" or key="value"
     hdr.replace(/(\w+)\s*[:=]\s*"([^"]*)"/g, (_, k, v) => (meta[k] = v.trim()));
-  
-    // 3) Restore markers in the captured body
+
+    // 3) Restore markers in captured body
     const content = (body || '')
       .replace(new RegExp(HOPEN, 'g'), '<!--')
       .replace(new RegExp(HCLOSE, 'g'), '-->')
       .trim();
-  
+
     const page = { ...meta, content, children: [] };
     pages.push(page);
     if (page.id) byId.set(page.id, page);
@@ -139,6 +139,7 @@ export function computeHashes() {
     p.hash = segs.join('#');
   });
 }
+
 export const hashOf = page => page?.hash ?? '';
 
 export const find = segs => {
@@ -154,7 +155,6 @@ export const find = segs => {
 export function nav(page) {
   if (page) location.hash = '#' + hashOf(page);
 }
-window.KM.nav = nav; // faithful exposure for interop/testing
 
 // LRU for parsed page HTML
 export function getFromHTMLLRU(pageId) {
@@ -182,12 +182,3 @@ export const __model = {
   get root() { return root; },
   get byId() { return byId; }
 };
-
-
-
-
-
-
-
-
-
