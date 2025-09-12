@@ -5,7 +5,7 @@ import {
   TITLE, MD, DEFAULT_THEME, ACCENT, CACHE_MIN,
   readCache, writeCache, DOC, $, el, __updateViewport, baseURLNoHash
 } from './config_dom.js';
-import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
+import { parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
 import { wireCopyButtons } from './markdown.js';
 import { buildTree, setFolderOpen, closePanels, attachLinkPreviews, initKeybinds, initPanelToggles } from './ui.js';
 import { search } from './search.js';
