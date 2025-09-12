@@ -6,7 +6,7 @@ import { __model, descendants, find } from './model.js';
 
 const KM = (window.KM = window.KM || {});
 
-// Stable IDs used in CSS to style graph nodes/links by role.
+// IDs used in CSS for node/link roles
 const IDS = {
   current: 'node_current',
   parent: 'node_parent',
@@ -16,24 +16,29 @@ const IDS = {
   label: 'graph_text'
 };
 
-const graphs = {}; // registry for built graphs
-let CURRENT = -1;  // currently highlighted node id
+const graphs = {};
+let CURRENT = -1;
 
-/** Calculate the size of the #mini SVG (accounting for fullscreen). */
-export function getMiniSize() {
+/** Return current #mini size (fullscreen aware) */
+function getMiniSize() {
   const svg = $('#mini');
   if (!svg) return { w: 400, h: 300 };
-  if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
+  if (svg.classList.contains('fullscreen')) {
+    return { w: innerWidth, h: innerHeight };
+  }
   const r = svg.getBoundingClientRect();
   return { w: Math.max(1, r.width | 0), h: Math.max(1, r.height | 0) };
 }
 
-/** Update mini-graph viewport and recentre the simulation. */
+/** Update mini-graph viewport and recenter */
+let _miniKick = 0;
 export function updateMiniViewport() {
   if (!graphs.mini) return;
   const { svg, sim } = graphs.mini;
 
-  const { w, h } = getMiniSize();
+  const size = getMiniSize();
+  const { w, h } = size.w && size.h ? size : { w: 1, h: 1 };
+
   graphs.mini.w = w;
   graphs.mini.h = h;
   svg.attr('viewBox', `0 0 ${w} ${h}`)
@@ -43,15 +48,14 @@ export function updateMiniViewport() {
 
   sim.force('center', KM.d3.forceCenter(w / 2, h / 2));
 
-  // Slight delay to recenter after resize
-  setTimeout(() => {
+  clearTimeout(_miniKick);
+  _miniKick = setTimeout(() => {
     recenterNodes();
     sim.alpha(0.35).restart();
     requestAnimationFrame(() => highlightCurrent(true));
   }, 60);
 }
 
-/** Recenters nodes around the center of the mini-graph view. */
 function recenterNodes() {
   if (!graphs.mini) return;
   const { sim, view, w, h } = graphs.mini;
@@ -63,17 +67,17 @@ function recenterNodes() {
   for (const d of nodes) { sx += d.x; sy += d.y; }
   const cx = sx / nodes.length, cy = sy / nodes.length;
 
-  // Translate nodes so centroid = center
+  // Translate nodes to center
   const tx = (w / 2) - cx, ty = (h / 2) - cy;
-  view.attr('transform', 'translate(0,0)'); // clear any existing transform
+  view.attr('transform', 'translate(0,0)');
 
   for (const d of nodes) { d.x += tx; d.y += ty; }
 }
 
-/** Build nodes/links data for the visualization (hierarchy + tag co-occurrence). */
+/** Build nodes and links for the visualization */
 function buildGraphData() {
   const { pages, root } = __model;
-  const nodes = [], links = [], adj = new Map(), hierPairs = new Set();
+  const nodes = [], links = [], adj = new Map();
   const touch = (a, b) => {
     (adj.get(a) || adj.set(a, new Set()).get(a)).add(b);
     (adj.get(b) || adj.set(b, new Set()).get(b)).add(a);
@@ -86,6 +90,7 @@ function buildGraphData() {
   });
 
   // Hierarchy edges
+  const hierPairs = new Set();
   pages.forEach(p => {
     if (!p.parent) return;
     if (p.isSecondary && p.parent === root) return;
@@ -96,12 +101,14 @@ function buildGraphData() {
     touch(a, b);
   });
 
-  // Tag co-occurrence edges (soft cap per tag)
+  // Tag edges (shared tags, with soft cap)
   const tagToPages = new Map();
-  pages.forEach(p => { for (const t of p.tagsSet) {
-    if (!tagToPages.has(t)) tagToPages.set(t, []);
-    tagToPages.get(t).push(p._i);
-  }});
+  pages.forEach(p => {
+    for (const t of p.tagsSet) {
+      if (!tagToPages.has(t)) tagToPages.set(t, []);
+      tagToPages.get(t).push(p._i);
+    }
+  });
   const shared = new Map();
   const MAX_PER_TAG = 80;
   for (const arr0 of tagToPages.values()) {
@@ -125,7 +132,7 @@ function buildGraphData() {
   return { nodes, links, adj };
 }
 
-/** Create the force-directed mini-graph in #mini SVG (lazy). */
+/** Build the mini force-directed graph (lazy) */
 export async function buildGraph() {
   await KM.ensureD3();
   if (graphs.mini) return;
@@ -133,10 +140,7 @@ export async function buildGraph() {
   const { nodes, links, adj } = buildGraphData();
   const svg = KM.d3.select('#mini');
   const { w: W, h: H } = getMiniSize();
-  svg.attr('viewBox', `0 0 ${W} ${H}`)
-     .attr('width', W)
-     .attr('height', H)
-     .attr('preserveAspectRatio', 'xMidYMid meet');
+  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
 
   const localN = nodes.map(n => ({ ...n }));
   const localL = links.map(l => ({ ...l }));
@@ -164,7 +168,6 @@ export async function buildGraph() {
       .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
 
   const node = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
-
   const label = view.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label).attr('font-size', 10)
@@ -188,7 +191,7 @@ export async function buildGraph() {
   observeMiniResize();
 }
 
-/** Highlight the current page's node and center it in the view. */
+/** Highlight the current page's node and pull it to center */
 export function highlightCurrent(force = false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -216,7 +219,7 @@ export function highlightCurrent(force = false) {
   CURRENT = id;
 }
 
-/** Observe and respond to resizing of the mini-graph container. */
+/** Keep mini-graph responsive to size changes */
 export function observeMiniResize() {
   const elx = $('#mini');
   if (!elx) return;

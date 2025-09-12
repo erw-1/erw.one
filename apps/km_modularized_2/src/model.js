@@ -3,7 +3,6 @@
 
 import { RE_FENCE, RE_HEADING, RE_HEADING_FULL } from './config_dom.js';
 
-// In-memory wiki model
 let pages = [];
 let byId = new Map();
 let root = null;
@@ -13,7 +12,6 @@ const descMemo = new Map();
 const PAGE_HTML_LRU_MAX = 40;
 const pageHTMLLRU = new Map(); // pageId -> html
 
-/** Parse the Markdown bundle, extracting pages and metadata. Resets any existing model. */
 export function parseMarkdownBundle(txt) {
   pages = [];
   byId = new Map();
@@ -21,22 +19,19 @@ export function parseMarkdownBundle(txt) {
   descMemo.clear();
   pageHTMLLRU.clear();
 
-  // 1) Hide HTML-comment markers inside code fences
-  const HOPEN = '\uE000';   // placeholder char
+  // Hide HTML comment markers inside fenced blocks
+  const HOPEN = '\uE000';
   const HCLOSE = '\uE001';
-
   const sanitized = txt.replace(/```[\s\S]*?```/g, block =>
     block.replace(/<!--/g, HOPEN).replace(/-->/g, HCLOSE)
   );
 
-  // 2) Match only <!--km ... --> blocks; content up to next <!--km ... --> or EOF
+  // Match <!--km ...--> headers; body until next <!--km ...--> or EOF
   const kmRe = /<!--\s*km\b([\s\S]*?)-->\s*([\s\S]*?)(?=<!--\s*km\b|$)/g;
   for (const [, hdr, body] of sanitized.matchAll(kmRe)) {
     const meta = {};
-    // parse key:"value" or key="value"
     hdr.replace(/(\w+)\s*[:=]\s*"([^"]*)"/g, (_, k, v) => (meta[k] = v.trim()));
-
-    // 3) Restore any hidden markers in body
+    // Restore markers in body
     const content = (body || '')
       .replace(new RegExp(HOPEN, 'g'), '<!--')
       .replace(new RegExp(HCLOSE, 'g'), '-->')
@@ -51,7 +46,7 @@ export function parseMarkdownBundle(txt) {
 
   root = byId.get('home') || pages[0];
 
-  // Link parent and children, lowercase for search
+  // Establish parent/child relationships
   pages.forEach(p => {
     if (p !== root) {
       const parent = byId.get((p.parent || '').trim());
@@ -62,16 +57,18 @@ export function parseMarkdownBundle(txt) {
     }
     p.tagsSet = new Set((p.tags || '').split(',').map(s => s.trim()).filter(Boolean));
     p.titleL = (p.title || '').toLowerCase();
-    p.tagsL  = [...p.tagsSet].join(' ').toLowerCase();
-    p.bodyL  = (p.content || '').toLowerCase();
+    p.tagsL = [...p.tagsSet].join(' ').toLowerCase();
+    p.bodyL = (p.content || '').toLowerCase();
     p.searchStr = (p.titleL + ' ' + p.tagsL + ' ' + p.bodyL);
   });
 
-  // Precompute sections (headings) for each page
+  // Sections (headings)
   pages.forEach(p => {
     const counters = [0, 0, 0, 0, 0, 0];
     const sections = [];
-    let inFence = false, offset = 0, prev = null;
+    let inFence = false;
+    let offset = 0;
+    let prev = null;
 
     for (const line of p.content.split(/\r?\n/)) {
       if (RE_FENCE.test(line)) inFence = !inFence;
@@ -102,7 +99,6 @@ export function parseMarkdownBundle(txt) {
   });
 }
 
-/** Count (and memoize) all descendants of a page. */
 export function descendants(page) {
   if (descMemo.has(page)) return descMemo.get(page);
   let n = 0;
@@ -111,7 +107,6 @@ export function descendants(page) {
   return n;
 }
 
-/** Adjust model to attach secondary cluster representative pages under the root. */
 export function attachSecondaryHomes() {
   const topOf = p => { while (p.parent) p = p.parent; return p; };
   const clusters = new Map();
@@ -125,9 +120,7 @@ export function attachSecondaryHomes() {
 
   let cid = 0;
   for (const [, members] of clusters) {
-    const rep = members.reduce((a, b) =>
-      (descendants(b) > descendants(a) ? b : a), members[0]
-    );
+    const rep = members.reduce((a, b) => (descendants(b) > descendants(a) ? b : a), members[0]);
     if (!rep.parent) {
       rep.parent = root;
       rep.isSecondary = true;
@@ -137,7 +130,6 @@ export function attachSecondaryHomes() {
   }
 }
 
-/** Compute unique hash paths for each page (based on its hierarchy path). */
 export function computeHashes() {
   pages.forEach(p => {
     const segs = [];
@@ -147,7 +139,6 @@ export function computeHashes() {
 }
 export const hashOf = page => page?.hash ?? '';
 
-/** Find a page by its hash segments. */
 export const find = segs => {
   let n = root;
   for (const id of segs) {
@@ -158,13 +149,11 @@ export const find = segs => {
   return n;
 };
 
-/** Navigate to a given page by setting the location hash. */
 export function nav(page) {
-  if (page) location.hash = '#' + (page.hash || '');
+  if (page) location.hash = '#' + hashOf(page);
 }
-window.KM.nav = nav; // expose public nav for external use
+window.KM.nav = nav;
 
-/** LRU cache: retrieve HTML by page id, updating its recentness. */
 export function getFromHTMLLRU(pageId) {
   if (!pageHTMLLRU.has(pageId)) return null;
   const html = pageHTMLLRU.get(pageId);
@@ -172,8 +161,6 @@ export function getFromHTMLLRU(pageId) {
   pageHTMLLRU.set(pageId, html);
   return html;
 }
-
-/** LRU cache: store HTML for a page, evict oldest if cache exceeds max size. */
 export function setHTMLLRU(pageId, html) {
   pageHTMLLRU.set(pageId, html);
   if (pageHTMLLRU.size > PAGE_HTML_LRU_MAX) {
@@ -182,11 +169,10 @@ export function setHTMLLRU(pageId, html) {
   }
 }
 
-// Simple title sort collator (case insensitive)
+// Title sort collator (shared)
 export const __collator = new Intl.Collator(undefined, { sensitivity: 'base' });
 export const sortByTitle = (a, b) => __collator.compare(a.title, b.title);
 
-// Expose model data (read-only)
 export const __model = {
   get pages() { return pages; },
   get root() { return root; },

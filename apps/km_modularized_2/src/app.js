@@ -1,25 +1,22 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import {
-  TITLE, MD, DEFAULT_THEME, ACCENT, CACHE_MIN,
-  readCache, writeCache, DOC, $, el, __updateViewport, baseURLNoHash
-} from './config_dom.js';
-import { parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
+import { TITLE, MD, DEFAULT_THEME, ACCENT, CACHE_MIN, readCache, writeCache, DOC, $, el, __updateViewport, baseURLNoHash} from './config_dom.js';
+import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
 import { wireCopyButtons } from './markdown.js';
 import { buildTree, setFolderOpen, closePanels, attachLinkPreviews, initKeybinds, initPanelToggles } from './ui.js';
 import { search } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
 import { buildDeepURL, route } from './router_renderer.js';
-import './loaders.js'; // registers KM.ensure* functions
+import './loaders.js'; // registers KM.ensure* on window
 
 const KM = (window.KM = window.KM || {});
-let currentPage = null;   // debounces redundant renders on hash changes
+let currentPage = null;
 let uiInited = false;
 
-/** Initialize UI components and event handlers. */
 function initUI() {
   try { attachLinkPreviews(); } catch {}
+
   if (uiInited) return;
   uiInited = true;
 
@@ -29,7 +26,7 @@ function initUI() {
   document.title = TITLE;
   buildTree();
 
-  // THEME toggle
+  // THEME
   (function themeInit() {
     const btn = $('#theme-toggle');
     const rootEl = DOC.documentElement;
@@ -38,9 +35,7 @@ function initUI() {
     const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
     let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
 
-    if (typeof ACCENT === 'string' && ACCENT) {
-      rootEl.style.setProperty('--color-accent', ACCENT);
-    }
+    if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
 
     apply(dark);
     if (btn) {
@@ -53,7 +48,7 @@ function initUI() {
       };
     }
 
-    media.addEventListener?.('change', (e) => {
+    media.addEventListener?.('change', e => {
       const hasUserPref = !!localStorage.getItem('km-theme');
       if (!hasUserPref && !cfg) {
         dark = e.matches;
@@ -61,7 +56,7 @@ function initUI() {
       }
     });
 
-    addEventListener('storage', (e) => {
+    addEventListener('storage', e => {
       if (e.key === 'km-theme') {
         dark = e.newValue === 'dark';
         apply(dark);
@@ -99,10 +94,10 @@ function initUI() {
     };
   }
 
-  // Copy buttons for main content
+  // Copy buttons (main content)
   wireCopyButtons($('#content'), () => buildDeepURL(currentPage, '') || (baseURLNoHash() + '#'));
 
-  // Search box behavior
+  // Search box
   const searchInput = $('#search'), searchClear = $('#search-clear');
   let debounce = 0;
   if (searchInput && searchClear) {
@@ -120,7 +115,7 @@ function initUI() {
     };
   }
 
-  // Mobile panel toggles (exclusive)
+  // Panels: exclusive toggles (mobile slide-in)
   const togglePanel = sel => {
     const elx = $(sel);
     if (!elx) return;
@@ -128,10 +123,9 @@ function initUI() {
     closePanels();
     if (!wasOpen) {
       elx.classList.add('open');
-      if (!elx.querySelector('.panel-close')) elx.append(el('button', {
-        type: 'button', class: 'panel-close', 'aria-label': 'Close panel',
-        textContent: '✕', onclick: closePanels
-      }));
+      if (!elx.querySelector('.panel-close')) {
+        elx.append(el('button', { type: 'button', class: 'panel-close', 'aria-label': 'Close panel', textContent: '✕', onclick: closePanels }));
+      }
     }
   };
   $('#burger-sidebar')?.addEventListener('click', () => togglePanel('#sidebar'));
@@ -152,7 +146,7 @@ function initUI() {
   __updateViewport();
   addEventListener('resize', onResize, { passive: true });
 
-  // Close panels on navigation clicks
+  // Close panels on nav clicks
   $('#tree')?.addEventListener('click', e => {
     const caret = e.target.closest('button.caret');
     if (caret) {
@@ -165,18 +159,19 @@ function initUI() {
   }, { passive: true });
   $('#results')?.addEventListener('click', e => { if (e.target.closest('a')) closePanels(); }, { passive: true });
 
-  // Router on hashchange
+  // Router
   addEventListener('hashchange', route, { passive: true });
 
-  // ESC behavior: close panels, help, exit fullscreen
-  addEventListener('keydown', (e) => {
+  // ESC behavior (close help, panels, fullscreen)
+  addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     let acted = false;
     const kb = $('#kb-help');
     if (kb && !kb.hidden) { kb.hidden = true; acted = true; }
     const sidebarOpen = $('#sidebar')?.classList.contains('open');
-    const utilOpen    = $('#util')?.classList.contains('open');
+    const utilOpen = $('#util')?.classList.contains('open');
     if (sidebarOpen || utilOpen) { closePanels(); acted = true; }
+    const mini = $('#mini'); const expandBtn = $('#expand');
     if (mini && mini.classList.contains('fullscreen')) {
       mini.classList.remove('fullscreen');
       if (expandBtn) expandBtn.setAttribute('aria-pressed', 'false');
@@ -187,13 +182,11 @@ function initUI() {
     if (acted) e.preventDefault();
   }, { capture: true });
 
-  // Desktop toggle functions
   initPanelToggles();
   initKeybinds();
 }
 
-// ──────────────────────────── boot ─────────────────────────────────
-
+// Boot
 (async () => {
   try {
     if (!MD) throw new Error('CONFIG.MD is empty.');
@@ -228,10 +221,8 @@ function initUI() {
     attachSecondaryHomes();
     computeHashes();
 
-    // Public nav (small faithful surface)
-    KM.nav = (page) => { if (page) location.hash = '#' + (page.hash || ''); };
+    KM.nav = page => { if (page) location.hash = '#' + (page.hash || ''); };
 
-    // DOM ready + init UI
     if (DOC.readyState === 'loading') {
       await new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
     }
@@ -242,6 +233,8 @@ function initUI() {
   } catch (err) {
     console.warn('Markdown load failed:', err);
     const elc = $('#content');
-    if (elc) elc.innerHTML = `<h1>Content failed to load</h1><p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p><pre>${String(err?.message || err)}</pre>`;
+    if (elc) {
+      elc.innerHTML = `<h1>Content failed to load</h1><p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p><pre>${String(err?.message || err)}</pre>`;
+    }
   }
 })();
