@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, HEADINGS_SEL, __getVP, baseURLNoHash } from './config_dom.js';
+import { DOC, $, $$, el, HEADINGS_SEL, baseURLNoHash } from './config_dom.js';
 import { __model, hashOf, nav } from './model.js';
 import { getParsedHTML, normalizeAnchors, wireCopyButtons, __cleanupObservers } from './markdown.js';
 import { buildDeepURL, parseTarget, enhanceRendered } from './router_renderer.js';
