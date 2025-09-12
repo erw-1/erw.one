@@ -3,6 +3,8 @@
 
 import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
+import { ensureMarkdown, ensureHighlight } from './loaders.js';
+import { parseTarget } from './router_renderer.js';
 
 // ───────────────────── Observer tracking (prevents leaks) ─────────────────────
 const __OBS_BY_ROOT = new WeakMap();
@@ -26,7 +28,7 @@ export async function getParsedHTML(page) {
   const cached = getFromHTMLLRU(page.id);
   if (cached) return cached;
 
-  const { parse } = await window.KM.ensureMarkdown();
+  const { parse } = await ensureMarkdown();
   // Number headings before we add ids from Marked's output:
   // Marked doesn’t generate deterministic ids for custom headings, so we
   // number after parsing by walking the DOM fragment.
@@ -37,7 +39,6 @@ export async function getParsedHTML(page) {
   // Deterministic heading ids (only if not already present)
   numberHeadings(div);
 
-  // Footnote backrefs etc. are normalized later (in enhanceRendered)
   const out = div.innerHTML;
   setHTMLLRU(page.id, out);
   return out;
@@ -76,7 +77,7 @@ export function normalizeAnchors(container = $('#content'), page, { onlyFootnote
     // If link wouldn't resolve to a page, rewrite as in-page anchor on this page.
     try {
       const target = window.location.href.replace(/#.*$/, '') + href;
-      const u = new URL(target);
+      new URL(target);
       // If our router wouldn’t resolve this hash as a page, rewrite to local anchor
       const looksLikeOnlyAnchor = !href.slice(1).includes('#'); // "#something"
       if (looksLikeOnlyAnchor) a.setAttribute('href', `#${base}${href}`);
@@ -89,7 +90,8 @@ export function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
   let seq = 0, stamp = Date.now().toString(36);
   container.querySelectorAll('a[href^="#"]').forEach(a => {
-    if (window.KM.isInternalPageLink?.(a)) {
+    const href = a.getAttribute('href') || '';
+    if (parseTarget(href)) {
       a.classList.add('km-has-preview');
       a.dataset.preview = '1';
       if (!a.id) a.id = `km-prev-${stamp}-${seq++}`;
@@ -112,7 +114,7 @@ export function numberHeadings(elm) {
 
 /** Lazy-highlight code blocks with highlight.js when they enter the viewport. */
 export async function highlightVisibleCode(root = document) {
-  await window.KM.ensureHighlight();
+  await ensureHighlight();
   const blocks = [...root.querySelectorAll('pre code')];
   if (!blocks.length) return;
   const obs = __trackObserver(new IntersectionObserver((entries, o) => {
@@ -176,10 +178,10 @@ export function renderMathSafe(container = DOC) {
     if (typeof window.renderMathInElement === 'function') {
       window.renderMathInElement(container, {
         delimiters: [
-        { left: '$$', right: '$$', display: true },
-        { left: '\\[', right: '\\]', display: true },
-        { left: '$', right: '$', display: false },
-        { left: '\\(', right: '\\)', display: false },
+          { left: '$$', right: '$$', display: true },
+          { left: '\\[', right: '\\]', display: true },
+          { left: '$', right: '$', display: false },
+          { left: '\\(', right: '\\)', display: false },
         ],
       });
       container.dataset.mathRendered = '1';
@@ -189,19 +191,19 @@ export function renderMathSafe(container = DOC) {
 
 /** Copy-button wiring shared across main content and previews. */
 export function wireCopyButtons(root, getBaseUrl) {
-    if (!root) return;
-    root.addEventListener('click', (e) => {
-        const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
-        if (!btn) return;
-        if (btn.classList.contains('heading-copy')) {
-            const h = btn.closest(HEADINGS_SEL);
-            if (!h) return;
-            const base = getBaseUrl() || (baseURLNoHash() + '#');
-            copyText(base + h.id, btn);
-        } else {
-            const pre = btn.closest('pre');
-            const code = pre?.querySelector('code');
-            copyText(code ? code.innerText : pre?.innerText || '', btn);
-        }
-    });
+  if (!root) return;
+  root.addEventListener('click', (e) => {
+    const btn = e.target?.closest?.('button.heading-copy, button.code-copy');
+    if (!btn) return;
+    if (btn.classList.contains('heading-copy')) {
+      const h = btn.closest(HEADINGS_SEL);
+      if (!h) return;
+      const base = getBaseUrl() || (baseURLNoHash() + '#');
+      copyText(base + h.id, btn);
+    } else {
+      const pre = btn.closest('pre');
+      const code = pre?.querySelector('code');
+      copyText(code ? code.innerText : pre?.innerText || '', btn);
+    }
+  });
 }
