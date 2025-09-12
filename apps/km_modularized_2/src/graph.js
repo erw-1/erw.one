@@ -3,10 +3,10 @@
 
 import { $ } from './config_dom.js';
 import { __model, descendants, find } from './model.js';
-import { ensureD3 } from './loaders.js';
-import { nav } from './model.js';
 
-// Stable IDs used in CSS to style node/link classes by semantic role.
+const KM = (window.KM = window.KM || {});
+
+// Stable IDs used in CSS to style graph nodes/links by role.
 const IDS = {
   current: 'node_current',
   parent: 'node_parent',
@@ -16,11 +16,11 @@ const IDS = {
   label: 'graph_text'
 };
 
-const graphs = {}; // registry
-let CURRENT = -1;  // currently highlighted node id in the graph
+const graphs = {}; // registry for built graphs
+let CURRENT = -1;  // currently highlighted node id
 
-/** Return current <svg>#mini size (fullscreen aware) */
-function getMiniSize() {
+/** Calculate the size of the #mini SVG (accounting for fullscreen). */
+export function getMiniSize() {
   const svg = $('#mini');
   if (!svg) return { w: 400, h: 300 };
   if (svg.classList.contains('fullscreen')) return { w: innerWidth, h: innerHeight };
@@ -28,16 +28,12 @@ function getMiniSize() {
   return { w: Math.max(1, r.width | 0), h: Math.max(1, r.height | 0) };
 }
 
-/** Update the mini graph viewport and recentre the simulation. */
-let _miniKick = 0;
+/** Update mini-graph viewport and recentre the simulation. */
 export function updateMiniViewport() {
   if (!graphs.mini) return;
   const { svg, sim } = graphs.mini;
 
-  // If the element isn't measured yet, bail gracefully.
-  const size = getMiniSize();
-  const { w, h } = size.w && size.h ? size : { w: 1, h: 1 };
-
+  const { w, h } = getMiniSize();
   graphs.mini.w = w;
   graphs.mini.h = h;
   svg.attr('viewBox', `0 0 ${w} ${h}`)
@@ -45,41 +41,36 @@ export function updateMiniViewport() {
      .attr('height', h)
      .attr('preserveAspectRatio', 'xMidYMid meet');
 
-  // Use window.KM.d3 or stored reference
-  const d3 = KM.d3; // KM.d3 should have been set by ensureD3
-  if (d3 && sim.force) {
-    sim.force('center', d3.forceCenter(w / 2, h / 2));
-  }
+  sim.force('center', KM.d3.forceCenter(w / 2, h / 2));
 
-  clearTimeout(_miniKick);
-  _miniKick = setTimeout(() => {
+  // Slight delay to recenter after resize
+  setTimeout(() => {
     recenterNodes();
     sim.alpha(0.35).restart();
     requestAnimationFrame(() => highlightCurrent(true));
   }, 60);
 }
 
+/** Recenters nodes around the center of the mini-graph view. */
 function recenterNodes() {
   if (!graphs.mini) return;
   const { sim, view, w, h } = graphs.mini;
   const nodes = sim.nodes();
   if (!nodes.length) return;
 
-  // Compute centroid of current nodes
+  // Compute centroid
   let sx = 0, sy = 0;
   for (const d of nodes) { sx += d.x; sy += d.y; }
   const cx = sx / nodes.length, cy = sy / nodes.length;
 
-  // Translate nodes so centroid = svg center
+  // Translate nodes so centroid = center
   const tx = (w / 2) - cx, ty = (h / 2) - cy;
-
-  // Clear any previous pan
-  view.attr('transform', 'translate(0,0)');
+  view.attr('transform', 'translate(0,0)'); // clear any existing transform
 
   for (const d of nodes) { d.x += tx; d.y += ty; }
 }
 
-/** Build nodes/links for the visualization. */
+/** Build nodes/links data for the visualization (hierarchy + tag co-occurrence). */
 function buildGraphData() {
   const { pages, root } = __model;
   const nodes = [], links = [], adj = new Map(), hierPairs = new Set();
@@ -105,7 +96,7 @@ function buildGraphData() {
     touch(a, b);
   });
 
-  // Tag edges (de-duplicated, with soft cap)
+  // Tag co-occurrence edges (soft cap per tag)
   const tagToPages = new Map();
   pages.forEach(p => { for (const t of p.tagsSet) {
     if (!tagToPages.has(t)) tagToPages.set(t, []);
@@ -134,13 +125,13 @@ function buildGraphData() {
   return { nodes, links, adj };
 }
 
-/** Build the mini force-directed graph lazily on first visibility. */
+/** Create the force-directed mini-graph in #mini SVG (lazy). */
 export async function buildGraph() {
-  const d3 = await ensureD3();
+  await KM.ensureD3();
   if (graphs.mini) return;
 
   const { nodes, links, adj } = buildGraphData();
-  const svg = d3.select('#mini');
+  const svg = KM.d3.select('#mini');
   const { w: W, h: H } = getMiniSize();
   svg.attr('viewBox', `0 0 ${W} ${H}`)
      .attr('width', W)
@@ -150,10 +141,10 @@ export async function buildGraph() {
   const localN = nodes.map(n => ({ ...n }));
   const localL = links.map(l => ({ ...l }));
 
-  const sim = d3.forceSimulation(localN)
-    .force('link', d3.forceLink(localL).id(d => d.id).distance(80))
-    .force('charge', d3.forceManyBody().strength(-240))
-    .force('center', d3.forceCenter(W / 2, H / 2));
+  const sim = KM.d3.forceSimulation(localN)
+    .force('link', KM.d3.forceLink(localL).id(d => d.id).distance(80))
+    .force('charge', KM.d3.forceManyBody().strength(-240))
+    .force('center', KM.d3.forceCenter(W / 2, H / 2));
 
   const view = svg.append('g').attr('class', 'view');
 
@@ -164,10 +155,10 @@ export async function buildGraph() {
   const wireNode = sel => sel
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
-    .on('click', (e, d) => nav(d.ref))
+    .on('click', (e, d) => window.KM.nav(d.ref))
     .on('mouseover', (e, d) => fade(d.id, 0.15))
     .on('mouseout', () => fade(null, 1))
-    .call(d3.drag()
+    .call(KM.d3.drag()
       .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
       .on('drag',  (e, d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
       .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
@@ -197,7 +188,7 @@ export async function buildGraph() {
   observeMiniResize();
 }
 
-/** Highlight the current page’s node and pull it towards the center. */
+/** Highlight the current page's node and center it in the view. */
 export function highlightCurrent(force = false) {
   if (!graphs.mini) return;
   const seg = location.hash.slice(1).split('#').filter(Boolean);
@@ -225,7 +216,7 @@ export function highlightCurrent(force = false) {
   CURRENT = id;
 }
 
-/** Keep mini-graph responsive to container size and fullscreen changes. */
+/** Observe and respond to resizing of the mini-graph container. */
 export function observeMiniResize() {
   const elx = $('#mini');
   if (!elx) return;

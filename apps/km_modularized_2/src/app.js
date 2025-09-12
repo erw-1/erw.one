@@ -3,25 +3,24 @@
 
 import {
   TITLE, MD, DEFAULT_THEME, ACCENT, CACHE_MIN,
-  readCache, writeCache, DOC, $, el,
-  __updateViewport, baseURLNoHash
+  readCache, writeCache, DOC, $, el, whenIdle,
+  __getVP, __updateViewport, baseURLNoHash
 } from './config_dom.js';
-
 import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes } from './model.js';
 import { wireCopyButtons } from './markdown.js';
 import { buildTree, setFolderOpen, closePanels, attachLinkPreviews, initKeybinds, initPanelToggles } from './ui.js';
 import { search } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
 import { buildDeepURL, route } from './router_renderer.js';
-import './loaders.js'; // registers KM.ensure* on window
+import './loaders.js'; // registers KM.ensure* functions
 
+const KM = (window.KM = window.KM || {});
 let currentPage = null;   // debounces redundant renders on hash changes
 let uiInited = false;
 
-// ───────────────────────────── theme + UI init ───────────────────────────
+/** Initialize UI components and event handlers. */
 function initUI() {
   try { attachLinkPreviews(); } catch {}
-
   if (uiInited) return;
   uiInited = true;
 
@@ -31,7 +30,7 @@ function initUI() {
   document.title = TITLE;
   buildTree();
 
-  // THEME
+  // THEME toggle
   (function themeInit() {
     const btn = $('#theme-toggle');
     const rootEl = DOC.documentElement;
@@ -40,7 +39,9 @@ function initUI() {
     const cfg = (DEFAULT_THEME === 'dark' || DEFAULT_THEME === 'light') ? DEFAULT_THEME : null;
     let dark = stored ? (stored === 'dark') : (cfg ? cfg === 'dark' : media.matches);
 
-    if (typeof ACCENT === 'string' && ACCENT) rootEl.style.setProperty('--color-accent', ACCENT);
+    if (typeof ACCENT === 'string' && ACCENT) {
+      rootEl.style.setProperty('--color-accent', ACCENT);
+    }
 
     apply(dark);
     if (btn) {
@@ -71,8 +72,8 @@ function initUI() {
     function apply(isDark) {
       rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
       rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      window.KM.ensureHLJSTheme();
-      window.KM.syncMermaidThemeWithPage();
+      KM.ensureHLJSTheme();
+      KM.syncMermaidThemeWithPage();
     }
   })();
 
@@ -99,10 +100,10 @@ function initUI() {
     };
   }
 
-  // Copy buttons (main)
+  // Copy buttons for main content
   wireCopyButtons($('#content'), () => buildDeepURL(currentPage, '') || (baseURLNoHash() + '#'));
 
-  // Search box
+  // Search box behavior
   const searchInput = $('#search'), searchClear = $('#search-clear');
   let debounce = 0;
   if (searchInput && searchClear) {
@@ -120,7 +121,7 @@ function initUI() {
     };
   }
 
-  // Panels: exclusive toggles (mobile slide-in)
+  // Mobile panel toggles (exclusive)
   const togglePanel = sel => {
     const elx = $(sel);
     if (!elx) return;
@@ -129,7 +130,8 @@ function initUI() {
     if (!wasOpen) {
       elx.classList.add('open');
       if (!elx.querySelector('.panel-close')) elx.append(el('button', {
-        type: 'button', class: 'panel-close', 'aria-label': 'Close panel', textContent: '✕', onclick: closePanels
+        type: 'button', class: 'panel-close', 'aria-label': 'Close panel',
+        textContent: '✕', onclick: closePanels
       }));
     }
   };
@@ -151,7 +153,7 @@ function initUI() {
   __updateViewport();
   addEventListener('resize', onResize, { passive: true });
 
-  // Close panels upon nav clicks
+  // Close panels on navigation clicks
   $('#tree')?.addEventListener('click', e => {
     const caret = e.target.closest('button.caret');
     if (caret) {
@@ -164,22 +166,21 @@ function initUI() {
   }, { passive: true });
   $('#results')?.addEventListener('click', e => { if (e.target.closest('a')) closePanels(); }, { passive: true });
 
-  // Router
+  // Router on hashchange
   addEventListener('hashchange', route, { passive: true });
 
-  // ESC behavior
+  // ESC behavior: close panels, help, exit fullscreen
   addEventListener('keydown', (e) => {
     if (e.key !== 'Escape') return;
     let acted = false;
     const kb = $('#kb-help');
     if (kb && !kb.hidden) { kb.hidden = true; acted = true; }
     const sidebarOpen = $('#sidebar')?.classList.contains('open');
-    const utilOpen = $('#util')?.classList.contains('open');
+    const utilOpen    = $('#util')?.classList.contains('open');
     if (sidebarOpen || utilOpen) { closePanels(); acted = true; }
-    const miniEl = $('#mini'); const expandBtnEl = $('#expand');
-    if (miniEl && miniEl.classList.contains('fullscreen')) {
-      miniEl.classList.remove('fullscreen');
-      if (expandBtnEl) expandBtnEl.setAttribute('aria-pressed', 'false');
+    if (mini && mini.classList.contains('fullscreen')) {
+      mini.classList.remove('fullscreen');
+      if (expandBtn) expandBtn.setAttribute('aria-pressed', 'false');
       updateMiniViewport();
       requestAnimationFrame(() => highlightCurrent(true));
       acted = true;
@@ -187,14 +188,13 @@ function initUI() {
     if (acted) e.preventDefault();
   }, { capture: true });
 
-  // Toggling functions for desktop
+  // Desktop toggle functions
   initPanelToggles();
-
-  // Keybinds
   initKeybinds();
 }
 
-// ──────────────────────────────── boot ───────────────────────────────────
+// ──────────────────────────── boot ─────────────────────────────────
+
 (async () => {
   try {
     if (!MD) throw new Error('CONFIG.MD is empty.');
@@ -229,12 +229,13 @@ function initUI() {
     attachSecondaryHomes();
     computeHashes();
 
-    // Public nav (faithful small surface)
-    // Expose function if needed elsewhere
-    // KM.nav = (page) => { if (page) location.hash = '#' + (page.hash || ''); };
+    // Public nav (small faithful surface)
+    KM.nav = (page) => { if (page) location.hash = '#' + (page.hash || ''); };
 
     // DOM ready + init UI
-    if (DOC.readyState === 'loading') await new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
+    if (DOC.readyState === 'loading') {
+      await new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
+    }
     initUI();
 
     await new Promise(res => setTimeout(res, 120));

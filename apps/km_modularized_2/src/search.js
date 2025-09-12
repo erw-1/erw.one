@@ -4,7 +4,9 @@
 import { DOC, $, el } from './config_dom.js';
 import { __model, sortByTitle, hashOf } from './model.js';
 
-// ===== Search (ranked; pages + section hits) =====
+const W = { title: 5, tag: 3, body: 1, secTitle: 3, secBody: 1, phraseTitle: 5, phraseBody: 2, secCountCap: 4 };
+
+/** Perform a search over pages and headings, display ranked results. */
 export function search(q) {
   const resUL = $('#results');
   const treeUL = $('#tree');
@@ -24,13 +26,11 @@ export function search(q) {
   }
 
   const tokens = val.split(/\s+/).filter(t => t.length >= 2);
-  const tokenRegexes = tokens.map(t => new RegExp('\\b' + 
-    t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'));
+  const tokenRegexes = tokens.map(t => new RegExp('\\b' + t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b'));
   resUL.innerHTML = '';
   resUL.style.display = '';
   treeUL.style.display = 'none';
 
-  const W = { title: 5, tag: 3, body: 1, secTitle: 3, secBody: 1, phraseTitle: 5, phraseBody: 2, secCountCap: 4 };
   const phrase = tokens.length > 1 ? val : null;
 
   const scored = [];
@@ -43,7 +43,6 @@ export function search(q) {
       if (r.test(p.tagsL))  score += W.tag;
       if (r.test(p.bodyL))  score += W.body;
     }
-
     if (phrase) {
       if (p.titleL.includes(phrase)) score += W.phraseTitle;
       else if (p.bodyL.includes(phrase)) score += W.phraseBody;
@@ -62,9 +61,9 @@ export function search(q) {
       if (phrase && (secTitle.includes(phrase) || secBody.includes(phrase))) s += 1;
       matchedSecs.push({ sec, s });
     }
-
     matchedSecs.sort((a, b) => b.s - a.s);
     score += Math.min(W.secCountCap, matchedSecs.length);
+
     scored.push({ p, score, matchedSecs });
   }
 

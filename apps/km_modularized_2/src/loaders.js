@@ -1,10 +1,9 @@
-// loaders.js
 /* eslint-env browser, es2022 */
 'use strict';
 
 import { DOC, LANGS } from './config_dom.js';
 
-// Keep tiny global surface (for storing loaded libs)
+// Keep tiny global surface
 const KM = (window.KM = window.KM || {});
 
 // ensureOnce: run async initializer at most once
@@ -13,7 +12,7 @@ export const ensureOnce = (fn) => {
   return () => (p ||= fn());
 };
 
-// ───────── D3 (only needed submodules) ─────────
+/** Load D3 (selection, force, drag) on demand and store in KM.d3. */
 KM.ensureD3 = ensureOnce(async () => {
   const [sel, force, drag] = await Promise.all([
     import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
@@ -29,11 +28,9 @@ KM.ensureD3 = ensureOnce(async () => {
     forceCenter: force.forceCenter,
     drag: drag.drag
   };
-  return KM.d3;
 });
-export const ensureD3 = KM.ensureD3;
 
-// ───────── highlight.js (core + optional languages) ─────────
+/** Load highlight.js core and optional language modules. */
 KM.ensureHighlight = ensureOnce(async () => {
   const { default: hljs } =
     await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
@@ -46,12 +43,10 @@ KM.ensureHighlight = ensureOnce(async () => {
     }));
   }
   window.hljs = hljs; // expose for highlightElement()
-  return hljs;
 });
-export const ensureHighlight = KM.ensureHighlight;
 
-// Theme swap for highlight.js (not memoized by design)
-export const ensureHLJSTheme = async () => {
+/** Apply the appropriate highlight.js CSS theme based on page theme. */
+KM.ensureHLJSTheme = async () => {
   const THEME = {
     light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
     dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css',
@@ -68,7 +63,7 @@ export const ensureHLJSTheme = async () => {
   await new Promise(res => { l.onload = l.onerror = res; l.href = THEME[mode]; });
 };
 
-// ───────── KaTeX on demand ─────────
+/** Load KaTeX and auto-render extension. */
 KM.ensureKatex = ensureOnce(async () => {
   const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
   if (!DOC.getElementById('katex-css')) {
@@ -86,15 +81,13 @@ KM.ensureKatex = ensureOnce(async () => {
   window.katex = katex;
   window.renderMathInElement = auto.default;
 });
-export const ensureKatex = KM.ensureKatex;
 
-// ───────── Marked + Mermaid + extensions bundle ─────────
-let mdReady = null;
+/** Load and configure Markdown parser (Marked) with extensions. */
 KM.ensureMarkdown = () => {
+  let mdReady = null;
   if (mdReady) return mdReady;
 
-  // ---------- helpers ----------
-  // symmetric inline extension factory (==mark==, ^sup^, ~sub~, ++u++)
+  // ---------- helpers to create Marked extensions ----------
   function createInline({ name, delimiter, tag, hint = delimiter[0], notAfterOpen, notBeforeClose }) {
     const d = delimiter.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const after = notAfterOpen ? `(?!${notAfterOpen})` : "";
@@ -160,28 +153,27 @@ KM.ensureMarkdown = () => {
     };
   }
 
-  // Mermaid fenced code
+  // Mermaid fenced code block extension
   const mermaidExt = {
     name: "mermaid", level: "block",
     start(src) { return src.indexOf("```mermaid"); },
     tokenizer(src) {
-      const m = /^```(?:mermaid|Mermaid)[ \t]*\n([\s\S]*?)\n```[ \t]*(?=\n|$)/.exec(src);
+      const m = /^```(?:mermaid|Mermaid)[ \t]*\n([\s\S]*?)\n```[\t]*(?=\n|$)/.exec(src);
       if (!m) return;
       return { type: "mermaid", raw: m[0], text: m[1] };
     },
     renderer(tok) {
       const escHTML = (s) =>
-        s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+        s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       return `<div class="mermaid">${escHTML(tok.text)}</div>\n`;
     }
   };
 
-  // ---------- inline ext instances ----------
-  const markExt      = createInline({ name: "mark",      delimiter: "==", tag: "mark", hint: "=" });
-  const supExt       = createInline({ name: "sup",       delimiter: "^",  tag: "sup",  notAfterOpen: "\\[|\\^" });
-  const subExt       = createInline({ name: "sub",       delimiter: "~",  tag: "sub",  notAfterOpen: "~", notBeforeClose: "~" });
-  const underlineExt = createInline({ name: "underline", delimiter: "++", tag: "u",    hint: "+", notAfterOpen: "\\+", notBeforeClose: "\\+" });
-
+  // Create inline extensions
+  const markExt      = createInline({ name: "mark",      delimiter: "==", tag: "mark",      hint: "=" });
+  const supExt       = createInline({ name: "sup",       delimiter: "^",  tag: "sup",       notAfterOpen: "\\[|\\^" });
+  const subExt       = createInline({ name: "sub",       delimiter: "~",  tag: "sub",       notAfterOpen: "~", notBeforeClose: "~" });
+  const underlineExt = createInline({ name: "underline", delimiter: "++", tag: "u",          hint: "+", notAfterOpen: "\\+", notBeforeClose: "\\+" });
   const calloutExt = createCallouts();
   const spoilerExt = createSpoiler();
 
@@ -195,11 +187,15 @@ KM.ensureMarkdown = () => {
   ]).then(([marked, alertMod, footnoteMod, emojiPluginMod, emojiLibMod, mermaidMod]) => {
     const emojiLib = emojiLibMod.default ?? emojiLibMod;
     const Emojis = Object.entries(emojiLib).reduce((d, [emoji, keywords]) => {
-      if (Array.isArray(keywords)) for (const k of keywords) if (d[k] == null) d[k] = emoji;
+      if (Array.isArray(keywords)) {
+        for (const k of keywords) {
+          if (d[k] == null) d[k] = emoji;
+        }
+      }
       return d;
     }, {});
 
-    const mermaid = (mermaidMod.default ?? mermaidMod);
+    const mermaid = mermaidMod.default ?? mermaidMod;
     mermaid.initialize({ startOnLoad: false });
     KM.mermaid = mermaid;
 
@@ -235,7 +231,8 @@ KM.ensureMarkdown = () => {
             const p = new Promise(res => (resolve = res));
             const mo = new MutationObserver(() => {
               if (el.getAttribute("data-processed") === "true" || el.querySelector("svg")) {
-                mo.disconnect(); resolve();
+                mo.disconnect();
+                resolve();
               }
             });
             mo.observe(el, { attributes: true, childList: true });
@@ -244,8 +241,12 @@ KM.ensureMarkdown = () => {
             return p;
           })();
 
-          try { await KM.mermaid.run({ nodes: [el] }); }
-          catch (_) { delete el.dataset.mmdDone; throw _; }
+          try {
+            await KM.mermaid.run({ nodes: [el] });
+          } catch {
+            delete el.dataset.mmdDone;
+            throw new Error('Mermaid render failed');
+          }
 
           await done;
         }
@@ -260,9 +261,8 @@ KM.ensureMarkdown = () => {
 
   return mdReady;
 };
-export const ensureMarkdown = KM.ensureMarkdown;
 
-// Sync Mermaid theme with page (exported utility)
+/** Sync Mermaid's theme with the page theme (for already-rendered diagrams). */
 KM.syncMermaidThemeWithPage = async () => {
   const mode = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
   const { setMermaidTheme, renderMermaidLazy } = await KM.ensureMarkdown();
@@ -284,4 +284,3 @@ KM.syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
-export const syncMermaidThemeWithPage = KM.syncMermaidThemeWithPage;

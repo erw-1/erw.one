@@ -1,17 +1,18 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, HEADINGS_SEL, baseURLNoHash } from './config_dom.js';
-import { __model, hashOf, nav } from './model.js';
+import { DOC, $, $$, el, HEADINGS_SEL, __getVP, baseURLNoHash } from './config_dom.js';
+import { __model, hashOf } from './model.js';
 import { getParsedHTML, normalizeAnchors, wireCopyButtons, __cleanupObservers } from './markdown.js';
 import { buildDeepURL, parseTarget, enhanceRendered } from './router_renderer.js';
 
-// Hide panels (non-mobile)
+/** Close any open side panels. */
 export function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
 }
 
+/** Open or close a folder in the sidebar tree. */
 export function setFolderOpen(li, open) {
   if (!li) return;
   li.classList.toggle('open', !!open);
@@ -25,7 +26,7 @@ export function setFolderOpen(li, open) {
   if (sub) sub.style.display = open ? 'block' : 'none';
 }
 
-/** Build the collapsible tree in the sidebar (faithful to original). */
+/** Build the collapsible tree in the sidebar. */
 export function buildTree() {
   const ul = $('#tree');
   const { root } = __model;
@@ -34,10 +35,11 @@ export function buildTree() {
   ul.setAttribute('role', 'tree');
   ul.innerHTML = '';
 
-  // Preserve MD order for primary (non-secondary) children of root
+  // Primary children (not secondary clusters)
   const prim = root.children.filter(c => !c.isSecondary);
+  // Secondary cluster representatives, ordered by clusterId
   const secs = root.children.filter(c => c.isSecondary)
-                            .sort((a, b) => a.clusterId - b.clusterId); // cluster order
+                            .sort((a, b) => a.clusterId - b.clusterId);
 
   const rec = (nodes, container, depth = 0) => {
     nodes.forEach(p => {
@@ -45,7 +47,7 @@ export function buildTree() {
       li.setAttribute('role', 'treeitem');
 
       if (p.children.length) {
-        const open = depth < 2; // auto-open top levels
+        const open = depth < 2; // auto-expand top levels
         li.className = 'folder' + (open ? ' open' : '');
         li.setAttribute('aria-expanded', String(open));
 
@@ -76,7 +78,7 @@ export function buildTree() {
         li.append(caret, lbl, sub);
         container.append(li);
 
-        // IMPORTANT: Preserve MD order as authored (no sorting)
+        // Preserve original order (no sorting)
         rec(p.children, sub, depth + 1);
       } else {
         li.className = 'article';
@@ -93,7 +95,7 @@ export function buildTree() {
   const frag = DOC.createDocumentFragment();
   rec(prim, frag);
 
-  // Secondary clusters are separated visually and rendered in cluster order
+  // Separator and secondary clusters
   secs.forEach(rep => {
     const sep = el('div', {
       class: 'group-sep',
@@ -107,7 +109,7 @@ export function buildTree() {
   ul.append(frag);
 }
 
-/** Highlight current page in the tree and ensure its ancestors are open. */
+/** Highlight current page in the sidebar, and open its ancestors. */
 export function highlightSidebar(page) {
   const rootEl = $('#tree');
   if (!rootEl || !page) return;
@@ -118,14 +120,14 @@ export function highlightSidebar(page) {
 
   a.classList.add('sidebar-current');
 
-  // Ensure ancestors are open
+  // Open ancestors
   let li = a.closest('li');
   while (li) {
     if (li.classList.contains('folder')) setFolderOpen(li, true);
     li = li.parentElement?.closest?.('li') || null;
   }
 
-  // Keep the current item in view (without jumping page scroll)
+  // Keep current item in view without scrolling page
   const tree = $('#tree');
   if (tree) {
     const r = a.getBoundingClientRect();
@@ -139,6 +141,8 @@ export function highlightSidebar(page) {
 }
 
 // ───────────────────────────── breadcrumb ────────────────────────────────
+
+/** Build the breadcrumb trail for the current page. */
 export function breadcrumb(page) {
   const dyn = $('#crumb-dyn');
   if (!dyn) return;
@@ -154,20 +158,25 @@ export function breadcrumb(page) {
     if (n === page) a.className = 'crumb-current';
     wrap.append(a);
 
+    // If siblings exist, create dropdown
     const siblings = n.parent.children.filter(s => s !== n);
     if (siblings.length) {
       const ul = el('ul');
-      siblings.forEach(s => ul.append(el('li', { textContent: s.title, onclick: () => nav(s) })));
+      siblings.forEach(s => ul.append(el('li', { textContent: s.title, onclick: () => KM.nav(s) })));
       wrap.append(ul);
     }
     dyn.append(wrap);
   });
 
+  // If page has children, add toggleable list
   if (page.children.length) {
-    const box = el('span', { class: 'childbox' }, [el('span', { class: 'toggle', textContent: '▾' }), el('ul')]);
+    const box = el('span', { class: 'childbox' }, [
+      el('span', { class: 'toggle', textContent: '▾' }),
+      el('ul')
+    ]);
     const ul = box.querySelector('ul');
-    page.children.slice().sort((a,b) => a.title.localeCompare(b.title)).forEach(ch =>
-      ul.append(el('li', { textContent: ch.title, onclick: () => nav(ch) }))
+    page.children.slice().sort((a,b)=>a.title.localeCompare(b.title)).forEach(ch =>
+      ul.append(el('li', { textContent: ch.title, onclick: () => KM.nav(ch) }))
     );
     dyn.append(box);
   }
@@ -182,7 +191,7 @@ export function buildToc(page) {
   const heads = $$('#content ' + HEADINGS_SEL);
   if (!heads.length) return;
 
-  // entries
+  // build entries
   const ul = el('ul');
   heads.forEach(h => {
     const id  = h.id || '';
@@ -197,7 +206,7 @@ export function buildToc(page) {
   });
   tocEl.append(ul);
 
-  // live highlight
+  // live highlight entries when scrolling
   tocObserver?.disconnect?.();
   tocObserver = new IntersectionObserver((entries) => {
     entries.forEach(en => {
@@ -212,7 +221,7 @@ export function buildToc(page) {
   heads.forEach(h => tocObserver.observe(h));
 }
 
-// ===== Prev / Next and "See also" =====
+// ===== Previous/Next and "See also" =====
 export function prevNext(page) {
   const elx = $('#prevnext');
   if (!elx) return;
@@ -241,7 +250,9 @@ export function seeAlso(page) {
   same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
 }
 
-// ───────────────────────────── link previews (moved) ─────────────────────
+// ───────────────────────────── link previews ─────────────────────────────────
+
+/** Enable hover/focus previews for internal page links. */
 export function attachLinkPreviews() {
   const previewStack = []; // stack of { el, body, link, timer }
   const HOVER_DELAY_MS = 500;
@@ -258,9 +269,7 @@ export function attachLinkPreviews() {
     hoverLinkEl = null;
   }
 
-  function rewriteRelativeAnchors(panel, page) {
-    normalizeAnchors(panel.body, page);
-  }
+  function rewriteRelativeAnchors(panel, page) { normalizeAnchors(panel.body, page); }
 
   function positionPreview(panel, linkEl) {
     const rect = linkEl.getBoundingClientRect();
@@ -270,7 +279,9 @@ export function attachLinkPreviews() {
     const W = Math.max(1, elx.offsetWidth || 1);
     const H = Math.max(1, elx.offsetHeight || 1);
     const preferRight = rect.right + gap + W <= vw;
-    const left = preferRight ? Math.min(rect.right + gap, vw - W - gap) : Math.max(gap, rect.left - gap - W);
+    const left = preferRight
+      ? Math.min(rect.right + gap, vw - W - gap)
+      : Math.max(gap, rect.left - gap - W);
     const top = Math.min(Math.max(gap, rect.top), Math.max(gap, vh - H - gap));
     Object.assign(panel.el.style, { left: left + 'px', top: top + 'px' });
   }
@@ -289,7 +300,7 @@ export function attachLinkPreviews() {
     const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
     if (anyHoverPreview) return true;
     const active = document.activeElement;
-    const activeIsTrigger = !!(active && active.closest && parseTarget(active.closest('a[href^="#"]')?.getAttribute('href')) != null);
+    const activeIsTrigger = !!(active && active.closest && window.KM.isInternalPageLink?.(active.closest('a[href^="#"]')));
     if (activeIsTrigger) return true;
     const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
     return hoveringTrigger;
@@ -375,9 +386,15 @@ export function attachLinkPreviews() {
     await fillPanel(panel, target.page, target.anchor);
   }
 
+  function isInternalPageLink(a) {
+    const href = a?.getAttribute('href') || '';
+    return !!parseTarget(href);
+  }
+  window.KM.isInternalPageLink = isInternalPageLink;
+
   function maybeOpenFromEvent(e) {
     const a = e.target?.closest?.('a[href^="#"]');
-    if (!a || !parseTarget(a.getAttribute('href'))) return;
+    if (!a || !isInternalPageLink(a)) return;
 
     // focus → immediate (no delay)
     if (e.type === 'focusin') {
@@ -386,13 +403,8 @@ export function attachLinkPreviews() {
       return;
     }
 
-    // hover → delay + cursor "progress"
+    // hover → delay + cursor “progress”
     if (hoverLinkEl !== a) cancelPendingHover();
-    hoverLinkEl = a;
-    a.dataset.previewPending = '1';
-    a.style.cursor = 'progress';
-
-    cancelPendingHover(); // avoid duplicates if multiple mouseover in burst
     hoverLinkEl = a;
     a.dataset.previewPending = '1';
     a.style.cursor = 'progress';
@@ -409,6 +421,7 @@ export function attachLinkPreviews() {
     a.addEventListener('blur', cancelPendingHover, { once: true });
   }
 
+  // Bind to content root
   const root = $('#content');
   if (!root) return;
   if (root.dataset.kmPreviewsBound === '1') return;
@@ -417,7 +430,7 @@ export function attachLinkPreviews() {
   root.addEventListener('focusin',  maybeOpenFromEvent, true);
   root.addEventListener('mouseout', (e) => {
     const to = e.relatedTarget;
-    // cancel pending hover if leaving a link
+    // cancel if leaving link
     if (e.target?.closest?.('a[href^="#"]') && (!to || !to.closest || !to.closest('a[href^="#"]'))) {
       cancelPendingHover();
     }
@@ -425,12 +438,13 @@ export function attachLinkPreviews() {
     scheduleTrim();
   }, true);
 
-  // cancel if context changes
   addEventListener('hashchange', () => { cancelPendingHover(); closeFrom(0); }, { passive: true });
-  addEventListener('scroll', () => { cancelPendingHover(); scheduleTrim(); }, { passive: true });
+  addEventListener('scroll',    () => { cancelPendingHover(); scheduleTrim(); }, { passive: true });
 }
 
-// ───────────────────────────── keybinds (moved) ──────────────────────────
+// ───────────────────────────── keybinds ─────────────────────────────────────
+
+/** Set up global keyboard shortcuts. */
 export function initKeybinds() {
   const $search = $('#search');
   const $theme = $('#theme-toggle');
@@ -446,8 +460,8 @@ export function initKeybinds() {
     focusSearch: () => $search?.focus(),
     toggleTheme: () => $theme?.click(),
     toggleSidebar: () => window.__kmToggleSidebar?.(),
-    toggleUtil: () => window.__kmToggleUtil?.(),
-    toggleCrumb: () => window.__kmToggleCrumb?.(),
+    toggleUtil:    () => window.__kmToggleUtil?.(),
+    toggleCrumb:   () => window.__kmToggleCrumb?.(),
     fullscreenGraph: () => $expand?.click(),
     openHelp,
     closeHelp,
@@ -465,9 +479,7 @@ export function initKeybinds() {
     { id: 'help', when: (e) => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
     { id: 'escape', when: (e) => key(e, 'Escape'), action: (e) => {
         const host = document.getElementById('kb-help');
-        if (host && !host.hidden) {
-          e.preventDefault(); actions.closeHelp();
-        }
+        if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); }
       }, inEditable: true }
   ];
 
@@ -500,7 +512,7 @@ export function initKeybinds() {
       let rightHTML = '';
       if (keys) rightHTML = keys.map(kb).join(', ');
       else if (ids) {
-        const shows = ids.map((id) => bindings.find((b) => b.id === id)?.help).filter(Boolean);
+        const shows = ids.map(id => bindings.find(b => b.id === id)?.help).filter(Boolean);
         rightHTML = shows.map(kb).join(', ');
       }
       const right = el('span', { innerHTML: rightHTML });
@@ -516,7 +528,6 @@ export function initKeybinds() {
 
   function openHelp() {
     const host = ensureKbHelp();
-    window.openHelp = openHelp;
     host.hidden = false;
     const focusables = host.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
     const first = focusables[0], last = focusables[focusables.length - 1];
@@ -548,7 +559,7 @@ export function initKeybinds() {
   }, { capture: true });
 }
 
-// ───────────────────── Desktop “hide-*” toggles (NEW/RESTORED) ───────────
+/** Initialize desktop panel toggles (hide/show). */
 export function initPanelToggles() {
   const MQ_DESKTOP = window.matchMedia('(min-width: 1000px), (orientation: landscape)');
   const ROOT = document.body;
@@ -567,7 +578,6 @@ export function initPanelToggles() {
   window.__kmToggleCrumb = () =>
     setHidden(!ROOT.classList.contains('hide-crumb'), 'hide-crumb', $('#crumb'));
 
-  // When switching to condensed layouts, reset to visible
   function resetForCondensed() {
     ROOT.classList.remove('hide-sidebar', 'hide-util', 'hide-crumb');
     $('#sidebar')?.setAttribute('aria-hidden', 'false');
@@ -576,4 +586,3 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
-

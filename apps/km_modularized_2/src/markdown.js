@@ -3,10 +3,9 @@
 
 import { DOC, $, $$, el, iconBtn, ICONS_PUBLIC as ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
-import { ensureMarkdown, ensureHighlight } from './loaders.js';
-import { parseTarget } from './router_renderer.js';
 
-// ───────────────────── Observer tracking (prevents leaks) ─────────────────────
+// ───────────────────── Observer tracking (prevent leaks) ─────────────────────
+
 const __OBS_BY_ROOT = new WeakMap();
 export function __trackObserver(o, root = document) {
   if (!o || typeof o.disconnect !== 'function') return o;
@@ -18,25 +17,23 @@ export function __trackObserver(o, root = document) {
 export function __cleanupObservers(root = document) {
   const set = __OBS_BY_ROOT.get(root);
   if (!set) return;
-  for (const o of set) { try { o.disconnect?.(); } catch {} }
+  for (const o of set) { try { o.disconnect(); } catch {} }
   set.clear();
 }
 
 // ───────────────────────────── Markdown → HTML ─────────────────────────────
-/** Parse + postprocess a page into HTML once, with a small in-memory LRU. */
+
+/** Return parsed HTML for a page (with caching). */
 export async function getParsedHTML(page) {
   const cached = getFromHTMLLRU(page.id);
   if (cached) return cached;
 
-  const { parse } = await ensureMarkdown();
-  // Number headings before we add ids from Marked's output:
-  // Marked doesn’t generate deterministic ids for custom headings, so we
-  // number after parsing by walking the DOM fragment.
+  const { parse } = await window.KM.ensureMarkdown();
   const html = parse(page.content);
   const div = DOC.createElement('div');
   div.innerHTML = html;
 
-  // Deterministic heading ids (only if not already present)
+  // Assign deterministic heading IDs if missing
   numberHeadings(div);
 
   const out = div.innerHTML;
@@ -44,8 +41,9 @@ export async function getParsedHTML(page) {
   return out;
 }
 
-// ─────────────────────────── Decorations & utilities ──────────────────────────
-/** Ensure external links open safely. */
+// ───────────────────────────── Decorations & utilities ──────────────────────────
+
+/** Ensure external links (http[s]) open in new tab with noopener/noreferrer. */
 export function decorateExternalLinks(containerEl = DOC) {
   $$('a[href^="http"]', containerEl).forEach(a => {
     try {
@@ -61,7 +59,7 @@ export function decorateExternalLinks(containerEl = DOC) {
   });
 }
 
-/** Turn in-article anchors into page-local ones when they wouldn’t resolve. */
+/** Convert href="#" links to page-local anchors when appropriate. */
 export function normalizeAnchors(container = $('#content'), page, { onlyFootnotes = false } = {}) {
   const base = page?.hash || '';
   if (!base) return;
@@ -74,12 +72,11 @@ export function normalizeAnchors(container = $('#content'), page, { onlyFootnote
       }
       return;
     }
-    // If link wouldn't resolve to a page, rewrite as in-page anchor on this page.
+    // If link looks like only an anchor, rewrite to page-local anchor
     try {
       const target = window.location.href.replace(/#.*$/, '') + href;
-      new URL(target);
-      // If our router wouldn’t resolve this hash as a page, rewrite to local anchor
-      const looksLikeOnlyAnchor = !href.slice(1).includes('#'); // "#something"
+      const u = new URL(target);
+      const looksLikeOnlyAnchor = !href.slice(1).includes('#');
       if (looksLikeOnlyAnchor) a.setAttribute('href', `#${base}${href}`);
     } catch {}
   });
@@ -90,8 +87,7 @@ export function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
   let seq = 0, stamp = Date.now().toString(36);
   container.querySelectorAll('a[href^="#"]').forEach(a => {
-    const href = a.getAttribute('href') || '';
-    if (parseTarget(href)) {
+    if (window.KM.isInternalPageLink?.(a)) {
       a.classList.add('km-has-preview');
       a.dataset.preview = '1';
       if (!a.id) a.id = `km-prev-${stamp}-${seq++}`;
@@ -100,7 +96,7 @@ export function annotatePreviewableLinks(container = $('#content')) {
   });
 }
 
-/** Number headings h1–h5 in a deterministic "1_2_3" style if no id exists. */
+/** Assign deterministic numeric IDs to headings (if none exist). */
 export function numberHeadings(elm) {
   const counters = [0, 0, 0, 0, 0, 0, 0];
   $$(HEADINGS_SEL, elm).forEach(h => {
@@ -112,9 +108,9 @@ export function numberHeadings(elm) {
   });
 }
 
-/** Lazy-highlight code blocks with highlight.js when they enter the viewport. */
+/** Lazy-highlight code blocks when they come into view. */
 export async function highlightVisibleCode(root = document) {
-  await ensureHighlight();
+  await window.KM.ensureHighlight();
   const blocks = [...root.querySelectorAll('pre code')];
   if (!blocks.length) return;
   const obs = __trackObserver(new IntersectionObserver((entries, o) => {
@@ -131,20 +127,19 @@ export async function highlightVisibleCode(root = document) {
   blocks.forEach(elx => { if (!elx.dataset.hlDone) obs.observe(elx); });
 }
 
-/** Optional execution of <script> tags inside rendered Markdown. */
+/** Execute <script> tags in a container (by replacing them to run code). */
 export function runInlineScripts(root) {
   root.querySelectorAll('script').forEach(old => {
     const s = document.createElement('script');
     for (const { name, value } of [...old.attributes]) s.setAttribute(name, value);
     s.textContent = old.textContent || '';
-    old.replaceWith(s); // inserting a new <script> runs it
+    old.replaceWith(s);
   });
 }
 
-/** Add anchor-copy buttons on headings and small polish for headings content. */
+/** Add anchor-copy buttons to each heading. */
 export function decorateHeadings(page, container = DOC) {
   $$(HEADINGS_SEL, container).forEach(h => {
-    // Avoid double-wiring
     if (h.dataset.kmHeadDone === '1') return;
     h.dataset.kmHeadDone = '1';
 
@@ -154,7 +149,7 @@ export function decorateHeadings(page, container = DOC) {
   });
 }
 
-/** Add "Copy" buttons and (optional) language badges to code blocks. */
+/** Add copy buttons (and optional language labels) to code blocks. */
 export function decorateCodeBlocks(container = DOC) {
   container.querySelectorAll('pre').forEach(pre => {
     if (pre.dataset.kmCodeDone === '1') return;
@@ -171,7 +166,7 @@ export function decorateCodeBlocks(container = DOC) {
   });
 }
 
-/** Render KaTeX math inline/block safely when/if loaded. */
+/** Render math in container if KaTeX is loaded (once). */
 export function renderMathSafe(container = DOC) {
   try {
     if (!container || container.dataset.mathRendered === '1') return;
@@ -189,7 +184,7 @@ export function renderMathSafe(container = DOC) {
   } catch {}
 }
 
-/** Copy-button wiring shared across main content and previews. */
+/** Attach click handler to copy buttons in a container. */
 export function wireCopyButtons(root, getBaseUrl) {
   if (!root) return;
   root.addEventListener('click', (e) => {
