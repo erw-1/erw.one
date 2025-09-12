@@ -3,9 +3,8 @@
 
 import { $ } from './config_dom.js';
 import { __model, descendants, find } from './model.js';
-
-
-const KM = (window.KM = window.KM || {});
+import { ensureD3 } from './loaders.js';
+import { nav } from './model.js';
 
 // Stable IDs used in CSS to style node/link classes by semantic role.
 const IDS = {
@@ -35,7 +34,7 @@ export function updateMiniViewport() {
   if (!graphs.mini) return;
   const { svg, sim } = graphs.mini;
 
-  // If the element isn't measured yet, bail gracefully and retry shortly.
+  // If the element isn't measured yet, bail gracefully.
   const size = getMiniSize();
   const { w, h } = size.w && size.h ? size : { w: 1, h: 1 };
 
@@ -46,11 +45,14 @@ export function updateMiniViewport() {
      .attr('height', h)
      .attr('preserveAspectRatio', 'xMidYMid meet');
 
-  sim.force('center', KM.d3.forceCenter(w / 2, h / 2));
+  // Use window.KM.d3 or stored reference
+  const d3 = KM.d3; // KM.d3 should have been set by ensureD3
+  if (d3 && sim.force) {
+    sim.force('center', d3.forceCenter(w / 2, h / 2));
+  }
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
-    // Hard recenter, then wake the sim and re-highlight after layout
     recenterNodes();
     sim.alpha(0.35).restart();
     requestAnimationFrame(() => highlightCurrent(true));
@@ -71,7 +73,7 @@ function recenterNodes() {
   // Translate nodes so centroid = svg center
   const tx = (w / 2) - cx, ty = (h / 2) - cy;
 
-  // Clear any previous pan so we don't accumulate transforms
+  // Clear any previous pan
   view.attr('transform', 'translate(0,0)');
 
   for (const d of nodes) { d.x += tx; d.y += ty; }
@@ -105,7 +107,10 @@ function buildGraphData() {
 
   // Tag edges (de-duplicated, with soft cap)
   const tagToPages = new Map();
-  pages.forEach(p => { for (const t of p.tagsSet) { if (!tagToPages.has(t)) tagToPages.set(t, []); tagToPages.get(t).push(p._i); } });
+  pages.forEach(p => { for (const t of p.tagsSet) {
+    if (!tagToPages.has(t)) tagToPages.set(t, []);
+    tagToPages.get(t).push(p._i);
+  }});
   const shared = new Map();
   const MAX_PER_TAG = 80;
   for (const arr0 of tagToPages.values()) {
@@ -131,20 +136,24 @@ function buildGraphData() {
 
 /** Build the mini force-directed graph lazily on first visibility. */
 export async function buildGraph() {
-  await KM.ensureD3();
+  const d3 = await ensureD3();
   if (graphs.mini) return;
 
   const { nodes, links, adj } = buildGraphData();
-  const svg = KM.d3.select('#mini');
+  const svg = d3.select('#mini');
   const { w: W, h: H } = getMiniSize();
-  svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
+  svg.attr('viewBox', `0 0 ${W} ${H}`)
+     .attr('width', W)
+     .attr('height', H)
+     .attr('preserveAspectRatio', 'xMidYMid meet');
 
-  const localN = nodes.map(n => ({ ...n })), localL = links.map(l => ({ ...l }));
+  const localN = nodes.map(n => ({ ...n }));
+  const localL = links.map(l => ({ ...l }));
 
-  const sim = KM.d3.forceSimulation(localN)
-    .force('link', KM.d3.forceLink(localL).id(d => d.id).distance(80))
-    .force('charge', KM.d3.forceManyBody().strength(-240))
-    .force('center', KM.d3.forceCenter(W / 2, H / 2));
+  const sim = d3.forceSimulation(localN)
+    .force('link', d3.forceLink(localL).id(d => d.id).distance(80))
+    .force('charge', d3.forceManyBody().strength(-240))
+    .force('center', d3.forceCenter(W / 2, H / 2));
 
   const view = svg.append('g').attr('class', 'view');
 
@@ -155,10 +164,10 @@ export async function buildGraph() {
   const wireNode = sel => sel
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
-    .on('click', (e, d) => window.KM.nav(d.ref))
+    .on('click', (e, d) => nav(d.ref))
     .on('mouseover', (e, d) => fade(d.id, 0.15))
     .on('mouseout', () => fade(null, 1))
-    .call(KM.d3.drag()
+    .call(d3.drag()
       .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
       .on('drag',  (e, d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
       .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
@@ -226,4 +235,3 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
-
