@@ -15,7 +15,6 @@ import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
 import { buildDeepURL, route } from './router_renderer.js';
 import './loaders.js'; // registers KM.ensure* on window
 
-const KM = (window.KM = window.KM || {});
 let currentPage = null;   // debounces redundant renders on hash changes
 let uiInited = false;
 
@@ -72,8 +71,8 @@ function initUI() {
     function apply(isDark) {
       rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
       rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      KM.ensureHLJSTheme();
-      KM.syncMermaidThemeWithPage();
+      window.KM.ensureHLJSTheme();
+      window.KM.syncMermaidThemeWithPage();
     }
   })();
 
@@ -177,10 +176,10 @@ function initUI() {
     const sidebarOpen = $('#sidebar')?.classList.contains('open');
     const utilOpen = $('#util')?.classList.contains('open');
     if (sidebarOpen || utilOpen) { closePanels(); acted = true; }
-    const mini = $('#mini'); const expandBtn = $('#expand');
-    if (mini && mini.classList.contains('fullscreen')) {
-      mini.classList.remove('fullscreen');
-      if (expandBtn) expandBtn.setAttribute('aria-pressed', 'false');
+    const miniEl = $('#mini'); const expandBtnEl = $('#expand');
+    if (miniEl && miniEl.classList.contains('fullscreen')) {
+      miniEl.classList.remove('fullscreen');
+      if (expandBtnEl) expandBtnEl.setAttribute('aria-pressed', 'false');
       updateMiniViewport();
       requestAnimationFrame(() => highlightCurrent(true));
       acted = true;
@@ -188,10 +187,10 @@ function initUI() {
     if (acted) e.preventDefault();
   }, { capture: true });
 
-  // Toggling functions for desktop (now in UI)
+  // Toggling functions for desktop
   initPanelToggles();
 
-  // Raccourcis clavier (désormais en UI, mais ils appuient sur les __kmToggle*)
+  // Keybinds
   initKeybinds();
 }
 
@@ -231,7 +230,8 @@ function initUI() {
     computeHashes();
 
     // Public nav (faithful small surface)
-    KM.nav = (page) => { if (page) location.hash = '#' + (page.hash || ''); };
+    // Expose function if needed elsewhere
+    // KM.nav = (page) => { if (page) location.hash = '#' + (page.hash || ''); };
 
     // DOM ready + init UI
     if (DOC.readyState === 'loading') await new Promise(res => DOC.addEventListener('DOMContentLoaded', res, { once: true }));
