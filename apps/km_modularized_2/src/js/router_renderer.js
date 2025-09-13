@@ -1,7 +1,7 @@
 /* eslint-env browser, es2022 */
 'use strict';
 
-import { DOC, $, $$, el, baseURLNoHash, ALLOW_JS_FROM_MD, __getVP } from './config_dom.js';
+import { DOC, $, $$, el, baseURLNoHash, ALLOW_JS_FROM_MD, __getVP, TITLE } from './config_dom.js';
 import { __model, find, hashOf } from './model.js';
 import { highlightCurrent } from './graph.js';
 import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels } from './ui.js';
@@ -85,10 +85,16 @@ export function route() {
 
   if (currentPage !== page) {
     currentPage = page;
+    
+    // Update the browser tab title to "{current page title} • {TITLE}"
+    const pt = page?.title || '';
+    DOC.title = pt && pt !== TITLE ? `${pt} • ${TITLE}` : TITLE;
+    
     breadcrumb(page);
     render(page, anchor);
     highlightCurrent(true);
     highlightSidebar(page);
+    
     if (!anchor) requestAnimationFrame(() => resetScrollTop());
   } else if (anchor) {
     scrollToAnchor(anchor);
@@ -115,7 +121,6 @@ export async function enhanceRendered(containerEl, page) {
 
   normalizeAnchors(containerEl, page, { onlyFootnotes: true });
   annotatePreviewableLinks(containerEl);
-
   highlightVisibleCode(containerEl); // async
 
   KM.ensureMarkdown().then(({ renderMermaidLazy }) => renderMermaidLazy(containerEl));
@@ -239,7 +244,6 @@ export function attachLinkPreviews() {
     container.addEventListener('focusin', e => maybeOpenFromEvent(e), true);
 
     positionPreview(panel, linkEl);
-
     wireCopyButtons(panel.el, () => {
       const t = parseTarget(panel.link.getAttribute('href') || '');
       return buildDeepURL(t?.page, '') || (baseURLNoHash() + '#');
