@@ -86,10 +86,11 @@
     box-shadow: var(--color-shadow) 3px 4px 11px -9px;
   }
 
-  code {
+ code {
     background: var(--color-lowest-contrast) !important;
-    padding: 0 var(--g-xs);
-  }
+    padding: var(--g-sm);
+    border-radius: var(--r-sm);
+ }
 
   span.lang {
     padding-left: var(--g-md);
