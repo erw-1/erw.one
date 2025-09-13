@@ -134,6 +134,9 @@
     #crumb-dyn .toggle {
       display: none;
     }
+       
+    #crumb-dyn span:first-child { padding-left: var(--g-sm); }
+    #crumb-dyn span:last-child { padding-right: var(--g-sm); }   
 
     #util {
       background: var(--color-main);
