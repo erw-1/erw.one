@@ -58,7 +58,7 @@ export function updateMiniViewport() {
 
 function recenterNodes() {
   if (!graphs.mini) return;
-  const { sim, view, w, h } = graphs.mini;
+  const { sim, w, h } = graphs.mini;
   const nodes = sim.nodes();
   if (!nodes.length) return;
 
@@ -69,7 +69,6 @@ function recenterNodes() {
 
   // Translate nodes to center
   const tx = (w / 2) - cx, ty = (h / 2) - cy;
-  view.attr('transform', 'translate(0,0)');
 
   for (const d of nodes) { d.x += tx; d.y += ty; }
 }
@@ -248,4 +247,5 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
 
