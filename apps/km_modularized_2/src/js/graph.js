@@ -247,5 +247,3 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
-
-
