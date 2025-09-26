@@ -13,7 +13,7 @@ export const ensureOnce = fn => {
 
 // D3 (only needed submodules)
 KM.ensureD3 = ensureOnce(async () => {
-  const [sel, force, drag, zoom] = await Promise.all([
+  const [sel, force, drag, zoomMod] = await Promise.all([
     import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
     import('https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm'),
     import('https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm'),
@@ -282,5 +282,6 @@ KM.syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
+
 
 
