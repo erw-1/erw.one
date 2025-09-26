@@ -206,7 +206,7 @@ export async function buildGraph() {
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { svg, view, sim, w: W, h: H, adj, zoom };
+  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
   observeMiniResize();
 }
 
@@ -248,3 +248,4 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
