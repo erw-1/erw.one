@@ -27,8 +27,8 @@ KM.ensureD3 = ensureOnce(async () => {
     forceManyBody: force.forceManyBody,
     forceCenter: force.forceCenter,
     drag: drag.drag,
-    zoom: zoom.zoom,
-    zoomIdentity: zoom.zoomIdentity
+    zoom: zoomMod.zoom,
+    zoomIdentity: zoomMod.zoomIdentity
   };
 });
 
@@ -282,4 +282,5 @@ KM.syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
+
 
