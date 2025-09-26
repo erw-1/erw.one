@@ -154,6 +154,22 @@ export async function buildGraph() {
 
   const view = svg.append('g').attr('class', 'view');
 
+  // Zoom/Pan (mouse, trackpad, touch)
+  const onZoom = (event) => {
+    view.attr('transform', event.transform);
+    graphs.mini.zoomTransform = event.transform; // remember last transform
+  };
+  const zoom = KM.d3.zoom()
+    .scaleExtent([0.25, 8])          // simple bounds
+    .on('zoom', onZoom);
+  svg.call(zoom);
+
+  // Double-click to reset zoom to identity
+  svg.on('dblclick.zoom', null); // disable default dblclick zoom-in
+  svg.on('dblclick', () => {
+    svg.transition().duration(200).call(zoom.transform, KM.d3.zoomIdentity);
+  });
+
   const link = view.append('g').selectAll('line')
     .data(localL).join('line')
     .attr('id', d => d.kind === 'hier' ? IDS.hierPRE + d.tier : IDS.tagPRE + Math.min(d.shared, 5));
@@ -164,6 +180,7 @@ export async function buildGraph() {
     .on('click', (e, d) => window.KM.nav(d.ref))
     .on('mouseover', (e, d) => fade(d.id, 0.15))
     .on('mouseout', () => fade(null, 1))
+    .on('mousedown', (e) => { e.stopPropagation(); }) // don't start pan when starting a drag
     .call(KM.d3.drag()
       .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
       .on('drag',  (e, d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
@@ -189,7 +206,7 @@ export async function buildGraph() {
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H };
+  graphs.mini = { svg, view, sim, w: W, h: H, adj, zoom };
   observeMiniResize();
 }
 
