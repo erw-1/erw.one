@@ -154,46 +154,37 @@ export async function buildGraph() {
 
   const view = svg.append('g').attr('class', 'view');
 
-  // Zoom/Pan (molette & pinch pour zoom; clic gauche + drag pour pan)
+  // Zoom/Pan (mouse, trackpad, touch)
+  const onZoom = (event) => {
+    view.attr('transform', event.transform);
+    graphs.mini.zoomTransform = event.transform; // remember last transform
+  };
   const zoom = KM.d3.zoom()
-    .filter(e => {
-      if (e.type === 'wheel') return true;                  // scroll/trackpad
-      if (e.type === 'mousedown')                           // left click on bg
-        return e.button === 0 && !e.target.closest('circle');
-      if (e.type === 'touchstart')                          // touch
-        return !e.target.closest('circle');
-      return false;
-    })
-    .scaleExtent([0.4, 3])                                  // zoom min max
-    .on('zoom', e => {
-      graphs.mini.transform = e.transform;
-      view.attr('transform', e.transform);
-    });
-  
-  svg.call(zoom).on('dblclick.zoom', null);                 // no zoom on double click
-  
+    .scaleExtent([0.25, 8])          // simple bounds
+    .on('zoom', onZoom);
+  svg.call(zoom);
+
+  // Double-click to reset zoom to identity
+  svg.on('dblclick.zoom', null); // disable default dblclick zoom-in
+  svg.on('dblclick', () => {
+    svg.transition().duration(200).call(zoom.transform, KM.d3.zoomIdentity);
+  });
+
   const link = view.append('g').selectAll('line')
     .data(localL).join('line')
     .attr('id', d => d.kind === 'hier' ? IDS.hierPRE + d.tier : IDS.tagPRE + Math.min(d.shared, 5));
 
-const wireNode = sel => sel
-  .attr('r', 6)
-  .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
-  .on('click', (e, d) => window.KM.nav(d.ref))
-  .on('mouseover', (e, d) => fade(d.id, 0.15))
-  .on('mouseout', () => fade(null, 1))
-  // zoom compat
-  .on('mousedown', e => e.stopPropagation())
-  .on('touchstart', e => e.stopPropagation())
-  .call(KM.d3.drag()
-    .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
-    .on('drag',  (e, d) => {
-      const t = graphs.mini.transform || KM.d3.zoomIdentity;
-      sim.alphaTarget(0.25).restart();
-      d.fx = (e.x - t.x) / t.k;
-      d.fy = (e.y - t.y) / t.k;
-    })
-    .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
+  const wireNode = sel => sel
+    .attr('r', 6)
+    .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
+    .on('click', (e, d) => window.KM.nav(d.ref))
+    .on('mouseover', (e, d) => fade(d.id, 0.15))
+    .on('mouseout', () => fade(null, 1))
+    .on('mousedown', (e) => { e.stopPropagation(); }) // don't start pan when starting a drag
+    .call(KM.d3.drag()
+      .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
+      .on('drag',  (e, d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
+      .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
 
   const node = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
   const label = view.append('g').selectAll('text')
@@ -215,7 +206,7 @@ const wireNode = sel => sel
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom, transform: KM.d3.zoomIdentity };
+  graphs.mini = { svg, view, sim, w: W, h: H, adj, zoom };
   observeMiniResize();
 }
 
@@ -234,15 +225,12 @@ export function highlightCurrent(force = false) {
   g.label.classed('current', d => d.id === id);
 
   const cx = g.w / 2, cy = g.h / 2;
-  const k = g.transform?.k ?? 1;
-  
   g.node.filter(d => d.id === id).each(d => {
-    const t = { k, x: cx - d.x * k, y: cy - d.y * k };
-    g.transform = t;
-    g.svg.call(g.zoom.transform, t);  // d3-zoom + transform
-    const pull = 0.10;
-    d.vx += (cx - d.x) * pull;
-    d.vy += (cy - d.y) * pull;
+    const dx = cx - d.x, dy = cy - d.y;
+    g.view.attr('transform', `translate(${dx},${dy})`);
+    const k = 0.10;
+    d.vx += (cx - d.x) * k;
+    d.vy += (cy - d.y) * k;
   });
 
   g.sim.alphaTarget(0.15).restart();
@@ -260,4 +248,3 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
-
