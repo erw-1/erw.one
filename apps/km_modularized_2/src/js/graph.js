@@ -244,9 +244,6 @@ export function observeMiniResize() {
     if (!graphs.mini) return;
     updateMiniViewport();
     highlightCurrent(true);
+    recenterNodes();
   }).observe(elx);
 }
-
-
-
-
