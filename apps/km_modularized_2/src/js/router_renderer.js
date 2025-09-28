@@ -271,7 +271,7 @@ export function attachLinkPreviews() {
     await fillPanel(panel, target.page, target.anchor);
   }
 
-  function isInternalPageLink(a) {
+  export function isInternalPageLink(a) {
     const href = a?.getAttribute('href') || '';
     return !!parseTarget(href);
   }
