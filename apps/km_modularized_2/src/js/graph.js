@@ -33,7 +33,7 @@ function getMiniSize() {
 let _miniKick = 0;
 export function updateMiniViewport() {
   if (!graphs.mini) return;
-  const { svg, sim } = graphs.mini;
+  const { svg, sim, d3 } = graphs.mini;
 
   const size = getMiniSize();
   const { w, h } = size.w && size.h ? size : { w: 1, h: 1 };
@@ -204,7 +204,7 @@ export async function buildGraph() {
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
+  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom, d3 };
   observeMiniResize();
 }
 
@@ -246,4 +246,5 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
 
