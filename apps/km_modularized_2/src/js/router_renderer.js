@@ -6,6 +6,7 @@ import { __model, find, hashOf } from './model.js';
 import { highlightCurrent } from './graph.js';
 import { highlightSidebar, breadcrumb, buildToc, seeAlso, prevNext, closePanels } from './ui.js';
 import { getParsedHTML, decorateExternalLinks, normalizeAnchors, wireCopyButtons, annotatePreviewableLinks, highlightVisibleCode, renderMathSafe, decorateHeadings, decorateCodeBlocks, __trackObserver, __cleanupObservers, runInlineScripts } from './markdown.js';
+import { ensureMarkdown, ensureKatex } from './loaders.js';
 
 let currentPage = null;
 
@@ -123,11 +124,11 @@ export async function enhanceRendered(containerEl, page) {
   annotatePreviewableLinks(containerEl);
   highlightVisibleCode(containerEl); // async
 
-  KM.ensureMarkdown().then(({ renderMermaidLazy }) => renderMermaidLazy(containerEl));
+  ensureMarkdown().then(({ renderMermaidLazy }) => renderMermaidLazy(containerEl));
   if (/(\$[^$]+\$|\\\(|\\\[)/.test(page.content)) {
     const obs = __trackObserver(new IntersectionObserver((entries, o) => {
       if (entries.some(en => en.isIntersecting)) {
-        KM.ensureKatex().then(() => renderMathSafe(containerEl));
+        ensureKatex().then(() => renderMathSafe(containerEl));
         o.disconnect();
       }
     }, { root: null, rootMargin: '200px 0px', threshold: 0 }), containerEl);
@@ -186,7 +187,7 @@ export function attachLinkPreviews() {
     const anyHoverPreview = Array.from(document.querySelectorAll('.km-link-preview')).some(p => p.matches(':hover'));
     if (anyHoverPreview) return true;
     const active = document.activeElement;
-    const activeIsTrigger = active && active.closest && window.KM.isInternalPageLink?.(active.closest('a[href^="#"]'));
+    const activeIsTrigger = active && active.closest && isInternalPageLink?.(active.closest('a[href^="#"]'));
     if (activeIsTrigger) return true;
     const hoveringTrigger = previewStack.some(p => p.link && p.link.matches(':hover'));
     return hoveringTrigger;
@@ -274,7 +275,7 @@ export function attachLinkPreviews() {
     const href = a?.getAttribute('href') || '';
     return !!parseTarget(href);
   }
-  window.KM.isInternalPageLink = isInternalPageLink;
+  annotatePreviewableLinks(containerEl, isInternalPageLink);
 
   function maybeOpenFromEvent(e) {
     const a = e.target?.closest('a[href^="#"]');
