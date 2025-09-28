@@ -33,7 +33,7 @@ function getMiniSize() {
 let _miniKick = 0;
 export function updateMiniViewport() {
   if (!graphs.mini) return;
-  const { svg, sim } = graphs.mini;
+  const { svg, sim, d3 } = graphs.mini;
 
   const size = getMiniSize();
   const { w, h } = size.w && size.h ? size : { w: 1, h: 1 };
@@ -246,6 +246,7 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
 
 
 
