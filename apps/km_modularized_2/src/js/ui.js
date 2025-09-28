@@ -159,7 +159,7 @@ export function breadcrumb(page) {
     ]);
     const ul = box.querySelector('ul');
     page.children.slice().sort((a, b) => a.title.localeCompare(b.title))
-      .forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => nav(ch) }));
+      .forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => nav(ch) })));
     dyn.append(box);
   }
 }
@@ -372,4 +372,5 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
+
 
