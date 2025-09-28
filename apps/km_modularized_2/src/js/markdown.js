@@ -4,7 +4,6 @@
 import { DOC, $, $$, el, iconBtn, ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
 import { ensureHighlight, ensureMarkdown } from './loaders.js';
-import { isInternalPageLink } from './router_renderer.js';
 
 const __OBS_BY_ROOT = new WeakMap();
 
@@ -86,7 +85,7 @@ export function normalizeAnchors(container = $('#content'), page, { onlyFootnote
 }
 
 /** Mark internal hash links as previewable (hover-to-preview) */
-export function annotatePreviewableLinks(container = $('#content')) {
+export function annotatePreviewableLinks(container = $('#content'), isInternalPageLink = () => false) {
   if (!container) return;
   let seq = 0, stamp = Date.now().toString(36);
   container.querySelectorAll('a[href^="#"]').forEach(a => {
@@ -201,6 +200,3 @@ export function wireCopyButtons(root, getBaseUrl) {
     }
   });
 }
-
-
-
