@@ -20,7 +20,6 @@ let CURRENT = -1;
 
 /** Return current #mini size (fullscreen aware) */
 function getMiniSize() {
-  const d3 = await ensureD3();
   const svg = $('#mini');
   if (!svg) return { w: 400, h: 300 };
   if (svg.classList.contains('fullscreen')) {
@@ -248,4 +247,5 @@ export function observeMiniResize() {
     recenterNodes();
   }).observe(elx);
 }
+
 
