@@ -42,6 +42,7 @@ export const ensureHighlight = ensureOnce(async () => {
       } catch (_) {}
     }));
   }
+  window.hljs = hljs; // expose hljs
   return hljs;
 });
 
@@ -280,4 +281,5 @@ export const syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
+
 
