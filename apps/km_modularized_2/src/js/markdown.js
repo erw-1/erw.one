@@ -4,6 +4,7 @@
 import { DOC, $, $$, el, iconBtn, ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
 import { ensureHighlight, ensureMarkdown } from './loaders.js';
+import { isInternalPageLink } from 'router_renderer.js';
 
 const __OBS_BY_ROOT = new WeakMap();
 
@@ -200,4 +201,5 @@ export function wireCopyButtons(root, getBaseUrl) {
     }
   });
 }
+
 
