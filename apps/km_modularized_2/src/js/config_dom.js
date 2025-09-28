@@ -77,9 +77,6 @@ export function el(tag, props = {}, children = []) {
   return n;
 }
 
-// Expose helpers and DEBUG flag
-Object.assign(KM, { $, $$, DEBUG: false });
-
 /** Escape a string for regex */
 export const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 
@@ -146,4 +143,5 @@ export const iconBtn = (title, path, cls, onClick) =>
     ...(onClick && { onclick: onClick }),
     innerHTML: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>`
   });
+
 
