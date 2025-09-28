@@ -28,6 +28,7 @@ export const ensureD3 = ensureOnce(async () => {
     zoom: zoomMod.zoom,
     zoomIdentity: zoomMod.zoomIdentity
   };
+  return d3;
 });
 
 // Highlight.js (core + optional languages)
@@ -41,7 +42,7 @@ export const ensureHighlight = ensureOnce(async () => {
       } catch (_) {}
     }));
   }
-  window.hljs = hljs; // expose hljs
+  return hljs;
 });
 
 // Theme swap for highlight.js (not memoized)
@@ -279,3 +280,4 @@ export const syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
+
