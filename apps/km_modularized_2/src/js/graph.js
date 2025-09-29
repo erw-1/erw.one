@@ -44,8 +44,12 @@ export function updateMiniViewport() {
      .attr('width', w)
      .attr('height', h)
      .attr('preserveAspectRatio', 'xMidYMid meet');
+  
+  const d3 = getD3();
+  const t = graphs.mini.zoomTransform || d3.zoomIdentity;
+  svg.call(graphs.mini.zoom.transform, t);
 
-  sim.force('center', getD3().forceCenter(w / 2, h / 2));
+  sim.force('center', d3.forceCenter(w / 2, h / 2));
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
@@ -161,6 +165,9 @@ export async function buildGraph() {
   
   const zoom = d3.zoom().scaleExtent([0.25, 8]).on('zoom', onZoom); // bounds in the list
   svg.call(zoom);
+  graphs.mini.zoom = zoom;
+  graphs.mini.svg = svg;
+  graphs.mini.zoomTransform = getD3().zoomIdentity;
   
   // Double-click to reset zoom to identity
   svg.on('dblclick.zoom', null);
@@ -244,3 +251,4 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
