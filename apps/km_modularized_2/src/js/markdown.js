@@ -3,6 +3,8 @@
 
 import { DOC, $, $$, el, iconBtn, ICONS, copyText, baseURLNoHash, HEADINGS_SEL } from './config_dom.js';
 import { __model, setHTMLLRU, getFromHTMLLRU } from './model.js';
+import { ensureMarkdown, ensureHighlight } from './loaders.js';
+import { isInternalPageLink } from './router_renderer.js';
 
 const __OBS_BY_ROOT = new WeakMap();
 
@@ -30,7 +32,7 @@ export async function getParsedHTML(page) {
   const cached = getFromHTMLLRU(page.id);
   if (cached) return cached;
 
-  const { parse } = await window.KM.ensureMarkdown();
+  const { parse } = await ensureMarkdown();
   const html = parse(page.content);
   const div = DOC.createElement('div');
   div.innerHTML = html;
@@ -88,7 +90,7 @@ export function annotatePreviewableLinks(container = $('#content')) {
   if (!container) return;
   let seq = 0, stamp = Date.now().toString(36);
   container.querySelectorAll('a[href^="#"]').forEach(a => {
-    if (window.KM.isInternalPageLink?.(a)) {
+    if (isInternalPageLink?.(a)) {
       a.classList.add('km-has-preview');
       a.dataset.preview = '1';
       if (!a.id) a.id = `km-prev-${stamp}-${seq++}`;
@@ -111,7 +113,7 @@ export function numberHeadings(elm) {
 
 /** Lazy-highlight code blocks with highlight.js when they enter the viewport. */
 export async function highlightVisibleCode(root = document) {
-  await window.KM.ensureHighlight();
+  await ensureHighlight();
   const blocks = [...root.querySelectorAll('pre code')];
   if (!blocks.length) return;
   const obs = __trackObserver(new IntersectionObserver((entries, o) => {
@@ -199,3 +201,4 @@ export function wireCopyButtons(root, getBaseUrl) {
     }
   });
 }
+
