@@ -44,12 +44,15 @@ export function updateMiniViewport() {
      .attr('width', w)
      .attr('height', h)
      .attr('preserveAspectRatio', 'xMidYMid meet');
-  
-  const d3 = getD3();
-  const t = graphs.mini.zoomTransform || d3.zoomIdentity;
-  svg.call(graphs.mini.zoom.transform, t);
 
-  sim.force('center', d3.forceCenter(w / 2, h / 2));
+  // Keep the simulation centering force up to date with size
+  sim.force('center', getD3().forceCenter(w / 2, h / 2));
+
+  // Re-apply the last known zoom transform to keep D3's internal state
+  // in sync with the rendered <g> transform after resizes/fullscreen.
+  const d3 = getD3();
+  const t = graphs.mini.zoomTransform ?? d3.zoomIdentity;
+  svg.call(graphs.mini.zoom.transform, t);
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
@@ -163,12 +166,13 @@ export async function buildGraph() {
     graphs.mini.zoomTransform = event.transform; // remember last transform
   };
   
-  const zoom = d3.zoom().scaleExtent([0.25, 8]).on('zoom', onZoom); // bounds in the list
+  const zoom = d3.zoom().scaleExtent([0.25, 8]).on('zoom', onZoom);
   svg.call(zoom);
-  graphs.mini.zoom = zoom;
-  graphs.mini.svg = svg;
-  graphs.mini.zoomTransform = getD3().zoomIdentity;
-  
+
+  // Ensure both the zoom behavior and the view start in sync
+  const initialT = d3.zoomIdentity;
+  svg.call(zoom.transform, initialT);
+
   // Double-click to reset zoom to identity
   svg.on('dblclick.zoom', null);
   svg.on('dblclick', () => { svg.transition().duration(200).call(zoom.transform, d3.zoomIdentity); });
@@ -209,7 +213,7 @@ export async function buildGraph() {
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
+  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom, zoomTransform: initialT };
   observeMiniResize();
 }
 
@@ -222,18 +226,30 @@ export function highlightCurrent(force = false) {
   if (id === CURRENT && !force) return;
 
   const g = graphs.mini;
+  const d3 = getD3();
+
   g.node
     .attr('id', d => d.id === id ? IDS.current : (d.ref.children.length ? IDS.parent : IDS.leaf))
     .attr('r', d => d.id === id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
+  // Pan (preserving current scale) so the current node is centered.
   const cx = g.w / 2, cy = g.h / 2;
   g.node.filter(d => d.id === id).each(d => {
-    const dx = cx - d.x, dy = cy - d.y;
-    g.view.attr('transform', `translate(${dx},${dy})`);
-    const k = 0.10;
-    d.vx += (cx - d.x) * k;
-    d.vy += (cy - d.y) * k;
+    const k = (g.zoomTransform && typeof g.zoomTransform.k === 'number') ? g.zoomTransform.k : 1;
+    const tx = cx - d.x * k;
+    const ty = cy - d.y * k;
+    const t = d3.zoomIdentity.translate(tx, ty).scale(k);
+
+    // Use the zoom behavior to set the transform so D3's internal
+    // state stays in sync and we don't get a jump on next interaction.
+    g.svg.transition().duration(200).call(g.zoom.transform, t);
+    g.zoomTransform = t;
+
+    // Nudge the simulation so the node settles near center.
+    const kPull = 0.10;
+    d.vx += (cx - d.x) * kPull;
+    d.vy += (cy - d.y) * kPull;
   });
 
   g.sim.alphaTarget(0.15).restart();
@@ -251,4 +267,3 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
-
