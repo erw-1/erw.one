@@ -2,8 +2,9 @@
 'use strict';
 
 import { $ } from './config_dom.js';
-import { __model, descendants, find, nav } from './model.js';
-import { ensureD3 } from './loaders.js';
+import { __model, descendants, find } from './model.js';
+
+const KM = (window.KM = window.KM || {});
 
 // IDs used in CSS for node/link roles
 const IDS = {
@@ -45,7 +46,7 @@ export function updateMiniViewport() {
      .attr('height', h)
      .attr('preserveAspectRatio', 'xMidYMid meet');
 
-  sim.force('center', d3.forceCenter(w / 2, h / 2));
+  sim.force('center', KM.d3.forceCenter(w / 2, h / 2));
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
@@ -134,21 +135,21 @@ function buildGraphData() {
 
 /** Build the mini force-directed graph (lazy) */
 export async function buildGraph() {
-  const d3 = await ensureD3();
+  await KM.ensureD3();
   if (graphs.mini) return;
 
   const { nodes, links, adj } = buildGraphData();
-  const svg = d3.select('#mini');
+  const svg = KM.d3.select('#mini');
   const { w: W, h: H } = getMiniSize();
   svg.attr('viewBox', `0 0 ${W} ${H}`).attr('width', W).attr('height', H).attr('preserveAspectRatio', 'xMidYMid meet');
 
   const localN = nodes.map(n => ({ ...n }));
   const localL = links.map(l => ({ ...l }));
 
-  const sim = d3.forceSimulation(localN)
-    .force('link', d3.forceLink(localL).id(d => d.id).distance(80))
-    .force('charge', d3.forceManyBody().strength(-240))
-    .force('center', d3.forceCenter(W / 2, H / 2));
+  const sim = KM.d3.forceSimulation(localN)
+    .force('link', KM.d3.forceLink(localL).id(d => d.id).distance(80))
+    .force('charge', KM.d3.forceManyBody().strength(-240))
+    .force('center', KM.d3.forceCenter(W / 2, H / 2));
 
   const view = svg.append('g').attr('class', 'view');
 
@@ -157,7 +158,7 @@ export async function buildGraph() {
     view.attr('transform', event.transform);
     graphs.mini.zoomTransform = event.transform; // remember last transform
   };
-  const zoom = d3.zoom()
+  const zoom = KM.d3.zoom()
     .scaleExtent([0.25, 8])          // simple bounds
     .on('zoom', onZoom);
   svg.call(zoom);
@@ -165,7 +166,7 @@ export async function buildGraph() {
   // Double-click to reset zoom to identity
   svg.on('dblclick.zoom', null); // disable default dblclick zoom-in
   svg.on('dblclick', () => {
-    svg.transition().duration(200).call(zoom.transform, d3.zoomIdentity);
+    svg.transition().duration(200).call(zoom.transform, KM.d3.zoomIdentity);
   });
 
   const link = view.append('g').selectAll('line')
@@ -175,11 +176,11 @@ export async function buildGraph() {
   const wireNode = sel => sel
     .attr('r', 6)
     .attr('id', d => d.ref.children.length ? IDS.parent : IDS.leaf)
-    .on('click', (e, d) => nav(d.ref))
+    .on('click', (e, d) => window.KM.nav(d.ref))
     .on('mouseover', (e, d) => fade(d.id, 0.15))
     .on('mouseout', () => fade(null, 1))
     .on('mousedown', (e) => { e.stopPropagation(); }) // don't start pan when starting a drag
-    .call(d3.drag()
+    .call(KM.d3.drag()
       .on('start', (e, d) => { d.fx = d.x; d.fy = d.y; })
       .on('drag',  (e, d) => { sim.alphaTarget(0.25).restart(); d.fx = e.x; d.fy = e.y; })
       .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
@@ -244,8 +245,5 @@ export function observeMiniResize() {
     if (!graphs.mini) return;
     updateMiniViewport();
     highlightCurrent(true);
-    recenterNodes();
   }).observe(elx);
 }
-
-

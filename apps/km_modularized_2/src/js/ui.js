@@ -2,7 +2,7 @@
 'use strict';
 
 import { DOC, $, $$, el, HEADINGS_SEL } from './config_dom.js';
-import { __model, hashOf, nav } from './model.js';
+import { __model, hashOf } from './model.js';
 
 export function closePanels() {
   $('#sidebar')?.classList.remove('open');
@@ -145,7 +145,7 @@ export function breadcrumb(page) {
     if (siblings.length) {
       const ul = el('ul');
       siblings.forEach(s =>
-        ul.append(el('li', { textContent: s.title, onclick: () => nav(s) }))
+        ul.append(el('li', { textContent: s.title, onclick: () => KM.nav(s) }))
       );
       wrap.append(ul);
     }
@@ -159,7 +159,7 @@ export function breadcrumb(page) {
     ]);
     const ul = box.querySelector('ul');
     page.children.slice().sort((a, b) => a.title.localeCompare(b.title))
-      .forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => nav(ch) })));
+      .forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => KM.nav(ch) })));
     dyn.append(box);
   }
 }
@@ -372,5 +372,3 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
-
-

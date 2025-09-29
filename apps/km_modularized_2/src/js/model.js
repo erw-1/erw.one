@@ -152,6 +152,7 @@ export const find = segs => {
 export function nav(page) {
   if (page) location.hash = '#' + hashOf(page);
 }
+window.KM.nav = nav;
 
 export function getFromHTMLLRU(pageId) {
   if (!pageHTMLLRU.has(pageId)) return null;
@@ -177,4 +178,3 @@ export const __model = {
   get root()  { return root; },
   get byId()  { return byId; }
 };
-

@@ -47,6 +47,10 @@ export const RE_HEADING = /^(#{1,6})\s+/;
 export const RE_HEADING_FULL = /^(#{1,6})\s+(.+)/;
 export const HEADINGS_SEL = 'h1, h2, h3, h4, h5, h6';
 
+// Global namespace
+window.KM = window.KM || {};
+const KM = window.KM;
+
 // Viewport cache (updated on resize)
 let __VPW = window.innerWidth;
 let __VPH = window.innerHeight;
@@ -76,6 +80,9 @@ export function el(tag, props = {}, children = []) {
   }
   return n;
 }
+
+// Expose helpers and DEBUG flag
+Object.assign(KM, { $, $$, DEBUG: false });
 
 /** Escape a string for regex */
 export const escapeRegex = s => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
@@ -143,5 +150,3 @@ export const iconBtn = (title, path, cls, onClick) =>
     ...(onClick && { onclick: onClick }),
     innerHTML: `<svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="${path}"></path></svg>`
   });
-
-

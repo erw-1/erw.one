@@ -3,6 +3,8 @@
 
 import { DOC, LANGS } from './config_dom.js';
 
+const KM = (window.KM = window.KM || {});
+
 /** Run async initializer at most once */
 export const ensureOnce = fn => {
   let p;
@@ -10,14 +12,14 @@ export const ensureOnce = fn => {
 };
 
 // D3 (only needed submodules)
-export const ensureD3 = ensureOnce(async () => {
+KM.ensureD3 = ensureOnce(async () => {
   const [sel, force, drag, zoomMod] = await Promise.all([
     import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
     import('https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm'),
     import('https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm'),
     import('https://cdn.jsdelivr.net/npm/d3-zoom@3.0.0/+esm')
   ]);
-  const d3 = {
+  KM.d3 = {
     select: sel.select,
     selectAll: sel.selectAll,
     forceSimulation: force.forceSimulation,
@@ -28,11 +30,10 @@ export const ensureD3 = ensureOnce(async () => {
     zoom: zoomMod.zoom,
     zoomIdentity: zoomMod.zoomIdentity
   };
-  return d3;
 });
 
 // Highlight.js (core + optional languages)
-export const ensureHighlight = ensureOnce(async () => {
+KM.ensureHighlight = ensureOnce(async () => {
   const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
   if (Array.isArray(LANGS) && LANGS.length) {
     await Promise.allSettled(LANGS.map(async lang => {
@@ -43,11 +44,10 @@ export const ensureHighlight = ensureOnce(async () => {
     }));
   }
   window.hljs = hljs; // expose hljs
-  return hljs;
 });
 
 // Theme swap for highlight.js (not memoized)
-export const ensureHLJSTheme = async () => {
+KM.ensureHLJSTheme = async () => {
   const THEME = {
     light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
     dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css'
@@ -65,7 +65,7 @@ export const ensureHLJSTheme = async () => {
 };
 
 // KaTeX on demand
-export const ensureKatex = ensureOnce(async () => {
+KM.ensureKatex = ensureOnce(async () => {
   const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
   if (!DOC.getElementById('katex-css')) {
     const link = Object.assign(DOC.createElement('link'), {
@@ -85,7 +85,7 @@ export const ensureKatex = ensureOnce(async () => {
 
 // Marked + Mermaid + extensions bundle
 let mdReady = null;
-export const ensureMarkdown = () => {
+KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
 
   // Inline extension factory (==mark==, ^sup^, ~sub~, ++u++)
@@ -198,6 +198,7 @@ export const ensureMarkdown = () => {
 
     const mermaid = mermaidMod.default ?? mermaidMod;
     mermaid.initialize({ startOnLoad: false });
+    KM.mermaid = mermaid;
 
     const setMermaidTheme = mode => {
       mermaid.initialize({ startOnLoad: false, theme: mode });
@@ -239,7 +240,7 @@ export const ensureMarkdown = () => {
           })();
 
           try {
-            await mermaid.run({ nodes: [el] });
+            await KM.mermaid.run({ nodes: [el] });
           } catch (_) {
             delete el.dataset.mmdDone;
             throw _;
@@ -260,9 +261,9 @@ export const ensureMarkdown = () => {
 };
 
 // Sync Mermaid theme with page
-export const syncMermaidThemeWithPage = async () => {
+KM.syncMermaidThemeWithPage = async () => {
   const mode = DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-  const { setMermaidTheme, renderMermaidLazy } = await ensureMarkdown();
+  const { setMermaidTheme, renderMermaidLazy } = await KM.ensureMarkdown();
   setMermaidTheme(mode);
 
   async function resetAndRerender(root) {
@@ -281,5 +282,6 @@ export const syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
+
 
 
