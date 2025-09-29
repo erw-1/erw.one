@@ -33,7 +33,7 @@ function getMiniSize() {
 let _miniKick = 0;
 export function updateMiniViewport() {
   if (!graphs.mini) return;
-  const { svg, sim, zoom } = graphs.mini;
+  const { svg, sim } = graphs.mini;
 
   const size = getMiniSize();
   const { w, h } = size.w && size.h ? size : { w: 1, h: 1 };
@@ -46,14 +46,6 @@ export function updateMiniViewport() {
      .attr('preserveAspectRatio', 'xMidYMid meet');
 
   sim.force('center', getD3().forceCenter(w / 2, h / 2));
-  
-  // Keep the zoom behavior in sync with the current transform/state
-  if (zoom) {
-    // Make pan bounds match the new viewport
-    zoom.translateExtent([[0, 0], [w, h]]);
-    const t = graphs.mini.zoomTransform || d3.zoomTransform(svg.node()) || d3.zoomIdentity;
-    svg.call(zoom.transform, t);
-  }
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
@@ -228,24 +220,13 @@ export function highlightCurrent(force = false) {
     .attr('r', d => d.id === id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
-  g.sim.nodes().forEach(d => {
-    if (d.id !== id) return;
-    const cx = g.w / 2, cy = g.h / 2;
-    // Keep current zoom scale
-    const curT = g.zoomTransform || d3.zoomTransform(g.svg.node()) || d3.zoomIdentity;
-    const k = curT.k || 1;
-    // Build a transform that keeps scale k and positions node at center
-    const t = d3.zoomIdentity
-      .translate(cx, cy)
-      .scale(k)
-      .translate(-d.x, -d.y);
-    // Apply through the zoom behavior so internal state matches the DOM
-    g.svg.transition().duration(200).call(g.zoom.transform, t);
-    g.zoomTransform = t;
-    // (optional) small nudge to the sim toward center
-    const nudge = 0.10;
-    d.vx += (cx - d.x) * nudge;
-    d.vy += (cy - d.y) * nudge;
+  const cx = g.w / 2, cy = g.h / 2;
+  g.node.filter(d => d.id === id).each(d => {
+    const dx = cx - d.x, dy = cy - d.y;
+    g.view.attr('transform', `translate(${dx},${dy})`);
+    const k = 0.10;
+    d.vx += (cx - d.x) * k;
+    d.vy += (cy - d.y) * k;
   });
 
   g.sim.alphaTarget(0.15).restart();
@@ -263,7 +244,3 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
-
-
-
-
