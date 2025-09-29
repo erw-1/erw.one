@@ -64,6 +64,11 @@ export function parseTarget(hashOrHref = location.hash) {
   return { page, anchor };
 }
 
+export function isInternalPageLink(a) {
+  const href = a?.getAttribute('href') || '';
+  return !!parseTarget(href);
+}
+
 /** Reset window scroll to top. */
 export function resetScrollTop() {
   (document.scrollingElement || document.documentElement).scrollTop = 0;
@@ -269,11 +274,6 @@ export function attachLinkPreviews() {
     const panel = createPanel(a);
     previewStack.forEach(p => clearTimeout(p.timer));
     await fillPanel(panel, target.page, target.anchor);
-  }
-
-  export function isInternalPageLink(a) {
-    const href = a?.getAttribute('href') || '';
-    return !!parseTarget(href);
   }
 
   function maybeOpenFromEvent(e) {
