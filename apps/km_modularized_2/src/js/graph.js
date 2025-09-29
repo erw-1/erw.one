@@ -46,6 +46,10 @@ export function updateMiniViewport() {
      .attr('preserveAspectRatio', 'xMidYMid meet');
 
   sim.force('center', getD3().forceCenter(w / 2, h / 2));
+  
+  if (graphs.mini.zoom && graphs.mini.zoomTransform) {
+    graphs.mini.svg.call(graphs.mini.zoom.transform, graphs.mini.zoomTransform);
+  }
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
@@ -223,7 +227,7 @@ export function highlightCurrent(force = false) {
   const cx = g.w / 2, cy = g.h / 2;
   g.node.filter(d => d.id === id).each(d => {
     const dx = cx - d.x, dy = cy - d.y;
-    g.view.attr('transform', `translate(${dx},${dy})`);
+    g.svg.call(g.zoom.translateBy, dx, dy);
     const k = 0.10;
     d.vx += (cx - d.x) * k;
     d.vy += (cy - d.y) * k;
@@ -244,3 +248,4 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
