@@ -45,14 +45,7 @@ export function updateMiniViewport() {
      .attr('height', h)
      .attr('preserveAspectRatio', 'xMidYMid meet');
 
-  // Keep the simulation centering force up to date with size
   sim.force('center', getD3().forceCenter(w / 2, h / 2));
-
-  // Re-apply the last known zoom transform to keep D3's internal state
-  // in sync with the rendered <g> transform after resizes/fullscreen.
-  const d3 = getD3();
-  const t = graphs.mini.zoomTransform ?? d3.zoomIdentity;
-  if (graphs.mini.zoom) svg.call(graphs.mini.zoom.transform, t);
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
@@ -160,37 +153,15 @@ export async function buildGraph() {
 
   const view = svg.append('g').attr('class', 'view');
 
-  // Initialize graphs.mini EARLY so zoom handlers can safely reference it
-  graphs.mini = {
-    svg,
-    node: null,
-    label: null,
-    sim,
-    view,
-    adj,
-    w: W,
-    h: H,
-    zoom: null,
-    zoomTransform: d3.zoomIdentity
-  };
-
   // Zoom/Pan (mouse, trackpad, touch)
   const onZoom = (event) => {
-    // Guard against races during initialization
-    if (!graphs.mini) return;
     view.attr('transform', event.transform);
     graphs.mini.zoomTransform = event.transform; // remember last transform
   };
   
-  const zoom = d3.zoom().scaleExtent([0.25, 8]).on('zoom', onZoom);
-  graphs.mini.zoom = zoom;
-
-  // Ensure both the zoom behavior and the view start in sync
-  const initialT = d3.zoomIdentity;
+  const zoom = d3.zoom().scaleExtent([0.25, 8]).on('zoom', onZoom); // bounds in the list
   svg.call(zoom);
-  svg.call(zoom.transform, initialT);
-  graphs.mini.zoomTransform = initialT;
-
+  
   // Double-click to reset zoom to identity
   svg.on('dblclick.zoom', null);
   svg.on('dblclick', () => { svg.transition().duration(200).call(zoom.transform, d3.zoomIdentity); });
@@ -218,10 +189,6 @@ export async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
-  // Store selections created after initialization
-  graphs.mini.node = node;
-  graphs.mini.label = label;
-
   function fade(id, o) {
     node.style('opacity', d => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
     label.style('opacity', d => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
@@ -235,6 +202,7 @@ export async function buildGraph() {
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
+  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
   observeMiniResize();
 }
 
@@ -247,34 +215,25 @@ export function highlightCurrent(force = false) {
   if (id === CURRENT && !force) return;
 
   const g = graphs.mini;
-  const d3 = getD3();
-
-  if (!g.node || !g.label) return;
-
   g.node
     .attr('id', d => d.id === id ? IDS.current : (d.ref.children.length ? IDS.parent : IDS.leaf))
     .attr('r', d => d.id === id ? 8 : 6);
   g.label.classed('current', d => d.id === id);
 
-  // Pan (preserving current scale) so the current node is centered.
+  const d3 = getD3();
   const cx = g.w / 2, cy = g.h / 2;
   g.node.filter(d => d.id === id).each(d => {
-    const k = (g.zoomTransform && typeof g.zoomTransform.k === 'number') ? g.zoomTransform.k : 1;
-    const tx = cx - d.x * k;
-    const ty = cy - d.y * k;
-    const t = d3.zoomIdentity.translate(tx, ty).scale(k);
+    const dx = cx - d.x, dy = cy - d.y;
 
-    // Use the zoom behavior to set the transform so D3's internal
-    // state stays in sync and we don't get a jump on next interaction.
-    if (g.zoom) {
-      g.svg.transition().duration(200).call(g.zoom.transform, t);
-      g.zoomTransform = t;
-    }
+    // IMPORTANT: update via zoom.transform so D3's internal zoom state matches the visual transform.
+    const t = d3.zoomIdentity.translate(dx, dy);
+    g.svg.interrupt && g.svg.interrupt();
+    g.svg.call(g.zoom.transform, t);
+    g.zoomTransform = t;
 
-    // Nudge the simulation so the node settles near center.
-    const kPull = 0.10;
-    d.vx += (cx - d.x) * kPull;
-    d.vy += (cy - d.y) * kPull;
+    const k = 0.10;
+    d.vx += (cx - d.x) * k;
+    d.vy += (cy - d.y) * k;
   });
 
   g.sim.alphaTarget(0.15).restart();
