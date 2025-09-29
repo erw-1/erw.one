@@ -349,7 +349,7 @@ function createHelpDialog(combos) {
   ];
 
   const list = el('ul');
-  const kb = s => `<kbd>\${s}</kbd>`;
+  const kb = s => `<kbd>${s}</kbd>`;
 
   for (const { desc, id, keys } of items) {
     const li = el('li');
@@ -436,3 +436,4 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
+
