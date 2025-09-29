@@ -51,7 +51,7 @@ export function updateMiniViewport() {
   if (zoom) {
     // Make pan bounds match the new viewport
     zoom.translateExtent([[0, 0], [w, h]]);
-    const t = graphs.mini.zoomTransform || KM.d3.zoomTransform(svg.node()) || KM.d3.zoomIdentity;
+    const t = graphs.mini.zoomTransform || d3.zoomTransform(svg.node()) || d3.zoomIdentity;
     svg.call(zoom.transform, t);
   }
 
@@ -232,10 +232,10 @@ export function highlightCurrent(force = false) {
     if (d.id !== id) return;
     const cx = g.w / 2, cy = g.h / 2;
     // Keep current zoom scale
-    const curT = g.zoomTransform || KM.d3.zoomTransform(g.svg.node()) || KM.d3.zoomIdentity;
+    const curT = g.zoomTransform || d3.zoomTransform(g.svg.node()) || d3.zoomIdentity;
     const k = curT.k || 1;
     // Build a transform that keeps scale k and positions node at center
-    const t = KM.d3.zoomIdentity
+    const t = d3.zoomIdentity
       .translate(cx, cy)
       .scale(k)
       .translate(-d.x, -d.y);
@@ -263,6 +263,7 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
 
 
 
