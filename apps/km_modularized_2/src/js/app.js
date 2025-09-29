@@ -8,8 +8,9 @@ import { buildTree, setFolderOpen, closePanels, initKeybinds, initPanelToggles }
 import { search } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
 import { buildDeepURL, route, attachLinkPreviews, parseTarget } from './router_renderer.js';
-import { ensureHLJSTheme, syncMermaidThemeWithPage } from './loaders.js';
+import './loaders.js'; // registers KM.ensure* on window
 
+const KM = (window.KM = window.KM || {});
 let currentPage = null;
 let uiInited = false;
 
@@ -66,8 +67,8 @@ function initUI() {
     function apply(isDark) {
       rootEl.style.setProperty('--color-main', isDark ? 'rgb(29,29,29)' : 'white');
       rootEl.setAttribute('data-theme', isDark ? 'dark' : 'light');
-      ensureHLJSTheme();
-      syncMermaidThemeWithPage();
+      KM.ensureHLJSTheme();
+      KM.syncMermaidThemeWithPage();
     }
   })();
 
@@ -255,5 +256,4 @@ function initUI() {
       elc.innerHTML = `<h1>Content failed to load</h1><p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p><pre>${String(err?.message || err)}</pre>`;
     }
   }
-
 })();

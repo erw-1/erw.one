@@ -3,26 +3,23 @@
 
 import { DOC, LANGS } from './config_dom.js';
 
+const KM = (window.KM = window.KM || {});
+
 /** Run async initializer at most once */
-export const ensureOnce = (fn) => {
+export const ensureOnce = fn => {
   let p;
   return () => (p ||= fn());
 };
 
-// ─────────────────────────── D3 ───────────────────────────
-
-/** Populated after first ensureD3(); consumers import { d3 } */
-export let d3 = null;
-
-/** Dynamically load the tiny D3 subset we need */
-export const ensureD3 = ensureOnce(async () => {
+// D3 (only needed submodules)
+KM.ensureD3 = ensureOnce(async () => {
   const [sel, force, drag, zoomMod] = await Promise.all([
     import('https://cdn.jsdelivr.net/npm/d3-selection@3.0.0/+esm'),
     import('https://cdn.jsdelivr.net/npm/d3-force@3.0.0/+esm'),
     import('https://cdn.jsdelivr.net/npm/d3-drag@3.0.0/+esm'),
     import('https://cdn.jsdelivr.net/npm/d3-zoom@3.0.0/+esm')
   ]);
-  d3 = {
+  KM.d3 = {
     select: sel.select,
     selectAll: sel.selectAll,
     forceSimulation: force.forceSimulation,
@@ -35,28 +32,22 @@ export const ensureD3 = ensureOnce(async () => {
   };
 });
 
-// ─────────────────────── highlight.js ─────────────────────
-
-export const ensureHighlight = ensureOnce(async () => {
+// Highlight.js (core + optional languages)
+KM.ensureHighlight = ensureOnce(async () => {
   const { default: hljs } = await import('https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/core/+esm');
   if (Array.isArray(LANGS) && LANGS.length) {
-    await Promise.allSettled(
-      LANGS.map(async (lang) => {
-        try {
-          const mod = await import(
-            `https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`
-          );
-          hljs.registerLanguage(lang, mod.default);
-        } catch (_) {}
-      })
-    );
+    await Promise.allSettled(LANGS.map(async lang => {
+      try {
+        const mod = await import(`https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/es/languages/${lang}/+esm`);
+        hljs.registerLanguage(lang, mod.default);
+      } catch (_) {}
+    }));
   }
-  // expose for highlightElement usage elsewhere
-  window.hljs = hljs;
+  window.hljs = hljs; // expose hljs
 });
 
-/** Swap highlight.js CSS theme to match current page theme */
-export async function ensureHLJSTheme() {
+// Theme swap for highlight.js (not memoized)
+KM.ensureHLJSTheme = async () => {
   const THEME = {
     light: 'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github.min.css',
     dark:  'https://cdn.jsdelivr.net/npm/highlight.js@11.11.1/styles/github-dark.min.css'
@@ -70,15 +61,11 @@ export async function ensureHLJSTheme() {
     DOC.head.appendChild(l);
   }
   if (l.getAttribute('href') === THEME[mode]) return;
-  await new Promise((res) => {
-    l.onload = l.onerror = res;
-    l.href = THEME[mode];
-  });
-}
+  await new Promise(res => { l.onload = l.onerror = res; l.href = THEME[mode]; });
+};
 
-// ─────────────────────────── KaTeX ───────────────────────────
-
-export const ensureKatex = ensureOnce(async () => {
+// KaTeX on demand
+KM.ensureKatex = ensureOnce(async () => {
   const BASE = 'https://cdn.jsdelivr.net/npm/katex@0.16.22/dist/';
   if (!DOC.getElementById('katex-css')) {
     const link = Object.assign(DOC.createElement('link'), {
@@ -96,12 +83,9 @@ export const ensureKatex = ensureOnce(async () => {
   window.renderMathInElement = auto.default;
 });
 
-// ────────────────── Marked + Mermaid bundle ─────────────────
-
+// Marked + Mermaid + extensions bundle
 let mdReady = null;
-
-/** Exposes { parse, renderMermaidLazy, setMermaidTheme, mermaid } */
-export function ensureMarkdown() {
+KM.ensureMarkdown = () => {
   if (mdReady) return mdReady;
 
   // Inline extension factory (==mark==, ^sup^, ~sub~, ++u++)
@@ -180,109 +164,111 @@ export function ensureMarkdown() {
       return { type: 'mermaid', raw: m[0], text: m[1] };
     },
     renderer(tok) {
-      const escHTML = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      const escHTML = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       return `<div class="mermaid">${escHTML(tok.text)}</div>\n`;
     }
   };
 
   // Inline extension instances
-  const markExt      = createInline({ name: 'mark', delimiter: '==', tag: 'mark', hint: '=' });
-  const supExt       = createInline({ name: 'sup',  delimiter: '^',  tag: 'sup', notAfterOpen: '\\[|\\^' });
-  const subExt       = createInline({ name: 'sub',  delimiter: '~',  tag: 'sub', notAfterOpen: '~', notBeforeClose: '~' });
+  const markExt =      createInline({ name: 'mark', delimiter: '==', tag: 'mark', hint: '=' });
+  const supExt  =      createInline({ name: 'sup',  delimiter: '^', tag: 'sup',  notAfterOpen: '\\[|\\^' });
+  const subExt  =      createInline({ name: 'sub',  delimiter: '~', tag: 'sub',  notAfterOpen: '~', notBeforeClose: '~' });
   const underlineExt = createInline({ name: 'underline', delimiter: '++', tag: 'u', hint: '+', notAfterOpen: '\\+', notBeforeClose: '\\+' });
 
   const calloutExt = createCallouts();
   const spoilerExt = createSpoiler();
 
   mdReady = Promise.all([
-    import('https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm'),
-    import('https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm'),
-    import('https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm'),
-    import('https://cdn.jsdelivr.net/npm/mermaid@11.11.0/+esm')
+    import("https://cdn.jsdelivr.net/npm/marked@16.1.2/+esm"),
+    import("https://cdn.jsdelivr.net/npm/marked-alert@2.1.2/+esm"),
+    import("https://cdn.jsdelivr.net/npm/marked-footnote@1.4.0/+esm"),
+    import("https://cdn.jsdelivr.net/npm/marked-emoji@2.0.1/+esm"),
+    import("https://cdn.jsdelivr.net/npm/emojilib@4.0.2/+esm"),
+    import("https://cdn.jsdelivr.net/npm/mermaid@11.11.0/+esm"),
   ]).then(([marked, alertMod, footnoteMod, emojiPluginMod, emojiLibMod, mermaidMod]) => {
     const emojiLib = emojiLibMod.default ?? emojiLibMod;
     const Emojis = Object.entries(emojiLib).reduce((map, [emoji, keywords]) => {
-      if (Array.isArray(keywords)) for (const k of keywords) if (map[k] == null) map[k] = emoji;
+      if (Array.isArray(keywords)) {
+        for (const k of keywords) {
+          if (map[k] == null) map[k] = emoji;
+        }
+      }
       return map;
     }, {});
 
     const mermaid = mermaidMod.default ?? mermaidMod;
     mermaid.initialize({ startOnLoad: false });
+    KM.mermaid = mermaid;
 
-    const setMermaidTheme = (mode) => {
+    const setMermaidTheme = mode => {
       mermaid.initialize({ startOnLoad: false, theme: mode });
     };
 
     const md = new marked.Marked()
       .use((footnoteMod.default ?? footnoteMod)())
       .use((alertMod.default ?? alertMod)())
-      .use((emojiPluginMod.markedEmoji ?? emojiPluginMod.default)({ emojis: Emojis, renderer: (t) => t.emoji }))
+      .use((emojiPluginMod.markedEmoji ?? emojiPluginMod.default)({ emojis: Emojis, renderer: t => t.emoji }))
       .use({ extensions: [mermaidExt, markExt, supExt, subExt, underlineExt, calloutExt, spoilerExt] });
-
-    async function renderMermaidLazy(root) {
-      const container = root || document;
-      const nodes = [...container.querySelectorAll('.mermaid')];
-      if (!nodes.length) return;
-
-      async function renderOne(el) {
-        if (el.dataset.mmdDone === '1') return;
-        if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
-        if (el.querySelector('svg')) el.innerHTML = el.dataset.mmdSrc;
-        el.removeAttribute('data-processed');
-        el.dataset.mmdDone = '1';
-
-        // wait until Mermaid flips data-processed="true" or an <svg> appears
-        const done = (() => {
-          let resolve;
-          const p = new Promise((res) => (resolve = res));
-          const mo = new MutationObserver(() => {
-            if (el.getAttribute('data-processed') === 'true' || el.querySelector('svg')) {
-              mo.disconnect(); resolve();
-            }
-          });
-          mo.observe(el, { attributes: true, childList: true });
-          const t = setTimeout(() => { mo.disconnect(); resolve(); }, 4000);
-          p.finally(() => clearTimeout(t));
-          return p;
-        })();
-
-        try {
-          await mermaid.run({ nodes: [el] });
-        } catch (_) {
-          delete el.dataset.mmdDone;
-          throw _;
-        }
-
-        await done;
-      }
-
-      for (const el of nodes) {
-        try { await renderOne(el); } catch {}
-      }
-    }
 
     return {
       parse: (src, opt) => md.parse(src, { ...opt, mangle: false }),
-      renderMermaidLazy,
+      renderMermaidLazy: async (root) => {
+        const container = root || document;
+        const nodes = [...container.querySelectorAll(".mermaid")];
+        if (!nodes.length) return;
+
+        async function renderOne(el) {
+          if (el.dataset.mmdDone === "1") return;
+          if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
+          if (el.querySelector("svg")) el.innerHTML = el.dataset.mmdSrc;
+          el.removeAttribute("data-processed");
+          el.dataset.mmdDone = "1";
+
+          const done = (() => {
+            let resolve;
+            const p = new Promise(res => { resolve = res; });
+            const mo = new MutationObserver(() => {
+              if (el.getAttribute("data-processed") === "true" || el.querySelector("svg")) {
+                mo.disconnect();
+                resolve();
+              }
+            });
+            mo.observe(el, { attributes: true, childList: true });
+            const t = setTimeout(() => { mo.disconnect(); resolve(); }, 4000);
+            p.finally(() => clearTimeout(t));
+            return p;
+          })();
+
+          try {
+            await KM.mermaid.run({ nodes: [el] });
+          } catch (_) {
+            delete el.dataset.mmdDone;
+            throw _;
+          }
+
+          await done;
+        }
+
+        for (const el of nodes) {
+          try { await renderOne(el); } catch {}
+        }
+      },
       setMermaidTheme,
-      mermaid
     };
   });
 
   return mdReady;
-}
+};
 
-/** Keep Mermaid’s theme in sync with the page theme and re-render nodes */
-export async function syncMermaidThemeWithPage() {
+// Sync Mermaid theme with page
+KM.syncMermaidThemeWithPage = async () => {
   const mode = DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-  const { setMermaidTheme, renderMermaidLazy } = await ensureMarkdown();
+  const { setMermaidTheme, renderMermaidLazy } = await KM.ensureMarkdown();
   setMermaidTheme(mode);
 
   async function resetAndRerender(root) {
     if (!root) return;
-    root.querySelectorAll('.mermaid').forEach((el) => {
+    root.querySelectorAll('.mermaid').forEach(el => {
       if (!el.dataset.mmdSrc) el.dataset.mmdSrc = el.textContent;
       el.innerHTML = el.dataset.mmdSrc;
       el.removeAttribute('data-processed');
@@ -291,8 +277,11 @@ export async function syncMermaidThemeWithPage() {
     await renderMermaidLazy(root);
   }
 
-  await resetAndRerender(DOC.getElementById('content'));
-  document.querySelectorAll('.km-link-preview').forEach((p) => {
+  resetAndRerender(DOC.getElementById('content'));
+  document.querySelectorAll('.km-link-preview').forEach(p => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
-}
+};
+
+
+
