@@ -52,7 +52,7 @@ export function updateMiniViewport() {
   // in sync with the rendered <g> transform after resizes/fullscreen.
   const d3 = getD3();
   const t = graphs.mini.zoomTransform ?? d3.zoomIdentity;
-  svg.call(graphs.mini.zoom.transform, t);
+  if (graphs.mini.zoom) svg.call(graphs.mini.zoom.transform, t);
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
@@ -160,18 +160,36 @@ export async function buildGraph() {
 
   const view = svg.append('g').attr('class', 'view');
 
+  // Initialize graphs.mini EARLY so zoom handlers can safely reference it
+  graphs.mini = {
+    svg,
+    node: null,
+    label: null,
+    sim,
+    view,
+    adj,
+    w: W,
+    h: H,
+    zoom: null,
+    zoomTransform: d3.zoomIdentity
+  };
+
   // Zoom/Pan (mouse, trackpad, touch)
   const onZoom = (event) => {
+    // Guard against races during initialization
+    if (!graphs.mini) return;
     view.attr('transform', event.transform);
     graphs.mini.zoomTransform = event.transform; // remember last transform
   };
   
   const zoom = d3.zoom().scaleExtent([0.25, 8]).on('zoom', onZoom);
-  svg.call(zoom);
+  graphs.mini.zoom = zoom;
 
   // Ensure both the zoom behavior and the view start in sync
   const initialT = d3.zoomIdentity;
+  svg.call(zoom);
   svg.call(zoom.transform, initialT);
+  graphs.mini.zoomTransform = initialT;
 
   // Double-click to reset zoom to identity
   svg.on('dblclick.zoom', null);
@@ -200,6 +218,10 @@ export async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
+  // Store selections created after initialization
+  graphs.mini.node = node;
+  graphs.mini.label = label;
+
   function fade(id, o) {
     node.style('opacity', d => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
     label.style('opacity', d => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id) ? 1 : o);
@@ -213,7 +235,6 @@ export async function buildGraph() {
     label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
-  graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom, zoomTransform: initialT };
   observeMiniResize();
 }
 
@@ -227,6 +248,8 @@ export function highlightCurrent(force = false) {
 
   const g = graphs.mini;
   const d3 = getD3();
+
+  if (!g.node || !g.label) return;
 
   g.node
     .attr('id', d => d.id === id ? IDS.current : (d.ref.children.length ? IDS.parent : IDS.leaf))
@@ -243,8 +266,10 @@ export function highlightCurrent(force = false) {
 
     // Use the zoom behavior to set the transform so D3's internal
     // state stays in sync and we don't get a jump on next interaction.
-    g.svg.transition().duration(200).call(g.zoom.transform, t);
-    g.zoomTransform = t;
+    if (g.zoom) {
+      g.svg.transition().duration(200).call(g.zoom.transform, t);
+      g.zoomTransform = t;
+    }
 
     // Nudge the simulation so the node settles near center.
     const kPull = 0.10;
