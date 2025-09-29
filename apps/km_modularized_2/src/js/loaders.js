@@ -200,8 +200,7 @@ export const ensureMarkdown = () => {
 
     const mermaid = mermaidMod.default ?? mermaidMod;
     mermaid.initialize({ startOnLoad: false });
-    mermaid = mermaid;
-
+    
     const setMermaidTheme = mode => {
       mermaid.initialize({ startOnLoad: false, theme: mode });
     };
@@ -242,7 +241,7 @@ export const ensureMarkdown = () => {
           })();
 
           try {
-            await KM.mermaid.run({ nodes: [el] });
+            await mermaid.run({ nodes: [el] });
           } catch (_) {
             delete el.dataset.mmdDone;
             throw _;
@@ -266,7 +265,7 @@ export const getMermaid = () => mermaid;
 // Sync Mermaid theme with page
 export const syncMermaidThemeWithPage = async () => {
   const mode = DOC.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default';
-  const { setMermaidTheme, renderMermaidLazy } = await KM.ensureMarkdown();
+  const { setMermaidTheme, renderMermaidLazy } = await ensureMarkdown();
   setMermaidTheme(mode);
 
   async function resetAndRerender(root) {
@@ -285,6 +284,7 @@ export const syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
+
 
 
 
