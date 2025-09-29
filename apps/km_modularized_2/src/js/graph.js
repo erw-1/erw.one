@@ -160,7 +160,8 @@ export async function buildGraph() {
   };
   
   const zoom = d3.zoom().scaleExtent([0.25, 8]).on('zoom', onZoom); // bounds in the list
-
+  svg.call(zoom);
+  
   // Double-click to reset zoom to identity
   svg.on('dblclick.zoom', null);
   svg.on('dblclick', () => { svg.transition().duration(200).call(zoom.transform, d3.zoomIdentity); });
@@ -243,4 +244,5 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
 
