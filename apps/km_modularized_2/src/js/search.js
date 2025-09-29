@@ -1,4 +1,4 @@
-*/* eslint-env browser, es2022 */
+/* eslint-env browser, es2022 */
 'use strict';
 
 import { DOC, $, el, escapeRegex } from './config_dom.js';
@@ -179,3 +179,4 @@ export function search(q) {
 
   resUL.setAttribute('aria-busy', 'false');
 }
+
