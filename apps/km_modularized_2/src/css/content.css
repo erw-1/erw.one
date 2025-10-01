@@ -340,6 +340,8 @@
     outline-offset: 2px;
   }
 
+  .km-link-preview img {max-width: 100%}
+
   /* ===== Copy-link icons on headings ===================================== */
   .heading-copy,
   .code-copy {
