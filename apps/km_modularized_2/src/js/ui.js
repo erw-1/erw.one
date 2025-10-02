@@ -52,7 +52,7 @@ export function buildTree() {
           'aria-controls': groupId,
           'aria-expanded': String(open),
           'aria-label': open ? 'Collapse' : 'Expand',
-          textContent: 'â–¸'
+          textContent: '▸'
         });
         const lbl = el('a', {
           class: 'lbl',
@@ -135,7 +135,7 @@ export function breadcrumb(page) {
   if (chain.length) chain.shift(); // drop root label
 
   chain.forEach((n, i) => {
-    if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">â–¸</span>');
+    if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
     const wrap = el('span', { class: 'dropdown' });
     const a = el('a', { textContent: n.title, href: '#' + n.hash });
     if (n === page) a.className = 'crumb-current';
@@ -154,7 +154,7 @@ export function breadcrumb(page) {
 
   if (page.children.length) {
     const box = el('span', { class: 'childbox' }, [
-      el('span', { class: 'toggle', textContent: 'â–¾' }),
+      el('span', { class: 'toggle', textContent: '▾' }),
       el('ul')
     ]);
     const ul = box.querySelector('ul');
@@ -209,8 +209,8 @@ export function prevNext(page) {
   const next = i >= 0 && i < siblings.length - 1 ? siblings[i + 1] : null;
 
   elx.innerHTML = '';
-  if (prev) elx.append(el('a', { href: '#' + hashOf(prev), class: 'prev', textContent: 'â† ' + prev.title }));
-  if (next) elx.append(el('a', { href: '#' + hashOf(next), class: 'next', textContent: next.title + ' â†’' }));
+  if (prev) elx.append(el('a', { href: '#' + hashOf(prev), class: 'prev', textContent: '← ' + prev.title }));
+  if (next) elx.append(el('a', { href: '#' + hashOf(next), class: 'next', textContent: next.title + ' →' }));
 }
 
 /** "See also" based on shared tags */
@@ -272,7 +272,7 @@ export function initKeybinds() {
     host = el('div', { id: 'kb-help', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', hidden: true, tabIndex: '-1' });
     const panel = el('div', { class: 'panel' });
     const title = el('h2', { textContent: 'Keyboard shortcuts' });
-    const closeBtn = el('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: 'âœ•', onclick: () => actions.closeHelp() });
+    const closeBtn = el('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: '✕', onclick: () => actions.closeHelp() });
     const header = el('header', {}, [title, closeBtn]);
 
     const items = [
@@ -372,3 +372,4 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
+

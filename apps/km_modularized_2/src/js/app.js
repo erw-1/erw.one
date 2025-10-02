@@ -132,7 +132,7 @@ function initUI() {
     if (!wasOpen) {
       elx.classList.add('open');
       if (!elx.querySelector('.panel-close')) {
-        elx.append(el('button', { type: 'button', class: 'panel-close', 'aria-label': 'Close panel', textContent: 'âœ•', onclick: closePanels }));
+        elx.append(el('button', { type: 'button', class: 'panel-close', 'aria-label': 'Close panel', textContent: '✕', onclick: closePanels }));
       }
     }
   };
@@ -253,4 +253,5 @@ function initUI() {
       elc.innerHTML = `<h1>Content failed to load</h1><p>Could not fetch or parse the Markdown bundle. Check <code>window.CONFIG.MD</code> and network access.</p><pre>${String(err?.message || err)}</pre>`;
     }
   }
+
 })();
