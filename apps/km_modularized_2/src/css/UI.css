@@ -25,6 +25,13 @@
     stroke: var(--color-mid-contrast);
   }
 
+  button.crumb-child, button.crumb-sibling {
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+  }
+
   /* ─── theme toggle ───────────────────────────────────── */
   .theme-toggle {
     display: flex;
