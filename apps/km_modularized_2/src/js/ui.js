@@ -4,9 +4,6 @@
 import { DOC, $, $$, el, HEADINGS_SEL } from './config_dom.js';
 import { __model, hashOf, nav } from './model.js';
 
-/** Centralized helpers & config **/
-export const DEFAULT_TREE_OPEN_DEPTH = 2; // folders open by default up to this depth
-
 export function closePanels() {
   $('#sidebar')?.classList.remove('open');
   $('#util')?.classList.remove('open');
@@ -27,61 +24,8 @@ export function setFolderOpen(li, open) {
   if (sub) sub.style.display = open ? 'block' : 'none';
 }
 
-/**
- * Standalone tree renderer used by buildTree()
- * @param {Array} nodes - page-like nodes
- * @param {HTMLElement|DocumentFragment} container
- * @param {Object} opts
- * @param {number} opts.openDepth - folders open by default when depth < openDepth
- * @param {number} depth - current depth (internal)
- */
-function renderTree(nodes, container, opts, depth = 0) {
-  const openDepth = Number.isFinite(opts?.openDepth) ? opts.openDepth : DEFAULT_TREE_OPEN_DEPTH;
-  nodes.forEach(p => {
-    const li = el('li', { role: 'treeitem' });
-    if (p.children.length) {
-      const open = depth < openDepth;
-      li.className = 'folder' + (open ? ' open' : '');
-      li.setAttribute('aria-expanded', String(open));
-
-      const groupId = `group-${p.id}`;
-      const caret = el('button', {
-        type: 'button',
-        class: 'caret',
-        'aria-controls': groupId,
-        'aria-expanded': String(open),
-        'aria-label': open ? 'Collapse' : 'Expand',
-        textContent: '▸'
-      });
-      const lbl = el('a', {
-        class: 'lbl',
-        dataset: { page: p.id },
-        href: '#' + hashOf(p),
-        textContent: p.title
-      });
-      const sub = el('ul', {
-        id: groupId,
-        role: 'group',
-        style: `display:${open ? 'block' : 'none'}`
-      });
-
-      li.append(caret, lbl, sub);
-      container.append(li);
-      renderTree(p.children, sub, opts, depth + 1);
-    } else {
-      li.className = 'article';
-      li.append(el('a', {
-        dataset: { page: p.id },
-        href: '#' + hashOf(p),
-        textContent: p.title
-      }));
-      container.append(li);
-    }
-  });
-}
-
 /** Build the collapsible tree in the sidebar */
-export function buildTree(options = {}) {
+export function buildTree() {
   const ul = $('#tree');
   const { root } = __model;
   if (!ul || !root) return;
@@ -93,8 +37,52 @@ export function buildTree(options = {}) {
   const secs = root.children.filter(c    => c.isSecondary)
                             .sort((a, b) => a.clusterId - b.clusterId);
 
+  const rec = (nodes, container, depth = 0) => {
+    nodes.forEach(p => {
+      const li = el('li', { role: 'treeitem' });
+      if (p.children.length) {
+        const open = depth < 2;
+        li.className = 'folder' + (open ? ' open' : '');
+        li.setAttribute('aria-expanded', String(open));
+
+        const groupId = `group-${p.id}`;
+        const caret = el('button', {
+          type: 'button',
+          class: 'caret',
+          'aria-controls': groupId,
+          'aria-expanded': String(open),
+          'aria-label': open ? 'Collapse' : 'Expand',
+          textContent: 'â–¸'
+        });
+        const lbl = el('a', {
+          class: 'lbl',
+          dataset: { page: p.id },
+          href: '#' + hashOf(p),
+          textContent: p.title
+        });
+        const sub = el('ul', {
+          id: groupId,
+          role: 'group',
+          style: `display:${open ? 'block' : 'none'}`
+        });
+
+        li.append(caret, lbl, sub);
+        container.append(li);
+        rec(p.children, sub, depth + 1);
+      } else {
+        li.className = 'article';
+        li.append(el('a', {
+          dataset: { page: p.id },
+          href: '#' + hashOf(p),
+          textContent: p.title
+        }));
+        container.append(li);
+      }
+    });
+  };
+
   const frag = DOC.createDocumentFragment();
-  renderTree(prim, frag, { openDepth: options.openDepth ?? DEFAULT_TREE_OPEN_DEPTH });
+  rec(prim, frag);
 
   secs.forEach(rep => {
     const sep = el('div', {
@@ -103,7 +91,7 @@ export function buildTree(options = {}) {
       'aria-hidden': 'true'
     }, el('hr', { role: 'presentation', 'aria-hidden': 'true' }));
     frag.append(sep);
-    renderTree([rep], frag, { openDepth: options.openDepth ?? DEFAULT_TREE_OPEN_DEPTH });
+    rec([rep], frag);
   });
 
   ul.append(frag);
@@ -115,7 +103,7 @@ export function highlightSidebar(page) {
   if (!rootEl || !page) return;
 
   rootEl.querySelectorAll('.sidebar-current').forEach(a => a.classList.remove('sidebar-current'));
-  const a = rootEl.querySelector(`a[data-page="\${page.id}"]`);
+  const a = rootEl.querySelector(`a[data-page="${page.id}"]`);
   if (!a) return;
 
   a.classList.add('sidebar-current');
@@ -147,7 +135,7 @@ export function breadcrumb(page) {
   if (chain.length) chain.shift(); // drop root label
 
   chain.forEach((n, i) => {
-    if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">▸</span>');
+    if (i) dyn.insertAdjacentHTML('beforeend', '<span class="separator">â–¸</span>');
     const wrap = el('span', { class: 'dropdown' });
     const a = el('a', { textContent: n.title, href: '#' + n.hash });
     if (n === page) a.className = 'crumb-current';
@@ -156,13 +144,9 @@ export function breadcrumb(page) {
     const siblings = n.parent.children.filter(s => s !== n);
     if (siblings.length) {
       const ul = el('ul');
-      siblings.forEach(s => {
-        const li = el('li');
-        const btn = el('button', { type: 'button', class: 'crumb-sibling', textContent: s.title });
-        btn.addEventListener('click', () => nav(s));
-        li.append(btn);
-        ul.append(li);
-      });
+      siblings.forEach(s =>
+        ul.append(el('li', { textContent: s.title, onclick: () => nav(s) }))
+      );
       wrap.append(ul);
     }
     dyn.append(wrap);
@@ -170,17 +154,12 @@ export function breadcrumb(page) {
 
   if (page.children.length) {
     const box = el('span', { class: 'childbox' }, [
-      el('span', { class: 'toggle', textContent: '▾' }),
+      el('span', { class: 'toggle', textContent: 'â–¾' }),
       el('ul')
     ]);
     const ul = box.querySelector('ul');
-    page.children.slice().sort((a, b) => a.title.localeCompare(b.title)).forEach(ch => {
-      const li = el('li');
-      const btn = el('button', { type: 'button', class: 'crumb-child', textContent: ch.title });
-      btn.addEventListener('click', () => nav(ch));
-      li.append(btn);
-      ul.append(li);
-    });
+    page.children.slice().sort((a, b) => a.title.localeCompare(b.title))
+      .forEach(ch => ul.append(el('li', { textContent: ch.title, onclick: () => nav(ch) })));
     dyn.append(box);
   }
 }
@@ -211,7 +190,7 @@ export function buildToc(page) {
     entries.forEach(en => {
       if (!en.isIntersecting) return;
       const id = en.target.id;
-      const a = $(`#toc li[data-hid="\${id}"] > a`);
+      const a = $(`#toc li[data-hid="${id}"] > a`);
       if (!a) return;
       $('#toc .toc-current')?.classList.remove('toc-current');
       a.classList.add('toc-current');
@@ -230,8 +209,8 @@ export function prevNext(page) {
   const next = i >= 0 && i < siblings.length - 1 ? siblings[i + 1] : null;
 
   elx.innerHTML = '';
-  if (prev) elx.append(el('a', { href: '#' + hashOf(prev), class: 'prev', textContent: '← ' + prev.title }));
-  if (next) elx.append(el('a', { href: '#' + hashOf(next), class: 'next', textContent: next.title + ' →' }));
+  if (prev) elx.append(el('a', { href: '#' + hashOf(prev), class: 'prev', textContent: 'â† ' + prev.title }));
+  if (next) elx.append(el('a', { href: '#' + hashOf(next), class: 'next', textContent: next.title + ' â†’' }));
 }
 
 /** "See also" based on shared tags */
@@ -249,13 +228,18 @@ export function seeAlso(page) {
   same.forEach(p => elx.append(el('a', { href: '#' + hashOf(p), textContent: p.title })));
 }
 
-/** Keyboard shortcuts **/
-
-function makeActions() {
+/** Initialize keyboard shortcuts */
+export function initKeybinds() {
   const $search = $('#search');
   const $theme  = $('#theme-toggle');
   const $expand = $('#expand');
-  const $kbIcon = $('#kb-icon');
+  const $kbIcon = $('#kb-icon'); 
+
+  const isEditable = el => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
+  const key = (e, k) => e.key === k || e.key.toLowerCase() === k.toLowerCase();
+  const keyIn = (e, list) => list.some(k => key(e, k));
+  const isMod = e => e.ctrlKey || e.metaKey;
+  const noMods = e => !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
 
   const actions = {
     focusSearch: () => $search?.focus(),
@@ -264,21 +248,99 @@ function makeActions() {
     toggleUtil: () => window.__kmToggleUtil?.(),
     toggleCrumb: () => window.__kmToggleCrumb?.(),
     fullscreenGraph: () => $expand?.click(),
-    openHelp: () => openHelpDialog(),
-    closeHelp: () => closeHelpDialog()
+    openHelp, closeHelp
   };
 
   $kbIcon?.addEventListener('click', (e) => { e.preventDefault(); actions.openHelp(); });
 
-  return actions;
-}
+  const bindings = [
+    { id: 'search-ctrlk', when: e => isMod(e) && key(e, 'k'), action: 'focusSearch', inEditable: true, help: 'Ctrl/Cmd + K' },
+    { id: 'search-slash', when: e => key(e, '/') && noMods(e), action: 'focusSearch', help: '/' },
+    { id: 'search-s', when: e => key(e, 's') && noMods(e), action: 'focusSearch', help: 'S' },
+    { id: 'left', when: e => keyIn(e, ['a','q']) && noMods(e), action: 'toggleSidebar', help: 'A or Q' },
+    { id: 'right', when: e => key(e, 'd') && noMods(e), action: 'toggleUtil', help: 'D' },
+    { id: 'crumb', when: e => keyIn(e, ['w','z']) && noMods(e), action: 'toggleCrumb', help: 'W or Z' },
+    { id: 'theme', when: e => key(e, 't') && noMods(e), action: 'toggleTheme', help: 'T' },
+    { id: 'graph', when: e => key(e, 'g') && noMods(e), action: 'fullscreenGraph', help: 'G' },
+    { id: 'help', when: e => key(e, '?') || (e.shiftKey && key(e, '/')), action: 'openHelp', help: '?' },
+    { id: 'escape', when: e => key(e, 'Escape'), action: e => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); actions.closeHelp(); } }, inEditable: true }
+  ];
 
-function registerShortcuts(bindings, actions) {
-  const isEditable = el => !!(el && (el.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/i.test(el.tagName)));
+  function ensureKbHelp() {
+    let host = DOC.getElementById('kb-help');
+    if (host) return host;
+    host = el('div', { id: 'kb-help', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', hidden: true, tabIndex: '-1' });
+    const panel = el('div', { class: 'panel' });
+    const title = el('h2', { textContent: 'Keyboard shortcuts' });
+    const closeBtn = el('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: 'âœ•', onclick: () => actions.closeHelp() });
+    const header = el('header', {}, [title, closeBtn]);
+
+    const items = [
+      { desc: 'Focus search', ids: ['search-slash', 'search-ctrlk', 'search-s'] },
+      { desc: 'Toggle header (breadcrumbs)', ids: ['crumb'] },
+      { desc: 'Toggle left sidebar (pages & search)', ids: ['left'] },
+      { desc: 'Toggle right sidebar (graph & ToC)', ids: ['right'] },
+      { desc: 'Cycle theme (light / dark)', ids: ['theme'] },
+      { desc: 'Toggle fullscreen graph', ids: ['graph'] },
+      { desc: 'Close panels & overlays', keys: ['Esc'] },
+      { desc: 'Show this help panel', ids: ['help'] }
+    ];
+
+    const list = el('ul');
+    const kb = s => `<kbd>${s}</kbd>`;
+
+    for (const { desc, ids, keys } of items) {
+      const li = el('li');
+      const left = el('span', { class: 'desc', textContent: desc });
+      let rightHTML = '';
+      if (keys) rightHTML = keys.map(kb).join(', ');
+      else if (ids) {
+        const shows = ids.map(id => bindings.find(b => b.id === id)?.help).filter(Boolean);
+        rightHTML = shows.map(kb).join(', ');
+      }
+      const right = el('span', { innerHTML: rightHTML });
+      li.append(left, right);
+      list.append(li);
+    }
+
+    panel.append(header, list);
+    host.append(panel);
+    DOC.body.appendChild(host);
+    return host;
+  }
+
+  function openHelp() {
+    const host = ensureKbHelp();
+    host.hidden = false;
+    const focusables = host.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
+    const first = focusables[0], last = focusables[focusables.length - 1];
+    host.addEventListener('keydown', e => {
+      if (e.key !== 'Tab') return;
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
+    });
+    (first || host).focus();
+  }
+
+  function closeHelp() {
+    const host = document.getElementById('kb-help');
+    if (host) host.hidden = true;
+  }
+
   addEventListener('keydown', e => {
     const tgt = e.target;
-    const list = isEditable(tgt) ? bindings.filter(b => b.inEditable) : bindings;
-    for (const b of list) {
+    if (isEditable(tgt)) {
+      for (const b of bindings) {
+        if (!b.inEditable) continue;
+        if (b.when(e)) {
+          e.preventDefault();
+          typeof b.action === 'string' ? actions[b.action]() : b.action(e);
+          return;
+        }
+      }
+      return;
+    }
+    for (const b of bindings) {
       if (b.when(e)) {
         e.preventDefault();
         typeof b.action === 'string' ? actions[b.action]() : b.action(e);
@@ -286,115 +348,6 @@ function registerShortcuts(bindings, actions) {
       }
     }
   }, { capture: true });
-}
-
-function createBindings() {
-  const key = (e, k) => e.key === k || e.key.toLowerCase() === k.toLowerCase();
-  const keyIn = (e, list) => list.some(k => key(e, k));
-  const isMod = e => e.ctrlKey || e.metaKey;
-  const noMods = e => !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
-
-  // Define actions with multiple equivalent keys to reduce duplication
-  const combos = [
-    { id: 'focusSearch', whens: [
-      e => isMod(e) && key(e, 'k'),
-      e => key(e, '/') && noMods(e),
-      e => key(e, 's') && noMods(e)
-    ], help: ['Ctrl/Cmd + K', '/', 'S'], inEditable: true },
-    { id: 'toggleSidebar', whens: [ e => keyIn(e, ['a','q']) && noMods(e) ], help: ['A', 'Q'] },
-    { id: 'toggleUtil',    whens: [ e => key(e, 'd') && noMods(e) ], help: ['D'] },
-    { id: 'toggleCrumb',   whens: [ e => keyIn(e, ['w','z']) && noMods(e) ], help: ['W', 'Z'] },
-    { id: 'toggleTheme',   whens: [ e => key(e, 't') && noMods(e) ], help: ['T'] },
-    { id: 'fullscreenGraph', whens: [ e => key(e, 'g') && noMods(e) ], help: ['G'] },
-    { id: 'openHelp', whens: [ e => key(e, '?') || (e.shiftKey && key(e, '/')) ], help: ['?'] },
-  ];
-
-  // Expand to flat binding list
-  const bindings = [];
-  for (const c of combos) {
-    for (const when of c.whens) {
-      bindings.push({ id: c.id, when, action: c.id, inEditable: !!c.inEditable, help: c.help.join(', ') });
-    }
-  }
-  // Escape is special (UI-only, not shown in help items list)
-  bindings.push({
-    id: 'escape',
-    when: e => key(e, 'Escape'),
-    action: e => { const host = document.getElementById('kb-help'); if (host && !host.hidden) { e.preventDefault(); closeHelpDialog(); } },
-    inEditable: true
-  });
-
-  return { bindings, combos };
-}
-
-function createHelpDialog(combos) {
-  let host = DOC.getElementById('kb-help');
-  if (host) return host;
-  host = el('div', { id: 'kb-help', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Keyboard shortcuts', hidden: true, tabIndex: '-1' });
-  const panel = el('div', { class: 'panel' });
-  const title = el('h2', { textContent: 'Keyboard shortcuts' });
-  const closeBtn = el('button', { type: 'button', class: 'close', title: 'Close', 'aria-label': 'Close help', textContent: '✕' });
-  closeBtn.addEventListener('click', () => closeHelpDialog());
-  const header = el('header', {}, [title, closeBtn]);
-
-  const items = [
-    { desc: 'Focus search', id: 'focusSearch' },
-    { desc: 'Toggle header (breadcrumbs)', id: 'toggleCrumb' },
-    { desc: 'Toggle left sidebar (pages & search)', id: 'toggleSidebar' },
-    { desc: 'Toggle right sidebar (graph & ToC)', id: 'toggleUtil' },
-    { desc: 'Cycle theme (light / dark)', id: 'toggleTheme' },
-    { desc: 'Toggle fullscreen graph', id: 'fullscreenGraph' },
-    { desc: 'Close panels & overlays', keys: ['Esc'] },
-    { desc: 'Show this help panel', id: 'openHelp' }
-  ];
-
-  const list = el('ul');
-  const kb = s => `<kbd>${s}</kbd>`;
-
-  for (const { desc, id, keys } of items) {
-    const li = el('li');
-    const left = el('span', { class: 'desc', textContent: desc });
-    let rightHTML = '';
-    if (keys) rightHTML = keys.map(kb).join(', ');
-    else if (id) {
-      const combo = combos.find(c => c.id === id);
-      const shows = combo?.help || [];
-      rightHTML = shows.map(kb).join(', ');
-    }
-    const right = el('span', { innerHTML: rightHTML });
-    li.append(left, right);
-    list.append(li);
-  }
-
-  panel.append(header, list);
-  host.append(panel);
-  DOC.body.appendChild(host);
-  return host;
-}
-
-function openHelpDialog() {
-  const host = createHelpDialog(createBindings().combos);
-  host.hidden = false;
-  const focusables = host.querySelectorAll('button, [href], [tabindex]:not([tabindex="-1"])');
-  const first = focusables[0], last = focusables[focusables.length - 1];
-  host.addEventListener('keydown', e => {
-    if (e.key !== 'Tab') return;
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last?.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first?.focus(); }
-  });
-  (first || host).focus();
-}
-
-function closeHelpDialog() {
-  const host = document.getElementById('kb-help');
-  if (host) host.hidden = true;
-}
-
-/** Initialize keyboard shortcuts */
-export function initKeybinds() {
-  const actions = makeActions();
-  const { bindings } = createBindings();
-  registerShortcuts(bindings, actions);
 }
 
 export function initPanelToggles() {
@@ -406,26 +359,9 @@ export function initPanelToggles() {
     if (region) region.setAttribute('aria-hidden', flag ? 'true' : 'false');
   }
 
-  // Keep globals for backward compatibility,
-  // but also support data-action buttons to avoid tightly coupling HTML to names.
-  const toggleSidebar = () => setHidden(!ROOT.classList.contains('hide-sidebar'), 'hide-sidebar', $('#sidebar'));
-  const toggleUtil    = () => setHidden(!ROOT.classList.contains('hide-util'),    'hide-util',    $('#util'));
-  const toggleCrumb   = () => setHidden(!ROOT.classList.contains('hide-crumb'),   'hide-crumb',   $('#crumb'));
-
-  window.__kmToggleSidebar = toggleSidebar;
-  window.__kmToggleUtil = toggleUtil;
-  window.__kmToggleCrumb = toggleCrumb;
-
-  // Event delegation for buttons with data-action attributes
-  DOC.addEventListener('click', (e) => {
-    const t = e.target;
-    if (!(t instanceof Element)) return;
-    const act = t.getAttribute('data-action');
-    if (!act) return;
-    if (act === 'toggle-sidebar')       { e.preventDefault(); toggleSidebar(); }
-    else if (act === 'toggle-util')     { e.preventDefault(); toggleUtil(); }
-    else if (act === 'toggle-crumb')    { e.preventDefault(); toggleCrumb(); }
-  });
+  window.__kmToggleSidebar = () => setHidden(!ROOT.classList.contains('hide-sidebar'), 'hide-sidebar', $('#sidebar'));
+  window.__kmToggleUtil = () =>    setHidden(!ROOT.classList.contains('hide-util'),    'hide-util',    $('#util'));
+  window.__kmToggleCrumb = () =>   setHidden(!ROOT.classList.contains('hide-crumb'),   'hide-crumb',   $('#crumb'));
 
   // Reset toggles when switching to condensed layouts
   function resetForCondensed() {
@@ -436,4 +372,3 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
-
