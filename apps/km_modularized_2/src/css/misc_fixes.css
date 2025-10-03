@@ -66,16 +66,7 @@
 
   #content { content-visibility: auto; contain-intrinsic-size: 1000px 800px; }
   .km-link-preview > div { content-visibility: auto; contain-intrinsic-size: 800px 600px; }
-   
-  mark {
-     border-radius: var(--r-sm);
-     color: var(--color-accent);
-     background: color-mix(in srgb, var(--color-accent) 15%, transparent);
-     padding: var(--g-sm) var(--g-md);
-     box-decoration-break: clone;        /* keep padding on wrapped lines */
-     -webkit-box-decoration-break: clone;
-   }
-   
+ 
    /* optional: make super/sub look crisper */
    sup, sub { font-size: .75em; line-height: 0; }
    u{ text-underline-offset: .15em; }
