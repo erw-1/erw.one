@@ -24,7 +24,16 @@
     background: var(--color-quarter-contrast);
   }
 
-  li:has(mark) { margin: 0 var(--g-md) var(--g-md) 0 }
+  li:has(mark) { margin: var(--g-md) 0 var(--g-md) 0; }
+  
+  mark {
+     border-radius: var(--r-sm);
+     color: var(--color-accent);
+     background: color-mix(in srgb, var(--color-accent) 15%, transparent);
+     padding: var(--g-xs) var(--g-sm);
+     box-decoration-break: clone;        /* keep padding on wrapped lines */
+     -webkit-box-decoration-break: clone;
+   }
 
   #content a {
     color: var(--color-accent);
