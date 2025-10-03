@@ -54,6 +54,10 @@
     padding: 1px;
     border-radius: var(--r-sm);
   }
+     
+  .md-spoiler table {
+    border: solid 1px var(--color-low-contrast);
+  }
 
   th,
   td {
