@@ -3,7 +3,7 @@
 
 import { TITLE, MD, DEFAULT_THEME, ACCENT, CACHE_MIN, readCache, writeCache, DOC, $, el, __updateViewport, baseURLNoHash} from './config_dom.js';
 import { __model, parseMarkdownBundle, attachSecondaryHomes, computeHashes, nav } from './model.js';
-import { wireCopyButtons } from './markdown.js';
+import { wireCopyButtons, __cleanupObservers } from './markdown.js';
 import { buildTree, setFolderOpen, closePanels, initKeybinds, initPanelToggles } from './ui.js';
 import { search } from './search.js';
 import { buildGraph, highlightCurrent, updateMiniViewport } from './graph.js';
@@ -178,6 +178,31 @@ function initUI() {
   addEventListener('keydown', e => {
     if (e.key !== 'Escape') return;
     let acted = false;
+    
+    // If focus is in the search box: clear or blur
+    const searchEl = document.getElementById('search');
+    if (document.activeElement === searchEl) {
+      if (searchEl.value) {
+        searchEl.value = '';
+        document.getElementById('search-clear')?.style && (document.getElementById('search-clear').style.display = 'none');
+        // trigger the existing search() to hide results
+        try { import('./search.js').then(m => m.search('')); } catch {}
+      } else {
+        searchEl.blur();
+      }
+      acted = true;
+    }
+
+    // If any preview panels are open, close the topmost one
+    if (!acted) {
+      const previews = Array.from(document.querySelectorAll('.km-link-preview'));
+      if (previews.length) {
+        const top = previews[previews.length - 1];
+        try { __cleanupObservers(top); } catch {}
+        top.remove();
+        acted = true;
+      }
+    }
     const kb = $('#kb-help');
 
     if (kb && !kb.hidden) { kb.hidden = true; acted = true; }
@@ -255,3 +280,4 @@ function initUI() {
   }
 
 })();
+
