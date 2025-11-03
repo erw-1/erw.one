@@ -74,6 +74,9 @@
     max-width: 100%;
     border-radius: var(--r-sm);
   }
+
+  center { text-align: center }
+  right { text-align: right }
      
   hr {
     height: var(--g-sm);
