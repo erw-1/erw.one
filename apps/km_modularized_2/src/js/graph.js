@@ -125,7 +125,7 @@ function buildGraphData() {
     }
   }
   for (const [key, count] of shared) {
-    if (count < 2 || hierPairs.has(key)) continue;
+    if (count < 1 || hierPairs.has(key)) continue;
     const [i, j] = key.split('|').map(Number);
     links.push({ source: i, target: j, shared: count, kind: 'tag' });
     touch(i, j);
@@ -254,3 +254,4 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
+
