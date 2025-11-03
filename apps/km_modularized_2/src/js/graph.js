@@ -191,19 +191,66 @@ export async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
-  // --- Measure label sizes once so we can give them "physical" hitboxes
-  // We store width/height on each datum as _lblW/_lblH and keep a little padding.
-  label.each(function (d) {
-    const pad = 4;
-    d._lblPad = pad;
+  // --- SIMPLE LABEL COLLISION AVOIDANCE ---
+  // Measure label sizes once (after they're in the DOM)
+  label.each(function(d) {
     try {
-      d._lblW = this.getComputedTextLength() + pad * 2;
-    } catch (e) {
-      // Fallback estimate if SVG not fully laid out yet
-      d._lblW = (d.label ? d.label.length : 1) * 6 + pad * 2;
+      const bb = this.getBBox();
+      d._lw = bb.width || 0;
+      d._lh = bb.height || 0;
+    } catch (_) {
+      d._lw = 0; d._lh = 0;
     }
-    d._lblH = 12; // ~ font-size + small breathing room
+    d._tx = 0; d._ty = 0; // target positions (absolute) computed each tick
   });
+
+  const LABEL_MARGIN = 2;
+  const BASE_DX = 8;   // base offset from node
+  const BASE_DY = 3;
+  const NODE_R_DEFAULT = 6;
+  function placeLabels() {
+    // greedy vertical stacking + keep-away from node circle
+    for (let i = 0; i < localN.length; i++) {
+      const d = localN[i];
+      const baseX = d.x + BASE_DX;
+      const baseY = d.y + BASE_DY;
+      // keep away from its own node (approximate the node radius)
+      const nodeR = (d.id === CURRENT) ? 8 : NODE_R_DEFAULT;
+      let tx = baseX, ty = baseY;
+
+      // push out of the node circle if overlapping
+      const vx = tx - d.x, vy = ty - d.y;
+      const dist = Math.hypot(vx, vy) || 1;
+      const minDist = nodeR + LABEL_MARGIN;
+      if (dist < minDist) {
+        tx = d.x + (vx / dist) * minDist;
+        ty = d.y + (vy / dist) * minDist;
+      }
+
+      // stack to avoid overlapping earlier labels (cheap O(n^2) but small n)
+      for (let j = 0; j < i; j++) {
+        const p = localN[j];
+        const ax1 = tx, ay1 = ty - (d._lh || 10);
+        const ax2 = tx + (d._lw || 0), ay2 = ty;
+
+        const bx1 = p._tx, by1 = p._ty - (p._lh || 10);
+        const bx2 = p._tx + (p._lw || 0), by2 = p._ty;
+
+        const overlapX = (ax1 < bx2) && (ax2 > bx1);
+        const overlapY = (ay1 < by2) && (ay2 > by1);
+
+        if (overlapX && overlapY) {
+          // move current label down just enough
+          const yOverlap = Math.min(ay2, by2) - Math.max(ay1, by1);
+          ty += (yOverlap + LABEL_MARGIN);
+        }
+      }
+
+      d._tx = tx;
+      d._ty = ty;
+    }
+  }
+  // --- END LABEL COLLISION AVOIDANCE ---
 
   const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
 
@@ -213,59 +260,14 @@ export async function buildGraph() {
     link.style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
-  // --- Simple label vs. label collision resolver (keeps texts from overlapping)
-  function resolveLabelCollisions(list) {
-    // Initialize label positions near their node
-    for (const d of list) {
-      d.lx = d.x + 8;
-      d.ly = d.y + 3;
-    }
-
-    // A couple of relaxation passes to separate overlapping label rectangles
-    const passes = 2;
-    for (let pass = 0; pass < passes; pass++) {
-      for (let i = 0; i < list.length; i++) {
-        const a = list[i];
-        const aw = a._lblW || 0, ah = a._lblH || 0;
-        if (!aw || !ah) continue;
-        const ax1 = a.lx, ax2 = ax1 + aw;
-        const ay2 = a.ly;         // text baseline
-        const ay1 = ay2 - ah;     // top of the label box
-
-        for (let j = i + 1; j < list.length; j++) {
-          const b = list[j];
-          const bw = b._lblW || 0, bh = b._lblH || 0;
-          if (!bw || !bh) continue;
-          const bx1 = b.lx, bx2 = bx1 + bw;
-          const by2 = b.ly, by1 = by2 - bh;
-
-          const overlapX = Math.min(ax2, bx2) - Math.max(ax1, bx1);
-          const overlapY = Math.min(ay2, by2) - Math.max(ay1, by1);
-
-          if (overlapX > 0 && overlapY > 0) {
-            // Push them apart vertically (split the difference)
-            const sep = (overlapY / 2) + 0.5;
-            if (a.y <= b.y) {
-              a.ly -= sep;
-              b.ly += sep;
-            } else {
-              a.ly += sep;
-              b.ly -= sep;
-            }
-          }
-        }
-      }
-    }
-  }
-
   sim.on('tick', () => {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
 
-    // Place labels with initial offsets, then nudge to avoid overlaps
-    resolveLabelCollisions(localN);
-    label.attr('x', d => d.lx).attr('y', d => d.ly);
+    // compute label targets then position
+    placeLabels();
+    label.attr('x', d => d._tx).attr('y', d => d._ty);
   });
 
   graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
