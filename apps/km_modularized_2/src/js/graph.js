@@ -49,7 +49,7 @@ export function updateMiniViewport() {
   setSVGSize(svg, w, h);
 
   sim.force('center', D3.forceCenter(w / 2, h / 2));
-    .force('collision', D3.forceCollide().radius(d => 6 + 4 + d.label.length * 3).strength(0.9).iterations(2))
+  sim.force('collision', D3.forceCollide().radius(d => 6 + 4 + d.label.length * 3).strength(0.9).iterations(2))
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
