@@ -149,6 +149,14 @@ export async function buildGraph() {
   const localL = links.map(l => ({ ...l }));
 
   const sim = D3.forceSimulation(localN)
+// --- KISS: add a circular hitbox for each label ---
+const COLLIDE = D3.forceCollide()
+  .radius(d => (d._hitR ?? 12))
+  .strength(0.9)
+  .iterations(2);
+
+sim.force('collide', COLLIDE);
+// --- end collide ---
     .force('link', D3.forceLink(localL).id(d => d.id).distance(80))
     .force('charge', D3.forceManyBody().strength(-240))
     .force('center', D3.forceCenter(W / 2, H / 2));
@@ -191,7 +199,21 @@ export async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
-  const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
+  
+// --- KISS: measure label width once and compute a hit radius ---
+const FONT_H = 10;
+const PAD    = 6;
+
+label.each(function(d) {
+  const w = (this.getComputedTextLength && this.getComputedTextLength()) || (d.label?.length ?? 0) * 6;
+  d._textW = w;
+  d._hitR  = 0.5 * Math.hypot(w + PAD, FONT_H + PAD);
+});
+
+// refresh simulation so collide uses the new radii
+sim.alpha(0.6).restart();
+// --- end measure ---
+const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
 
   function fade(id, o) {
     node.style('opacity', d => isNeighbor(id, d) ? 1 : o);
@@ -203,7 +225,7 @@ export async function buildGraph() {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
-    label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
+    label.attr('x', d => d.x + 6).attr('y', d => d.y + 3);
   });
 
   graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
@@ -254,4 +276,3 @@ export function observeMiniResize() {
     highlightCurrent(true);
   }).observe(elx);
 }
-
