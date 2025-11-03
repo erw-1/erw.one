@@ -149,14 +149,6 @@ export async function buildGraph() {
   const localL = links.map(l => ({ ...l }));
 
   const sim = D3.forceSimulation(localN)
-// --- KISS: add a circular hitbox for each label ---
-const COLLIDE = D3.forceCollide()
-  .radius(d => (d._hitR ?? 12))
-  .strength(0.9)
-  .iterations(2);
-
-sim.force('collide', COLLIDE);
-// --- end collide ---
     .force('link', D3.forceLink(localL).id(d => d.id).distance(80))
     .force('charge', D3.forceManyBody().strength(-240))
     .force('center', D3.forceCenter(W / 2, H / 2));
@@ -199,21 +191,21 @@ sim.force('collide', COLLIDE);
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
-  
-// --- KISS: measure label width once and compute a hit radius ---
-const FONT_H = 10;
-const PAD    = 6;
+  // --- Measure label sizes once so we can give them "physical" hitboxes
+  // We store width/height on each datum as _lblW/_lblH and keep a little padding.
+  label.each(function (d) {
+    const pad = 4;
+    d._lblPad = pad;
+    try {
+      d._lblW = this.getComputedTextLength() + pad * 2;
+    } catch (e) {
+      // Fallback estimate if SVG not fully laid out yet
+      d._lblW = (d.label ? d.label.length : 1) * 6 + pad * 2;
+    }
+    d._lblH = 12; // ~ font-size + small breathing room
+  });
 
-label.each(function(d) {
-  const w = (this.getComputedTextLength && this.getComputedTextLength()) || (d.label?.length ?? 0) * 6;
-  d._textW = w;
-  d._hitR  = 0.5 * Math.hypot(w + PAD, FONT_H + PAD);
-});
-
-// refresh simulation so collide uses the new radii
-sim.alpha(0.6).restart();
-// --- end measure ---
-const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
+  const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
 
   function fade(id, o) {
     node.style('opacity', d => isNeighbor(id, d) ? 1 : o);
@@ -221,11 +213,59 @@ const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) 
     link.style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
+  // --- Simple label vs. label collision resolver (keeps texts from overlapping)
+  function resolveLabelCollisions(list) {
+    // Initialize label positions near their node
+    for (const d of list) {
+      d.lx = d.x + 8;
+      d.ly = d.y + 3;
+    }
+
+    // A couple of relaxation passes to separate overlapping label rectangles
+    const passes = 2;
+    for (let pass = 0; pass < passes; pass++) {
+      for (let i = 0; i < list.length; i++) {
+        const a = list[i];
+        const aw = a._lblW || 0, ah = a._lblH || 0;
+        if (!aw || !ah) continue;
+        const ax1 = a.lx, ax2 = ax1 + aw;
+        const ay2 = a.ly;         // text baseline
+        const ay1 = ay2 - ah;     // top of the label box
+
+        for (let j = i + 1; j < list.length; j++) {
+          const b = list[j];
+          const bw = b._lblW || 0, bh = b._lblH || 0;
+          if (!bw || !bh) continue;
+          const bx1 = b.lx, bx2 = bx1 + bw;
+          const by2 = b.ly, by1 = by2 - bh;
+
+          const overlapX = Math.min(ax2, bx2) - Math.max(ax1, bx1);
+          const overlapY = Math.min(ay2, by2) - Math.max(ay1, by1);
+
+          if (overlapX > 0 && overlapY > 0) {
+            // Push them apart vertically (split the difference)
+            const sep = (overlapY / 2) + 0.5;
+            if (a.y <= b.y) {
+              a.ly -= sep;
+              b.ly += sep;
+            } else {
+              a.ly += sep;
+              b.ly -= sep;
+            }
+          }
+        }
+      }
+    }
+  }
+
   sim.on('tick', () => {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
-    label.attr('x', d => d.x + 6).attr('y', d => d.y + 3);
+
+    // Place labels with initial offsets, then nudge to avoid overlaps
+    resolveLabelCollisions(localN);
+    label.attr('x', d => d.lx).attr('y', d => d.ly);
   });
 
   graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
