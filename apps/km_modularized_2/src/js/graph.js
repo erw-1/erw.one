@@ -134,6 +134,30 @@ function buildGraphData() {
   return { nodes, links, adj };
 }
 
+// --- Simple label collision helpers (KISS) ------------------------------------
+function boxesOverlap(a, b) {
+  return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
+}
+
+function resolveLabelCollisions(boxes, passes = 2) {
+  // Adjust only along Y to keep labels horizontally aligned with their nodes.
+  for (let p = 0; p < passes; p++) {
+    for (let i = 0; i < boxes.length; i++) {
+      for (let j = i + 1; j < boxes.length; j++) {
+        const A = boxes[i], B = boxes[j];
+        if (!boxesOverlap(A, B)) continue;
+        const overlapY = (Math.min(A.y + A.h, B.y + B.h) - Math.max(A.y, B.y)) + 0.01; // avoid zero
+        const push = overlapY / 2;
+        // Push A up, B down
+        A.y -= push;
+        B.y += push;
+      }
+    }
+  }
+}
+
+// ------------------------------------------------------------------------------
+
 /** Build the mini force-directed graph (lazy) */
 export async function buildGraph() {
   await ensureD3();
@@ -191,14 +215,15 @@ export async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
-  // Precompute label widths (approx) once to avoid layout thrash
+  // Precompute rough text widths once (fallback to char estimate if not available)
   label.each(function(d) {
+    // Some environments may not have getComputedTextLength; fall back to ~6px per char
     try {
-      d._lw = this.getComputedTextLength ? (this.getComputedTextLength() + 6) : (8 * String(d.label || '').length + 6);
+      d._tw = this.getComputedTextLength ? this.getComputedTextLength() : (d.label?.length || 0) * 6;
     } catch {
-      d._lw = 8 * String(d.label || '').length + 6;
+      d._tw = (d.label?.length || 0) * 6;
     }
-    d._lh = 12; // approximate label height
+    d._th = 12; // text height approximation
   });
 
   const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
@@ -209,63 +234,26 @@ export async function buildGraph() {
     link.style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
-  // --- Simple label collision/overlap avoidance -----------------------------
-  function resolveLabelCollisions() {
-    // start with default offsets
-    for (const d of localN) {
-      d.lx = d.x + 8;
-      d.ly = d.y + 3;
-    }
-
-    // Avoid labels sitting on top of their own node
-    for (const d of localN) {
-      const rx = d.lx - d.x;
-      const ry = d.ly - d.y;
-      const r = Math.max(8, 6 + 2); // node radius (6) + padding
-      const dist = Math.hypot(rx, ry) || 1;
-      if (dist < r) {
-        const k = (r - dist) / dist;
-        d.lx += rx * k;
-        d.ly += ry * k;
-      }
-    }
-
-    // Simple pairwise separation for overlapping label rectangles
-    for (let i = 0; i < localN.length; i++) {
-      const a = localN[i];
-      const ax1 = a.lx, ax2 = a.lx + (a._lw || 0);
-      const ay1 = a.ly - a._lh + 2, ay2 = a.ly + 2;
-
-      for (let j = i + 1; j < localN.length; j++) {
-        const b = localN[j];
-        const bx1 = b.lx, bx2 = b.lx + (b._lw || 0);
-        const by1 = b.ly - b._lh + 2, by2 = b.ly + 2;
-
-        const overlapX = Math.min(ax2, bx2) - Math.max(ax1, bx1);
-        const overlapY = Math.min(ay2, by2) - Math.max(ay1, by1);
-
-        if (overlapX > 0 && overlapY > 0) {
-          // push apart vertically primarily, with a little horizontal nudge
-          const shy = (overlapY / 2) + 1;
-          a.ly -= shy;
-          b.ly += shy;
-
-          const shx = Math.min(4, (overlapX / 4));
-          a.lx -= shx;
-          b.lx += shx;
-        }
-      }
-    }
-  }
-  // --------------------------------------------------------------------------
-
   sim.on('tick', () => {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
 
-    resolveLabelCollisions();
-    label.attr('x', d => d.lx).attr('y', d => d.ly);
+    // Desired (unconstrained) label positions
+    const boxes = [];
+    label.each(function(d) {
+      d._lx = d.x + 8;
+      d._ly = d.y + 3;
+      boxes.push({ d, x: d._lx, y: d._ly - d._th, w: d._tw, h: d._th });
+    });
+
+    // N^2, tiny & simple; a couple of passes is enough
+    resolveLabelCollisions(boxes, 2);
+
+    // Apply adjusted positions
+    label
+      .attr('x', (d, i) => boxes[i].x)
+      .attr('y', (d, i) => boxes[i].y + boxes[i].h);
   });
 
   graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
