@@ -247,7 +247,13 @@ export function initKeybinds() {
     toggleSidebar: () => window.__kmToggleSidebar?.(),
     toggleUtil: () => window.__kmToggleUtil?.(),
     toggleCrumb: () => window.__kmToggleCrumb?.(),
-    fullscreenGraph: () => $expand?.click(),
+    fullscreenGraph: () => {
+      // make sure the graph panel isn’t hidden (D toggles this class)
+      document.body.classList.remove('hide-util');
+      $('#util')?.setAttribute('aria-hidden', 'false');
+      // then reuse the existing fullscreen toggle
+      $('#expand')?.click();
+    },
     openHelp, closeHelp
   };
 
@@ -372,4 +378,5 @@ export function initPanelToggles() {
   }
   MQ_DESKTOP.addEventListener('change', () => { if (!MQ_DESKTOP.matches) resetForCondensed(); });
 }
+
 
