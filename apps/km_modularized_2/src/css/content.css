@@ -75,8 +75,9 @@
     border-radius: var(--r-sm);
   }
 
-  center { text-align: center }
-  right { text-align: right }
+  center, right { display:block; }
+  center { text-align:center; }
+  right  { text-align:right; }
      
   hr {
     height: var(--g-sm);
