@@ -49,6 +49,7 @@ export function updateMiniViewport() {
   setSVGSize(svg, w, h);
 
   sim.force('center', D3.forceCenter(w / 2, h / 2));
+    .force('collision', D3.forceCollide().radius(d => 6 + 4 + d.label.length * 3).strength(0.9).iterations(2))
 
   clearTimeout(_miniKick);
   _miniKick = setTimeout(() => {
@@ -134,30 +135,6 @@ function buildGraphData() {
   return { nodes, links, adj };
 }
 
-// --- Simple label collision helpers (KISS) ------------------------------------
-function boxesOverlap(a, b) {
-  return !(a.x + a.w < b.x || b.x + b.w < a.x || a.y + a.h < b.y || b.y + b.h < a.y);
-}
-
-function resolveLabelCollisions(boxes, passes = 2) {
-  // Adjust only along Y to keep labels horizontally aligned with their nodes.
-  for (let p = 0; p < passes; p++) {
-    for (let i = 0; i < boxes.length; i++) {
-      for (let j = i + 1; j < boxes.length; j++) {
-        const A = boxes[i], B = boxes[j];
-        if (!boxesOverlap(A, B)) continue;
-        const overlapY = (Math.min(A.y + A.h, B.y + B.h) - Math.max(A.y, B.y)) + 0.01; // avoid zero
-        const push = overlapY / 2;
-        // Push A up, B down
-        A.y -= push;
-        B.y += push;
-      }
-    }
-  }
-}
-
-// ------------------------------------------------------------------------------
-
 /** Build the mini force-directed graph (lazy) */
 export async function buildGraph() {
   await ensureD3();
@@ -215,17 +192,6 @@ export async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
-  // Precompute rough text widths once (fallback to char estimate if not available)
-  label.each(function(d) {
-    // Some environments may not have getComputedTextLength; fall back to ~6px per char
-    try {
-      d._tw = this.getComputedTextLength ? this.getComputedTextLength() : (d.label?.length || 0) * 6;
-    } catch {
-      d._tw = (d.label?.length || 0) * 6;
-    }
-    d._th = 12; // text height approximation
-  });
-
   const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
 
   function fade(id, o) {
@@ -238,22 +204,7 @@ export async function buildGraph() {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
-
-    // Desired (unconstrained) label positions
-    const boxes = [];
-    label.each(function(d) {
-      d._lx = d.x + 8;
-      d._ly = d.y + 3;
-      boxes.push({ d, x: d._lx, y: d._ly - d._th, w: d._tw, h: d._th });
-    });
-
-    // N^2, tiny & simple; a couple of passes is enough
-    resolveLabelCollisions(boxes, 2);
-
-    // Apply adjusted positions
-    label
-      .attr('x', (d, i) => boxes[i].x)
-      .attr('y', (d, i) => boxes[i].y + boxes[i].h);
+    label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
   graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
