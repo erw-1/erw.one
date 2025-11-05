@@ -134,6 +134,33 @@ function buildGraphData() {
   return { nodes, links, adj };
 }
 
+/* --- small custom force to keep links out of the right-side label wedge --- */
+function forceLabelWedge({ angle = Math.PI / 10, strength = 0.08 } = {}) {
+  let links = [];
+  function force(alpha) {
+    const k = strength * alpha;
+    for (let i = 0; i < links.length; i++) {
+      const l = links[i];
+      // from source's perspective
+      let dx = l.target.x - l.source.x, dy = l.target.y - l.source.y;
+      if (Math.abs(Math.atan2(dy, dx)) < angle) {
+        const s = dy === 0 ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(dy);
+        l.target.vy += s * k;
+        l.source.vy -= s * k * 0.5;
+      }
+      // from target's perspective
+      dx = l.source.x - l.target.x; dy = l.source.y - l.target.y;
+      if (Math.abs(Math.atan2(dy, dx)) < angle) {
+        const s2 = dy === 0 ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(dy);
+        l.source.vy += s2 * k;
+        l.target.vy -= s2 * k * 0.5;
+      }
+    }
+  }
+  force.initialize = (_, L) => { links = L || []; };
+  return force;
+}
+
 /** Build the mini force-directed graph (lazy) */
 export async function buildGraph() {
   await ensureD3();
@@ -153,7 +180,9 @@ export async function buildGraph() {
     .force('charge', D3.forceManyBody().strength(-240))
     .force('center', D3.forceCenter(W / 2, H / 2))
     // Softer collide so the layout feels less stiff, but still protects text to the right.
-    .force('collide', D3.forceCollide(d => 8 + ((d.label?.length || 0) * 2)).strength(0.25).iterations(1));
+    .force('collide', D3.forceCollide(d => 8 + ((d.label?.length || 0) * 2)).strength(0.25).iterations(1))
+    // Keep links out of the right-side label wedge to avoid lines under labels.
+    .force('labelWedge', forceLabelWedge({ angle: Math.PI / 10, strength: 0.08 }));
 
   const view = svg.append('g').attr('class', 'view');
 
