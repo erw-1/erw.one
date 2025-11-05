@@ -152,9 +152,8 @@ export async function buildGraph() {
     .force('link', D3.forceLink(localL).id(d => d.id).distance(80))
     .force('charge', D3.forceManyBody().strength(-240))
     .force('center', D3.forceCenter(W / 2, H / 2))
-    // Expand collision radius based on label length so hit boxes extend to the right.
-    // This keeps text from overlapping neighboring nodes/labels with a minimal change.
-    .force('collide', D3.forceCollide().radius(d => 10 + ((d.label?.length || 0) * 3)).strength(0.7));
+    // Softer collide so the layout feels less stiff, but still protects text to the right.
+    .force('collide', D3.forceCollide(d => 8 + ((d.label?.length || 0) * 2)).strength(0.25).iterations(1));
 
   const view = svg.append('g').attr('class', 'view');
 
