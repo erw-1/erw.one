@@ -27,6 +27,7 @@ export const ensureD3 = ensureOnce(async () => {
     forceLink: force.forceLink,
     forceManyBody: force.forceManyBody,
     forceCenter: force.forceCenter,
+    forceCollide: force.forceCollide,
     drag: drag.drag,
     zoom: zoomMod.zoom,
     zoomIdentity: zoomMod.zoomIdentity
@@ -284,6 +285,7 @@ export const syncMermaidThemeWithPage = async () => {
     resetAndRerender(p.querySelector(':scope > div'));
   });
 };
+
 
 
 
