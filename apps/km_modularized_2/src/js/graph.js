@@ -193,7 +193,6 @@ export async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
-  const byId = new Map(localN.map(n => [n.id, n])); // quick lookup for neighbors
   const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
 
   function fade(id, o) {
@@ -206,21 +205,7 @@ export async function buildGraph() {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
-
-    // Place labels on the side away from the average direction of links to avoid lines over text
-    label
-      .attr('text-anchor', d => {
-        const nbrs = adj.get(d.id);
-        let ax = 0;
-        if (nbrs) for (const nid of nbrs) { const n = byId.get(nid); if (n) ax += (n.x - d.x); }
-        d._left = ax > 0; // neighbors trend right → put label on the left
-        return d._left ? 'end' : 'start';
-      })
-      .attr('x', d => {
-        const tw = (d.label?.length || 0) * 6 + 8; // rough width @ 10px font
-        return d._left ? (d.x - tw) : (d.x + 8);
-      })
-      .attr('y', d => d.y + 3);
+    label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
   graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
