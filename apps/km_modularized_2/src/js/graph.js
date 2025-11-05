@@ -134,39 +134,6 @@ function buildGraphData() {
   return { nodes, links, adj };
 }
 
-/* --- custom force: keep links out of the right-side "label wedge" of each node --- */
-function forceLabelWedge({ angle = Math.PI / 8, strength = 0.12 } = {}) {
-  let links = [];
-  function nudge(ax, ay) { return Math.abs(Math.atan2(ay, ax)) < angle; }
-  function force(alpha) {
-    for (let i = 0; i < links.length; i++) {
-      const l = links[i];
-
-      // From SOURCE perspective (protect source's +X)
-      let dx = l.target.x - l.source.x, dy = l.target.y - l.source.y;
-      if (nudge(dx, dy)) {
-        const w = 1 - Math.abs(Math.atan2(dy, dx)) / angle; // stronger near center of wedge
-        const k = strength * w * alpha;
-        const s = dy === 0 ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(dy);
-        l.target.vy += s * k;              // bend link up/down
-        l.source.vy -= s * k * 0.4;        // counter to keep energy sane
-      }
-
-      // From TARGET perspective (protect target's +X) — this fixes the "receiving end" case
-      dx = l.source.x - l.target.x; dy = l.source.y - l.target.y;
-      if (nudge(dx, dy)) {
-        const w2 = 1 - Math.abs(Math.atan2(dy, dx)) / angle;
-        const k2 = strength * w2 * alpha;
-        const s2 = dy === 0 ? (Math.random() < 0.5 ? -1 : 1) : Math.sign(dy);
-        l.source.vy += s2 * k2;
-        l.target.vy -= s2 * k2 * 0.6;      // move the receiving node slightly, too
-      }
-    }
-  }
-  force.initialize = (_, L) => { links = L || []; };
-  return force;
-}
-
 /** Build the mini force-directed graph (lazy) */
 export async function buildGraph() {
   await ensureD3();
@@ -186,9 +153,7 @@ export async function buildGraph() {
     .force('charge', D3.forceManyBody().strength(-240))
     .force('center', D3.forceCenter(W / 2, H / 2))
     // Softer collide so the layout feels less stiff, but still protects text to the right.
-    .force('collide', D3.forceCollide(d => 8 + ((d.label?.length || 0) * 2)).strength(0.25).iterations(1))
-    // Keep links out of the right-side label wedge to avoid lines under labels.
-    .force('labelWedge', forceLabelWedge({ angle: Math.PI / 8, strength: 0.12 }));
+    .force('collide', D3.forceCollide(d => 8 + ((d.label?.length || 0) * 2)).strength(0.25).iterations(1));
 
   const view = svg.append('g').attr('class', 'view');
 
@@ -228,6 +193,7 @@ export async function buildGraph() {
     .attr('pointer-events', 'none')
     .text(d => d.label);
 
+  const byId = new Map(localN.map(n => [n.id, n])); // quick lookup for neighbors
   const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
 
   function fade(id, o) {
@@ -240,7 +206,21 @@ export async function buildGraph() {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
-    label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
+
+    // Place labels on the side away from the average direction of links to avoid lines over text
+    label
+      .attr('text-anchor', d => {
+        const nbrs = adj.get(d.id);
+        let ax = 0;
+        if (nbrs) for (const nid of nbrs) { const n = byId.get(nid); if (n) ax += (n.x - d.x); }
+        d._left = ax > 0; // neighbors trend right → put label on the left
+        return d._left ? 'end' : 'start';
+      })
+      .attr('x', d => {
+        const tw = (d.label?.length || 0) * 6 + 8; // rough width @ 10px font
+        return d._left ? (d.x - tw) : (d.x + 8);
+      })
+      .attr('y', d => d.y + 3);
   });
 
   graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
