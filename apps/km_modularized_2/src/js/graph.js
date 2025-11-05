@@ -151,7 +151,10 @@ export async function buildGraph() {
   const sim = D3.forceSimulation(localN)
     .force('link', D3.forceLink(localL).id(d => d.id).distance(80))
     .force('charge', D3.forceManyBody().strength(-240))
-    .force('center', D3.forceCenter(W / 2, H / 2));
+    .force('center', D3.forceCenter(W / 2, H / 2))
+    // Expand collision radius based on label length so hit boxes extend to the right.
+    // This keeps text from overlapping neighboring nodes/labels with a minimal change.
+    .force('collide', D3.forceCollide().radius(d => 10 + ((d.label?.length || 0) * 3)).strength(0.7));
 
   const view = svg.append('g').attr('class', 'view');
 
@@ -185,17 +188,11 @@ export async function buildGraph() {
       .on('end',   (e, d) => { if (!e.active) sim.alphaTarget(0); d.fx = d.fy = null; }));
 
   const node  = wireNode(view.append('g').selectAll('circle').data(localN).join('circle'));
-
-  // --- Labels with simple collision handling (nodes & other labels) ---
   const label = view.append('g').selectAll('text')
     .data(localN).join('text')
     .attr('id', IDS.label).attr('font-size', 10)
     .attr('pointer-events', 'none')
     .text(d => d.label);
-
-  // cache DOM elements for width measuring
-  const labelEls = [];
-  label.each(function(d){ d._el = this; labelEls.push(this); d._lw = 0; d._lh = 10; });
 
   const isNeighbor = (id, d) => (id == null || graphs.mini.adj.get(id)?.has(d.id) || d.id === id);
 
@@ -205,89 +202,11 @@ export async function buildGraph() {
     link.style('opacity', l => id == null || l.source.id === id || l.target.id === id ? 1 : o);
   }
 
-  // Small helpers for collision math
-  const PADDING_TEXT_TEXT = 2;
-  const PADDING_TEXT_NODE = 10;
-  const LABEL_DY = 3; // baseline tweak
-
-  function measureWidths() {
-    // Only measure occasionally to avoid thrash; called on every tick but fast in practice
-    for (const d of localN) {
-      if (!d._el) continue;
-      // Avoid reflow if we already have a non-zero width
-      const w = d._el.getComputedTextLength ? d._el.getComputedTextLength() : 0;
-      d._lw = Math.max(1, w | 0);
-    }
-  }
-
-  function applyLabelCollisions() {
-    // Build node quadtree for pushing labels off of nodes (all nodes, not just own)
-    const nq = D3.quadtree()
-      .x(d => d.x)
-      .y(d => d.y)
-      .addAll(localN);
-
-    // First pass: place labels initially to the right of the node
-    for (const d of localN) {
-      d._lx = d.x + 8;           // left x of text
-      d._ly = d.y + LABEL_DY;    // baseline y
-    }
-
-    // Second pass: push labels away from nearby nodes (simple radial push)
-    for (const d of localN) {
-      const halfH = d._lh * 0.6; // approx half height
-      const cx = d._lx + d._lw / 2, cy = d._ly - halfH; // center of approx bbox
-
-      nq.visit((quad, x0, y0, x1, y1) => {
-        const qd = quad.data;
-        if (qd && qd !== d) {
-          const dx = cx - qd.x, dy = cy - qd.y;
-          const dist = Math.hypot(dx, dy) || 1;
-          const min = 6 + PADDING_TEXT_NODE; // node radius (6) + padding
-          if (dist < min) {
-            const k = (min - dist) / dist;
-            d._lx += dx * k; d._ly += dy * k;
-          }
-        }
-        // prune if bbox far away
-        const rx = d._lw/2 + 20, ry = halfH + 20;
-        return (x0 > cx + rx) || (x1 < cx - rx) || (y0 > cy + ry) || (y1 < cy - ry);
-      });
-    }
-
-    // Third pass: label-vs-label simple vertical stacking using a quadtree
-    const labelsAsPts = localN.map(d => ({ d, x: d._lx + d._lw/2, y: d._ly - d._lh * 0.6, r: Math.max(4, d._lw/2) }));
-    const lq = D3.quadtree().x(p => p.x).y(p => p.y).addAll(labelsAsPts);
-
-    for (const p of labelsAsPts) {
-      lq.visit((quad, x0, y0, x1, y1) => {
-        const q = quad.data;
-        if (q && q !== p) {
-          const dx = p.x - q.x, dy = p.y - q.y;
-          const min = (p.r + q.r) + PADDING_TEXT_TEXT;
-          const dist = Math.hypot(dx, dy) || 1;
-          if (dist < min) {
-            const k = (min - dist) / dist;
-            // Nudge current label down a bit to break ties deterministically
-            p.d._ly += dy >= 0 ? k * 2 : -k * 2;
-            p.y = p.d._ly - p.d._lh * 0.6;
-          }
-        }
-        const R = p.r + 24;
-        return (x0 > p.x + R) || (x1 < p.x - R) || (y0 > p.y + R) || (y1 < p.y - R);
-      });
-    }
-  }
-
   sim.on('tick', () => {
     link.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
         .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
     node.attr('cx', d => d.x).attr('cy', d => d.y);
-
-    // --- collision-aware label layout ---
-    measureWidths();
-    applyLabelCollisions();
-    label.attr('x', d => d._lx).attr('y', d => d._ly);
+    label.attr('x', d => d.x + 8).attr('y', d => d.y + 3);
   });
 
   graphs.mini = { svg, node, label, sim, view, adj, w: W, h: H, zoom };
