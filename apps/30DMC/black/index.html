@@ -40,12 +40,9 @@
       margin: 0;
       padding: 0;
       height: 100%;
-      width: 100%;
-      min-height: 100vh;
       background: var(--bg);
       color: var(--text);
       overflow: hidden;
-      overscroll-behavior: none;
       font-family: "Segoe UI", system-ui,
        -apple-system, BlinkMacSystemFont,
        "Helvetica Neue", sans-serif;
@@ -116,7 +113,6 @@
       cursor: grab;
       mix-blend-mode: screen;
       user-select: none;
-      touch-action: none;
       z-index: 10;
       opacity: 1;
       transform: translate(-9999px, -9999px);
@@ -333,53 +329,23 @@
 
     @media (max-width: 720px) {
       #map {
-        top: calc(8px + env(safe-area-inset-top));
-        bottom: calc(8px + env(safe-area-inset-bottom));
-        left: calc(8px + env(safe-area-inset-left));
-        right: calc(8px + env(safe-area-inset-right));
-        border-radius: 12px;
-      }
-
-      #moon {
-        width: 90px;
-        height: 90px;
+        top: 8px;
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
       }
 
       #control-panel {
         top: auto;
-        bottom: calc(14px + env(safe-area-inset-bottom));
-        left: 12px;
+        bottom: 16px;
         right: 12px;
         transform: none;
         flex-direction: row;
         align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 8px;
+        gap: 12px;
         width: auto;
-        padding: 8px 12px;
+        padding: 10px 12px;
         border-radius: var(--radius-pill);
-        font-size: 10px;
-      }
-
-      .toggle-label {
-        font-size: 9px;
-      }
-
-      .toggle-switch {
-        width: 36px;
-        height: 18px;
-      }
-
-      .toggle-thumb {
-        width: 12px;
-        height: 12px;
-        top: 3px;
-        left: 3px;
-      }
-
-      .toggle-switch input:checked ~ .toggle-thumb {
-        transform: translateX(16px);
       }
 
       #angle-ui {
@@ -393,26 +359,9 @@
         margin-top: 0;
       }
 
-      .angle-knob {
-        width: 92px;
-        height: 92px;
-      }
-
-      #hint {
-        bottom: calc(68px + env(safe-area-inset-bottom));
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 32px);
-        max-width: 480px;
-        text-align: center;
-        font-size: 0.72rem;
-        padding: 0.45rem 0.8rem;
-      }
-
       #attribution {
         left: 12px;
-        right: 12px;
-        bottom: calc(8px + env(safe-area-inset-bottom));
+        bottom: 8px;
         font-size: 9px;
         padding: 3px 8px;
         white-space: normal;
@@ -701,12 +650,8 @@
 
         if (elements.moon) {
           elements.moon.addEventListener("mousedown", startMoonDrag);
-          elements.moon.addEventListener("touchstart", startMoonDragTouch, { passive: false });
           window.addEventListener("mousemove", trackMoonDrag);
-          window.addEventListener("touchmove", trackMoonDrag, { passive: false });
           window.addEventListener("mouseup", endMoonDrag);
-          window.addEventListener("touchend", endMoonDrag);
-          window.addEventListener("touchcancel", endMoonDrag);
           window.addEventListener("mouseleave", endMoonDrag);
         }
 
@@ -866,30 +811,18 @@
         if (elements.moon) elements.moon.classList.add("grabbing");
       }
 
-      function startMoonDragTouch(event) {
-        if (state.freeMode) return;
-        if (!event.touches || event.touches.length !== 1) return;
-        event.preventDefault();
-        event.stopPropagation();
-        state.draggingMoon = true;
-        if (elements.moon) elements.moon.classList.add("grabbing");
-      }
-
       function trackMoonDrag(event) {
         if (!state.draggingMoon) return;
         if (!elements.mapContainer) return;
-        if (event.touches && event.touches.length !== 1) return;
 
-        const point = event.touches ? event.touches[0] : event;
         const rect = elements.mapContainer.getBoundingClientRect();
         const cx = rect.left + rect.width / 2;
         const cy = rect.top + rect.height / 2;
 
-        const dx = point.clientX - cx;
-        const dy = point.clientY - cy;
+        const dx = event.clientX - cx;
+        const dy = event.clientY - cy;
 
         state.orbitAngle = Math.atan2(dx, -dy);
-        if (event.cancelable) event.preventDefault();
       }
 
       function endMoonDrag() {
@@ -952,16 +885,9 @@
         const sinTheta = Math.sin(theta);
         const cosTheta = Math.cos(theta);
 
-        const mobileOrbitScale = window.matchMedia("(max-width: 720px)").matches ? 0.82 : 1;
-        const radius =
-          Math.min(rect.width, rect.height) * CONFIG.orbit.radiusScale * mobileOrbitScale;
+        const radius = Math.min(rect.width, rect.height) * CONFIG.orbit.radiusScale;
         const x = cx + radius * sinTheta;
-        const y =
-          cy -
-          radius *
-            cosTheta *
-            CONFIG.orbit.verticalScale *
-            (window.matchMedia("(max-width: 720px)").matches ? 0.9 : 1);
+        const y = cy - radius * cosTheta * CONFIG.orbit.verticalScale;
 
         const depth =
           CONFIG.orbit.depthMinScale +
