@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Moonlit 3D Globe - MapLibre + MapTiler</title>
+  <title>Black • Erwan Vinot</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <link
     href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css"
@@ -40,9 +40,12 @@
       margin: 0;
       padding: 0;
       height: 100%;
+      width: 100%;
+      min-height: 100vh;
       background: var(--bg);
       color: var(--text);
       overflow: hidden;
+      overscroll-behavior: none;
       font-family: "Segoe UI", system-ui,
        -apple-system, BlinkMacSystemFont,
        "Helvetica Neue", sans-serif;
@@ -83,10 +86,10 @@
 
     #map {
       position: absolute;
-      top: 12px;
-      bottom: 12px;
-      left: 12px;
-      right: 12px;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       border-radius: var(--radius-large);
       overflow: hidden;
       box-shadow: 0 20px 80px rgba(0, 0, 0, 0.55);
@@ -113,6 +116,7 @@
       cursor: grab;
       mix-blend-mode: screen;
       user-select: none;
+      touch-action: none;
       z-index: 10;
       opacity: 1;
       transform: translate(-9999px, -9999px);
@@ -329,22 +333,31 @@
 
     @media (max-width: 720px) {
       #map {
-        top: 8px;
-        bottom: 8px;
-        left: 8px;
-        right: 8px;
+        top: calc(8px + env(safe-area-inset-top));
+        bottom: calc(8px + env(safe-area-inset-bottom));
+        left: calc(8px + env(safe-area-inset-left));
+        right: calc(8px + env(safe-area-inset-right));
+        border-radius: 14px;
+      }
+
+      #moon {
+        width: 110px;
+        height: 110px;
       }
 
       #control-panel {
         top: auto;
-        bottom: 16px;
+        bottom: calc(14px + env(safe-area-inset-bottom));
+        left: 12px;
         right: 12px;
         transform: none;
         flex-direction: row;
         align-items: center;
-        gap: 12px;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 10px;
         width: auto;
-        padding: 10px 12px;
+        padding: 10px 14px;
         border-radius: var(--radius-pill);
       }
 
@@ -359,9 +372,19 @@
         margin-top: 0;
       }
 
+      #hint {
+        bottom: calc(68px + env(safe-area-inset-bottom));
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        max-width: 480px;
+        text-align: center;
+      }
+
       #attribution {
         left: 12px;
-        bottom: 8px;
+        right: 12px;
+        bottom: calc(8px + env(safe-area-inset-bottom));
         font-size: 9px;
         padding: 3px 8px;
         white-space: normal;
@@ -411,10 +434,10 @@
     </div>
   </div>
 
-  <div id="hint" role="status">Drag left/right to spin | Drag the moon to steer the light</div>
+  <div id="hint" role="status">Drag left/right to spin • Drag the moon to steer the light</div>
     <div id="attribution">
-    <a href="https://www.linkedin.com/in/erwan-vinot/" target="_blank">Erwan Vinot</a> |
-    <a href="https://30daymapchallenge.com/2025/" target="_blank">30DayMapChallenge 2025: Black</a> |
+    <a href="https://www.linkedin.com/in/erwan-vinot/" target="_blank">Erwan Vinot</a> •
+    <a href="https://30daymapchallenge.com/2025/" target="_blank">30DayMapChallenge 2025: Black</a> •
     <a href="https://maplibre.org/" target="_blank">MapLibre</a>,
     <a href="https://www.maptiler.com/" target="_blank">MapTiler</a>,
     <a href="https://github.com/open-peaks/data" target="_blank">open-peaks</a>
@@ -650,8 +673,12 @@
 
         if (elements.moon) {
           elements.moon.addEventListener("mousedown", startMoonDrag);
+          elements.moon.addEventListener("touchstart", startMoonDragTouch, { passive: false });
           window.addEventListener("mousemove", trackMoonDrag);
+          window.addEventListener("touchmove", trackMoonDrag, { passive: false });
           window.addEventListener("mouseup", endMoonDrag);
+          window.addEventListener("touchend", endMoonDrag);
+          window.addEventListener("touchcancel", endMoonDrag);
           window.addEventListener("mouseleave", endMoonDrag);
         }
 
@@ -811,18 +838,30 @@
         if (elements.moon) elements.moon.classList.add("grabbing");
       }
 
+      function startMoonDragTouch(event) {
+        if (state.freeMode) return;
+        if (!event.touches || event.touches.length !== 1) return;
+        event.preventDefault();
+        event.stopPropagation();
+        state.draggingMoon = true;
+        if (elements.moon) elements.moon.classList.add("grabbing");
+      }
+
       function trackMoonDrag(event) {
         if (!state.draggingMoon) return;
         if (!elements.mapContainer) return;
+        if (event.touches && event.touches.length !== 1) return;
 
+        const point = event.touches ? event.touches[0] : event;
         const rect = elements.mapContainer.getBoundingClientRect();
         const cx = rect.left + rect.width / 2;
         const cy = rect.top + rect.height / 2;
 
-        const dx = event.clientX - cx;
-        const dy = event.clientY - cy;
+        const dx = point.clientX - cx;
+        const dy = point.clientY - cy;
 
         state.orbitAngle = Math.atan2(dx, -dy);
+        if (event.cancelable) event.preventDefault();
       }
 
       function endMoonDrag() {
