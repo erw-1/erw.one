@@ -337,12 +337,12 @@
         bottom: calc(8px + env(safe-area-inset-bottom));
         left: calc(8px + env(safe-area-inset-left));
         right: calc(8px + env(safe-area-inset-right));
-        border-radius: 14px;
+        border-radius: 12px;
       }
 
       #moon {
-        width: 110px;
-        height: 110px;
+        width: 90px;
+        height: 90px;
       }
 
       #control-panel {
@@ -355,10 +355,31 @@
         align-items: center;
         justify-content: center;
         flex-wrap: wrap;
-        gap: 10px;
+        gap: 8px;
         width: auto;
-        padding: 10px 14px;
+        padding: 8px 12px;
         border-radius: var(--radius-pill);
+        font-size: 10px;
+      }
+
+      .toggle-label {
+        font-size: 9px;
+      }
+
+      .toggle-switch {
+        width: 36px;
+        height: 18px;
+      }
+
+      .toggle-thumb {
+        width: 12px;
+        height: 12px;
+        top: 3px;
+        left: 3px;
+      }
+
+      .toggle-switch input:checked ~ .toggle-thumb {
+        transform: translateX(16px);
       }
 
       #angle-ui {
@@ -372,6 +393,11 @@
         margin-top: 0;
       }
 
+      .angle-knob {
+        width: 92px;
+        height: 92px;
+      }
+
       #hint {
         bottom: calc(68px + env(safe-area-inset-bottom));
         left: 50%;
@@ -379,6 +405,8 @@
         width: calc(100% - 32px);
         max-width: 480px;
         text-align: center;
+        font-size: 0.72rem;
+        padding: 0.45rem 0.8rem;
       }
 
       #attribution {
@@ -924,9 +952,16 @@
         const sinTheta = Math.sin(theta);
         const cosTheta = Math.cos(theta);
 
-        const radius = Math.min(rect.width, rect.height) * CONFIG.orbit.radiusScale;
+        const mobileOrbitScale = window.matchMedia("(max-width: 720px)").matches ? 0.82 : 1;
+        const radius =
+          Math.min(rect.width, rect.height) * CONFIG.orbit.radiusScale * mobileOrbitScale;
         const x = cx + radius * sinTheta;
-        const y = cy - radius * cosTheta * CONFIG.orbit.verticalScale;
+        const y =
+          cy -
+          radius *
+            cosTheta *
+            CONFIG.orbit.verticalScale *
+            (window.matchMedia("(max-width: 720px)").matches ? 0.9 : 1);
 
         const depth =
           CONFIG.orbit.depthMinScale +
