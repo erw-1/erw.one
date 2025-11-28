@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Moonlit 3D Globe - MapLibre + MapTiler</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.css"
+    rel="stylesheet"
+  />
+  <script src="https://unpkg.com/maplibre-gl@5.13.0/dist/maplibre-gl.js"></script>
+  <style>
+    :root {
+      --bg: #0d0f17;
+      --panel: rgba(7, 10, 18, 0.82);
+      --panel-border: rgba(255, 255, 255, 0.08);
+      --text: #e3e7ee;
+      --muted: #a4adc0;
+      --accent: #f5f5f8;
+      --accent-strong: #f5f5f8;
+      --glow-soft: rgba(255, 255, 255, 0.09);
+      --moon-glow: 0 0 40px rgba(255, 255, 255, 0.22),
+        0 0 80px rgba(255, 255, 255, 0.15);
+
+      --radius-large: 18px;
+      --radius-pill: 50px;
+      --shadow-panel: 0 10px 40px rgba(0, 0, 0, 0.4);
+      --stars-back-x: 0px;
+      --stars-back-y: 0px;
+      --stars-front-x: 0px;
+      --stars-front-y: 0px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+      font-family: "Segoe UI", system-ui,
+       -apple-system, BlinkMacSystemFont,
+       "Helvetica Neue", sans-serif;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Distant, dim stars */
+    body::before {
+      background-image:
+        radial-gradient(1px 1px at 20px 30px, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 120px 80px, rgba(255, 255, 255, 0.35), transparent),
+        radial-gradient(1px 1px at 220px 140px, rgba(255, 255, 255, 0.45), transparent),
+        radial-gradient(1px 1px at 320px 220px, rgba(255, 255, 255, 0.4), transparent);
+      background-size: 300px 300px, 420px 420px, 520px 520px, 640px 640px;
+      opacity: 0.55;
+      transform: translate3d(var(--stars-back-x), var(--stars-back-y), 0);
+    }
+
+    /* Near, brighter stars */
+    body::after {
+      background-image:
+        radial-gradient(2px 2px at 40px 60px, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(2px 2px at 180px 160px, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(2px 2px at 260px 40px, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(2px 2px at 360px 200px, rgba(255, 255, 255, 0.75), transparent);
+      background-size: 260px 260px, 360px 360px, 480px 480px, 620px 620px;
+      opacity: 0.75;
+      transform: translate3d(var(--stars-front-x), var(--stars-front-y), 0);
+    }
+
+    #map {
+      position: absolute;
+      top: 12px;
+      bottom: 12px;
+      left: 12px;
+      right: 12px;
+      border-radius: var(--radius-large);
+      overflow: hidden;
+      box-shadow: 0 20px 80px rgba(0, 0, 0, 0.55);
+      z-index: 1;
+    }
+
+    #moon {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      background: radial-gradient(
+        circle at 26% 26%,
+        #ffffff,
+        #d9d9d9 40%,
+        #888888 60%,
+        #222222 80%,
+        #000000 100%
+      );
+      box-shadow: var(--moon-glow);
+      pointer-events: auto;
+      cursor: grab;
+      mix-blend-mode: screen;
+      user-select: none;
+      z-index: 10;
+      opacity: 1;
+      transform: translate(-9999px, -9999px);
+      transition: box-shadow 0.2s ease;
+    }
+
+    #moon.grabbing {
+      cursor: grabbing;
+      box-shadow:
+        0 0 40px rgba(255, 255, 255, 0.32),
+        0 0 100px rgba(255, 255, 255, 0.24);
+    }
+
+    #hint {
+      position: fixed;
+      bottom: 1.4rem;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.5rem 1rem;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.82);
+      border: 1px solid var(--panel-border);
+
+      color: var(--muted);
+      font-size: 0.78rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      z-index: 20;
+      pointer-events: none;
+      transition: opacity 0.6s ease-out;
+    }
+
+    #control-panel {
+      position: fixed;
+      top: 50%;
+      right: 18px;
+      transform: translateY(-50%);
+      padding: 10px 10px 10px 0px;
+      width: 220px;
+      border-radius: 24px;
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      backdrop-filter: blur(8px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      align-items: center;
+      z-index: 20;
+      
+      color: var(--text);
+      font-size: 11px;
+      box-shadow: var(--shadow-panel);
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      position: relative;
+      gap: 8px;
+      white-space: nowrap;
+      cursor: pointer;
+      padding-right: 52px; /* space for toggle so label stays visually centered */
+    }
+
+    .toggle-label {
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-size: 10px;
+      color: var(--muted);
+      text-align: center;
+      width: 100%;
+    }
+
+    .toggle-switch {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 42px;
+      height: 22px;
+      display: inline-flex;
+      align-items: center;
+    }
+
+    .toggle-switch input {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      margin: 0;
+      cursor: pointer;
+    }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.16);
+      transition: background 0.2s ease;
+      pointer-events: none;
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 16px;
+      height: 16px;
+      border-radius: var(--radius-pill);
+      background: var(--accent);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+      transition: transform 0.2s ease;
+      pointer-events: none;
+    }
+
+    .toggle-switch input:checked ~ .toggle-track {
+      background: rgba(255, 255, 255, 0.32);
+    }
+
+    .toggle-switch input:checked ~ .toggle-thumb {
+      transform: translateX(20px);
+    }
+
+    .toggle-switch input:focus-visible ~ .toggle-track {
+      outline: 2px solid var(--accent-strong);
+      outline-offset: 2px;
+    }
+
+    #angle-ui {
+      display: none;
+      width: 100%;
+      margin-top: 4px;
+      padding-top: 8px;
+      border-top: 1px solid var(--panel-border);
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    #angle-ui .angle-title {
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      text-align: center;
+      width: 100%;
+    }
+
+    .angle-knob {
+      width: 120px;
+      height: 120px;
+      cursor: pointer;
+      touch-action: none;
+      margin: 0 auto;
+    }
+
+    .angle-knob svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    .angle-track {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.15);
+      stroke-width: 6;
+    }
+
+    .angle-arc {
+      fill: none;
+      stroke: #f5f5f5;
+      stroke-width: 6;
+      stroke-linecap: round;
+    }
+
+    .angle-handle {
+      fill: #111111;
+      stroke: #ffffff;
+      stroke-width: 2;
+    }
+
+    .angle-text {
+      fill: #cccccc;
+      font-size: 12px;
+      dominant-baseline: middle;
+    }
+
+    .maplibregl-ctrl,
+    .maplibregl-ctrl-group {
+      display: none !important;
+    }
+
+    a {
+      color: var(--muted);
+      text-decoration-color: #303030 !important;
+    }
+
+    /* Attribution bottom-left */
+    #attribution {
+      position: fixed;
+      left: 20px;
+      bottom: 16px;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      background: rgba(0, 0, 0, 0.8);
+      border: 1px solid var(--panel-border);
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.03em;
+      z-index: 20;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 720px) {
+      #map {
+        top: 8px;
+        bottom: 8px;
+        left: 8px;
+        right: 8px;
+      }
+
+      #control-panel {
+        top: auto;
+        bottom: 16px;
+        right: 12px;
+        transform: none;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        width: auto;
+        padding: 10px 12px;
+        border-radius: var(--radius-pill);
+      }
+
+      #angle-ui {
+        width: auto;
+        flex-direction: row-reverse;
+        align-items: center;
+        border-top: none;
+        border-left: 1px solid var(--panel-border);
+        padding-top: 0;
+        padding-left: 10px;
+        margin-top: 0;
+      }
+
+      #attribution {
+        left: 12px;
+        bottom: 8px;
+        font-size: 9px;
+        padding: 3px 8px;
+        white-space: normal;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.001ms !important;
+      }
+
+      #moon {
+        transition: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="map" aria-label="3D globe map"></div>
+  <div id="moon" aria-hidden="true"></div>
+
+  <div id="control-panel" role="region" aria-label="Map controls">
+    <label class="toggle-row" for="free-toggle">
+      <span class="toggle-label">Free controls</span>
+      <span class="toggle-switch">
+        <input type="checkbox" id="free-toggle" aria-label="Unlock controls" />
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+      </span>
+    </label>
+    <div id="angle-ui">
+      <div class="angle-title">Light angle</div>
+      <div id="angle-knob" class="angle-knob">
+        <svg viewBox="0 0 120 120" aria-hidden="true">
+          <circle class="angle-track" cx="60" cy="60" r="46"></circle>
+          <path id="angle-arc" class="angle-arc" d=""></path>
+          <circle id="angle-handle" class="angle-handle" cx="60" cy="14" r="6"></circle>
+          <text id="angle-text" class="angle-text" x="60" y="62" text-anchor="middle">
+            0&deg;
+          </text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div id="hint" role="status">Drag left/right to spin | Drag the moon to steer the light</div>
+    <div id="attribution">
+    <a href="https://www.linkedin.com/in/erwan-vinot/" target="_blank">Erwan Vinot</a> |
+    <a href="https://30daymapchallenge.com/2025/" target="_blank">30DayMapChallenge 2025: Black</a> |
+    <a href="https://maplibre.org/" target="_blank">MapLibre</a>,
+    <a href="https://www.maptiler.com/" target="_blank">MapTiler</a>,
+    <a href="https://github.com/open-peaks/data" target="_blank">open-peaks</a>
+  </div>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const MAPTILER_KEY = "QbBeuUukqtD1VmtLO6ji"; // this is domain locked btw lol
+      const MAPTILER_API_ROOT = "https://api.maptiler.com";
+      const LONGITUDE_PER_PIXEL = 0.25;
+      const TWO_PI = Math.PI * 2;
+
+      // Peaks
+      const PEAKS_SOURCE_ID = "peaks-visible";
+      const PEAKS_POINT_LAYER_ID = "peaks-dots";
+      const PEAKS_LABEL_LAYER_ID = "peaks-labels";
+      let allPeakFeatures = null;
+      let sortedPeakFeatures = [];
+      let peakStates = new Map();
+
+      // Peak fading / focus
+      const PEAK_MIN_FOCUS_MS = 300; // wait 0.3s in focus before fading in
+      const PEAK_FADE_IN_TIME = 0.25; // seconds for full fade in
+      const PEAK_FADE_OUT_TIME = 0.2; // seconds for full fade out
+
+      const CONFIG = {
+        map: {
+          camera: { center: [-25.3915, 28.4021], zoom: 2.5234, bearing: 0, pitch: 0 }
+        },
+        orbit: {
+          initialAngle: Math.PI / 4,
+          speed: 0.06,
+          radiusScale: 0.62,
+          verticalScale: 0.7,
+          depthMinScale: 0.4,
+          depthMaxScale: 1.0
+        },
+        lighting: {
+          color: "#f6f6f6",
+          intensity: 1,
+          peakAngle: 125,
+          polarMax: 125,
+          polarMin: 20,
+          altitudeBase: 35,
+          altitudeRange: 35
+        },
+        parallax: { backX: 1.2, frontX: 2.4, backY: -0.8, frontY: -1.6 },
+        fadeSpeed: 2.5,
+        hintHideDelayMs: 4000
+      };
+
+      const MAP_INTERACTIONS = [
+        "scrollZoom",
+        "boxZoom",
+        "dragPan",
+        "dragRotate",
+        "keyboard",
+        "doubleClickZoom",
+        "touchZoomRotate"
+      ];
+
+      const state = {
+        freeMode: false,
+        orbitAngle: CONFIG.orbit.initialAngle,
+        orbitSpeed: CONFIG.orbit.speed,
+        moonAlpha: 1,
+        targetMoonAlpha: 1,
+        lastFrameTime: null,
+        draggingMoon: false,
+        draggingAngle: false,
+        rotation: {
+          active: false,
+          startX: 0,
+          startLng: CONFIG.map.camera.center[0],
+          startLat: CONFIG.map.camera.center[1]
+        }
+      };
+
+      const elements = {
+        mapContainer: document.getElementById("map"),
+        moon: document.getElementById("moon"),
+        hint: document.getElementById("hint"),
+        freeToggle: document.getElementById("free-toggle"),
+        anglePanel: document.getElementById("angle-ui"),
+        angleKnob: document.getElementById("angle-knob"),
+        angleArc: document.getElementById("angle-arc"),
+        angleHandle: document.getElementById("angle-handle"),
+        angleText: document.getElementById("angle-text")
+      };
+
+      const rootStyle = document.documentElement.style;
+
+      const map = createMap();
+      bindUI();
+      bindMapEvents();
+
+      function createMap() {
+        const mapStyle = buildMapStyle();
+        const instance = new maplibregl.Map({
+          container: "map",
+          style: mapStyle,
+          center: CONFIG.map.camera.center,
+          zoom: CONFIG.map.camera.zoom,
+          minZoom: CONFIG.map.camera.zoom,
+          maxZoom: CONFIG.map.camera.zoom,
+          pitch: CONFIG.map.camera.pitch,
+          bearing: CONFIG.map.camera.bearing,
+          antialias: true,
+          renderWorldCopies: false
+        });
+
+        instance.once("style.load", () => disableLegacyFog(instance));
+        return instance;
+      }
+
+      function maptilerUrl(path) {
+        return MAPTILER_API_ROOT + path + "?key=" + MAPTILER_KEY;
+      }
+
+      function buildMapStyle() {
+        return {
+          version: 8,
+          name: "Moonlit Globe",
+          projection: { type: "globe" },
+          glyphs: maptilerUrl("/fonts/{fontstack}/{range}.pbf"),
+          sky: { "atmosphere-blend": 0.02 },
+          light: {
+            anchor: "viewport",
+            color: CONFIG.lighting.color,
+            position: [1, CONFIG.lighting.peakAngle, CONFIG.lighting.polarMax],
+            intensity: CONFIG.lighting.intensity
+          },
+          sources: {
+            terrainSource: {
+              type: "raster-dem",
+              url: maptilerUrl("/tiles/terrain-rgb/tiles.json"),
+              tileSize: 256,
+              maxzoom: 13
+            },
+            countries: {
+              type: "vector",
+              url: maptilerUrl("/tiles/countries/tiles.json")
+            },
+            contours: {
+              type: "vector",
+              url: maptilerUrl("/tiles/contours/tiles.json")
+            }
+          },
+          layers: [
+            {
+              id: "background",
+              type: "background",
+              paint: { "background-color": "#0b0d14" }
+            },
+            {
+              id: "hillshade",
+              type: "hillshade",
+              source: "terrainSource",
+              layout: { visibility: "visible" },
+              paint: {
+                "hillshade-method": "combined",
+                "hillshade-shadow-color": "rgba(5, 5, 5, 0.5)",
+                "hillshade-highlight-color": "rgba(180, 180, 180, 0.5)",
+                "hillshade-accent-color": "rgba(17, 17, 17, 1)",
+                "hillshade-exaggeration": 1
+              }
+            },
+            {
+              id: "contours-lines",
+              type: "line",
+              source: "contours",
+              "source-layer": "contour",
+              minzoom: 6,
+              maxzoom: 16,
+              paint: {
+                "line-color": "#494c54",
+                "line-width": [
+                  "interpolate",
+                  ["linear"],
+                  ["zoom"],
+                  6, 0.2,
+                  10, 0.35,
+                  13, 0.5
+                ],
+                "line-opacity": 0.35
+              }
+            },
+            {
+              id: "country-borders",
+              type: "line",
+              source: "countries",
+              "source-layer": "administrative",
+              minzoom: 0,
+              maxzoom: 8,
+              filter: ["==", ["get", "level"], 0],
+              paint: {
+                "line-color": "rgba(200, 200, 200, 0.08)",
+                "line-width": 0.7,
+                "line-dasharray": [2, 1]
+              }
+            }
+          ],
+          terrain: { source: "terrainSource", exaggeration: 1.6 }
+        };
+      }
+
+      function disableLegacyFog(mapInstance) {
+        if (!mapInstance.setFog) return;
+        try {
+          mapInstance.setFog(null);
+        } catch (error) {
+          console.warn("setFog(null) failed (safe to ignore):", error);
+        }
+      }
+
+      function bindMapEvents() {
+        map.on("move", updateStarParallax);
+        map.on("load", handleMapLoad);
+        map.on("mousedown", startLockedRotate);
+        map.on("touchstart", startLockedRotateTouch);
+
+        window.addEventListener("resize", handleResize);
+      }
+
+      function bindUI() {
+        if (elements.freeToggle) {
+          elements.freeToggle.addEventListener("change", (event) => {
+            setFreeMode(Boolean(event.target.checked));
+          });
+        }
+
+        if (elements.moon) {
+          elements.moon.addEventListener("mousedown", startMoonDrag);
+          window.addEventListener("mousemove", trackMoonDrag);
+          window.addEventListener("mouseup", endMoonDrag);
+          window.addEventListener("mouseleave", endMoonDrag);
+        }
+
+        if (elements.angleKnob) {
+          elements.angleKnob.addEventListener("mousedown", startAngleDrag);
+          elements.angleKnob.addEventListener("touchstart", startAngleDragTouch, { passive: false });
+          window.addEventListener("mousemove", trackAngleDrag);
+          window.addEventListener("touchmove", trackAngleDrag, { passive: false });
+          window.addEventListener("mouseup", endAngleDrag);
+          window.addEventListener("touchend", endAngleDrag);
+          window.addEventListener("touchcancel", endAngleDrag);
+        }
+      }
+
+      function handleResize() {
+        updateMoonAndLighting();
+        updateStarParallax();
+        updateVisiblePeaks();
+      }
+
+      function handleMapLoad() {
+        setFreeMode(false);
+        updateMoonAndLighting();
+        updateStarParallax();
+        void initPeaks(); // peaks & declutter
+        requestAnimationFrame(animateFrame);
+
+        if (elements.hint) {
+          fadeOutHint(elements.hint, CONFIG.hintHideDelayMs);
+        }
+      }
+
+      function setFreeMode(enabled) {
+        state.freeMode = enabled;
+        stopRotation();
+        state.draggingMoon = false;
+        state.draggingAngle = false;
+
+        if (enabled) {
+          toggleNativeInteractions(true);
+          map.setMinZoom(0);
+          map.setMaxZoom(22);
+
+          state.targetMoonAlpha = 0;
+          if (elements.moon) elements.moon.style.pointerEvents = "none";
+          if (elements.anglePanel) elements.anglePanel.style.display = "flex";
+        } else {
+          toggleNativeInteractions(false);
+
+          if (elements.anglePanel) elements.anglePanel.style.display = "none";
+
+          map.flyTo({
+            center: CONFIG.map.camera.center.slice(),
+            zoom: CONFIG.map.camera.zoom,
+            pitch: CONFIG.map.camera.pitch,
+            bearing: CONFIG.map.camera.bearing,
+            speed: 0.8,
+            curve: 1.5,
+            essential: true
+          });
+
+          map.once("moveend", () => {
+            lockZoom(CONFIG.map.camera.zoom);
+            updateVisiblePeaks();
+          });
+
+          state.targetMoonAlpha = 1;
+          if (elements.moon) elements.moon.style.pointerEvents = "auto";
+        }
+      }
+
+      function toggleNativeInteractions(enabled) {
+        MAP_INTERACTIONS.forEach((action) => {
+          const control = map[action];
+          if (!control || typeof control[enabled ? "enable" : "disable"] !== "function") return;
+          if (action === "touchZoomRotate" && enabled) {
+            control.enable({ around: "center" });
+          } else {
+            control[enabled ? "enable" : "disable"]();
+          }
+        });
+      }
+
+      function lockZoom(value) {
+        map.setMinZoom(value);
+        map.setMaxZoom(value);
+      }
+
+      function startLockedRotate(event) {
+        if (state.freeMode) return;
+        if (event.originalEvent.button !== 0) return;
+
+        beginLockedRotate(event.originalEvent.clientX);
+
+        window.addEventListener("mousemove", trackLockedRotate);
+        window.addEventListener("mouseup", stopRotation);
+      }
+
+      function startLockedRotateTouch(event) {
+        if (state.freeMode) return;
+        const touches = event.originalEvent.touches;
+        if (!touches || touches.length !== 1) return;
+
+        beginLockedRotate(touches[0].clientX);
+
+        window.addEventListener("touchmove", trackLockedRotate, { passive: false });
+        window.addEventListener("touchend", stopRotation);
+        window.addEventListener("touchcancel", stopRotation);
+      }
+
+      function beginLockedRotate(startX) {
+        const center = map.getCenter();
+        state.rotation = {
+          active: true,
+          startX,
+          startLng: center.lng,
+          startLat: center.lat
+        };
+      }
+
+      function trackLockedRotate(event) {
+        if (!state.rotation.active) return;
+
+        const point = event.touches ? event.touches[0] : event;
+        const clientX = point.clientX;
+        const deltaX = clientX - state.rotation.startX;
+
+        let newLng = state.rotation.startLng - deltaX * LONGITUDE_PER_PIXEL;
+        newLng = wrapLng(newLng);
+
+        map.jumpTo({
+          center: [newLng, state.rotation.startLat],
+          zoom: CONFIG.map.camera.zoom,
+          pitch: CONFIG.map.camera.pitch,
+          bearing: CONFIG.map.camera.bearing
+        });
+
+        updateVisiblePeaks();
+        event.preventDefault();
+      }
+
+      function stopRotation() {
+        if (!state.rotation.active) return;
+        state.rotation.active = false;
+        window.removeEventListener("mousemove", trackLockedRotate);
+        window.removeEventListener("mouseup", stopRotation);
+        window.removeEventListener("touchmove", trackLockedRotate);
+        window.removeEventListener("touchend", stopRotation);
+        window.removeEventListener("touchcancel", stopRotation);
+      }
+
+      function startMoonDrag(event) {
+        if (state.freeMode) return;
+        event.preventDefault();
+        event.stopPropagation();
+        state.draggingMoon = true;
+        if (elements.moon) elements.moon.classList.add("grabbing");
+      }
+
+      function trackMoonDrag(event) {
+        if (!state.draggingMoon) return;
+        if (!elements.mapContainer) return;
+
+        const rect = elements.mapContainer.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        const dx = event.clientX - cx;
+        const dy = event.clientY - cy;
+
+        state.orbitAngle = Math.atan2(dx, -dy);
+      }
+
+      function endMoonDrag() {
+        if (!state.draggingMoon) return;
+        state.draggingMoon = false;
+        if (elements.moon) elements.moon.classList.remove("grabbing");
+      }
+
+      function startAngleDrag(event) {
+        if (state.freeMode === false) return;
+        event.preventDefault();
+        beginAngleDrag(event.clientX, event.clientY);
+      }
+
+      function startAngleDragTouch(event) {
+        if (state.freeMode === false) return;
+        if (!event.touches || event.touches.length !== 1) return;
+        event.preventDefault();
+        const touch = event.touches[0];
+        beginAngleDrag(touch.clientX, touch.clientY);
+      }
+
+      function beginAngleDrag(clientX, clientY) {
+        state.draggingAngle = true;
+        state.orbitAngle = pointerToAngle(clientX, clientY);
+        updateMoonAndLighting();
+      }
+
+      function trackAngleDrag(event) {
+        if (!state.draggingAngle) return;
+        const point = event.touches ? event.touches[0] : event;
+        state.orbitAngle = pointerToAngle(point.clientX, point.clientY);
+        updateMoonAndLighting();
+        event.preventDefault();
+      }
+
+      function endAngleDrag() {
+        if (!state.draggingAngle) return;
+        state.draggingAngle = false;
+      }
+
+      function pointerToAngle(clientX, clientY) {
+        if (!elements.angleKnob) return state.orbitAngle;
+        const rect = elements.angleKnob.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = clientX - cx;
+        const dy = clientY - cy;
+        return Math.atan2(dx, -dy);
+      }
+
+      function updateMoonAndLighting() {
+        const rect = elements.mapContainer?.getBoundingClientRect();
+        if (!rect) return;
+
+        const theta = state.orbitAngle;
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        const sinTheta = Math.sin(theta);
+        const cosTheta = Math.cos(theta);
+
+        const radius = Math.min(rect.width, rect.height) * CONFIG.orbit.radiusScale;
+        const x = cx + radius * sinTheta;
+        const y = cy - radius * cosTheta * CONFIG.orbit.verticalScale;
+
+        const depth =
+          CONFIG.orbit.depthMinScale +
+          (CONFIG.orbit.depthMaxScale - CONFIG.orbit.depthMinScale) *
+            ((cosTheta + 1) / 2);
+        const isBehind = cosTheta < 0;
+
+        if (elements.moon) {
+          const baseOpacity = isBehind ? 0.5 : 1;
+          const opacity = clamp(baseOpacity * state.moonAlpha, 0, 1);
+          elements.moon.style.transform =
+            `translate(${x}px, ${y}px) translate(-50%, -50%) scale(${depth.toFixed(3)})`;
+          elements.moon.style.opacity = opacity.toFixed(3);
+        }
+
+        updateAngleControl(theta);
+        updateLighting(theta);
+      }
+
+      function updateAngleControl(theta) {
+        if (!elements.angleArc || !elements.angleHandle || !elements.angleText) return;
+
+        const cx = 60;
+        const cy = 60;
+        const r = 46;
+        const x0 = cx + r * Math.sin(0);
+        const y0 = cy - r * Math.cos(0);
+
+        const x = cx + r * Math.sin(theta);
+        const y = cy - r * Math.cos(theta);
+
+        const deg = normalizeAngle(toDegrees(theta));
+        const largeArc = deg > 180 ? 1 : 0;
+
+        const d = [
+          "M",
+          x0.toFixed(2),
+          y0.toFixed(2),
+          "A",
+          r,
+          r,
+          0,
+          largeArc,
+          1,
+          x.toFixed(2),
+          y.toFixed(2)
+        ].join(" ");
+
+        elements.angleArc.setAttribute("d", d);
+        elements.angleHandle.setAttribute("cx", x.toFixed(2));
+        elements.angleHandle.setAttribute("cy", y.toFixed(2));
+        elements.angleText.textContent = formatDegrees(deg);
+      }
+
+      function updateLighting(theta) {
+        const moonAngleDeg = normalizeAngle(toDegrees(theta));
+        const lightAngleDeg = normalizeAngle(180 - moonAngleDeg);
+
+        let diff = Math.abs(lightAngleDeg - CONFIG.lighting.peakAngle);
+        if (diff > 180) diff = 360 - diff;
+
+        let polarAngleDeg;
+        if (diff >= 90) {
+          polarAngleDeg = CONFIG.lighting.polarMin;
+        } else {
+          const t = diff / 90;
+          polarAngleDeg =
+            CONFIG.lighting.polarMax +
+            (CONFIG.lighting.polarMin - CONFIG.lighting.polarMax) * t;
+        }
+
+        let altitudeDeg =
+          CONFIG.lighting.altitudeBase + CONFIG.lighting.altitudeRange * Math.cos(theta);
+        altitudeDeg = clamp(altitudeDeg, 5, 80);
+
+        if (!map.isStyleLoaded()) return;
+
+        try {
+          map.setPaintProperty("hillshade", "hillshade-illumination-anchor", "viewport");
+          map.setPaintProperty(
+            "hillshade",
+            "hillshade-illumination-direction",
+            moonAngleDeg
+          );
+          map.setPaintProperty(
+            "hillshade",
+            "hillshade-illumination-altitude",
+            altitudeDeg
+          );
+
+          map.setLight({
+            anchor: "viewport",
+            color: CONFIG.lighting.color,
+            intensity: CONFIG.lighting.intensity,
+            position: [1, lightAngleDeg, polarAngleDeg]
+          });
+        } catch (error) {
+          // Safe to ignore if style has not finished initializing.
+        }
+      }
+
+      function updateStarParallax() {
+        const center = map.getCenter();
+        const deltaLng = wrapLng(center.lng - CONFIG.map.camera.center[0]);
+        const deltaLat = center.lat - CONFIG.map.camera.center[1];
+
+        rootStyle.setProperty(
+          "--stars-back-x",
+          (deltaLng * CONFIG.parallax.backX).toFixed(2) + "px"
+        );
+        rootStyle.setProperty(
+          "--stars-front-x",
+          (deltaLng * CONFIG.parallax.frontX).toFixed(2) + "px"
+        );
+        rootStyle.setProperty(
+          "--stars-back-y",
+          (deltaLat * CONFIG.parallax.backY).toFixed(2) + "px"
+        );
+        rootStyle.setProperty(
+          "--stars-front-y",
+          (deltaLat * CONFIG.parallax.frontY).toFixed(2) + "px"
+        );
+      }
+
+      function animateFrame(now) {
+        const dt = state.lastFrameTime ? (now - state.lastFrameTime) / 1000 : 0;
+        state.lastFrameTime = now;
+
+        tweenMoonOpacity(dt);
+
+        if (!state.draggingMoon && !state.draggingAngle) {
+          state.orbitAngle = normalizeRadians(state.orbitAngle + state.orbitSpeed * dt);
+        }
+
+        updateMoonAndLighting();
+        updatePeakOpacities(now, dt);
+
+        requestAnimationFrame(animateFrame);
+      }
+
+      function tweenMoonOpacity(dt) {
+        const delta = state.targetMoonAlpha - state.moonAlpha;
+        if (Math.abs(delta) <= 0.001) {
+          state.moonAlpha = state.targetMoonAlpha;
+          return;
+        }
+        const step = Math.sign(delta) * Math.min(Math.abs(delta), CONFIG.fadeSpeed * dt);
+        state.moonAlpha += step;
+      }
+
+      function fadeOutHint(element, delayMs) {
+        setTimeout(() => {
+          element.style.opacity = "0";
+          setTimeout(() => {
+            if (element.parentNode) {
+              element.parentNode.removeChild(element);
+            }
+          }, 800);
+        }, delayMs);
+      }
+
+      function wrapLng(lng) {
+        return ((((lng + 180) % 360) + 360) % 360) - 180;
+      }
+
+      function clamp(value, min, max) {
+        return Math.min(max, Math.max(min, value));
+      }
+
+      function toDegrees(radians) {
+        return (radians * 180) / Math.PI;
+      }
+
+      function normalizeRadians(value) {
+        return ((value % TWO_PI) + TWO_PI) % TWO_PI;
+      }
+
+      function normalizeAngle(degrees) {
+        return ((degrees % 360) + 360) % 360;
+      }
+
+      function formatDegrees(value) {
+        return Math.round(value) + "\u00B0";
+      }
+
+      // --- Peaks loading & declutter, with smooth fade ---
+
+      async function initPeaks() {
+        try {
+          const response = await fetch("peaks.json");
+          if (!response.ok) {
+            throw new Error("peaks.json request failed with status " + response.status);
+          }
+
+          const data = await response.json();
+          if (!data || !Array.isArray(data.features)) {
+            console.warn("peaks.json: unexpected format");
+            return;
+          }
+
+          peakStates = new Map();
+          allPeakFeatures = data.features.map((feature, index) => {
+            const properties = Object.assign({}, feature.properties);
+            const opacity =
+              typeof properties.opacity === "number" ? properties.opacity : 0;
+            const featureWithId = {
+              type: "Feature",
+              id: index,
+              geometry: feature.geometry,
+              properties: Object.assign(properties, { opacity })
+            };
+            peakStates.set(index, {
+              inFocus: false,
+              inFocusSince: null,
+              opacity
+            });
+            return featureWithId;
+          });
+
+          // Pre-sort once so declutter checks are fast.
+          sortedPeakFeatures = allPeakFeatures
+            .slice()
+            .sort(
+              (a, b) =>
+                (b.properties && b.properties.meters ? b.properties.meters : 0) -
+                (a.properties && a.properties.meters ? a.properties.meters : 0)
+            );
+
+          ensurePeakSource();
+          updateVisiblePeaks();
+          map.once("idle", updateVisiblePeaks);
+          map.on("moveend", updateVisiblePeaks);
+        } catch (error) {
+          console.error("Failed to load peaks.json", error);
+        }
+      }
+
+      function ensurePeakSource() {
+        const sourceData = {
+          type: "FeatureCollection",
+          features: allPeakFeatures
+        };
+
+        if (!map.getSource(PEAKS_SOURCE_ID)) {
+          map.addSource(PEAKS_SOURCE_ID, {
+            type: "geojson",
+            data: sourceData
+          });
+
+          map.addLayer({
+            id: PEAKS_POINT_LAYER_ID,
+            type: "circle",
+            source: PEAKS_SOURCE_ID,
+            paint: {
+              "circle-radius": 2,
+              "circle-color": "#6b6f78",
+              "circle-opacity": ["*", 0.9, ["coalesce", ["get", "opacity"], 0]]
+            }
+          });
+
+          map.addLayer({
+            id: PEAKS_LABEL_LAYER_ID,
+            type: "symbol",
+            source: PEAKS_SOURCE_ID,
+            layout: {
+              "text-field": [
+                "format",
+                ["get", "name"],
+                "\n",
+                ["concat", ["to-string", ["get", "meters"]], " m"]
+              ],
+              "text-font": [
+                "Noto Sans Regular",
+                "Open Sans Regular",
+                "Arial Unicode MS Regular"
+              ],
+              "text-size": 9,
+              "text-anchor": "top",
+              "text-justify": "center",
+              "text-offset": [0, 0.8]
+            },
+            paint: {
+              "text-color": "rgba(210, 214, 224, 0.78)",
+              "text-halo-color": "rgba(5, 7, 12, 0.9)",
+              "text-halo-width": 1.0,
+              "text-opacity": ["coalesce", ["get", "opacity"], 0]
+            }
+          });
+
+          return;
+        }
+
+        const src = map.getSource(PEAKS_SOURCE_ID);
+        if (src && typeof src.setData === "function") {
+          src.setData(sourceData);
+        }
+      }
+
+      function updateVisiblePeaks() {
+        if (!allPeakFeatures || !map) return;
+        const candidates = sortedPeakFeatures.length ? sortedPeakFeatures : allPeakFeatures;
+
+        const zoom = map.getZoom();
+        const minSpacing = getMinLabelPixelSpacing(zoom);
+        const maxLabels = getMaxLabelCount(zoom);
+
+        const container = map.getContainer();
+        if (!container) return;
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const selectedIds = [];
+        const screenPoints = [];
+
+        for (const feature of candidates) {
+          const geom = feature.geometry;
+          if (!geom || geom.type !== "Point" || !geom.coordinates) continue;
+
+          const coord = geom.coordinates;
+          const p = map.project(coord);
+
+          if (p.x < 0 || p.x > width || p.y < 0 || p.y > height) {
+            continue;
+          }
+
+          let tooClose = false;
+          for (const q of screenPoints) {
+            const dx = q.x - p.x;
+            const dy = q.y - p.y;
+            if (dx * dx + dy * dy < minSpacing * minSpacing) {
+              tooClose = true;
+              break;
+            }
+          }
+          if (tooClose) continue;
+
+          selectedIds.push(feature.id);
+          screenPoints.push(p);
+
+          if (selectedIds.length >= maxLabels) {
+            break;
+          }
+        }
+
+        const now = performance.now();
+        const focusSet = new Set(selectedIds);
+
+        for (const feature of allPeakFeatures) {
+          const id = feature.id;
+          if (id == null) continue;
+
+          let state = peakStates.get(id);
+          if (!state) {
+            state = { inFocus: false, inFocusSince: null, opacity: 0 };
+          }
+
+          const isFocus = focusSet.has(id);
+
+          if (isFocus) {
+            if (!state.inFocus) {
+              state.inFocus = true;
+              state.inFocusSince = now;
+            }
+          } else {
+            if (state.inFocus) {
+              state.inFocus = false;
+              state.inFocusSince = null;
+            }
+          }
+
+          peakStates.set(id, state);
+        }
+      }
+
+      function updatePeakOpacities(now, dt) {
+        if (!allPeakFeatures || !map) return;
+
+        let anyChange = false;
+        const fadeInStep = dt / PEAK_FADE_IN_TIME;
+        const fadeOutStep = dt / PEAK_FADE_OUT_TIME;
+
+        for (const feature of allPeakFeatures) {
+          const id = feature.id;
+          if (id == null) continue;
+
+          let state = peakStates.get(id);
+          if (!state) {
+            state = { inFocus: false, inFocusSince: null, opacity: 0 };
+            peakStates.set(id, state);
+          }
+
+          let targetOpacity = 0;
+          if (state.inFocus && state.inFocusSince != null) {
+            const timeInFocus = now - state.inFocusSince;
+            if (timeInFocus >= PEAK_MIN_FOCUS_MS) {
+              targetOpacity = 1;
+            }
+          }
+
+          let current = typeof state.opacity === "number" ? state.opacity : 0;
+
+          if (targetOpacity > current) {
+            current = Math.min(targetOpacity, current + fadeInStep);
+          } else if (targetOpacity < current) {
+            current = Math.max(targetOpacity, current - fadeOutStep);
+          }
+
+          current = clamp(current, 0, 1);
+
+          if (current !== state.opacity) {
+            state.opacity = current;
+            if (!feature.properties) feature.properties = {};
+            feature.properties.opacity = Number(current.toFixed(3));
+            anyChange = true;
+          }
+        }
+
+        if (anyChange) {
+          const source = map.getSource(PEAKS_SOURCE_ID);
+          if (!source || typeof source.setData !== "function") return;
+
+          source.setData({
+            type: "FeatureCollection",
+            features: allPeakFeatures
+          });
+        }
+      }
+
+      function getMinLabelPixelSpacing(zoom) {
+        if (zoom <= 2) return 130; // super strict when zoomed out
+        if (zoom <= 3) return 110;
+        if (zoom <= 4) return 90;
+        if (zoom <= 6) return 70;
+        return 50;
+      }
+
+      function getMaxLabelCount(zoom) {
+        if (zoom <= 2) return 10;
+        if (zoom <= 3) return 18;
+        if (zoom <= 4) return 30;
+        if (zoom <= 6) return 55;
+        return 90;
+      }
+    })();
+  </script>
+</body>
+</html>
