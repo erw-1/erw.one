@@ -1,0 +1,450 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Carte EPCI (SVG)</title>
+  <style>
+    :root{
+      --bg:#08203e;
+      --poly:#2E4D68;
+      --hover:#557c93;
+
+      --text:#e9f3ff;
+      --muted:rgba(233,243,255,.78);
+
+      --panel:rgba(46,77,104,.38);
+      --panelBorder:rgba(85,124,147,.35);
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      line-height:1.35;
+    }
+
+    main{
+      min-height:100%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:clamp(16px, 4vw, 48px);
+    }
+
+    .wrap{
+      width:min(1100px, 100%);
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .mapArea{
+      width:100%;
+      position:relative;
+    }
+
+    svg#map{
+      width:100%;
+      height:min(72vh, 760px);
+      display:block;
+      /* locked view: no drag/zoom, but keep good pointer behaviour for hover/click */
+      touch-action:manipulation;
+      user-select:none;
+    }
+
+    .feat{
+      fill:var(--poly);
+      stroke:none; /* no borders */
+      cursor:pointer;
+      transition: fill 180ms ease, opacity 180ms ease;
+      opacity: 1;
+    }
+
+    /* Below area: reserve space so the map never "bumps" when popup appears */
+    .below{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      align-items:center; /* center help + popup */
+    }
+
+    .help{
+      font-size:12px;
+      color:rgba(233,243,255,.72);
+      width:fit-content;
+      max-width:min(900px, calc(100vw - 56px));
+      text-align:center;
+    }
+
+    .popup{
+      width:fit-content;
+      max-width:min(900px, calc(100vw - 56px));
+      flex:1 1 auto;
+      min-height:0;
+      background:var(--panel);
+      border:1px solid var(--panelBorder);
+      border-radius:18px;
+      padding:14px 16px;
+      transition: opacity 220ms ease, transform 220ms ease;
+      will-change: opacity, transform;
+      overflow:auto;
+    }
+    .popup.hidden{
+      opacity:0;
+      transform: translateY(6px);
+      pointer-events:none;
+    }
+
+    .popup h2{
+      margin:0 0 6px 0;
+      font-size:18px;
+      letter-spacing:.2px;
+    }
+    .meta{
+      color:var(--muted);
+      font-size:13px;
+      margin:0 0 10px 0;
+    }
+    .rows{
+      display:grid;
+      grid-template-columns: 110px 1fr;
+      gap:6px 10px;
+      font-size:13px;
+    }
+    .label{ color:var(--muted); }
+    .value{ color:var(--text); overflow-wrap:anywhere; }
+    a{ color:inherit; }
+
+    #err{
+      display:none;
+      background:rgba(255,80,80,.12);
+      border:1px solid rgba(255,80,80,.35);
+      border-radius:14px;
+      padding:12px 14px;
+      color:rgba(255,230,230,.95);
+      white-space:pre-wrap;
+      font-size:13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="wrap">
+      <div id="err"></div>
+
+      <div class="mapArea">
+        <svg id="map" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" aria-label="Carte EPCI"></svg>
+      </div>
+
+      <div class="below">
+        <div class="help">Survol : aperçu · Clic : épingler · Clic ailleurs : désépingler</div>
+        <div id="popup" class="popup hidden" role="status" aria-live="polite"></div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+  (() => {
+    const COLORS = {
+      poly: cssVar('--poly'),
+      hover: cssVar('--hover'),
+    };
+
+    const GEOJSON_URL = './conum_web.json';
+    const INITIAL_VIEW = { k: 0.892857, x: -109.61, y: 92.92 };
+
+    const svg = document.getElementById('map');
+    const popup = document.getElementById('popup');
+    const err = document.getElementById('err');
+
+    const NS = "http://www.w3.org/2000/svg";
+
+    const state = {
+      features: [],
+      hoveredId: null,
+      pinnedId: null,
+      view: { ...INITIAL_VIEW },
+      lonlat: true,
+      fit: null
+    };
+
+    let gRoot = null; // group that receives the fixed transform
+
+    function cssVar(name){
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+    function safeText(v){
+      if (v === null || v === undefined) return "—";
+      const s = String(v).trim();
+      return s ? s : "—";
+    }
+
+    function iterCoords(coords, out){
+      if (!coords) return;
+      if (typeof coords[0] === 'number' && typeof coords[1] === 'number'){
+        out.push(coords);
+        return;
+      }
+      for (const c of coords) iterCoords(c, out);
+    }
+
+    function computeBoundsRaw(fc){
+      const pts = [];
+      for (const f of (fc.features || [])){
+        if (!f.geometry) continue;
+        iterCoords(f.geometry.coordinates, pts);
+      }
+      let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+      for (const [x,y] of pts){
+        if (!isFinite(x) || !isFinite(y)) continue;
+        minX = Math.min(minX, x); minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+      }
+      return {minX,minY,maxX,maxY};
+    }
+
+    function looksLikeLonLat(b){
+      return isFinite(b.minX) && isFinite(b.maxX) &&
+             isFinite(b.minY) && isFinite(b.maxY) &&
+             Math.abs(b.minX) <= 180 && Math.abs(b.maxX) <= 180 &&
+             Math.abs(b.minY) <= 90 && Math.abs(b.maxY) <= 90;
+    }
+
+    function mercatorProject([lon,lat]){
+      const R = 6378137;
+      const lam = lon * Math.PI/180;
+      const phi = clamp(lat, -85, 85) * Math.PI/180;
+      const x = R * lam;
+      const y = R * Math.log(Math.tan(Math.PI/4 + phi/2));
+      return [x,y];
+    }
+
+    function makeFitTransform(fc, viewW=1000, viewH=700, pad=26){
+      const raw = [];
+      for (const f of (fc.features||[])){
+        if (!f.geometry) continue;
+        iterCoords(f.geometry.coordinates, raw);
+      }
+      const projPts = raw.map(p => state.lonlat ? mercatorProject(p) : p);
+
+      let minX=Infinity, minY=Infinity, maxX=-Infinity, maxY=-Infinity;
+      for (const [x,y] of projPts){
+        if (!isFinite(x) || !isFinite(y)) continue;
+        minX = Math.min(minX, x); minY = Math.min(minY, y);
+        maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
+      }
+
+      const dx = maxX - minX;
+      const dy = maxY - minY;
+      const innerW = viewW - 2*pad;
+      const innerH = viewH - 2*pad;
+      const s = (dx && dy) ? Math.min(innerW/dx, innerH/dy) : 1;
+
+      const extraX = (innerW - dx*s)/2;
+      const extraY = (innerH - dy*s)/2;
+
+      const ox = pad + extraX;
+      const oy = pad + extraY;
+
+      return {
+        minX, minY, maxX, maxY, s, ox, oy,
+        project(pt){
+          const [mx,my] = state.lonlat ? mercatorProject(pt) : pt;
+          const x = ox + (mx - minX) * s;
+          const y = oy + (maxY - my) * s; // flip Y
+          return [x,y];
+        }
+      };
+    }
+
+    function ringToPath(ring){
+      if (!ring || ring.length < 2) return "";
+      let d = "";
+      for (let i=0;i<ring.length;i++){
+        const [x,y] = state.fit.project(ring[i]);
+        d += (i===0 ? "M" : "L") + x.toFixed(2) + "," + y.toFixed(2);
+      }
+      return d + "Z";
+    }
+
+    function geomToPath(geom){
+      if (!geom) return "";
+      const t = geom.type;
+      const c = geom.coordinates;
+
+      if (t === "Polygon"){
+        let d = "";
+        for (const ring of c) d += ringToPath(ring);
+        return d;
+      }
+      if (t === "MultiPolygon"){
+        let d = "";
+        for (const poly of c){
+          for (const ring of poly) d += ringToPath(ring);
+        }
+        return d;
+      }
+      if (t === "GeometryCollection"){
+        let d = "";
+        for (const g of geom.geometries || []) d += geomToPath(g);
+        return d;
+      }
+      return "";
+    }
+
+    function getFeatureById(id){
+      return state.features.find(f => f.__id === id) || null;
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#39;");
+    }
+
+    function buildPopupHTML(f, mode){
+      const p = f.properties || {};
+      const nom = safeText(p.jt_epci_nom);
+      const conum = safeText(p.jt_conum);
+      const mail = safeText(p.jt_mail);
+      const tel  = safeText(p.jt_tel);
+      const emailHTML = (mail !== "—")
+        ? `<a href="mailto:${escapeHtml(mail)}">${escapeHtml(mail)}</a>`
+        : "—";
+
+      return `
+        <h2>${escapeHtml(nom)}</h2>        <div class="rows">
+          <div class="label">Contact</div><div class="value">${escapeHtml(conum)}</div>
+          <div class="label">Email</div><div class="value">${emailHTML}</div>
+          <div class="label">Téléphone</div><div class="value">${escapeHtml(tel)}</div>
+        </div>
+      `;
+    }
+
+    function showPopup(f, mode){
+      popup.innerHTML = buildPopupHTML(f, mode);
+      popup.classList.remove("hidden");
+    }
+    function hidePopup(){
+      popup.classList.add("hidden");
+      // keep content to keep height stable? we can keep last content, but hidden is fine.
+      // leaving it avoids reflow cost and keeps reserved size stable anyway.
+    }
+
+    function applyView(){
+      if (!gRoot) return;
+      const k = clamp(state.view.k, 0.01, 50);
+      const x = state.view.x;
+      const y = state.view.y;
+      gRoot.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) scale(${k.toFixed(6)})`);
+    }
+
+    function render(){
+      const paths = svg.querySelectorAll("path.feat");
+      paths.forEach(p => {
+        const id = p.dataset.id;
+        const isActive = (state.pinnedId === id) || (!state.pinnedId && state.hoveredId === id);
+        p.style.fill = isActive ? COLORS.hover : COLORS.poly;
+      });
+
+      const current = state.pinnedId
+        ? getFeatureById(state.pinnedId)
+        : (state.hoveredId ? getFeatureById(state.hoveredId) : null);
+
+      if (!current){ hidePopup(); return; }
+      showPopup(current, state.pinnedId ? "pinned" : "hover");
+    }
+
+    function mount(fc){
+      const rawBounds = computeBoundsRaw(fc);
+      state.lonlat = looksLikeLonLat(rawBounds);
+      state.fit = makeFitTransform(fc, 1000, 700, 26);
+
+      state.features = (fc.features || []).map((f, i) => {
+        const siren = f?.properties?.jt_siren_epci;
+        const nom = f?.properties?.jt_epci_nom;
+        const id = (siren !== undefined && siren !== null && String(siren).trim() !== "")
+          ? String(siren).trim()
+          : (nom ? String(nom).trim() : ("idx:"+i));
+        return Object.assign({}, f, { __id: id });
+      });
+
+      svg.innerHTML = "";
+      gRoot = document.createElementNS(NS, "g");
+      gRoot.setAttribute("fill-rule", "evenodd");
+      svg.appendChild(gRoot);
+
+      for (const f of state.features){
+        const d = geomToPath(f.geometry);
+        if (!d) continue;
+
+        const path = document.createElementNS(NS, "path");
+        path.setAttribute("d", d);
+        path.setAttribute("class", "feat");
+        path.dataset.id = f.__id;
+
+        path.addEventListener("pointerenter", () => {
+          if (state.pinnedId && state.pinnedId !== f.__id) return;
+          state.hoveredId = f.__id;
+          render();
+        });
+
+        path.addEventListener("pointerleave", () => {
+          if (!state.pinnedId){
+            state.hoveredId = null;
+            render();
+          }
+        });
+
+        path.addEventListener("click", (e) => {
+          e.stopPropagation();
+          state.pinnedId = f.__id;
+          state.hoveredId = f.__id;
+          render();
+        });
+
+        gRoot.appendChild(path);
+      }
+
+      // click anywhere in the svg background = unpin
+      svg.addEventListener("click", () => {
+        state.pinnedId = null;
+        state.hoveredId = null;
+        render();
+      });
+      applyView();
+      render();
+    }
+
+    async function start(){
+      try{
+        const res = await fetch(GEOJSON_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("HTTP " + res.status + " (" + res.statusText + ")");
+        const fc = await res.json();
+        if (!fc || fc.type !== "FeatureCollection") throw new Error("GeoJSON invalide: FeatureCollection attendue.");
+        mount(fc);
+      }catch(e){
+        err.style.display = "block";
+        err.textContent = "Erreur: " + (e?.message || String(e)) + "\n\n" +
+          "Assurez-vous que le fichier GeoJSON est à côté de l'index (./conum_web.json).\n" +
+          "Si vous ouvrez l'HTML en file://, certains navigateurs bloquent fetch. Servez le dossier via un petit serveur web.";
+        hidePopup();
+      }
+    }
+
+    start();
+  })();
+  </script>
+</body>
+</html>
