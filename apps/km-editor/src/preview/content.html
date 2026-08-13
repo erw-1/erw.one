@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="color-scheme" content="dark light">
+	<script type="application/json" id="km-config">
+		{
+			"LANG": "en",
+			"TITLE": "KM content preview",
+			"MD": "",
+			"DEFAULT_THEME": "dark",
+			"ACCENT": "#3fabd1",
+			"LANGS": [],
+			"CACHE_MD": "0",
+			"ALLOW_JS_FROM_MD": "false"
+		}
+	</script>
+	<link rel="stylesheet" href="../../../km/src/css/styles.css">
+	<style>
+		html,
+		body {
+			min-height: 100%;
+			margin: 0;
+			overflow: auto;
+			background: var(--color-main);
+		}
+
+		#content {
+			min-height: 100vh;
+			padding: var(--g-lg) calc(var(--g-lg) * 2);
+			overflow: visible;
+			content-visibility: visible;
+			contain-intrinsic-size: auto;
+		}
+
+		#content:focus {
+			outline: none;
+		}
+
+		[data-km-source-line] {
+			cursor: text;
+		}
+
+		.km-source-focus {
+			outline: 2px solid var(--color-accent);
+			outline-offset: 4px;
+		}
+
+		html.preview-theme-transition body,
+		html.preview-theme-transition #content {
+			transition: background-color 180ms ease, color 180ms ease;
+		}
+
+		@media (prefers-reduced-motion: reduce) {
+			html.preview-theme-transition body,
+			html.preview-theme-transition #content {
+				transition: none;
+			}
+		}
+	</style>
+</head>
+<body>
+	<article id="content">
+		<h3 id="loading">KM preview is loading...</h3>
+	</article>
+	<script type="module">
+		const params = new URLSearchParams(location.search);
+		const article = document.getElementById("content");
+		const theme = params.get("theme") || "dark";
+		const accent = params.get("accent") || "#3fabd1";
+		const pageId = params.get("page") || "home";
+		const mdUrl = params.get("md") || "";
+		const allowScripts = params.get("allowJs") === "true";
+		const langs = (params.get("langs") || "")
+			.split(",")
+			.map(lang => lang.trim())
+			.filter(Boolean);
+
+		document.documentElement.dataset.theme = theme;
+		document.documentElement.style.setProperty("--color-accent", accent);
+		document.getElementById("km-config").textContent = JSON.stringify({
+			LANG: params.get("lang") || "en",
+			TITLE: params.get("title") || "KM content preview",
+			MD: mdUrl,
+			DEFAULT_THEME: theme,
+			ACCENT: accent,
+			ASSET_BASE: "../../../km/",
+			CUSTOM_EMOJI: window.parent.kmEditorCustomEmoji || [],
+			LANGS: langs,
+			CACHE_MD: params.get("cache") || "0",
+			ALLOW_JS_FROM_MD: allowScripts ? "true" : "false"
+		});
+
+		function showError(error) {
+			article.innerHTML = `<h1>KM preview failed</h1><pre>${String(error?.message || error)}</pre>`;
+		}
+
+		const sourceKey = value => String(value || "")
+			.toLocaleLowerCase()
+			.normalize("NFD")
+			.replace(/[\u0300-\u036f]/g, "")
+			.replace(/[^\p{L}\p{N}]+/gu, " ")
+			.trim();
+
+		// Blocks that carry no text of their own still need a source line, so math,
+		// diagrams, and media are matched here too. Section wrappers
+		// (<details>) stay out: mapping one would swallow every block inside it.
+		const SOURCE_BLOCK_SEL =
+			"h1,h2,h3,h4,h5,h6,p,li,pre,blockquote,table,img,iframe,video,audio," +
+			".km-math-source,.mermaid,.markdown-alert";
+		const MEDIA_SEL = "img,iframe,video,audio";
+
+		// Key for a rendered node: its own text, else the media it carries.
+		function nodeSourceKey(node) {
+			const media = node.matches(MEDIA_SEL) ? node : node.querySelector(MEDIA_SEL);
+			return sourceKey(
+				node.textContent ||
+				media?.getAttribute("alt") ||
+				media?.getAttribute("title") ||
+				media?.getAttribute("src") ||
+				""
+			).slice(0, 36);
+		}
+
+		// ponytail: rendered/source mapping uses visible text. Move to parser token
+		// positions only if repeated identical blocks become a practical problem.
+		function mapSourceLines(markdown) {
+			const lines = markdown.split(/\r?\n/);
+			let cursor = 0;
+			for (const marker of article.querySelectorAll("[data-km-source-page][data-km-source-line]")) {
+				const target = marker.nextElementSibling;
+				if (target) {
+					target.dataset.kmSourcePage = decodeURIComponent(marker.dataset.kmSourcePage);
+					target.dataset.kmSourceLine = marker.dataset.kmSourceLine;
+				}
+				marker.remove();
+			}
+			for (const node of article.querySelectorAll(SOURCE_BLOCK_SEL)) {
+				if (node.dataset.kmSourcePage) continue;
+				if (node.parentElement?.closest("[data-km-source-line]")) continue;
+				const key = nodeSourceKey(node);
+				if (!key) continue;
+				let found = -1;
+				for (let index = cursor; index < lines.length; index++) {
+					const line = sourceKey(lines[index]);
+					if (line && (line.includes(key) || key.includes(line))) {
+						found = index;
+						break;
+					}
+				}
+				if (found < 0) {
+					found = lines.findIndex(line => {
+						const candidate = sourceKey(line);
+						return candidate && (candidate.includes(key) || key.includes(candidate));
+					});
+				}
+				if (found < 0) continue;
+				node.dataset.kmSourceLine = String(found);
+				cursor = found;
+			}
+		}
+
+		function highlightSourceLine(line, sourcePageId) {
+			const mapped = [...article.querySelectorAll("[data-km-source-line]")].filter(node =>
+				(node.dataset.kmSourcePage || pageId) === sourcePageId
+			);
+			const target = mapped.reduce((best, node) =>
+				!best || Math.abs(Number(node.dataset.kmSourceLine) - line) <
+					Math.abs(Number(best.dataset.kmSourceLine) - line) ? node : best
+			, null);
+			article.querySelector(".km-source-focus")?.classList.remove("km-source-focus");
+			if (!target) return;
+			target.classList.add("km-source-focus");
+			target.scrollIntoView({ block: "nearest" });
+		}
+
+		addEventListener("message", async event => {
+			if (event.source !== parent) return;
+			if (event.data?.type === "km-editor-source-line") {
+				highlightSourceLine(Number(event.data.line) || 0, event.data.pageId);
+				return;
+			}
+			// Re-render in place. Reloading the frame for every pause in typing
+			// blanked the pane, refetched every module, and lost the scroll
+			// position; only config changes still justify a reload.
+			if (event.data?.type === "km-editor-content") {
+				renderBundle(String(event.data.markdown ?? ""), event.data.pageId || pageId)
+					.catch(showError);
+				return;
+			}
+			if (event.data?.type !== "km-editor-theme") return;
+			const next = event.data.theme === "light" ? "light" : "dark";
+			document.documentElement.classList.add("preview-theme-transition");
+			document.documentElement.dataset.theme = next;
+			setTimeout(() => document.documentElement.classList.remove("preview-theme-transition"), 220);
+			const { syncMermaidThemeWithPage } = await import("../../../km/src/js/content/markdown_runtime.js");
+			syncMermaidThemeWithPage();
+		});
+
+		// The page currently drawn. The click handlers below are wired once and
+		// outlive any single render, so they read this rather than closing over it.
+		let shownPage = null;
+		let modules = null;
+		// ponytail: a counter drops stale renders. Fine while renders are debounced;
+		// only needed if two could ever overlap in earnest.
+		let renderToken = 0;
+
+		function previewScroller() {
+			const root = document.scrollingElement || document.documentElement;
+			return root.scrollHeight > root.clientHeight ? root : document.body;
+		}
+
+		async function loadModules() {
+			if (modules) return modules;
+			const [wiki, render, previews, routes] = await Promise.all([
+				import("../../../km/src/js/wiki.js"),
+				import("../../../km/src/js/content/render.js"),
+				import("../../../km/src/js/content/previews.js"),
+				import("../../../km/src/js/shell/routes.js")
+			]);
+			previews.attachLinkPreviews();
+			modules = { ...wiki, ...render, ...routes };
+			return modules;
+		}
+
+		async function renderBundle(markdown, wantedPageId) {
+			const token = ++renderToken;
+			const km = await loadModules();
+			km.loadMarkdownBundle(markdown);
+			km.attachSecondaryRoots();
+			km.computePageHashes();
+			const page =
+				km.wikiStore.pages.find(candidate => candidate.id === wantedPageId) ||
+				km.wikiStore.root ||
+				km.wikiStore.pages[0];
+			// A newer keystroke already started: drop this one rather than paint over it.
+			if (token !== renderToken) return;
+			// Re-rendering in place would otherwise jump the reader to the top.
+			// html and body both carry overflow:auto here, so the element that
+			// actually scrolls is the body, not document.scrollingElement.
+			const scroller = previewScroller();
+			const scrollTop = scroller.scrollTop;
+			await km.renderSurface({
+				root: article,
+				page,
+				addMeta: true,
+				addNavSlots: false,
+				allowScripts,
+				previewLinks: true
+			});
+			if (token !== renderToken) return;
+			shownPage = page;
+			mapSourceLines(page.content);
+			scroller.scrollTop = scrollTop;
+		}
+
+		// Capture phase: KM's lightbox moves media out of the article when it
+		// opens, so the source line has to be read before that can happen.
+		article.addEventListener("click", event => {
+			if (event.target.closest?.("a,button,input,summary")) return;
+			const target = event.target.closest?.("[data-km-source-line]");
+			if (!target || !shownPage) return;
+			// In this authoring preview an image click means "show me the source",
+			// so keep it away from the lightbox, which would move the node out of
+			// the article. Preview in KM still zooms. Video and audio are not
+			// lightboxable, so their own controls keep working.
+			if (event.target.closest?.("img,.mermaid")) event.stopPropagation();
+			parent.postMessage({
+				type: "km-editor-source",
+				pageId: target.dataset.kmSourcePage || shownPage.id,
+				line: Number(target.dataset.kmSourceLine)
+			}, "*");
+		}, true);
+
+		article.addEventListener("click", event => {
+			if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+			const link = event.target.closest?.('a[href^="#"]');
+			if (!link || !shownPage) return;
+			const target = modules?.parseRouteTarget(link.getAttribute("href"), {
+				currentPage: shownPage,
+				containerEl: article
+			});
+			if (!target?.page || target.page === shownPage) return;
+			event.preventDefault();
+			parent.postMessage({ type: "km-editor-page", pageId: target.page.id }, "*");
+		});
+
+		// Graph nodes navigate through code rather than an anchor, so hand that
+		// navigation to the editor just like an internal rendered link.
+		document.addEventListener("km:graph-node-open", event => {
+			const page = event.detail?.page;
+			if (!page) return;
+			event.preventDefault();
+			parent.postMessage({ type: "km-editor-page", pageId: page.id }, "*");
+		});
+
+		try {
+			if (!mdUrl) throw new Error("Missing markdown Blob URL.");
+			const response = await fetch(mdUrl);
+			if (!response.ok) throw new Error(`Could not read markdown (${response.status}).`);
+			await renderBundle(await response.text(), pageId);
+			// Tells the editor it can send content updates instead of reloading.
+			parent.postMessage({ type: "km-editor-preview-ready" }, "*");
+		} catch (error) {
+			console.warn("KM content preview failed:", error);
+			showError(error);
+		}
+	</script>
+</body>
+</html>

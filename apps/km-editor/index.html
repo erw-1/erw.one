@@ -1,0 +1,683 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="color-scheme" content="dark light">
+	<title>KM Editor</title>
+	<script>
+		try {
+			const theme = localStorage.getItem("km-editor-theme");
+			if (theme === "dark" || theme === "light") document.documentElement.dataset.theme = theme;
+		} catch {}
+	</script>
+	<link rel="stylesheet" href="src/css/styles.css">
+</head>
+<body>
+	<div id="app" class="app-shell">
+		<header class="topbar titlebar">
+			<div class="brand" aria-label="KM Editor">
+				<span class="brand-mark">KM</span>
+				<span class="brand-title">Editor</span>
+			</div>
+
+			<nav class="file-actions" aria-label="File actions">
+				<div class="command-menu open-menu">
+					<button type="button" data-menu="open" aria-expanded="false">Open</button>
+					<div class="command-popover" data-menu-panel="open" hidden>
+						<button type="button" data-action="new-bundle" title="Start a fresh KM bundle with a starter page">New empty bundle</button>
+						<button type="button" data-action="open-docs-example" title="Load the interactive KM Editor user manual">KM Editor manual</button>
+						<button type="button" data-action="open-file" title="Open a markdown bundle file from this computer">From computer</button>
+						<button type="button" data-action="paste-import" title="Paste raw KM markdown source to import">Paste markdown</button>
+						<button type="button" data-action="open-link" title="Load KM markdown from a raw source URL or HackMD note">From URL</button>
+						<button type="button" data-action="km-page" title="Load from a published KM site: reads its config and markdown">From KM page</button>
+						<button type="button" data-action="github-open" title="Load a markdown file from a GitHub repository">From GitHub</button>
+					</div>
+				</div>
+				<div class="command-menu export-menu">
+					<button type="button" data-menu="export" aria-expanded="false">Export</button>
+					<div class="command-popover" data-menu-panel="export" hidden>
+						<button type="button" data-action="export-file" title="Download the whole KM bundle as a .md file">Whole bundle (.md)</button>
+						<button type="button" data-action="export-page" title="Download only the selected page as a .md file">Current page only</button>
+						<button type="button" data-action="github-save" title="Push the bundle to the linked GitHub file">Push to GitHub</button>
+						<button type="button" data-action="collect-assets" title="Download remote images and attachments into a local assets folder">Collect remote assets...</button>
+						<button type="button" data-action="save-shortcut" title="Choose what the Unsaved dot and Ctrl+S do">Set save shortcut...</button>
+					</div>
+				</div>
+				<button type="button" data-action="source-modal" title="View and replace the whole bundle source">See source</button>
+				<button type="button" class="preview-button" data-action="preview-km" title="Preview this bundle in the real KM shell">Preview in KM</button>
+			</nav>
+
+			<div class="status-strip" aria-live="polite">
+				<button type="button" id="file-status" class="file-status-button" data-action="config-tab" title="Open KM config">Untitled bundle</button>
+				<button type="button" id="dirty-status" class="dirty-dot" data-action="dirty-export" title="Save changes (Ctrl+S)" hidden>Unsaved</button>
+				<button type="button" id="theme-switch" class="theme-switch" data-action="toggle-theme" title="Toggle editor theme">Theme: dark</button>
+			</div>
+		</header>
+
+		<section class="formatbar commandbar" aria-label="Formatting and KM command bar">
+			<div class="history-actions" aria-label="Text history">
+				<button type="button" data-history-action="undo" aria-label="Undo" title="Undo (Ctrl+Z)" disabled>
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10.5a5.5 5.5 0 0 1 0 11H11"></path></svg>
+				</button>
+				<button type="button" data-history-action="redo" aria-label="Redo" title="Redo (Ctrl+Y or Ctrl+Shift+Z)" disabled>
+					<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m15 14 5-5-5-5M20 9H9.5a5.5 5.5 0 0 0 0 11H13"></path></svg>
+				</button>
+			</div>
+
+			<div class="command-menu tool-menu">
+				<button type="button" data-menu="inline" aria-expanded="false">Text</button>
+				<div class="command-popover tool-list" data-menu-panel="inline" data-tool-list hidden>
+					<section class="tool-group" aria-labelledby="tool-group-emphasis">
+						<strong id="tool-group-emphasis" class="tool-group-title">Emphasis</strong>
+						<button type="button" data-tool="bold" title="Bold">Bold</button>
+						<button type="button" data-tool="italic" title="Italic">Italic</button>
+						<button type="button" data-tool="bold-italic" title="Bold italic">Bold italic</button>
+						<button type="button" data-tool="underline" title="Underline">Underline</button>
+						<button type="button" data-tool="highlight" title="Highlight">Highlight</button>
+						<button type="button" data-tool="strike" title="Strikethrough">Strikethrough</button>
+					</section>
+					<section class="tool-group" aria-labelledby="tool-group-special-text">
+						<strong id="tool-group-special-text" class="tool-group-title">Special text</strong>
+						<button type="button" data-tool="inline-spoiler" title="Discord-style inline spoiler">Inline spoiler</button>
+						<button type="button" data-tool="inline-code" title="Inline code">Inline code</button>
+						<button type="button" data-tool="kbd" title="Keyboard key">Keyboard key</button>
+						<button type="button" data-tool="inline-math" title="Inline math">Inline math</button>
+						<button type="button" data-tool="sub" title="Subscript">Subscript</button>
+						<button type="button" data-tool="sup" title="Superscript">Superscript</button>
+					</section>
+				</div>
+			</div>
+
+			<div class="command-menu tool-menu">
+				<button type="button" data-menu="embeds" aria-expanded="false">Insert</button>
+				<div class="command-popover tool-list" data-menu-panel="embeds" data-tool-list hidden>
+					<section class="tool-group" aria-labelledby="tool-group-references">
+						<strong id="tool-group-references" class="tool-group-title">Links and references</strong>
+						<button type="button" data-tool="link-page" title="Insert a custom URL or KM page link">Link</button>
+						<button type="button" data-tool="footnote" title="Add a footnote">Footnote</button>
+					</section>
+					<section class="tool-group" aria-labelledby="tool-group-media">
+						<strong id="tool-group-media" class="tool-group-title">Media</strong>
+						<button type="button" data-tool="image" title="Image placeholder">Image</button>
+						<button type="button" data-tool="emoji" title="Insert an emoji shortcode">Emoji</button>
+						<button type="button" data-tool="video" title="Video player">Video</button>
+						<button type="button" data-tool="audio" title="Audio player">Audio</button>
+						<button type="button" data-tool="youtube" title="Embed a YouTube link">YouTube</button>
+						<button type="button" data-tool="iframe" title="Iframe embed">Iframe</button>
+					</section>
+					<section class="tool-group" aria-labelledby="tool-group-technical">
+						<strong id="tool-group-technical" class="tool-group-title">Code, diagrams, and formulas</strong>
+						<button type="button" data-tool="code-block" title="Code block">Code block</button>
+						<button type="button" data-tool="mermaid" title="Mermaid diagram">Mermaid diagram</button>
+						<button type="button" data-tool="display-math" title="Display math">Display math</button>
+					</section>
+					<section class="tool-group" aria-labelledby="tool-group-advanced">
+						<strong id="tool-group-advanced" class="tool-group-title">Advanced</strong>
+						<button type="button" data-tool="html" title="Trusted HTML block">HTML block</button>
+					</section>
+				</div>
+				<form id="mermaid-builder" class="command-popover mermaid-popover" data-menu-panel="mermaid-builder" hidden>
+					<header class="query-builder-head">
+						<div>
+							<strong>Diagram</strong>
+							<small>Mermaid source. The preview keeps the last drawing that parsed.</small>
+						</div>
+						<button type="button" class="query-close" data-mermaid-cancel aria-label="Close diagram builder" title="Close">&times;</button>
+					</header>
+					<section class="mermaid-section" aria-labelledby="mermaid-samples-title">
+						<strong id="mermaid-samples-title">Start from a sample<small>replaces the whole diagram</small></strong>
+						<div id="mermaid-templates" class="mermaid-templates" aria-label="Diagram samples"></div>
+					</section>
+					<section class="mermaid-section mermaid-parts" aria-labelledby="mermaid-parts-title" hidden>
+						<strong id="mermaid-parts-title">Add a part<small>inserts one line at the cursor</small></strong>
+						<div id="mermaid-snippets" class="mermaid-snippets" aria-label="Diagram parts"></div>
+					</section>
+					<div class="mermaid-body">
+						<label class="math-source">
+							<span>Source</span>
+							<textarea id="mermaid-input" rows="10" spellcheck="false" autocomplete="off" placeholder="flowchart TD&#10;  A[Start] --> B[Finish]"></textarea>
+						</label>
+						<div class="math-source">
+							<span>Preview</span>
+							<div id="mermaid-preview" class="mermaid-preview"></div>
+						</div>
+					</div>
+					<div id="mermaid-status" class="math-status" aria-live="polite" hidden></div>
+					<footer class="query-builder-actions">
+						<button type="button" data-mermaid-cancel>Cancel</button>
+						<button type="submit" id="mermaid-submit" class="primary">Insert diagram</button>
+					</footer>
+				</form>
+				<form id="math-builder" class="command-popover math-popover" data-menu-panel="math-builder" hidden>
+					<header class="query-builder-head">
+						<div>
+							<strong>Math formula</strong>
+							<small>Click a symbol to add it at the cursor. KaTeX/LaTeX syntax.</small>
+						</div>
+						<div class="math-mode" role="radiogroup" aria-label="Formula placement">
+							<label>
+								<input type="radio" name="display" value="inline" checked>
+								<span>Inline<code>$…$</code></span>
+							</label>
+							<label>
+								<input type="radio" name="display" value="block">
+								<span>Display<code>$$…$$</code></span>
+							</label>
+						</div>
+						<button type="button" class="query-close" data-math-cancel aria-label="Close math builder" title="Close">&times;</button>
+					</header>
+					<div id="math-tabs" class="math-tabs" aria-label="Symbol categories"></div>
+					<div id="math-palette" class="math-palette" aria-label="Symbols"></div>
+					<label class="math-source">
+						<span>LaTeX</span>
+						<textarea id="math-input" rows="3" spellcheck="false" autocomplete="off" placeholder="E = mc^2"></textarea>
+					</label>
+					<div class="math-source">
+						<span>Preview</span>
+						<div id="math-preview" class="math-preview"></div>
+					</div>
+					<div id="math-status" class="math-status" aria-live="polite" hidden></div>
+					<footer class="query-builder-actions">
+						<button type="button" data-math-cancel>Cancel</button>
+						<button type="submit" id="math-submit" class="primary">Insert formula</button>
+					</footer>
+				</form>
+				<div class="command-popover emoji-popover" data-menu-panel="emoji" hidden>
+					<input id="emoji-search" type="search" placeholder="Search emoji..." aria-label="Search emoji" autocomplete="off">
+					<div id="emoji-themes" class="emoji-themes" aria-label="Emoji themes"></div>
+					<div id="emoji-picker" class="emoji-picker" aria-label="Emoji"></div>
+					<div id="emoji-status" class="emoji-status" aria-live="polite">Open to load emoji</div>
+				</div>
+			</div>
+
+			<div class="command-menu tool-menu">
+				<button type="button" data-menu="blocks" aria-expanded="false">Structure</button>
+				<div class="command-popover tool-list" data-menu-panel="blocks" data-tool-list hidden>
+					<section class="tool-group" aria-labelledby="tool-group-headings">
+						<strong id="tool-group-headings" class="tool-group-title">Headings</strong>
+						<button type="button" data-tool="h1" title="Heading 1">Heading 1</button>
+						<button type="button" data-tool="h2" title="Heading 2">Heading 2</button>
+						<button type="button" data-tool="h3" title="Heading 3">Heading 3</button>
+						<button type="button" data-tool="h4" title="Heading 4">Heading 4</button>
+						<button type="button" data-tool="h5" title="Heading 5">Heading 5</button>
+						<button type="button" data-tool="h6" title="Heading 6">Heading 6</button>
+					</section>
+					<section class="tool-group" aria-labelledby="tool-group-lists">
+						<strong id="tool-group-lists" class="tool-group-title">Lists</strong>
+						<button type="button" data-tool="ul" title="Bullet list">Bullet list</button>
+						<button type="button" data-tool="ol" title="Numbered list">Numbered list</button>
+						<button type="button" data-tool="task" title="Task list">Task list</button>
+					</section>
+					<section class="tool-group" aria-labelledby="tool-group-callouts">
+						<strong id="tool-group-callouts" class="tool-group-title">Callouts</strong>
+						<button type="button" data-tool="note" title="Note callout">Note</button>
+						<button type="button" data-tool="tip" title="Tip callout">Tip</button>
+						<button type="button" data-tool="important" title="Important callout">Important</button>
+						<button type="button" data-tool="warning" title="Warning callout">Warning</button>
+						<button type="button" data-tool="caution" title="Caution callout">Caution</button>
+					</section>
+					<section class="tool-group" aria-labelledby="tool-group-sections">
+						<strong id="tool-group-sections" class="tool-group-title">Quotes and sections</strong>
+						<button type="button" data-tool="quote" title="Quote">Quote</button>
+						<button type="button" data-tool="divider" title="Horizontal divider">Divider</button>
+						<button type="button" data-tool="spoiler" title="Spoiler block">Spoiler block</button>
+					</section>
+				</div>
+			</div>
+
+			<div class="command-menu tool-menu">
+				<button type="button" data-menu="km" aria-expanded="false">Pages</button>
+				<div class="command-popover tool-list" data-menu-panel="km" data-tool-list hidden>
+					<section class="tool-group" aria-labelledby="tool-group-page-content">
+						<strong id="tool-group-page-content" class="tool-group-title">Reuse page content</strong>
+						<button type="button" data-tool="transclude" title="Embed another page or section">Transclusion</button>
+						<button type="button" data-tool="page-query" title="Insert a live page query">Page query</button>
+						<button type="button" data-tool="glossary" title="Add selected text to the glossary">Glossary entry</button>
+					</section>
+					<section class="tool-group" aria-labelledby="tool-group-create-pages">
+						<strong id="tool-group-create-pages" class="tool-group-title">Create pages</strong>
+						<button type="button" data-action="create-page" title="Create a page">Create page</button>
+						<button type="button" data-action="create-folder" title="Create a folder page">Create folder</button>
+						<button type="button" data-action="create-simple-folder" title="Create a header-only folder">Create simple folder</button>
+					</section>
+				</div>
+				<form id="query-builder" class="command-popover query-popover" data-menu-panel="query-builder" hidden>
+					<header class="query-builder-head">
+						<div>
+							<strong>Page query</strong>
+							<small>Filters combine. Leave one blank to ignore it.</small>
+						</div>
+						<button type="button" class="query-close" data-query-cancel aria-label="Close query builder" title="Close">&times;</button>
+					</header>
+
+					<section class="query-builder-section" aria-labelledby="query-filter-title">
+						<strong id="query-filter-title">Match pages</strong>
+						<div class="query-filter-grid">
+							<label>
+								<span>Tag</span>
+								<input name="tag" list="query-tag-options" placeholder="Any tag" autocomplete="off">
+								<datalist id="query-tag-options"></datalist>
+							</label>
+							<label>
+								<span>Parent</span>
+								<input name="parent" list="query-parent-options" placeholder="Any parent" autocomplete="off">
+								<datalist id="query-parent-options"></datalist>
+							</label>
+							<label>
+								<span>Reading trail</span>
+								<input name="trail" list="query-trail-options" placeholder="Any trail" autocomplete="off">
+								<datalist id="query-trail-options"></datalist>
+							</label>
+							<label>
+								<span>Text contains</span>
+								<input name="text" placeholder="Title, tags, or body" autocomplete="off">
+							</label>
+						</div>
+					</section>
+
+					<fieldset class="query-view-fieldset">
+						<legend>Display as</legend>
+						<div class="query-view-options">
+							<label>
+								<input type="radio" name="view" value="list" checked>
+								<span><strong>List</strong><small>Compact links</small></span>
+							</label>
+							<label>
+								<input type="radio" name="view" value="cards">
+								<span><strong>Cards</strong><small>Visual grid</small></span>
+							</label>
+							<label>
+								<input type="radio" name="view" value="table">
+								<span><strong>Table</strong><small>Compare metadata</small></span>
+							</label>
+							<label>
+								<input type="radio" name="view" value="timeline">
+								<span><strong>Timeline</strong><small>Date-led list</small></span>
+							</label>
+							<label>
+								<input type="radio" name="view" value="graph">
+								<span><strong>Graph</strong><small>Interactive links</small></span>
+							</label>
+						</div>
+					</fieldset>
+
+					<section class="query-builder-section" aria-labelledby="query-output-title">
+						<strong id="query-output-title">Order and limits</strong>
+						<div class="query-output-grid">
+							<label>
+								<span>Sort</span>
+								<select name="sort">
+									<option value="">Bundle order</option>
+									<option value="title">Title, A to Z</option>
+									<option value="updated">Updated, newest first</option>
+								</select>
+							</label>
+							<label>
+								<span>Maximum pages</span>
+								<input name="limit" type="number" min="1" step="1" placeholder="All">
+							</label>
+							<label class="query-wide">
+								<span>When nothing matches</span>
+								<input name="empty" placeholder="Use KM's default message" autocomplete="off">
+							</label>
+						</div>
+						<label class="query-checkbox">
+							<input name="current" type="checkbox" checked>
+							<span>Include the current page when it matches</span>
+						</label>
+					</section>
+
+					<div class="query-syntax">
+						<span>Generated syntax</span>
+						<code id="query-builder-syntax">{{pages view="list"}}</code>
+					</div>
+					<footer class="query-builder-actions">
+						<button type="button" data-query-cancel>Cancel</button>
+						<button type="submit" id="query-builder-submit" class="primary">Insert query</button>
+					</footer>
+				</form>
+			</div>
+
+			<div class="command-menu table-menu">
+				<button type="button" data-menu="table-insert" aria-expanded="false" title="Insert or edit a table">Table</button>
+				<div class="command-popover table-popover" data-menu-panel="table-insert" hidden>
+					<div id="table-grid-picker" class="table-grid-picker" aria-label="Insert table size"></div>
+					<div id="table-grid-label" class="table-grid-label">Select table size</div>
+					<div class="table-popover-tools">
+						<strong>Row</strong>
+						<button type="button" class="table-icon-button" data-table-action="row-add-after" aria-label="Add row after" title="Add row after">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="14" height="8" rx="1"></rect><path d="M3 7h14"></path><path class="table-icon-plus" d="M10 13v4M8 15h4"></path></svg>
+						</button>
+						<button type="button" class="table-icon-button" data-table-action="row-delete" aria-label="Delete row" title="Delete row">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="14" height="8" rx="1"></rect><path d="M3 7h14"></path><path class="table-icon-delete" d="M8 14l4 4M12 14l-4 4"></path></svg>
+						</button>
+						<button type="button" class="table-icon-button" data-table-action="row-up" aria-label="Move row up" title="Move row up">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="9" width="14" height="7" rx="1"></rect><path d="M3 12.5h14"></path><path class="table-icon-arrow" d="M10 7V2M7.5 4.5 10 2l2.5 2.5"></path></svg>
+						</button>
+						<button type="button" class="table-icon-button" data-table-action="row-down" aria-label="Move row down" title="Move row down">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="4" width="14" height="7" rx="1"></rect><path d="M3 7.5h14"></path><path class="table-icon-arrow" d="M10 13v5M7.5 15.5 10 18l2.5-2.5"></path></svg>
+						</button>
+						<strong>Column</strong>
+						<button type="button" class="table-icon-button" data-table-action="col-add-after" aria-label="Add column after" title="Add column after">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="8" height="14" rx="1"></rect><path d="M7 3v14"></path><path class="table-icon-plus" d="M13 10h4M15 8v4"></path></svg>
+						</button>
+						<button type="button" class="table-icon-button" data-table-action="col-delete" aria-label="Delete column" title="Delete column">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="3" y="3" width="8" height="14" rx="1"></rect><path d="M7 3v14"></path><path class="table-icon-delete" d="M13 8l4 4M17 8l-4 4"></path></svg>
+						</button>
+						<button type="button" class="table-icon-button" data-table-action="col-left" aria-label="Move column left" title="Move column left">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="9" y="3" width="7" height="14" rx="1"></rect><path d="M12.5 3v14"></path><path class="table-icon-arrow" d="M7 10H2M4.5 7.5 2 10l2.5 2.5"></path></svg>
+						</button>
+						<button type="button" class="table-icon-button" data-table-action="col-right" aria-label="Move column right" title="Move column right">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="3" width="7" height="14" rx="1"></rect><path d="M7.5 3v14"></path><path class="table-icon-arrow" d="M13 10h5M15.5 7.5 18 10l-2.5 2.5"></path></svg>
+						</button>
+						<strong>Align</strong>
+						<button type="button" class="table-icon-button" data-table-action="align-left" aria-label="Align left" title="Align left">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4h14M3 8h9M3 12h14M3 16h7"></path></svg>
+						</button>
+						<button type="button" class="table-icon-button" data-table-action="align-center" aria-label="Align center" title="Align center">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4h14M5.5 8h9M3 12h14M6.5 16h7"></path></svg>
+						</button>
+						<button type="button" class="table-icon-button" data-table-action="align-right" aria-label="Align right" title="Align right">
+							<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4h14M8 8h9M3 12h14M10 16h7"></path></svg>
+						</button>
+					</div>
+				</div>
+			</div>
+
+			<button type="button" class="cheatsheet-open" data-action="cheatsheet" title="Markdown and KM syntax cheatsheet" aria-label="Markdown and KM syntax cheatsheet">?</button>
+
+			<div class="command-primary" data-pinned-tools aria-label="Favorite tools" hidden></div>
+
+			<div class="mode-tabs command-mode-tabs" role="tablist" aria-label="Editor modes">
+				<span class="mode-tabs-label">View</span>
+				<button type="button" data-mode="raw">Raw MD</button>
+				<button type="button" class="active" data-mode="compare">Compare</button>
+				<button type="button" data-mode="rendered">Rendered</button>
+			</div>
+		</section>
+
+		<div class="workbench">
+			<div class="workspace">
+				<div class="dock-col" data-col="left"></div>
+				<div class="col-gutter" data-gutter="left" title="Drag to resize"></div>
+
+				<main class="editor-panel">
+					<div id="link-drop-notice" class="link-drop-notice" hidden>Make page link</div>
+					<div id="drop-caret" class="drop-caret" aria-hidden="true" hidden></div>
+					<div id="table-toolbar" class="table-toolbar" hidden>
+						<div class="table-toolbar-group">
+							<strong>Row</strong>
+							<button type="button" data-table-action="row-add-after" title="Add row after">Add</button>
+							<button type="button" data-table-action="row-delete" title="Delete row">Del</button>
+							<button type="button" data-table-action="row-up" title="Move row up">Up</button>
+							<button type="button" data-table-action="row-down" title="Move row down">Down</button>
+						</div>
+						<div class="table-toolbar-group">
+							<strong>Column</strong>
+							<button type="button" data-table-action="col-add-after" title="Add column after">Add</button>
+							<button type="button" data-table-action="col-delete" title="Delete column">Del</button>
+							<button type="button" data-table-action="col-left" title="Move column left">Left</button>
+							<button type="button" data-table-action="col-right" title="Move column right">Right</button>
+						</div>
+						<div class="table-toolbar-group">
+							<strong>Alignment</strong>
+							<button type="button" data-table-action="align-left" title="Align left">Left</button>
+							<button type="button" data-table-action="align-center" title="Align center">Center</button>
+							<button type="button" data-table-action="align-right" title="Align right">Right</button>
+						</div>
+					</div>
+					<div id="query-toolbar" class="table-toolbar" hidden>
+						<strong>Page query</strong>
+						<button type="button">Edit query</button>
+					</div>
+					<div id="math-toolbar" class="table-toolbar math-toolbar" hidden>
+						<strong>Math</strong>
+						<button type="button">Edit formula</button>
+					</div>
+					<div id="mermaid-toolbar" class="table-toolbar math-toolbar" hidden>
+						<strong>Diagram</strong>
+						<button type="button">Edit diagram</button>
+					</div>
+					<section class="mode-view" data-view="raw">
+						<div class="source-pane" data-source-pane>
+							<textarea id="raw-editor" spellcheck="false"></textarea>
+							<div class="simple-folder-notice" data-simple-folder-notice role="note" hidden>
+								<strong>Simple folder</strong>
+								<span>This navigation-only node keeps its metadata and tree position, but has no Markdown body of its own. Links and page previews target its children.</span>
+								<button type="button" data-action="turn-into-page">Turn into page</button>
+							</div>
+							<div class="code-language-notice" data-code-language-notice hidden>
+								<span class="code-language-blip" aria-hidden="true"></span>
+								<span><code data-code-language-name></code> not loaded</span>
+								<button type="button" data-code-language-load>Load</button>
+								<button type="button" class="code-language-dismiss" data-code-language-dismiss aria-label="Dismiss language suggestion">&times;</button>
+							</div>
+						</div>
+					</section>
+
+					<section class="mode-view compare-view active" data-view="compare">
+						<div class="source-pane" data-source-pane>
+							<textarea id="compare-raw-editor" spellcheck="false"></textarea>
+							<div class="simple-folder-notice" data-simple-folder-notice role="note" hidden>
+								<strong>Simple folder</strong>
+								<span>This navigation-only node keeps its metadata and tree position, but has no Markdown body of its own. Links and page previews target its children.</span>
+								<button type="button" data-action="turn-into-page">Turn into page</button>
+							</div>
+							<div class="code-language-notice" data-code-language-notice hidden>
+								<span class="code-language-blip" aria-hidden="true"></span>
+								<span><code data-code-language-name></code> not loaded</span>
+								<button type="button" data-code-language-load>Load</button>
+								<button type="button" class="code-language-dismiss" data-code-language-dismiss aria-label="Dismiss language suggestion">&times;</button>
+							</div>
+						</div>
+						<iframe id="compare-rendered-editor" class="km-preview-frame" title="KM rendered comparison preview"></iframe>
+					</section>
+
+					<section class="mode-view" data-view="rendered">
+						<iframe id="rendered-editor" class="km-preview-frame" title="KM rendered preview"></iframe>
+					</section>
+				</main>
+
+				<div class="col-gutter" data-gutter="right" title="Drag to resize"></div>
+				<div class="dock-col" data-col="right"></div>
+			</div>
+		</div>
+	</div>
+
+	<div id="panel-store" hidden>
+		<div class="dock-panel" data-panel="explorer" data-panel-title="Explorer">
+			<div class="panel-toolbar">
+				<input id="tree-filter" type="search" placeholder="Filter tree..." autocomplete="off">
+				<button type="button" class="panel-icon-button" data-action="create-page" title="New page">+</button>
+			</div>
+			<div id="tree-root" class="tree-root" role="tree" aria-label="Page tree"></div>
+			<div class="command-popover tree-context" data-menu-panel="tree-context" hidden>
+				<button type="button" data-action="create-page" title="Create a page under this one">New child page</button>
+				<button type="button" data-action="create-folder" title="Create a folder page under this one">New child folder</button>
+				<button type="button" data-action="create-simple-folder" title="Create a header-only folder under this one">New simple folder</button>
+				<button type="button" data-action="duplicate-page" title="Duplicate this page (Ctrl+D)">Duplicate</button>
+				<button type="button" data-action="rename-page" title="Rename this page (F2)">Rename</button>
+				<button type="button" data-action="make-simple-folder" class="warning" title="Strip content, keep tree position">Make simple folder</button>
+				<button type="button" data-action="delete-page" class="danger" title="Delete this page (Del)">Delete</button>
+			</div>
+			<div class="drop-hint">Drag pages before, after, or onto another page.</div>
+		</div>
+
+		<div class="dock-panel" data-panel="metadata" data-panel-title="Page config">
+					<div class="inspector-section-title">
+						<strong>Page config</strong>
+						<span id="page-kind" class="pill">Page</span>
+					</div>
+					<form id="metadata-form" class="metadata-form">
+							<label>
+								<span>Id</span>
+								<input name="id" autocomplete="off">
+								<small id="id-error" class="field-message error" hidden>This id is already used by another page.</small>
+							</label>
+							<label>
+								<span>Title</span>
+								<input name="title" autocomplete="off">
+							</label>
+							<label>
+								<span>Parent</span>
+								<input name="parent" type="hidden">
+								<div class="command-menu parent-picker">
+									<button type="button" id="parent-picker-button" data-menu="parent-picker" aria-expanded="false">
+										<span id="parent-picker-label">No parent</span>
+										<span class="parent-picker-caret" aria-hidden="true">&#9662;</span>
+									</button>
+									<div class="command-popover parent-popover" data-menu-panel="parent-picker" hidden>
+										<div id="parent-options" class="parent-options"></div>
+									</div>
+								</div>
+							</label>
+							<div class="metadata-field">
+								<span>Tags</span>
+								<input id="tags-input" name="tags" type="hidden">
+								<div class="tag-toolbar">
+									<div id="tag-chips" class="tag-chips" aria-label="Page tags"></div>
+									<div class="command-menu tag-picker">
+										<button type="button" data-menu="tag-picker" aria-expanded="false">+ Add tag</button>
+										<div class="command-popover tag-popover" data-menu-panel="tag-picker" hidden>
+											<input id="tag-search" class="picker-search" type="search" autocomplete="off" placeholder="Search or create tag..." aria-label="Search or create tag">
+											<div id="tag-options" class="tag-options"></div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<label>
+								<span>Reading trail</span>
+								<input name="trail" autocomplete="off" placeholder="Optional named path">
+							</label>
+							<label>
+								<span>Updated</span>
+								<input name="updated" type="date" autocomplete="off">
+							</label>
+							<label>
+								<span>Update comment</span>
+								<input name="updateComment" autocomplete="off" placeholder="Optional update note">
+							</label>
+						</form>
+						<div class="inspector-actions">
+							<button type="button" data-action="duplicate-page">Duplicate</button>
+							<button type="button" data-action="make-simple-folder" class="warning">Make simple folder</button>
+							<button type="button" data-action="delete-page" class="danger">Delete</button>
+						</div>
+					</div>
+
+					<div class="dock-panel" data-panel="config" data-panel-title="KM config">
+						<div class="inspector-section-title">
+							<strong>KM config</strong>
+							<span class="pill">HTML</span>
+						</div>
+						<form id="config-form" class="metadata-form config-form">
+							<label>
+								<span>Markdown source</span>
+								<input name="MD" autocomplete="off" placeholder="content.md or https://example.com/wiki.md">
+							</label>
+							<label>
+								<span>Title</span>
+								<input name="TITLE" autocomplete="off" placeholder="Your Wiki">
+							</label>
+							<label>
+								<span>Language</span>
+								<input name="LANG" autocomplete="off" placeholder="en">
+							</label>
+							<label>
+								<span>Default theme</span>
+								<select name="DEFAULT_THEME">
+									<option value="dark">dark</option>
+									<option value="light">light</option>
+								</select>
+							</label>
+							<label>
+								<span>Accent color</span>
+								<input name="ACCENT" type="color">
+							</label>
+							<label>
+								<span>Cache duration (minutes, 0 = always refetch)</span>
+								<input name="CACHE_MD" type="number" min="0" step="1" autocomplete="off">
+							</label>
+							<div class="metadata-field">
+								<span>Code language support</span>
+								<input id="config-langs-input" name="LANGS" type="hidden">
+								<div class="tag-toolbar">
+									<div id="config-lang-chips" class="tag-chips" aria-label="Configured code languages"></div>
+									<div class="command-menu tag-picker">
+										<button type="button" data-menu="config-lang-picker" aria-expanded="false">+ Add lang</button>
+										<div class="command-popover tag-popover" data-menu-panel="config-lang-picker" hidden>
+											<input id="config-lang-search" class="picker-search" type="search" autocomplete="off" placeholder="Search or add language..." aria-label="Search or add code language">
+											<div id="config-lang-options" class="tag-options"></div>
+										</div>
+									</div>
+								</div>
+								<small class="field-message">Uses Highlight.js language aliases.</small>
+							</div>
+							<label class="checkbox-row warning-row">
+								<input name="ALLOW_JS_FROM_MD" type="checkbox">
+								<span>Allow scripts from markdown. Only enable this for trusted local/power-user content.</span>
+							</label>
+						</form>
+						<div class="config-help">
+							Paste this block in the KM HTML shell, replacing the existing <code>km-config</code> script. Set <code>MD</code> to the exported markdown file name or to a raw download URL.
+						</div>
+						<div class="config-code-wrap">
+							<div class="config-code-actions" aria-label="Config code actions">
+								<button type="button" data-action="copy-config" aria-label="Copy HTML config" title="Copy HTML config">
+									<svg viewBox="0 0 16 16" aria-hidden="true">
+										<rect x="5.5" y="5.5" width="8" height="8" rx="1"></rect>
+										<path d="M10.5 3.5v-1h-8v8h1"></path>
+									</svg>
+								</button>
+								<button type="button" data-action="show-config" aria-label="Open config snippet" title="Open config snippet">
+									<svg viewBox="0 0 16 16" aria-hidden="true">
+										<path d="M9.5 2.5h4v4M13.5 2.5 8 8M7 4H3.5a1 1 0 0 0-1 1v7.5a1 1 0 0 0 1 1H11a1 1 0 0 0 1-1V9"></path>
+									</svg>
+								</button>
+							</div>
+							<pre class="config-code"><code id="config-preview"></code></pre>
+						</div>
+						<div class="onefile-actions">
+							<button type="button" data-action="download-offline-onefile" title="Download one self-contained HTML file with the current Markdown embedded">Download offline HTML</button>
+							<button type="button" data-action="download-online-onefile" title="Download one HTML file that fetches the configured Markdown source">Download online HTML</button>
+						</div>
+					</div>
+
+					<div class="dock-panel" data-panel="problems" data-panel-title="Issues">
+			<section class="validation-box">
+				<ul id="validation-list"></ul>
+			</section>
+			<div id="problem-actions" class="problem-actions" hidden>
+				<button type="button" data-action="export-file">Download MD</button>
+				<button type="button" data-action="github-save">Push to GitHub</button>
+			</div>
+			<span id="problems-count" class="problem-ping ok" data-tab-badge>0</span>
+		</div>
+
+		<div class="dock-panel" data-panel="history" data-panel-title="History">
+			<div class="inspector-section-title">
+				<strong>Bundle time machine</strong>
+			</div>
+			<section class="validation-box">
+				<div id="snapshot-list" class="snapshot-list"></div>
+			</section>
+		</div>
+	</div>
+
+	<div id="modal-root" class="modal-root" hidden></div>
+	<div id="km-preview-overlay" class="km-preview-overlay" hidden>
+		<div class="km-preview-bar">
+			<strong>Real KM preview</strong>
+			<span>Powered by <code>km</code></span>
+			<button type="button" data-action="toggle-phone-preview" title="Toggle a smartphone-sized viewport">Phone view</button>
+			<button type="button" class="preview-button" data-action="return-editor">Return to editor</button>
+		</div>
+		<div id="km-preview-frame-wrap">
+			<iframe id="full-km-preview" title="Full KM preview"></iframe>
+		</div>
+	</div>
+	<input id="fallback-file-input" type="file" accept=".md,.markdown,text/markdown,text/plain" hidden>
+	<script src="src/js/editor.bundle.js"></script>
+</body>
+</html>
