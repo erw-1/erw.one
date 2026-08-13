@@ -1821,21 +1821,59 @@ async function openDocsExample() {
 	}
 }
 
+async function sourceBundle(url) {
+	const sourceUrl = markdownSourceUrl(url);
+	const response = await fetch(sourceUrl);
+	if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`.trim());
+	const source = await response.text();
+	const isHtml = response.headers.get("content-type")?.includes("text/html") || /^\s*(?:<!doctype\s+html|<html[\s>])/i.test(source);
+	const doc = isHtml ? new DOMParser().parseFromString(source, "text/html") : null;
+	const configNode = doc?.getElementById("km-config");
+	if (!configNode) {
+		const fileName = safeFilePart(new URL(sourceUrl, location.href).pathname.split("/").pop(), "linked-bundle.md");
+		return {
+			parsed: parseBundle(source),
+			fileName: fileName.endsWith(".md") ? fileName : `${fileName}.md`,
+			config: { MD: sourceUrl }
+		};
+	}
+
+	const config = JSON.parse(configNode.textContent);
+	const inline = doc.getElementById("km-inline-md");
+	let markdown;
+	let mdSource = cleanText(config.MD);
+	if (inline && inline.textContent.trim()) {
+		markdown = inline.textContent.replace(/<\\\/script/gi, "</script");
+	} else {
+		if (!mdSource) throw new Error("KM page has no markdown source to load.");
+		mdSource = markdownSourceUrl(new URL(mdSource, sourceUrl).href);
+		const mdResponse = await fetch(mdSource);
+		if (!mdResponse.ok) throw new Error(`Could not fetch markdown (HTTP ${mdResponse.status}).`);
+		markdown = await mdResponse.text();
+	}
+	const slug = new URL(sourceUrl, location.href).pathname.split("/").filter(Boolean).pop();
+	return {
+		parsed: parseBundle(markdown),
+		fileName: `${safeFilePart(slug || config.TITLE, "km-page")}.md`,
+		config: { ...config, MD: mdSource }
+	};
+}
+
+async function loadSourceUrl(url) {
+	const bundle = await sourceBundle(url);
+	setStateFromBundle(bundle.parsed, {
+		fileName: bundle.fileName,
+		fileHandle: null,
+		config: bundle.config,
+		dirty: false
+	});
+}
+
 async function openLink() {
-	const url = await showPrompt("Open from URL", "Markdown or HackMD URL");
+	const url = await showPrompt("Open from URL", "Markdown, HackMD, GitHub file, or KM URL");
 	if (!url) return;
 	try {
-		const sourceUrl = markdownSourceUrl(url);
-		const response = await fetch(sourceUrl);
-		if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`.trim());
-		const source = await response.text();
-		const fileName = safeFilePart(new URL(sourceUrl, location.href).pathname.split("/").pop(), "linked-bundle.md");
-		setStateFromBundle(parseBundle(source), {
-			fileName: fileName.endsWith(".md") ? fileName : `${fileName}.md`,
-			fileHandle: null,
-			config: { MD: sourceUrl },
-			dirty: false
-		});
+		await loadSourceUrl(url);
 	} catch (error) {
 		showMessage("Open link failed", error.message || String(error));
 	}
@@ -1947,33 +1985,19 @@ async function openKmPage() {
 	const url = await showPrompt("Open from existing KM page", "Published KM page URL", "https://");
 	if (!url) return;
 	try {
-		const response = await fetch(url);
-		if (!response.ok) throw new Error(`HTTP ${response.status} ${response.statusText}`.trim());
-		const doc = new DOMParser().parseFromString(await response.text(), "text/html");
-		const configNode = doc.getElementById("km-config");
-		if (!configNode) throw new Error("No km-config block found. Is this a KM page?");
-		const config = JSON.parse(configNode.textContent);
-		const inline = doc.getElementById("km-inline-md");
-		let markdown;
-		let mdSource = cleanText(config.MD);
-		if (inline && inline.textContent.trim()) {
-			markdown = inline.textContent.replace(/<\\\/script/gi, "</script");
-		} else {
-			if (!mdSource) throw new Error("KM page has no markdown source to load.");
-			mdSource = new URL(mdSource, url).href;
-			const mdResponse = await fetch(mdSource);
-			if (!mdResponse.ok) throw new Error(`Could not fetch markdown (HTTP ${mdResponse.status}).`);
-			markdown = await mdResponse.text();
-		}
-		const slug = new URL(url, location.href).pathname.split("/").filter(Boolean).pop();
-		setStateFromBundle(parseBundle(markdown), {
-			fileName: `${safeFilePart(slug || config.TITLE, "km-page")}.md`,
-			fileHandle: null,
-			config: { ...config, MD: mdSource },
-			dirty: false
-		});
+		await loadSourceUrl(url);
 	} catch (error) {
 		showMessage("Open KM page failed", error.message || String(error));
+	}
+}
+
+async function openSourceQuery() {
+	const source = new URLSearchParams(location.search).get("source");
+	if (!source) return;
+	try {
+		await loadSourceUrl(source);
+	} catch (error) {
+		showMessage("Source failed to load", error.message || String(error));
 	}
 }
 
@@ -2891,3 +2915,4 @@ if (storedTheme === "dark" || storedTheme === "light") document.documentElement.
 setMode(state.mode);
 renderAll(true);
 saveSnapshot();
+openSourceQuery();

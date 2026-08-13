@@ -26,17 +26,31 @@ assert.deepEqual(
 );
 assert.equal(
 	storage.markdownSourceUrl("https://hackmd.io/@h-s-n/doc_test"),
-	"https://hackmd.io/@h-s-n/doc_test.md"
+	"https://hackmd.io/@h-s-n/doc_test/download"
+);
+assert.equal(
+	storage.markdownSourceUrl("https://hackmd.io/@h-s-n/doc_test/?both#edit"),
+	"https://hackmd.io/@h-s-n/doc_test/download"
+);
+assert.equal(
+	storage.markdownSourceUrl("https://hackmd.io/@h-s-n/doc_test/download"),
+	"https://hackmd.io/@h-s-n/doc_test/download"
 );
 assert.equal(
 	storage.markdownSourceUrl("https://hackmd.io/@h-s-n/doc_test.md"),
 	"https://hackmd.io/@h-s-n/doc_test.md"
 );
 assert.equal(storage.markdownSourceUrl("https://example.com/bundle.md"), "https://example.com/bundle.md");
+assert.equal(
+	storage.markdownSourceUrl("https://github.com/example/project/blob/main/docs/bundle.md?plain=1#L20"),
+	"https://raw.githubusercontent.com/example/project/main/docs/bundle.md"
+);
 const appSource = await readFile("km-editor/src/js/app.js", "utf8");
 const issuesSource = await readFile("km-editor/src/js/issues.js", "utf8");
 const treeSource = await readFile("km-editor/src/js/tree.js", "utf8");
-assert.match(appSource, /function openLink\(\)[\s\S]*markdownSourceUrl\(url\)[\s\S]*fetch\(sourceUrl\)[\s\S]*MD: sourceUrl/);
+assert.match(appSource, /async function sourceBundle\(url\)[\s\S]*markdownSourceUrl\(url\)[\s\S]*fetch\(sourceUrl\)[\s\S]*getElementById\("km-config"\)/);
+assert.match(appSource, /async function openSourceQuery\(\)[\s\S]*URLSearchParams\(location\.search\)\.get\("source"\)[\s\S]*loadSourceUrl\(source\)/);
+assert.match(appSource, /saveSnapshot\(\);\s*openSourceQuery\(\);\s*$/);
 assert.match(appSource, /function renderQueryBuilder\(\)[\s\S]*previewPageQuery\(source\)/);
 assert.match(appSource, /function closeCommandMenus\(except = null\)[\s\S]*cancelPageQueryPreview\(\)/);
 assert.match(appSource, /function insertPageQuery\(\)[\s\S]*queryOriginalContent = null;[\s\S]*markDirty\(\)/);

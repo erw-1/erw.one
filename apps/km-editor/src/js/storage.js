@@ -36,9 +36,21 @@ export function markdownSourceUrl(value) {
 	} catch {
 		return source;
 	}
-	if (url.hostname.toLowerCase() !== "hackmd.io" || /\.md$/i.test(url.pathname)) return source;
-	url.pathname = `${url.pathname.replace(/\/$/, "")}.md`;
-	url.hash = "";
+	const hostname = url.hostname.toLowerCase();
+	if (hostname === "hackmd.io") {
+		if (!/(?:\.md|\/download)$/i.test(url.pathname))
+			url.pathname = `${url.pathname.replace(/\/$/, "")}/download`;
+		url.search = "";
+		url.hash = "";
+		return url.href;
+	}
+	if ((hostname === "github.com" || hostname === "www.github.com") && /^\/[^/]+\/[^/]+\/blob\//i.test(url.pathname)) {
+		url.hostname = "raw.githubusercontent.com";
+		url.pathname = url.pathname.replace(/^\/([^/]+)\/([^/]+)\/blob\//i, "/$1/$2/");
+		url.search = "";
+		url.hash = "";
+		return url.href;
+	}
 	return url.href;
 }
 

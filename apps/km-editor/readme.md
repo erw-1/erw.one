@@ -13,6 +13,11 @@ start editor.bat
 The launcher serves the workspace at `http://127.0.0.1:8765/` before opening
 Brave. This also gives embedded YouTube players the HTTP referrer they require.
 
+To load a remote bundle on startup, pass its URL as the encoded `source` query
+parameter. HackMD note links, GitHub `/blob/` file links, published KM pages,
+and direct Markdown URLs are supported. Normal HackMD links are fetched through
+their `/download` endpoint automatically.
+
 Open **KM Editor manual** from the Open menu for the complete interactive user guide. Its source is [`../_content_examples/km-docs.md`](../_content_examples/km-docs.md).
 
 ## Build and test
