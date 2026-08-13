@@ -1,0 +1,53 @@
+/* Shared design tokens: colors, spacing, panel sizes, shadows, and z-indexes. */
+@layer tokens {
+	:root {
+		/* Theme colors and contrast steps. */
+		--color-main-dark: rgb(29, 29, 29);
+		--color-main-light: white;
+		--color-main: var(--color-main-dark);
+		--color-accent: #3fabd1;
+		--color-shadow: rgb(0, 0, 0);
+		--color-text: color(from var(--color-main) display-p3 calc(1 - r) calc(1 - g) calc(1 - b));
+		--color-backdrop: color-mix(in srgb, var(--color-main) 80%, transparent);
+		--color-lowest-contrast: color-mix(in srgb, var(--color-text) 6%, var(--color-main));
+		--color-low-contrast: color-mix(in srgb, var(--color-text) 12%, var(--color-main));
+		--color-quarter-contrast: color-mix(in srgb, var(--color-text) 25%, var(--color-main));
+		--color-mid-contrast: color-mix(in srgb, var(--color-text) 65%, var(--color-main));
+		--color-accent-quarter: color-mix(in srgb, var(--color-accent) 25%, var(--color-quarter-contrast));
+		--color-accent-mid: color-mix(in srgb, var(--color-accent) 50%, var(--color-quarter-contrast));
+		--color-accent-3quarter: color-mix(in srgb, var(--color-accent) 75%, var(--color-quarter-contrast));
+		--important: #8c88e5;
+		--note: #30b1ea;
+		--tip: #59c335;
+		--warning: #ddaa26;
+		--caution: #f87171;
+		/* Radius and spacing scale. */
+		--r-sm: 4px;
+		--r-md: 8px;
+		--g-xs: 0.15rem;
+		--g-sm: 0.3rem;
+		--g-md: 0.6rem;
+		--g-lg: 1.2rem;
+		/* Shell dimensions. */
+		--w-sidebar: 290px;
+		--w-util: 290px;
+		--h-header: 48px;
+		/* Elevation and stacking. */
+		--shadow-sm: var(--color-shadow) 3px 4px 11px -9px;
+		--shadow-panel: var(--color-shadow) 3px 4px 23px -15px;
+		--z-ground: 2;
+		--z-mid: 3;
+		--z-sky: 4;
+	}
+
+	/* Theme switches update --color-main; derived colors follow automatically. */
+	html[data-theme="dark"] {
+		--color-main: var(--color-main-dark);
+		color-scheme: dark;
+	}
+
+	html[data-theme="light"] {
+		--color-main: var(--color-main-light);
+		color-scheme: light;
+	}
+}

@@ -1,0 +1,444 @@
+/* Mini/fullscreen graph viewport, legend, graph SVG marks, and watermark. */
+@layer graph {
+
+	/* Disable selection while graph drag gestures are active. */
+	html.km-graph-dragging,
+	html.km-graph-dragging * {
+		-webkit-user-select: none !important;
+		-ms-user-select: none !important;
+		user-select: none !important;
+	}
+
+	/* Graph panel and fullscreen expansion. */
+	#graph-box {
+		position: relative;
+		z-index: var(--z-ground);
+		height: calc(var(--w-util) - calc(var(--g-lg) * 2));
+		background: var(--color-lowest-contrast);
+		border: 1px solid var(--color-low-contrast);
+		border-radius: var(--r-md);
+		box-shadow: var(--shadow-panel);
+	}
+
+	.km-query-graph {
+		position: relative;
+		height: clamp(18rem, 50vw, 32rem);
+		margin-block: var(--g-lg);
+		overflow: hidden;
+		background: var(--color-lowest-contrast);
+		border: 1px solid var(--color-low-contrast);
+		border-radius: var(--r-md);
+		box-shadow: var(--shadow-panel);
+	}
+
+	.km-query-graph.is-unavailable {
+		display: grid;
+		place-items: center;
+		color: var(--color-mid-contrast);
+	}
+
+	#graph-box:has(.fullscreen) {
+		position: fixed !important;
+		inset: 0;
+		width: 100vw;
+		height: 100vh !important;
+		border: none !important;
+		z-index: var(--z-sky);
+		border-radius: unset;
+	}
+
+	#util:has(#mini.fullscreen)>.panel-close {
+		display: none !important;
+	}
+
+	/* Fullscreen button. */
+	#expand {
+		position: absolute;
+		top: var(--g-sm);
+		right: var(--g-sm);
+		margin-top: calc(var(--g-sm) * -1);
+		border: none;
+		background: radial-gradient(var(--color-lowest-contrast) var(--g-md), transparent var(--g-lg));
+		color: var(--color-mid-contrast);
+		font-size: calc(var(--g-lg) * 1.5);
+		font-weight: bolder;
+		cursor: pointer;
+	}
+
+	.fullscreen+#expand {
+		background: radial-gradient(var(--color-main) var(--g-md), transparent var(--g-lg));
+	}
+
+	#graph-box:has(.fullscreen)>#expand {
+		font-size: calc(var(--g-lg) * 3);
+	}
+
+	/* Legend is only shown while the graph is fullscreen. */
+	.graph-legend {
+		display: none;
+	}
+
+	#graph-box:has(.fullscreen) .graph-legend {
+		display: block;
+		position: absolute;
+		right: calc(var(--g-lg) * 1.15);
+		bottom: calc(var(--g-lg) * 1.15);
+		margin: 0;
+		max-width: min(34rem, calc(100vw - 2rem));
+		border: 1px solid color-mix(in srgb, var(--color-low-contrast) 92%, transparent);
+		border-radius: var(--r-md);
+		background: color-mix(in srgb, var(--color-main) 82%, transparent);
+		backdrop-filter: blur(12px);
+		box-shadow: 0 10px 34px color-mix(in srgb, var(--color-shadow) 30%, transparent);
+		color: var(--color-text);
+		z-index: calc(var(--z-sky) + 1);
+		overflow: hidden;
+	}
+
+	/* Legend header/body layout. */
+	.graph-legend>summary {
+		display: flex;
+		align-items: center;
+		gap: var(--g-sm);
+		padding: var(--g-md) calc(var(--g-lg) * 0.95);
+		cursor: pointer;
+		list-style: none;
+		user-select: none;
+		font-weight: 600;
+	}
+
+	.graph-legend>summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.graph-legend>summary::after {
+		content: "\25BE";
+		margin-left: auto;
+		color: var(--color-mid-contrast);
+		transition: transform 0.16s ease;
+	}
+
+	.graph-legend:not([open])>summary::after {
+		transform: rotate(-90deg);
+	}
+
+	.graph-legend-body {
+		padding: 0 calc(var(--g-lg) * 0.95) calc(var(--g-lg) * 0.95);
+		max-height: min(50vh, 28rem);
+		overflow: auto;
+		border-top: 1px solid color-mix(in srgb, var(--color-low-contrast) 88%, transparent);
+	}
+
+	.graph-legend-section+.graph-legend-section {
+		margin-top: var(--g-lg);
+	}
+
+	.graph-legend-heading {
+		margin: var(--g-md) 0;
+		color: var(--color-accent);
+		font-size: 0.92rem;
+	}
+
+	.graph-legend-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: var(--g-md);
+	}
+
+	.graph-legend-item {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: var(--g-md);
+		align-items: start;
+	}
+
+	.graph-legend-copy {
+		display: grid;
+		gap: 0.1rem;
+		min-width: 0;
+	}
+
+	.graph-legend-label {
+		color: var(--color-text);
+		font-size: 0.92rem;
+		line-height: 1.2;
+	}
+
+	.graph-legend-desc,
+	.graph-legend-note {
+		color: var(--color-mid-contrast);
+		font-size: 0.84rem;
+		line-height: 1.35;
+	}
+
+	.graph-legend-note {
+		margin: var(--g-lg) 0 0;
+	}
+
+	/* Legend markers for gestures and graph symbols. */
+	.graph-legend-badge,
+	.graph-legend-swatch {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 1.45rem;
+		min-height: 1.1rem;
+		margin-top: 0.08rem;
+		flex: 0 0 auto;
+	}
+
+	.graph-legend-badge {
+		padding: 0.12rem 0.45rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-lowest-contrast) 92%, transparent);
+		color: var(--color-mid-contrast);
+		border: 1px solid color-mix(in srgb, var(--color-low-contrast) 92%, transparent);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		white-space: nowrap;
+	}
+
+	.graph-legend-swatch.node-current,
+	.graph-legend-swatch.node-parent,
+	.graph-legend-swatch.node-leaf,
+	.graph-legend-swatch.dimmed {
+		width: 0.9rem;
+		height: 0.9rem;
+		min-width: 0.9rem;
+		min-height: 0.9rem;
+		border-radius: 999px;
+		background: var(--legend-swatch-bg);
+	}
+
+	.graph-legend-swatch.node-current {
+		--legend-swatch-bg: var(--color-accent);
+	}
+
+	.graph-legend-swatch.node-parent {
+		--legend-swatch-bg: var(--color-mid-contrast);
+	}
+
+	.graph-legend-swatch.node-leaf {
+		--legend-swatch-bg: var(--color-quarter-contrast);
+	}
+
+	.graph-legend-swatch.link-hierarchy,
+	.graph-legend-swatch.link-tag {
+		width: 1.5rem;
+		min-width: 1.5rem;
+		min-height: 0;
+		height: var(--legend-line-height, 0.2rem);
+		margin-top: 0.46rem;
+		border-radius: 999px;
+		background: var(--legend-line-bg);
+	}
+
+	.graph-legend-swatch.link-hierarchy {
+		--legend-line-bg: var(--color-mid-contrast);
+	}
+
+	.graph-legend-swatch.link-tag {
+		--legend-line-height: 0.28rem;
+		--legend-line-bg: var(--color-accent-mid);
+	}
+
+	.graph-legend-swatch.folded {
+		width: 1rem;
+		height: 0.56rem;
+		min-width: 1rem;
+		min-height: 0.56rem;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--color-accent) 72%, var(--color-main));
+		border: 1px solid color-mix(in srgb, var(--color-accent) 88%, var(--color-main));
+	}
+
+	.graph-legend-swatch.label-active {
+		min-width: auto;
+		min-height: auto;
+		color: var(--color-accent);
+		font-size: 0.82rem;
+		font-weight: 700;
+	}
+
+	.graph-legend-swatch.dimmed {
+		--legend-swatch-bg: color-mix(in srgb, var(--color-mid-contrast) 18%, transparent);
+		border: 1px solid color-mix(in srgb, var(--color-mid-contrast) 28%, transparent);
+	}
+
+	/* Keep the fullscreen legend usable on narrow screens. */
+	@media (max-width:640px) {
+		#graph-box:has(.fullscreen) .graph-legend {
+			right: var(--g-md);
+			bottom: var(--g-md);
+			max-width: calc(100vw - calc(var(--g-md) * 2));
+		}
+
+		.graph-legend-body {
+			max-height: min(56vh, 24rem);
+		}
+	}
+
+	/* SVG viewport and node styles. */
+	.km-graph-svg {
+		width: 100%;
+		height: 100%;
+		touch-action: none;
+	}
+
+	/* Node kind sets the group color; marks paint with currentColor so circles
+	   and glyph shapes (house, glossary "a") color identically. */
+	.km-graph-svg .graph-node[data-kind]:not([data-kind="current"]):not([data-kind="simple-folder"]) {
+		cursor: pointer;
+	}
+
+	.km-graph-svg .graph-node[data-kind="current"] {
+		color: var(--color-accent);
+	}
+
+	.km-graph-svg .graph-node[data-kind="parent"] {
+		color: var(--color-mid-contrast);
+	}
+
+	.km-graph-svg .graph-node[data-kind="simple-folder"] {
+		color: color-mix(in srgb, var(--color-mid-contrast) 58%, transparent);
+	}
+
+	.km-graph-svg .graph-node[data-kind="leaf"] {
+		color: var(--color-quarter-contrast);
+	}
+
+	.km-graph-svg .graph-node:hover {
+		color: var(--color-accent);
+	}
+
+	.km-graph-svg .graph-node :is(circle, path, text) {
+		fill: currentColor;
+	}
+
+	/* Home/glossary glyphs are knocked out of their kind-colored disc in the
+	   panel background color. */
+	.km-graph-svg .graph-node .node-glyph :is(path, text) {
+		fill: var(--color-lowest-contrast);
+	}
+
+	.km-graph-svg .graph-node .node-glyph line {
+		stroke: var(--color-lowest-contrast);
+		stroke-width: 1.4;
+		stroke-dasharray: 1.6 2.1;
+	}
+
+	/* Glossary "a" glyph text. */
+	.km-graph-svg .graph-node .node-glyph-text {
+		font: 700 13px Georgia, 'Times New Roman', serif;
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	/* Folded-branch petal markers. */
+	.node-fold-marker {
+		pointer-events: none;
+	}
+
+	.node-fold-petal {
+		fill: color-mix(in srgb, var(--color-accent) 72%, var(--color-main));
+		stroke: color-mix(in srgb, var(--color-accent) 88%, var(--color-main));
+		stroke-width: 0.2px;
+		vector-effect: non-scaling-stroke;
+	}
+
+	.node-fold-marker[data-kind="current"] .node-fold-petal {
+		fill: color-mix(in srgb, var(--color-main) 82%, var(--color-accent));
+		stroke: var(--color-main);
+	}
+
+	/* Graph links. */
+	.km-graph-svg path[data-role] {
+		fill: none;
+		stroke: var(--link-stroke);
+		stroke-width: var(--link-width);
+	}
+
+	/* Graph labels. */
+	.graph_text {
+		-webkit-user-select: none;
+		-ms-user-select: none;
+		user-select: none;
+		fill: var(--color-text);
+		transition: opacity 140ms ease;
+	}
+
+	.graph_text.current {
+		font-weight: 600;
+	}
+
+	.graph_text.simple-folder {
+		fill: var(--color-mid-contrast);
+	}
+
+	.graph_text.graph_text_float {
+		font-weight: 700;
+		paint-order: stroke;
+		stroke: var(--color-main);
+		stroke-width: 3px;
+		stroke-linejoin: round;
+	}
+
+	.graph_text.graph_text_focus {
+		fill: var(--color-accent);
+	}
+
+	/* Small "Powered by" watermark and hover effect. */
+	.watermark {
+		z-index: var(--z-mid);
+	}
+
+	a.watermark {
+		position: relative;
+		z-index: 0;
+		display: block;
+		text-align: center;
+		color: var(--color-quarter-contrast);
+		font-size: calc(var(--g-md) * 1.4);
+	}
+
+	a.watermark::before {
+		content: "";
+		position: absolute;
+		inset: -0.55em;
+		background: radial-gradient(circle, var(--color-accent) 0%, rgba(0, 0, 0, 0) 50%);
+		opacity: 0;
+	}
+
+	@keyframes charge {
+		0% {
+			opacity: 0;
+			transform: scale(0);
+			filter: blur(1px);
+		}
+
+		80% {
+			opacity: 0.5;
+			transform: scale(1.2);
+			filter: blur(9px);
+		}
+
+		100% {
+			opacity: 1;
+			transform: scale(40);
+			filter: blur(12px);
+		}
+	}
+
+	a.watermark:hover {
+		fill: var(--color-accent);
+		stroke: var(--color-accent);
+		color: var(--color-accent);
+	}
+
+	a.watermark:hover::before {
+		animation: charge 13s cubic-bezier(0.2, 0.6, 0.3, 1) forwards;
+	}
+}

@@ -1,0 +1,257 @@
+/* Responsive shell behavior: fixed desktop panels, overlays, and mobile layout. */
+@layer responsive {
+	/* JS reads these flags to decide overlay vs fixed-panel behavior. */
+	:root {
+		--km-sidebar-overlay: 0;
+		--km-util-overlay: 0;
+	}
+
+	/* Shared responsive controls. */
+	.theme-toggle,
+	li.folder {
+		-webkit-tap-highlight-color: transparent;
+	}
+
+	.theme-toggle:focus:not(:focus-visible) {
+		outline: none;
+	}
+
+	.burger {
+		display: none;
+		border: none;
+		background: none;
+		color: var(--color-text);
+		cursor: pointer;
+		padding: 4px;
+	}
+
+	.burger:hover {
+		color: var(--color-accent);
+	}
+
+	.panel-close {
+		display: none;
+		border: none;
+		background: none;
+		font: 2rem/1 monospace;
+		font-weight: bolder !important;
+		color: var(--color-mid-contrast);
+		cursor: pointer;
+		z-index: calc(var(--z-sky) + 1);
+	}
+
+	.panel-close:hover {
+		color: var(--color-accent);
+	}
+
+	#util.open {
+		padding-left: var(--g-md);
+		background: var(--color-main);
+	}
+
+	/* Desktop layout: panels are fixed columns that can be hidden. */
+	@media (min-width:1001px) {
+		#crumb-dyn {
+			display: flex;
+			flex-wrap: wrap;
+			flex: 1 1 auto;
+			min-width: 0;
+			white-space: nowrap;
+			margin-right: var(--g-sm);
+			scrollbar-width: thin;
+			-ms-overflow-style: none;
+			-webkit-overflow-scrolling: touch;
+			touch-action: pan-x;
+			overscroll-behavior-x: contain;
+		}
+
+		#crumb-dyn::-webkit-scrollbar {
+			height: 6px;
+		}
+
+		#sidebar {
+			display: flex;
+		}
+
+		body.hide-sidebar #sidebar {
+			display: none !important;
+		}
+
+		body.hide-util #util {
+			display: none !important;
+		}
+
+		body.hide-crumb #crumb {
+			display: none !important;
+		}
+	}
+
+	/* Narrow desktop: sidebar becomes an overlay but content remains desktop-like. */
+	@media (min-width:1001px) and (max-width:1089.98px) {
+		:root {
+			--km-sidebar-overlay: 1;
+		}
+
+		#sidebar {
+			display: none !important;
+		}
+
+		#burger-sidebar {
+			display: inline-flex;
+			align-items: center;
+		}
+
+		body #sidebar.open {
+			display: flex !important;
+			position: fixed;
+			top: var(--h-header);
+			bottom: 0;
+			z-index: var(--z-sky);
+			max-width: min(86vw, 420px);
+			box-shadow: 0 10px 32px color-mix(in srgb, var(--color-shadow) 28%, transparent);
+			left: 0;
+			right: auto;
+			width: min(var(--w-sidebar), 86vw);
+		}
+
+		body #sidebar.open .panel-close {
+			display: block !important;
+			position: absolute;
+			top: 8px;
+			right: 12px;
+		}
+	}
+
+	/* Medium desktop: utility panel becomes an overlay. */
+	@media (min-width:1001px) and (max-width:1439.98px) {
+		:root {
+			--km-util-overlay: 1;
+		}
+
+		#util {
+			display: none !important;
+		}
+
+		#burger-util {
+			display: inline-flex;
+			align-items: center;
+		}
+
+		body #util.open {
+			display: flex !important;
+			position: fixed;
+			top: var(--h-header);
+			bottom: 0;
+			z-index: var(--z-sky);
+			max-width: min(86vw, 420px);
+			box-shadow: 0 10px 32px color-mix(in srgb, var(--color-shadow) 28%, transparent);
+			left: auto;
+			right: 0;
+			width: min(var(--w-util), 86vw);
+		}
+
+		body #util.open .panel-close {
+			display: block !important;
+			position: absolute;
+			top: 8px;
+			left: 12px;
+			right: auto;
+		}
+	}
+
+	/* Mobile/tablet: both side panels are full-screen overlays. */
+	@media (max-width:1000px) {
+		:root {
+			--km-sidebar-overlay: 1;
+			--km-util-overlay: 1;
+		}
+
+		iframe {
+			width: 100%;
+		}
+
+		.kb-keycap {
+			display: none;
+		}
+
+		div#prevnext {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			gap: var(--g-md);
+		}
+
+		.burger {
+			display: inline-flex;
+			align-items: center;
+		}
+
+		#sidebar,
+		#util {
+			display: none;
+		}
+
+		#sidebar.open,
+		#util.open {
+			display: flex;
+			flex-direction: column;
+			width: 100dvw;
+			padding-top: var(--h-header);
+			position: fixed;
+			inset: 0;
+			z-index: var(--z-sky);
+		}
+
+		#crumb-dyn {
+			flex: 1 1 auto;
+			transform: translate(0, 3px);
+			height: 60%;
+			margin-right: var(--g-md);
+			padding: 0 var(--g-sm);
+			overflow-x: scroll;
+			white-space: nowrap;
+			-webkit-overflow-scrolling: touch;
+			scrollbar-width: none;
+			-ms-overflow-style: none;
+			touch-action: pan-x;
+			overscroll-behavior-y: contain;
+			-webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--g-lg), #000 calc(100% - var(--g-lg)), transparent 100%);
+			mask-image: linear-gradient(to right, transparent 0, #000 var(--g-lg), #000 calc(100% - var(--g-lg)), transparent 100%);
+			-webkit-mask-size: 100% 100%;
+			mask-size: 100% 100%;
+		}
+
+		#crumb-dyn a {
+			padding: 0 var(--g-xs) var(--g-xs);
+		}
+
+		#crumb-dyn ul,
+		#crumb-dyn .toggle {
+			display: none;
+		}
+
+		#crumb-dyn span:first-child {
+			padding-left: var(--g-sm);
+		}
+
+		#crumb-dyn span:last-child {
+			padding-right: var(--g-sm);
+		}
+
+		#crumb-dyn::-webkit-scrollbar {
+			display: none;
+		}
+
+		#content-area {
+			flex-direction: column;
+		}
+
+		#util.open .panel-close,
+		#sidebar.open .panel-close {
+            display: block !important;
+            position: absolute;
+            top: -45px;
+            right: 8px;
+		}
+	}
+}

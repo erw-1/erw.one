@@ -1,0 +1,377 @@
+/* Sidebar tree, search results, breadcrumbs, TOC, and page navigation links. */
+@layer nav {
+
+	/* Shared breadcrumb icon coloring. */
+	#crumb svg,
+	#crumb line {
+		fill: var(--color-mid-contrast);
+		stroke: var(--color-mid-contrast);
+	}
+
+	/* Sidebar tree basics. */
+	#sidebar ul {
+		padding-left: var(--g-xs);
+		list-style: none;
+		margin: 0;
+	}
+
+	#sidebar li {
+		margin: var(--g-xs) 0;
+	}
+
+	#sidebar .article {
+		padding-left: var(--g-xs);
+	}
+
+	#sidebar a {
+		color: var(--color-text);
+		text-decoration: none;
+	}
+
+	#sidebar .simple-folder-link {
+		padding: 0;
+		color: var(--color-mid-contrast);
+		font: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	/* Explicit simple folders may be saved before they receive children. Their
+	   labels identify structure but have no route or disclosure action yet. */
+	#sidebar .simple-folder-link.simple-folder-leaf {
+		cursor: default;
+	}
+
+	#sidebar :is(a, .simple-folder-link:not(.simple-folder-leaf)):hover {
+		font-weight: 600;
+	}
+
+	/* Dotted-underlined "a": echoes the styling of glossary terms in articles. */
+	#tree .glossary-link::before {
+		content: "a";
+		display: inline-block;
+		margin-right: 0.35em;
+		padding-bottom: 0.12em;
+		border-bottom: 1px dotted currentColor;
+		color: var(--color-mid-contrast);
+		font-family: Georgia, 'Times New Roman', serif;
+		font-size: 0.82em;
+		font-weight: 700;
+		line-height: 1;
+	}
+
+	.caret {
+		font-size: 1.2em;
+		display: inline-block;
+		color: var(--color-mid-contrast);
+		cursor: pointer;
+		transition: transform 0.16s ease;
+	}
+
+	/* Native details folders styled as a compact tree. */
+	.group-sep {
+		padding: var(--g-xs);
+	}
+
+	.folder-summary {
+		display: inline-flex;
+		align-items: baseline;
+		gap: var(--g-xs);
+		list-style: none;
+		cursor: pointer;
+	}
+
+	.folder-summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.folder-summary:focus-visible {
+		outline: 2px solid var(--color-accent);
+		outline-offset: 2px;
+		border-radius: var(--r-sm);
+	}
+
+	/* Nested tree guide rails and current-page highlight. */
+	.folder>details[open]>.folder-summary .caret {
+		transform: rotate(90deg);
+	}
+
+	#sidebar ul ul {
+		position: relative;
+		padding-left: var(--g-lg);
+	}
+
+	#sidebar ul ul::before {
+		content: "";
+		position: absolute;
+		top: var(--g-xs);
+		bottom: 0;
+		left: calc(var(--g-md) * .37);
+		width: 3px;
+		background: var(--color-mid-contrast);
+		opacity: 0.6;
+		border-radius: var(--r-sm);
+	}
+
+	#sidebar .sidebar-current {
+		cursor: unset;
+		color: var(--color-accent);
+	}
+
+	#toc a.toc-current {
+		color: var(--color-accent);
+	}
+
+	/* Sidebar search results replace the tree while active. */
+	#tree,
+	#results {
+		flex: 1 1 auto;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+	}
+
+	#results:empty {
+		display: none;
+	}
+
+	#sidebar:has(#results:not(:empty)) #tree {
+		display: none;
+	}
+
+	#results .heading-result a {
+		color: var(--color-mid-contrast);
+		font-size: 0.85em;
+		cursor: pointer;
+	}
+
+	#no_result {
+		opacity: 0.6;
+		cursor: default;
+	}
+
+	#results .heading-result:hover a,
+	#results li a:hover {
+		color: var(--color-accent);
+	}
+
+	#results .page-result>a.search-current,
+	#results .heading-result a.search-current {
+		color: var(--color-accent);
+	}
+
+	/* Previous/next article links. */
+	#prevnext {
+		display: flex;
+		justify-content: space-between;
+		margin-block: calc(var(--g-lg) * 2);
+	}
+
+	#prevnext a {
+		background: var(--color-lowest-contrast);
+		color: var(--color-text) !important;
+		padding: var(--g-sm) var(--g-lg);
+		border-radius: var(--r-sm);
+		text-decoration: none;
+	}
+
+	#prevnext a:hover {
+		background: var(--color-low-contrast);
+		color: var(--color-accent) !important;
+	}
+
+	.reading-trail-progress {
+		align-self: center;
+		color: var(--color-mid-contrast);
+		font-size: 0.85rem;
+		text-align: center;
+	}
+
+	/* Top breadcrumb bar. */
+	#crumb {
+		height: var(--h-header);
+		background: var(--color-lowest-contrast);
+		box-shadow: var(--color-shadow) 3px -15px 30px 0px;
+		clip-path: inset(0 0 -10000px 3px);
+		display: flex;
+		align-items: center;
+		transform: translate(-4px);
+		margin-right: -4px;
+		padding-left: 4px;
+		border-bottom: solid 1px var(--color-low-contrast);
+		z-index: var(--z-mid);
+		max-width: 101dvw;
+	}
+
+	#crumb a {
+		color: var(--color-text);
+		text-decoration: none;
+		padding: var(--g-sm) var(--g-md);
+		border-radius: var(--r-sm);
+	}
+
+	#crumb .crumb-simple-folder {
+		color: var(--color-mid-contrast);
+		padding: var(--g-sm) var(--g-md);
+		border-radius: var(--r-sm);
+	}
+
+	/* Breadcrumb dropdown menus, including nested simple-folder branches. */
+	#crumb a:not(#home-link):hover,
+	.crumb-current {
+		background: var(--color-low-contrast);
+	}
+
+	header a:not(#home-link):hover {
+		box-shadow: var(--shadow-sm);
+	}
+
+	.separator {
+		margin: 0 var(--g-sm);
+	}
+
+	#crumb :is(.dropdown, .childbox) ul {
+		display: none;
+		position: absolute;
+		left: 0;
+		top: 100%;
+		margin: 0;
+		padding: var(--g-xs) 0;
+		list-style: none;
+		background: var(--color-lowest-contrast);
+		border: 1px solid var(--color-low-contrast);
+		border-radius: var(--r-sm);
+		box-shadow: var(--shadow-sm);
+		z-index: var(--z-sky);
+	}
+
+	#crumb :is(.dropdown, .childbox):hover ul,
+	#crumb :is(.dropdown, .childbox) ul:hover {
+		display: block;
+	}
+
+	#crumb :is(.dropdown, .childbox) ul li {
+		padding: 0;
+		white-space: nowrap;
+	}
+
+	#crumb :is(.dropdown, .childbox) ul li.crumb-branch {
+		position: relative;
+	}
+
+	#crumb :is(.dropdown, .childbox) ul li>a {
+		display: block;
+		padding: var(--g-xs) var(--g-md);
+	}
+
+	#crumb :is(.dropdown, .childbox) ul li>.crumb-simple-folder {
+		display: block;
+		padding: var(--g-xs) var(--g-md);
+	}
+
+	#crumb .crumb-branch-label::after {
+		content: "\25B8";
+		margin-left: var(--g-sm);
+		color: var(--color-mid-contrast);
+	}
+
+	#crumb :is(.dropdown, .childbox) ul li.crumb-branch>ul {
+		top: -1px;
+		left: 100%;
+	}
+
+	#crumb :is(.dropdown, .childbox) ul li.crumb-branch:hover>ul,
+	#crumb :is(.dropdown, .childbox) ul li.crumb-branch>ul:hover {
+		display: block;
+	}
+
+	#crumb :is(.dropdown, .childbox) ul li:hover {
+		background: var(--color-low-contrast);
+	}
+
+	.dropdown,
+	.childbox {
+		position: relative;
+	}
+
+	.childbox .toggle {
+		padding: var(--g-sm);
+		margin-left: var(--g-xs);
+	}
+
+	#home-link:hover svg,
+	.childbox .toggle:hover {
+		fill: var(--color-accent);
+		stroke: var(--color-accent);
+		color: var(--color-accent);
+	}
+
+	.childbox {
+		cursor: pointer;
+	}
+
+	/* Keyboard-help button in the shell. */
+	.kb-keycap {
+		display: inline-flex;
+		border: 0;
+		background: var(--color-lowest-contrast);
+		cursor: pointer;
+	}
+
+	.kb-keycap svg {
+		width: 22px;
+		height: 22px;
+	}
+
+	/* Right-side table of contents. */
+	#toc {
+		z-index: var(--z-ground);
+		flex: 1;
+		background: var(--color-lowest-contrast);
+		border: 1px solid var(--color-low-contrast);
+		border-radius: var(--r-md);
+		box-shadow: var(--shadow-panel);
+		padding-left: var(--g-sm);
+		overflow: auto;
+	}
+
+	#toc ul {
+		padding-left: var(--g-xs);
+	}
+
+	#toc li {
+		padding-left: calc((var(--toc-level, 1) - 1) * var(--g-xs));
+	}
+
+	#toc a {
+		text-decoration: none;
+		color: var(--color-text);
+	}
+
+	#toc ul li:first-child {
+		color: var(--color-mid-contrast);
+		text-align: center;
+		padding-bottom: var(--g-md);
+	}
+
+	#toc ul li:first-child a {
+		color: var(--color-mid-contrast);
+	}
+
+	#toc a:hover {
+		font-weight: 600;
+	}
+
+	/* Related pages block below rendered content. */
+	#seealso {
+		color: var(--color-mid-contrast);
+		margin-top: calc(var(--g-lg) * 2);
+	}
+
+	#seealso h2 {
+		margin-bottom: var(--g-xs);
+	}
+
+	#seealso ul {
+		padding-left: var(--g-lg);
+	}
+}
