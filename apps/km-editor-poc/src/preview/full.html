@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<meta name="color-scheme" content="dark light">
+	<script type="application/json" id="km-config">{}</script>
+	<title>KM full preview</title>
+	<link id="favicon-el" rel="icon" href="../../../km/assets/logo.webp">
+	<link rel="stylesheet" href="../../../km/src/css/styles.css">
+	<style>
+		body {
+			margin: 0;
+		}
+	</style>
+</head>
+<body>
+	<nav id="sidebar" role="navigation" aria-label="Site navigation">
+		<button class="panel-close" type="button" data-command="closePanels" aria-label="Close panel" title="Close panel">&times;</button>
+		<a href="#" title="Home" aria-label="Home">
+			<div id="wiki-title" tabindex="0">
+				<img src="../../../km/assets/logo.webp" width="32" height="auto" alt="" loading="lazy" decoding="async">
+				<h1 id="wiki-title-text">KM preview</h1>
+			</div>
+		</a>
+		<div id="search-box">
+			<input id="search" type="search" placeholder="Search..." autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search">
+			<button id="search-clear" aria-label="Clear search" title="Clear search">&times;</button>
+		</div>
+		<ul id="tree" role="tree"></ul>
+		<ul id="results" aria-labelledby="results-label" aria-live="polite"></ul>
+	</nav>
+
+	<main>
+		<nav id="crumb" role="navigation" aria-label="Breadcrumb">
+			<button id="burger-sidebar" class="burger" data-command="toggleSidebar" aria-label="Open sidebar" aria-controls="sidebar" aria-expanded="false" type="button">
+				<svg width="24" height="24" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z" /></svg>
+			</button>
+			<a id="home-link" href="#" title="Home">
+				<svg width="20" height="20" viewBox="0 0 24 16"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" /></svg>
+			</a>
+			<span id="crumb-dyn"></span>
+			<button id="burger-util" class="burger" data-command="toggleUtil" aria-label="Open utility panel" aria-controls="util" aria-expanded="false" type="button">
+				<svg width="24" height="24" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2" /><circle cx="12" cy="12" r="2" /><circle cx="19" cy="12" r="2" /></svg>
+			</button>
+			<button id="theme-toggle" class="theme-toggle" data-command="toggleTheme" aria-pressed="false" aria-label="Toggle light / dark" type="button">
+				<svg class="sun" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+					<circle cx="12" cy="12" r="5"></circle>
+					<g stroke-linecap="round" stroke-width="2">
+						<line x1="12" y1="1" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"></line><line x1="17.66" y1="17.66" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"></line>
+					</g>
+				</svg>
+				<svg class="moon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"></path></svg>
+			</button>
+			<button id="kb-icon" class="kb-keycap" data-command="openHelp" type="button" aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-controls="kb-help">
+				<svg viewBox="0 0 33 33" width="30" height="30" aria-hidden="true">
+					<rect x="1" y="1" width="30" height="30" rx="3" ry="3" opacity="0.15"></rect>
+					<text x="20" y="16" text-anchor="middle" font-size="inherit">?</text>
+				</svg>
+			</button>
+		</nav>
+
+		<div id="content-area">
+			<article id="content">
+				<h3 id="loading" role="status" aria-live="polite">Knowledge is loading...</h3>
+				<noscript>This site requires JavaScript to load content.</noscript>
+				<div id="prevnext" class="prevnext"></div>
+				<div id="seealso" class="seealso"></div>
+			</article>
+
+			<section id="util" aria-labelledby="util-heading">
+				<div id="graph-box">
+					<svg id="mini" role="img" aria-label="Document graph"></svg>
+					<button class="panel-close" type="button" data-command="closePanels" aria-label="Close panel" title="Close panel">&times;</button>
+					<button id="expand" type="button" data-command="fullscreenGraph" aria-controls="mini" aria-expanded="false" aria-label="Expand graph">⛶</button>
+				</div>
+				<a class="watermark" href="#" target="_blank" rel="noopener noreferrer">Powered by km</a>
+				<nav id="toc" aria-label="Table of contents"></nav>
+			</section>
+		</div>
+	</main>
+
+	<dialog id="kb-help" aria-labelledby="kb-help-title">
+		<div class="panel">
+			<header>
+				<h2 id="kb-help-title">Keyboard shortcuts</h2>
+				<button class="close" type="button" data-command="closeHelp" aria-label="Close help" title="Close help" autofocus>&times;</button>
+			</header>
+			<ul id="kb-help-list"></ul>
+		</div>
+	</dialog>
+
+	<script type="module">
+		const params = new URLSearchParams(location.search);
+		const mdUrl = params.get("md") || "";
+		const route = params.get("route") || "";
+		const theme = params.get("theme") || "dark";
+		const allowScripts = params.get("allowJs") === "true";
+		const langs = (params.get("langs") || "")
+			.split(",")
+			.map(lang => lang.trim())
+			.filter(Boolean);
+		document.documentElement.dataset.theme = theme;
+		document.getElementById("km-config").textContent = JSON.stringify({
+			LANG: params.get("lang") || "en",
+			TITLE: params.get("title") || "KM preview",
+			MD: mdUrl,
+			DEFAULT_THEME: theme,
+			PREVIEW_THEME: theme,
+			ACCENT: params.get("accent") || "#3fabd1",
+			ASSET_BASE: "../../../km/",
+			CUSTOM_EMOJI: window.parent.kmEditorCustomEmoji || [],
+			LANGS: langs,
+			CACHE_MD: params.get("cache") || "0",
+			ALLOW_JS_FROM_MD: allowScripts ? "true" : "false"
+		});
+		if (route) history.replaceState(null, "", `${location.pathname}${location.search}#${route}`);
+		await import("../../../km/src/js/app.js");
+	</script>
+</body>
+</html>
