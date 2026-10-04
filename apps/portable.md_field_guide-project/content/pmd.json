@@ -1,0 +1,20 @@
+{
+  "LANG": "en",
+  "TITLE": "portable.md field guide",
+  "DEFAULT_THEME": "dark",
+  "ACCENT": "#3fabd1",
+  "CUSTOM_CSS": ".manual-demo-swatch { padding: 1.25rem; border: 1px solid currentColor; border-radius: .75rem; background: linear-gradient(135deg, transparent, rgba(63,171,209,.18)); }",
+  "CACHE_MD": 0,
+  "ALLOW_JS_FROM_MD": true,
+  "SHOW_EDITOR_LINK": true,
+  "CUSTOM_EMOJI": [
+    {
+      "alias": "field",
+      "src": "assets/emojis/field.svg"
+    }
+  ],
+  "SITE": {
+    "DESCRIPTION": "Learn the editor, portable.md reader and skills through working examples.",
+    "ROBOTS": "noindex,nofollow"
+  }
+}

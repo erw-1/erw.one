@@ -1,0 +1,110 @@
+{
+  "generator": "portable.md",
+  "files": [
+    {
+      "path": "index.html",
+      "hash": "b4c317e50a8e0d070aab978c833a2f75ee6a683850f01a04616989be6daf7aef",
+      "git": "2a6f8c5d077ead4ad935622175266e10d1fc2897"
+    },
+    {
+      "path": ".nojekyll",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "pmd-styles-446a7f18d9133a32.css",
+      "hash": "446a7f18d9133a3247e865b750d37077eee612417741f23bd91e3cbd690cbcd7",
+      "git": "d997d2532ff3a5428e0f8eb3c65ab92ea8ec8d5f"
+    },
+    {
+      "path": "pmd-assets/reader-5c621a0bf6b1e00b.js",
+      "hash": "5c621a0bf6b1e00b43e74a6478c3b6d0da09445a5080461f36d980a92366970a",
+      "git": "c1f261d7a7348e7eb1e644845c20c5bc61481c41"
+    },
+    {
+      "path": "pmd-custom-2f538f8642d377fa.css",
+      "hash": "2f538f8642d377fac835db616c5e651c373c3a8aeebc4e6fefba1b73cbac81c1",
+      "git": "16e6040d6a6d7aa9609717e9e2d451c5e3461516"
+    },
+    {
+      "path": "content/pmd.json",
+      "hash": "dbc321696399cf212fa31490faea8c6dee3fc7c8a9034d53e27dfebdf7598883",
+      "git": "d450af9c0497d91c88a5d810fba7d567d3fd62aa"
+    },
+    {
+      "path": "content/portable.md",
+      "hash": "1c64554dcd9b59130d852ba21082481457e88f2e5e31688b7bdb699d20c25fce",
+      "git": "7cd02183d4f400bac2030764043a85df4241aa54"
+    },
+    {
+      "path": "content/assets/emojis/field.svg",
+      "hash": "efc40da3bba27f8f1a4e2f84d4c2a960c405c829a9e1e85c7b037c66d5e973bb",
+      "git": "6b4cc7bd556b05bfe643c42f5453ba82cb703298"
+    },
+    {
+      "path": "content/assets/example-audio.wav",
+      "hash": "e94823e02e64ea651bfed9f40bac620c73af75bbfe7f91cc064ec02d7c744347",
+      "git": "706330913d0eb8e5aff42ce6a763c4290d894dcd"
+    },
+    {
+      "path": "content/assets/example-captions.vtt",
+      "hash": "633d19f58fb6c881e8664176bfcf8a30c549b4c4a11a21ed1263655e9b6c8004",
+      "git": "fb6e02cc84de40605a2c6909ae704307c2e08724"
+    },
+    {
+      "path": "content/assets/example-data.csv",
+      "hash": "6bf76199a94e033d731cce7c65c794e58a71ce64c08bf6b6472cba9997f489b7",
+      "git": "d1c6c89f667ae1c14e083cde699f3c5700eedd67"
+    },
+    {
+      "path": "content/assets/example-data.tsv",
+      "hash": "bfc315c08776abb74209334431a9d7c0616eb91b1eba85b425a1a8c0a9cab8b9",
+      "git": "47709019e148f9d00afa3653a7da63f8777ae395"
+    },
+    {
+      "path": "content/assets/example-document.pdf",
+      "hash": "1feca7052e9092d7230ce04a647b33d559960e312a5520212305f064a46f5d8e",
+      "git": "f7fd17306821c6a24d8ac80f14126046ee080438"
+    },
+    {
+      "path": "content/assets/example-download.txt",
+      "hash": "398a1fd61a1af456fdcb7acb0c4e2ec9ccc94071f9cfeb00df206f092216a98d",
+      "git": "f8d4e7faefbb35792ddd4d4d4152834210985bd3"
+    },
+    {
+      "path": "content/assets/example-embed.html",
+      "hash": "c0c54071b1db7ffafa133e73415b4a80d53649339c5c7e5893d4a78c3468ec2e",
+      "git": "db1551e622bc5f0ee26fda593be62204b596b6f0"
+    },
+    {
+      "path": "content/assets/example-image.png",
+      "hash": "d0c6bdeb5075a86ce15b68f3d6594b4599d295a991ede6b09fef0a66e00716e2",
+      "git": "18329ddd12cc17e934acca370e1ec25a63de4f4a"
+    },
+    {
+      "path": "content/assets/example-note.md",
+      "hash": "a71b22f1f5e86bb1cb92c6e123810272a9163d3339560486b195698891c29d80",
+      "git": "008345d2f71077fd6f28b8afd7629c7ba66b35d9"
+    },
+    {
+      "path": "content/assets/example-references.bib",
+      "hash": "8960374a03e765e6c5c373a6c73c4e50d6e1bc313c796f05646c2944c6268fea",
+      "git": "567b335a7dc307f5d59021e2a08330a595c981b8"
+    },
+    {
+      "path": "content/assets/example-references.json",
+      "hash": "0b24d8d73438898032b02c1d239286bd769a1b6f62f084c0d050955a5d9a11a2",
+      "git": "b6fcab138849f989636ea31449ae7e34c91ac949"
+    },
+    {
+      "path": "content/assets/example-references.ris",
+      "hash": "a83af7a836c0abb0eeab1cb9e4d279aa023c9a9dcdbf0bdbfb0ac3e5230dc5cc",
+      "git": "c8b2990978fa4d4f4b41d9a4b0fe79c1f6e89c84"
+    },
+    {
+      "path": "content/assets/example-video.webm",
+      "hash": "1ef4f3e8239b01d6333402852a3f0fda1df4375aebeb10acb5c27b0255d73c81",
+      "git": "df01cb72f6b65004ba03d9a6e48b646730eb4bfe"
+    }
+  ]
+}

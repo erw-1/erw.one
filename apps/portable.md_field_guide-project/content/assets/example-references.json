@@ -1,0 +1,20 @@
+[
+  {
+    "id": "manual-example",
+    "type": "document",
+    "title": "Pocket field guide",
+    "author": [
+      {
+        "literal": "portable.md manual"
+      }
+    ],
+    "issued": {
+      "date-parts": [
+        [
+          2026
+        ]
+      ]
+    },
+    "note": "Original demonstration document included in the manual"
+  }
+]
