@@ -1,7 +1,0 @@
-portable.md demo pack
-
-Original synthetic samples for the manual.
-Video: five-second animation, no speech.
-Audio: three ascending tones (C, E, G), no speech.
-Data: illustrative counts, not the actual manual inventory.
-You can reuse and modify these samples under the repository license.
