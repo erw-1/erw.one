@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://erw.one/apps/pmd-demo-pages/sitemap.xml

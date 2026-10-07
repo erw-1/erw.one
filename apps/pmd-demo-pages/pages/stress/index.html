@@ -1,0 +1,1665 @@
+<!doctype html>
+<html lang="en" dir="ltr" data-theme="dark" style="--color-accent: #e8833a;"><head>
+  <meta charset="utf-8">
+  <meta name="referrer" content="no-referrer">
+  <meta name="color-scheme" content="light dark">
+  <!-- Twemoji graphics by Twitter, Inc. and other contributors, CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Source: https://github.com/jdecked/twemoji. PNG artwork is unmodified. -->
+
+  <!-- Published sites embed their configuration here, or share it as a script beside the reader. -->
+  <script type="application/json" id="pmd-config"></script>
+
+<!-- PMD_SITE_HEAD_START -->
+  <title data-pmd-site="">Everything, back to back • portable.md demo</title>
+  <link data-pmd-site="" id="favicon-el" rel="icon" href="../../content/assets/site/icon.svg" type="image/svg+xml" sizes="any">
+  <meta data-pmd-site="" name="description" content="Every page of the project on a single page: a feature list and a performance probe.">
+  <meta data-pmd-site="" name="keywords" content="portable.md, Markdown reader, diagrams, math, media, page graph, table of contents, themes">
+  <meta data-pmd-site="" name="robots" content="noindex">
+  <meta data-pmd-site="" name="theme-color" content="#2a1a10">
+  <link data-pmd-site="" rel="canonical" href="https://erw.one/apps/pmd-demo-pages/pages/stress/">
+  <link data-pmd-site="" rel="manifest" href="../../site.webmanifest">
+  <link data-pmd-site="" rel="search" href="../../opensearch.xml" type="application/opensearchdescription+xml" title="portable.md demo">
+  <meta data-pmd-site="" property="og:type" content="website">
+  <meta data-pmd-site="" property="og:site_name" content="portable.md demo">
+  <meta data-pmd-site="" property="og:title" content="Everything, back to back • portable.md demo">
+  <meta data-pmd-site="" property="og:description" content="Every page of the project on a single page: a feature list and a performance probe.">
+  <meta data-pmd-site="" property="og:url" content="https://erw.one/apps/pmd-demo-pages/pages/stress/">
+  <meta data-pmd-site="" name="twitter:card" content="summary">
+  <meta data-pmd-site="" name="twitter:title" content="Everything, back to back • portable.md demo">
+  <meta data-pmd-site="" name="twitter:description" content="Every page of the project on a single page: a feature list and a performance probe.">
+<!-- PMD_SITE_HEAD_END -->
+
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+
+  <!-- Pinned browser dependencies load lazily from jsDelivr. -->
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin="">
+
+  <link rel="stylesheet" href="../../pmd-reader-dist/reader-a129cadda0f80676.css">
+  <link rel="stylesheet" href="../../pmd-custom-b3d1f870db99960a.css">
+  <script src="../../pmd-reader-dist/site-a24b7f1b9e252caf.js" defer></script>
+  <script type="module" src="../../pmd-reader-dist/reader-37efa4299030f9a9.js"></script>
+
+<script type="application/ld+json" data-pmd-breadcrumbs="">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Everything you can display using portable.md","item":"https://erw.one/apps/pmd-demo-pages/"},{"@type":"ListItem","position":2,"name":"Everything, back to back","item":"https://erw.one/apps/pmd-demo-pages/pages/stress/"}]}</script></head>
+
+<body>
+  <nav id="sidebar" role="navigation" aria-label="Site navigation">
+    <button class="panel-close" type="button" data-command="closePanels" aria-label="Close panel" title="Close panel">×</button>
+    <a href="#/" title="Home" aria-label="Home">
+      <div id="wiki-title" tabindex="0">
+        <img id="site-logo" width="32" height="auto" alt="" loading="lazy" decoding="async" src="../../content/assets/site/icon.svg">
+        <h1 id="wiki-title-text">portable.md demo</h1>
+      </div>
+    </a>
+
+    <div id="search-box">
+      <input id="search" type="search" placeholder="Search…" maxlength="200" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="search" aria-label="Search">
+      <button id="search-clear" aria-label="Clear search" title="Clear search">✕</button>
+    </div>
+
+    <ul id="tree" role="tree"><li role="treeitem" class="folder"><details open=""><summary class="folder-summary"><a class="lbl" data-page="content" href="../../pages/content/">Content</a><span class="caret" aria-hidden="true"></span></summary><ul id="group-content" role="group"><li role="treeitem" class="article"><a class="" data-page="text" href="../../pages/text/">Text and typography</a></li><li role="treeitem" class="article"><a class="" data-page="callouts" href="../../pages/callouts/">Callouts and spoilers</a></li><li role="treeitem" class="article"><a class="" data-page="layout" href="../../pages/layout/">Columns, tables and alignment</a></li><li role="treeitem" class="article"><a class="" data-page="code" href="../../pages/code/">Code</a></li><li role="treeitem" class="article"><a class="" data-page="math" href="../../pages/math/">Math</a></li><li role="treeitem" class="folder"><details open=""><summary class="folder-summary"><a class="lbl" data-page="diagrams" href="../../pages/diagrams/">Diagrams</a><span class="caret" aria-hidden="true"></span></summary><ul id="group-diagrams" role="group"><li role="treeitem" class="article"><a class="" data-page="diagrams_flow" href="../../pages/diagrams_flow/">Flows and structure</a></li><li role="treeitem" class="article"><a class="" data-page="diagrams_time" href="../../pages/diagrams_time/">Time, plans and journeys</a></li><li role="treeitem" class="article"><a class="" data-page="diagrams_data" href="../../pages/diagrams_data/">Data and charts</a></li><li role="treeitem" class="article"><a class="" data-page="diagrams_maps" href="../../pages/diagrams_maps/">Maps and strategy</a></li></ul></details></li><li role="treeitem" class="folder"><details open=""><summary class="folder-summary"><a class="lbl" data-page="media" href="../../pages/media/">Media</a><span class="caret" aria-hidden="true"></span></summary><ul id="group-media" role="group"><li role="treeitem" class="article"><a class="" data-page="images" href="../../pages/images/">Images and emoji</a></li><li role="treeitem" class="article"><a class="" data-page="video_audio" href="../../pages/video_audio/">Video and audio</a></li><li role="treeitem" class="article"><a class="" data-page="documents" href="../../pages/documents/">Documents and data</a></li></ul></details></li><li role="treeitem" class="article"><a class="" data-page="queries" href="../../pages/queries/">Page queries</a></li><li role="treeitem" class="article"><a class="" data-page="canvas" href="../../pages/canvas/">Canvas</a></li><li role="treeitem" class="article"><a class="" data-page="notes" href="../../pages/notes/">Footnotes, citations and glossary terms</a></li><li role="treeitem" class="folder"><details open=""><summary class="folder-summary"><a class="lbl" data-page="transclusion" href="../../pages/transclusion/">Transclusion</a><span class="caret" aria-hidden="true"></span></summary><ul id="group-transclusion" role="group"><li role="treeitem" class="article"><a class="" data-page="transclusion_source" href="../../pages/transclusion_source/">A reusable source</a></li></ul></details></li><li role="treeitem" class="article"><a class="" data-page="presentation" href="../../pages/presentation/">Presentation</a></li><li role="treeitem" class="article"><a class="" data-page="html" href="../../pages/html/">HTML and embedded pages</a></li></ul></details></li><li role="treeitem" class="folder"><details open=""><summary class="folder-summary"><a class="lbl" data-page="look" href="../../pages/look/">Look and navigation</a><span class="caret" aria-hidden="true"></span></summary><ul id="group-look" role="group"><li role="treeitem" class="article"><a class="" data-page="theme" href="../../pages/theme/">Theme, accent and custom CSS</a></li><li role="treeitem" class="article"><a class="" data-page="toc" href="../../pages/toc/">Table of contents</a></li><li role="treeitem" class="folder"><details open=""><summary class="folder-summary"><a class="lbl" data-page="tree" href="../../pages/tree/">Tree shapes</a><span class="caret" aria-hidden="true"></span></summary><ul id="group-tree" role="group"><li role="treeitem" class="folder simple-folder"><details><summary class="folder-summary"><span class="lbl simple-folder-link" data-page="depth1">Level 1</span><span class="caret" aria-hidden="true"></span></summary><ul id="group-depth1" role="group"><li role="treeitem" class="folder simple-folder"><details><summary class="folder-summary"><span class="lbl simple-folder-link" data-page="depth2">Level 2</span><span class="caret" aria-hidden="true"></span></summary><ul id="group-depth2" role="group"><li role="treeitem" class="folder simple-folder"><details><summary class="folder-summary"><span class="lbl simple-folder-link" data-page="depth3">Level 3</span><span class="caret" aria-hidden="true"></span></summary><ul id="group-depth3" role="group"><li role="treeitem" class="folder simple-folder"><details><summary class="folder-summary"><span class="lbl simple-folder-link" data-page="depth4">Level 4</span><span class="caret" aria-hidden="true"></span></summary><ul id="group-depth4" role="group"><li role="treeitem" class="folder simple-folder"><details><summary class="folder-summary"><span class="lbl simple-folder-link" data-page="depth5">Level 5</span><span class="caret" aria-hidden="true"></span></summary><ul id="group-depth5" role="group"><li role="treeitem" class="folder simple-folder"><details><summary class="folder-summary"><span class="lbl simple-folder-link" data-page="depth6">Level 6</span><span class="caret" aria-hidden="true"></span></summary><ul id="group-depth6" role="group"><li role="treeitem" class="article"><a class="" data-page="depth7" href="../../pages/depth7/">The bottom</a></li></ul></details></li></ul></details></li></ul></details></li></ul></details></li></ul></details></li></ul></details></li></ul></details></li><li role="treeitem" class="article"><a class="" data-page="graph" href="../../pages/graph/">Page graph</a></li><li role="treeitem" class="article"><a class="" data-page="reading" href="../../pages/reading/">Reading surface</a></li><li role="treeitem" class="article"><a class="" data-page="page_options" href="../../pages/page_options/">Per-page options</a></li></ul></details></li><li role="treeitem" class="article"><a class="glossary-link" data-page="demo_glossary" href="../../pages/demo_glossary/">Glossary</a></li><li role="treeitem" class="article"><a class="references-link" data-page="demo_references" href="../../pages/demo_references/">References</a></li><li role="treeitem" class="article"><a class="" data-page="stress" href="../../pages/stress/">Everything, back to back</a></li><li class="tree-rail" role="presentation" aria-hidden="true"><svg focusable="false"><path></path></svg></li></ul>
+    <ul id="results" aria-live="polite"></ul>
+  </nav>
+  <main>
+    <nav id="crumb" role="navigation" aria-label="Breadcrumb">
+      <button id="burger-sidebar" class="burger" data-command="toggleSidebar" aria-label="Open sidebar" aria-controls="sidebar" aria-expanded="false" type="button">
+        <svg class="pane-glyph" width="24" height="24" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+          <g class="pane-glyph-main">
+            <path class="search-page" d="M2 4h6l3 3v5H2z"></path>
+            <path class="search-page" d="M10 14h6l2 2v3h-8z"></path>
+            <path class="search-page" d="M10 21h6l2 2v3h-8z"></path>
+            <path class="pane-glyph-line" d="M5 12v11.5h3M5 16.5h3"></path>
+          </g>
+          <g class="pane-glyph-detail pane-glyph-line">
+            <circle cx="20" cy="7" r="4.5"></circle>
+            <path d="m23.3 10.3 3.2 3.2"></path>
+          </g>
+        </svg>
+      </button>
+      <a id="home-link" href="../../" title="Home">
+        <svg class="pane-glyph home-glyph" width="24" height="24" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+          <g class="home-house">
+            <path d="m6 15 8-6.5 8 6.5v12h-6v-7h-4v7H6z"></path>
+            <path class="pane-glyph-detail home-roof" d="m3 14 11-9 11 9"></path>
+          </g>
+        </svg>
+      </a>
+      <span id="crumb-dyn"><span class="dropdown"><a class="crumb-current" href="../../pages/stress/">Everything, back to back</a><ul><li><a href="../../pages/content/">Content</a></li><li><a href="../../pages/look/">Look and navigation</a></li><li><a href="../../pages/demo_glossary/">Glossary</a></li><li><a href="../../pages/demo_references/">References</a></li></ul></span></span>
+
+      <button id="burger-util" class="burger" data-command="toggleUtil" aria-label="Open utility panel" aria-controls="util" aria-expanded="false" type="button">
+        <svg class="pane-glyph" width="24" height="24" viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+          <g class="pane-glyph-main">
+            <path class="pane-glyph-line toc-glyph-lines" d="M3 9h9"></path>
+            <path class="pane-glyph-line toc-glyph-lines" d="M3 17.5h8"></path>
+            <path class="pane-glyph-line toc-glyph-lines" d="M3 25.5h15"></path>
+          </g>
+          <g class="pane-glyph-detail" transform="translate(0 2)">
+            <g class="toc-glyph-graph">
+              <path class="pane-glyph-line graph-edges" d="M20 3L25 10L17 13Z"></path>
+              <circle class="graph-node-top" cx="20" cy="3" r="2.2"></circle>
+              <circle class="graph-node-right" cx="25" cy="10" r="2.2"></circle>
+              <circle class="graph-node-left" cx="17" cy="13" r="2.2"></circle>
+            </g>
+          </g>
+        </svg>
+      </button>
+
+      <button id="reading-width-toggle" class="reader-width-toggle" type="button" aria-controls="content" aria-pressed="false" aria-label="Full-width content" title="Use full width" hidden="">
+        <svg viewBox="0 0 36 32" aria-hidden="true" focusable="false">
+          <g class="reader-width-lines"><path d="M4 4h22M4 9h28M4 14h26M4 19h28"></path></g>
+          <g class="reader-width-arrow"><path d="M4 27h28M8 23l-4 4 4 4M28 23l4 4-4 4"></path></g>
+        </svg>
+      </button>
+
+      <button id="theme-toggle" class="theme-toggle" data-command="toggleTheme" aria-pressed="false" aria-label="Toggle light / dark" type="button">
+        <span class="theme-glyph" aria-hidden="true">
+        <svg class="sun" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="5"></circle>
+          <g stroke-linecap="round" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="4"></line><line x1="12" y1="20" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"></line><line x1="17.66" y1="17.66" x2="19.78" y2="19.78">
+            </line><line x1="1" y1="12" x2="4" y2="12"></line><line x1="20" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"></line><line x1="17.66" y1="6.34" x2="19.78" y2="4.22"></line>
+          </g>
+        </svg>
+        <svg class="moon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"></path>
+        </svg>
+        </span>
+      </button>
+
+      <button id="kb-icon" class="kb-keycap" data-command="openHelp" type="button" aria-label="Keyboard shortcuts" aria-haspopup="dialog" aria-controls="kb-help">
+        <svg viewBox="0 0 33 33" width="30" height="30" aria-hidden="true">
+          <g class="help-key">
+            <rect x="1" y="1" width="30" height="30" rx="3" ry="3" opacity="0.15"></rect>
+            <text x="20" y="16" text-anchor="middle" font-size="inherit">?</text>
+          </g>
+        </svg>
+      </button>
+    </nav>
+
+    <div id="content-area">
+      <article id="content" class="pmd-rendered-surface" data-pmd-published="stress"><h1 id="1">Everything, back to back</h1>
+<p>Every page of this project, one after another, on a single page. It is two things at once:</p>
+<ul>
+<li><strong>A feature list.</strong> The table of contents lists every kind of content and every look-and-navigation topic, in the order of the tours.</li>
+<li><strong>A performance probe.</strong> One page that holds every diagram, table, viewer, formula and code block of the project is the heaviest page the reader is asked to draw here. Time how long it takes to open, scroll and search.</li>
+</ul>
+<!-- Generated between the markers from the other pages. Edit those pages, not this block. -->
+<!-- stress:begin --><h1 id="2">Text and typography</h1>
+<p>Inline marks, paragraph flow, lists, tasks and emoji.</p>
+<h2 id="2_1">Inline marks</h2>
+<p><strong>Bold</strong> · <em>italic</em> · <em><strong>both</strong></em> · <u>underline</u> · <del>retired</del> · <mark>highlight</mark> · <span class="md-inline-spoiler" role="button" tabindex="0" aria-expanded="false">spoiler</span> · H<sub>2</sub>O · x<sup>2</sup> · <code>code</code> · <kbd>Ctrl</kbd>+<kbd>K</kbd></p>
+<p class="md-subtext">Subtext sits quietly beneath a main idea.</p>
+<p>The marks nest: <mark><strong>bold inside a highlight</strong></mark>, <u>underline with <code>code</code> inside</u>, <strong>bold with <mark>a highlight</mark> and H<sub>2</sub>O</strong>, and <span class="md-inline-spoiler" role="button" tabindex="0" aria-expanded="false">a spoiler hiding <strong>bold</strong>, <code>code</code> and <a href="../../pages/content/">a link</a></span>.</p>
+<h2 id="2_2">Paragraph flow</h2>
+<p>A soft break keeps the line in the same paragraph.<br>This line follows two trailing spaces.</p>
+<blockquote>
+<p>A quotation keeps its own voice, and can run to a second paragraph.</p>
+<p>That second paragraph stays inside the quotation.</p>
+</blockquote>
+<p><left>Left aligned</left></p>
+<center>Centered</center><p><right>Right aligned</right></p>
+<hr>
+<h2 id="2_3">Lists and tasks</h2>
+<ul>
+<li>An unordered item<ul>
+<li>A nested item<ul>
+<li>A third level</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Another item</li>
+</ul>
+<ol>
+<li>A first step</li>
+<li>A second step<ol>
+<li>A sub-step</li>
+</ol>
+</li>
+<li>A third step</li>
+</ol>
+<ul>
+<li><input checked="" disabled="" type="checkbox"> A completed task, saved in the source</li>
+<li><input disabled="" type="checkbox"> An open task, saved in the source</li>
+<li><input type="checkbox" class="pmd-interactive-task" aria-label="Interactive task"> A reader checkbox: click it, it is not saved</li>
+</ul>
+<h2 id="2_4">Emoji</h2>
+<p>Built-in <span class="pmd-emoji-box" title=":rocket:"><img class="pmd-emoji pmd-twemoji" src="https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@16.0.0/img/twitter/64/1f680.png" alt="🚀" loading="lazy" decoding="async" draggable="false"></span> <span class="pmd-emoji-box" title=":sparkles:"><img class="pmd-emoji pmd-twemoji" src="https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@16.0.0/img/twitter/64/2728.png" alt="✨" loading="lazy" decoding="async" draggable="false"></span> <span class="pmd-emoji-box" title=":books:"><img class="pmd-emoji pmd-twemoji" src="https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@16.0.0/img/twitter/64/1f4da.png" alt="📚" loading="lazy" decoding="async" draggable="false"></span> <span class="pmd-emoji-box" title=":tada:"><img class="pmd-emoji pmd-twemoji" src="https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@16.0.0/img/twitter/64/1f389.png" alt="🎉" loading="lazy" decoding="async" draggable="false"></span> and a project emoji <span class="pmd-emoji-box" title=":demo:"><img class="pmd-emoji pmd-custom-emoji" src="../../content/assets/emojis/demo.svg" alt=":demo:" loading="eager" decoding="async" draggable="false"></span> from <code>CUSTOM_EMOJI</code>. Raw unicode passes through: 🚀 🎉 and joined sequences such as 👩‍🚀 and 👨‍👩‍👧‍👦.</p>
+<h2 id="2_5">Edge cases that stay quiet</h2>
+<p>Escaped markup stays literal: *not italic*, ==not highlighted==, `not code`.</p>
+<p>Delimiters around nothing are not marks: <code>== ==</code> stays == ==, <code>^ ^</code> stays ^ ^, <code>++ ++</code> stays ++ ++.</p>
+<p>Strikethrough keeps its tildes: <del>struck</del> next to H<sub>2</sub>O.</p>
+<p>A very long unbroken string wraps inside the column instead of widening the page: Pneumonoultramicroscopicsilicovolcanoconiosis_and_then_some_more_characters_without_any_spaces_to_break_on.</p>
+<h2 id="2_6">Reading measure</h2>
+<p>Good typography is mostly a matter of line length and rhythm. The reader sets text in a column of about seventy characters, because eyes lose their place on lines much longer than that. On a wide screen, the reading-width button lets the column use the whole window; on a phone, the column simply fills the screen.</p>
+<p>Headings, quotes and lists keep their own spacing, so a page that mixes them still reads as one voice. Try the width button, then come back to this paragraph.</p>
+<h1 id="3">Callouts and spoilers</h1>
+<p>Asides with the right weight, and content that waits to be asked for.</p>
+<h2 id="3_1">Alerts</h2>
+<div class="markdown-alert markdown-alert-note">
+<p class="markdown-alert-title"><svg class="octicon octicon-info mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Note</p>
+<p>Background worth keeping nearby.</p>
+</div>
+<div class="markdown-alert markdown-alert-tip">
+<p class="markdown-alert-title"><svg class="octicon octicon-light-bulb mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>Tip</p>
+<p>A practical improvement.</p>
+</div>
+<div class="markdown-alert markdown-alert-important">
+<p class="markdown-alert-title"><svg class="octicon octicon-report mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Important</p>
+<p>A prerequisite or a key constraint.</p>
+</div>
+<div class="markdown-alert markdown-alert-warning">
+<p class="markdown-alert-title"><svg class="octicon octicon-alert mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"></path></svg>Warning</p>
+<p>A consequential problem to avoid.</p>
+</div>
+<div class="markdown-alert markdown-alert-caution">
+<p class="markdown-alert-title"><svg class="octicon octicon-stop mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"></path></svg>Caution</p>
+<p>A risk that needs attention before acting.</p>
+</div>
+<h2 id="3_2">Callout blocks</h2>
+<div class="md-callout md-note">
+<p>A callout holds <strong>Markdown</strong> and several blocks:</p>
+<ul>
+<li>a list</li>
+<li>with <code>code</code></li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>And</th>
+<th>a table</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>inside</td>
+<td>the callout</td>
+</tr>
+</tbody></table>
+
+</div>
+<div class="md-callout md-tip">
+<p>A verified outcome.</p>
+
+</div>
+<div class="md-callout md-warning">
+<p>A longer warning, with normal Markdown inside.</p>
+
+</div>
+<div class="md-callout md-caution">
+<p>A concrete danger, not decorative red.</p>
+
+</div>
+<h2 id="3_3">Spoilers</h2>
+<details class="md-spoiler"><summary>Click to reveal</summary>
+<p>Spoiler blocks are disclosure controls, not privacy controls.</p>
+<pre><code class="language-js">const answer = 6 * 7
+</code></pre>
+
+</details>
+<details class="md-spoiler"><summary>A spoiler holding a callout</summary>
+<div class="md-callout md-tip">
+<p>A callout inside a spoiler.</p>
+
+</div>
+<p>Text after the inner callout stays in the spoiler.</p>
+
+</details>
+<p>Inline spoilers hide a word: the answer is <span class="md-inline-spoiler" role="button" tabindex="0" aria-expanded="false">forty-two</span>.</p>
+<h2 id="3_4">Raw HTML disclosure</h2>
+<details>
+<summary>A plain details element</summary>
+<p>The browser's own <code>details</code> and <code>summary</code> elements work as well.</p>
+</details><h2 id="3_5">Quotations</h2>
+<blockquote>
+<p>The reader keeps quotations visually quiet.</p>
+<blockquote>
+<p>A nested quotation sits one level deeper.</p>
+</blockquote>
+</blockquote>
+<h1 id="4">Columns, tables and alignment</h1>
+<p>Side-by-side blocks and tables that behave on every screen.</p>
+<h2 id="4_1">Columns</h2>
+<div class="md-columns-scroll"><div class="md-columns" style="--pmd-column-count:2"><div class="md-column"><h3 id="4_1_1">Before</h3>
+<p>The original approach, in ordinary Markdown.</p>
+</div><div class="md-column"><h3 id="4_1_2">After</h3>
+<p>The revised approach, next to it.</p>
+</div></div></div>
+<div class="md-columns-scroll"><div class="md-columns" style="--pmd-column-count:3"><div class="md-column"><h3 id="4_1_3">One</h3>
+<p>A column can hold a list:</p>
+<ul>
+<li>first</li>
+<li>second</li>
+</ul>
+</div><div class="md-column"><h3 id="4_1_4">Two</h3>
+<p>Or a callout:</p>
+<div class="markdown-alert markdown-alert-tip">
+<p class="markdown-alert-title"><svg class="octicon octicon-light-bulb mr-2" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"></path></svg>Tip</p>
+<p>Columns scroll sideways on a narrow screen.</p>
+</div>
+</div><div class="md-column"><h3 id="4_1_5">Three</h3>
+<p>Or an image:</p>
+<p><img src="../../content/assets/sample-image.png" alt="A small cover image"></p>
+</div></div></div>
+<div class="md-columns-scroll"><div class="md-columns" style="--pmd-column-count:4"><div class="md-column"><p>Four</p>
+</div><div class="md-column"><p>short</p>
+</div><div class="md-column"><p>columns</p>
+</div><div class="md-column"><p>wide</p>
+</div></div></div>
+<h2 id="4_2">Tables</h2>
+<table>
+<thead>
+<tr>
+<th align="left">Facet</th>
+<th align="center">Purpose</th>
+<th align="right">Sample pages</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="left"><strong>Left aligned</strong></td>
+<td align="center">Centered</td>
+<td align="right">Right aligned</td>
+</tr>
+<tr>
+<td align="left"><code>code</code> in a cell</td>
+<td align="center"><mark>highlight</mark></td>
+<td align="right"><a href="../../pages/content/">a link</a></td>
+</tr>
+<tr>
+<td align="left">A pipe, escaped</td>
+<td align="center">A | B</td>
+<td align="right">2</td>
+</tr>
+</tbody></table>
+<h3 id="4_2_1">A wide table scrolls instead of breaking the page</h3>
+<table>
+<thead>
+<tr>
+<th>Surface</th>
+<th>Where</th>
+<th>Changes with</th>
+<th>Shown by</th>
+<th>Kept in</th>
+<th>Reset by</th>
+<th>Example</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Theme</td>
+<td>Whole reader</td>
+<td>Toggle or config</td>
+<td>Colors</td>
+<td>Browser</td>
+<td>Clearing site data</td>
+<td>Dark</td>
+<td>One per reader</td>
+</tr>
+<tr>
+<td>Width</td>
+<td>Content</td>
+<td>Toggle</td>
+<td>Column</td>
+<td>Browser</td>
+<td>Clearing site data</td>
+<td>Full</td>
+<td>Wide screens</td>
+</tr>
+<tr>
+<td>Panels</td>
+<td>Sides</td>
+<td>Buttons, swipes</td>
+<td>Layout</td>
+<td>Session</td>
+<td>Reload</td>
+<td>Hidden</td>
+<td>Phones swipe</td>
+</tr>
+</tbody></table>
+<h3 id="4_2_2">A ragged table and a long cell</h3>
+<table>
+<thead>
+<tr>
+<th>Short</th>
+<th>A long cell</th>
+<th>Missing</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>a</td>
+<td><a href="https://example.com/a/very/long/address/that/has/no/spaces/to/wrap/on/and/keeps/going/and/going">https://example.com/a/very/long/address/that/has/no/spaces/to/wrap/on/and/keeps/going/and/going</a></td>
+<td></td>
+</tr>
+<tr>
+<td>b</td>
+<td>A sentence that wraps at word boundaries inside its column</td>
+<td>c</td>
+</tr>
+</tbody></table>
+<h2 id="4_3">Rules</h2>
+<hr>
+<hr>
+<h1 id="5">Code</h1>
+<p>Fenced blocks are highlighted by language, never run, and have a copy button.</p>
+<h2 id="5_1">A dozen languages</h2>
+<pre><code class="language-js">const pages = ["text", "code", "math"]
+console.log(pages.map(title =&gt; title.toUpperCase()).join(" / "))
+</code></pre>
+<pre><code class="language-python">def tour(stops):
+    for number, stop in enumerate(stops, start=1):
+        print(f"{number}. {stop}")
+</code></pre>
+<pre><code class="language-ts">interface Page { id: string; tags: string[] }
+const home: Page = { id: "home", tags: [] }
+</code></pre>
+<pre><code class="language-bash">for file in assets/*.png; do
+  echo "$file: $(wc -c &lt; "$file") bytes"
+done
+</code></pre>
+<pre><code class="language-json">{ "TITLE": "Everything", "ACCENT": "#e8833a" }
+</code></pre>
+<pre><code class="language-yaml">reader:
+  theme: dark
+  accent: "#e8833a"
+</code></pre>
+<pre><code class="language-html">&lt;figure&gt;
+  &lt;img src="assets/sample-image.png" alt="A cover" width="160"&gt;
+  &lt;figcaption&gt;Raw HTML in a code block stays text.&lt;/figcaption&gt;
+&lt;/figure&gt;
+</code></pre>
+<pre><code class="language-css">.demo-skin { --color-accent: #e8833a; border-radius: var(--r-md); }
+</code></pre>
+<pre><code class="language-sql">SELECT title, updated FROM pages WHERE tags LIKE '%gallery%' ORDER BY updated DESC;
+</code></pre>
+<pre><code class="language-rust">fn main() {
+    let tags = ["gallery", "visual"];
+    println!("{}", tags.join(", "));
+}
+</code></pre>
+<pre><code class="language-go">package main
+
+import "fmt"
+
+func main() { fmt.Println("hello, reader") }
+</code></pre>
+<pre><code class="language-diff">- ACCENT: "#3fabd1"
++ ACCENT: "#e8833a"
+</code></pre>
+<h2 id="5_2">Aliases and plain text</h2>
+<p><code>py</code> and <code>sh</code> are aliases for Python and Bash. A fence with no language stays plain:</p>
+<pre><code>No language: no highlighting, same spacing,
+    and   the   whitespace   is   kept.
+</code></pre>
+<h2 id="5_3">A fence that contains a fence</h2>
+<pre><code class="language-md">```js
+console.log("a fence inside a fence")
+```
+</code></pre>
+<h2 id="5_4">A wide block scrolls</h2>
+<pre><code class="language-text">This line is deliberately far wider than the reading column so the block scrolls sideways instead of stretching the page or wrapping: 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789
+</code></pre>
+<h2 id="5_5">Inline code</h2>
+<p>Use <code>inline code</code> for names, <code>a</code> <code>b</code> <code>c</code> side by side, and <code>a `backtick` inside</code> with a longer run.</p>
+<h1 id="6">Math</h1>
+<p>KaTeX formulas, inline and display, with prices left alone.</p>
+<h2 id="6_1">Inline</h2>
+<p>The mass–energy relation <span class="pmd-math-source">$E=mc^2$</span> stays in the sentence, and so does a braced number <span class="pmd-math-source">${2+3}$</span>. Prices such as $5 to $10 remain text.</p>
+<h2 id="6_2">Display</h2>
+<div class="pmd-math-source">$$
+x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
+$$</div>
+<div class="pmd-math-source">$$
+\begin{aligned}
+f(x) &amp;= x^2 + 1 \\
+f'(x) &amp;= 2x \\
+\int_0^1 f(x)\,dx &amp;= \tfrac{4}{3}
+\end{aligned}
+$$</div>
+<h2 id="6_3">Matrices, sums and cases</h2>
+<div class="pmd-math-source">$$
+A = \begin{pmatrix} 1 &amp; 2 \\ 3 &amp; 4 \end{pmatrix}, \qquad
+\sum_{n=1}^{\infty} \frac{1}{n^2} = \frac{\pi^2}{6}
+$$</div>
+<div class="pmd-math-source">$$
+|x| = \begin{cases} x &amp; \text{if } x \ge 0 \\ -x &amp; \text{otherwise} \end{cases}
+$$</div>
+<h2 id="6_4">Sets and symbols</h2>
+<p><span class="pmd-math-source">$\mathbb{R} \subset \mathbb{C}$</span>, <span class="pmd-math-source">$\forall \epsilon &gt; 0\ \exists \delta &gt; 0$</span>, <span class="pmd-math-source">$\binom{n}{k}$</span>, <span class="pmd-math-source">$\sqrt[3]{27} = 3$</span>, <span class="pmd-math-source">$\vec{v} \cdot \vec{w}$</span>.</p>
+<h2 id="6_5">Math stays out of code</h2>
+<p>Inside code <code>$not math$</code> is literal, and so is a fence:</p>
+<pre><code class="language-text">$$ not math $$
+</code></pre>
+<h1 id="7">Diagrams</h1>
+<p>Thirty-five diagram types from Mermaid, drawn by the reader in the project's colors. They are grouped here by what they describe.</p>
+<div class="pmd-query-cards">
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/diagrams_flow/"><strong>Flows and structure</strong><span>2026-10-04</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/diagrams_time/"><strong>Time, plans and journeys</strong><span>2026-10-04</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/diagrams_data/"><strong>Data and charts</strong><span>2026-10-04</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/diagrams_maps/"><strong>Maps and strategy</strong><span>2026-10-04</span></a></div>
+</div><div class="mermaid" style="white-space: pre-wrap;">flowchart LR
+  Text[Text in the page] --&gt; Draw[The reader draws it]
+  Draw --&gt; Theme[In the current theme]</div>
+<h1 id="8">Flows and structure</h1>
+<p>How things connect: steps, roles, messages, classes, states, records, requirements, systems and blocks.</p>
+<h2 id="8_1">flowchart</h2>
+<p>A process, decision tree or dependency path. Label decisions and outcomes; split an unreadable tangle.</p>
+<div class="mermaid" style="white-space: pre-wrap;">flowchart TD
+  A[Start] --&gt; B{Choice}
+  B --&gt;|yes| C[Do the thing]
+  B --&gt;|no| D[Stop]</div>
+<h2 id="8_2">swimlane-beta</h2>
+<p>A process divided by responsibility. Keep lanes consistent and label handoffs between teams or systems.</p>
+<div class="mermaid" style="white-space: pre-wrap;">swimlane-beta LR
+  subgraph Author
+    Draft[Write draft]
+    Revise[Revise page]
+  end
+  subgraph Reviewer
+    Check{Ready to publish?}
+  end
+  subgraph Publisher
+    Publish[Publish page]
+  end
+  Draft --&gt;|Request review| Check
+  Check --&gt;|Changes needed| Revise
+  Revise --&gt; Check
+  Check --&gt;|Approved| Publish</div>
+<h2 id="8_3">usecase-beta</h2>
+<p>Actors and the goals a system supports. Show system boundaries and distinguish required included behavior from optional extensions.</p>
+<div class="mermaid" style="white-space: pre-wrap;">usecase-beta
+  direction LR
+  actor Reader
+  actor Author
+  systemBoundary Wiki[Knowledge space]
+    Browse(Browse pages)
+    Search(Search notes)
+    Edit(Edit a page)
+  end
+  Reader --&gt; Browse
+  Reader --&gt; Search
+  Author --&gt; Edit</div>
+<h2 id="8_4">sequenceDiagram</h2>
+<p>Messages between actors over time. Keep participants stable and distinguish alternatives from parallel work.</p>
+<div class="mermaid" style="white-space: pre-wrap;">sequenceDiagram
+  participant Reader
+  participant PMD as portable.md
+  Reader-&gt;&gt;PMD: Open page
+  PMD--&gt;&gt;Reader: Rendered Markdown</div>
+<h2 id="8_5">classDiagram</h2>
+<p>Software types and their relationships. Use only attributes and methods supported by the source.</p>
+<div class="mermaid" style="white-space: pre-wrap;">classDiagram
+  class Page {
+    +String id
+    +String title
+    +render()
+  }
+  Page &lt;|-- Folder
+  Page &lt;|-- Glossary</div>
+<h2 id="8_6">stateDiagram-v2</h2>
+<p>States and allowed transitions. Show a state machine, not a chronological task list.</p>
+<div class="mermaid" style="white-space: pre-wrap;">stateDiagram-v2
+  [*] --&gt; Draft
+  Draft --&gt; Review: submit
+  Review --&gt; Published: approve
+  Review --&gt; Draft: changes
+  Published --&gt; [*]</div>
+<h2 id="8_7">erDiagram</h2>
+<p>Data entities, keys and cardinality. Do not invent a relationship because two records share a word.</p>
+<div class="mermaid" style="white-space: pre-wrap;">erDiagram
+  PAGE ||--o{ TAG : carries
+  PAGE {
+    string id
+    string title
+  }
+  TAG {
+    string name
+  }</div>
+<h2 id="8_8">requirementDiagram</h2>
+<p>Trace requirements to verification and dependent elements. Preserve IDs and source evidence.</p>
+<div class="mermaid" style="white-space: pre-wrap;">requirementDiagram
+
+  requirement search {
+    id: 1
+    text: Pages must be findable
+    risk: medium
+    verifymethod: test
+  }
+
+  element index {
+    type: index
+  }
+
+  index - satisfies -&gt; search</div>
+<h2 id="8_9">C4Context</h2>
+<p>People and systems, or containers within a system. Choose the right abstraction level and name boundaries.</p>
+<div class="mermaid" style="white-space: pre-wrap;">C4Context
+  title Reader and portable.md
+  Person(reader, "Reader", "Reads the wiki")
+  System(pmd, "portable.md", "Static wiki")
+  System_Ext(host, "Static host", "Serves the files")
+  Rel(reader, pmd, "Opens pages")
+  Rel(pmd, host, "Fetches Markdown", "HTTPS")</div>
+<h2 id="8_10">block-beta</h2>
+<p>A deliberate block arrangement or layered structure. Prefer flowchart when layout is secondary to connections.</p>
+<div class="mermaid" style="white-space: pre-wrap;">block-beta
+  columns 3
+  reader(("Reader")):3
+  space:3
+  shell["Shell"] render["Renderer"] store[("Bundle")]
+
+  reader --&gt; shell
+  shell --&gt; render
+  render --&gt; store</div>
+<h2 id="8_11">architecture-beta</h2>
+<p>Services, infrastructure groups and links. Diagram actual components rather than decorative cloud boxes.</p>
+<div class="mermaid" style="white-space: pre-wrap;">architecture-beta
+  group site(cloud)[Static site]
+  service pages(server)[Pages] in site
+  service assets(disk)[Assets] in site
+  pages:R -- L:assets</div>
+<h2 id="8_12">zenuml</h2>
+<p>A sequence diagram in ZenUML notation. PMD loads its pinned registration; do not relabel arbitrary Java-like code as a diagram.</p>
+<div class="mermaid" style="white-space: pre-wrap;">zenuml
+  title Page request
+  @Actor Reader
+  @Boundary Shell
+  Reader-&gt;Shell.openPage(id) {
+    Renderer.render(page)
+  }</div>
+<h1 id="9">Time, plans and journeys</h1>
+<p>How things unfold: schedules, histories, boards and the order of events.</p>
+<h2 id="9_1">journey</h2>
+<p>A person’s experience across stages and actors. Scores must be supplied or explicitly labeled illustrative; this is distinct from a PMD reading journey.</p>
+<div class="mermaid" style="white-space: pre-wrap;">journey
+  title Reading a page
+  section Arrive
+    Open link: 5: Reader
+    Skim headings: 3: Reader
+  section Read
+    Follow journey: 4: Reader</div>
+<h2 id="9_2">gantt</h2>
+<p>A schedule with actual dates/durations/dependencies. Proposed plans must be labeled; do not convert update dates into commitments.</p>
+<div class="mermaid" style="white-space: pre-wrap;">gantt
+  title Release plan
+  dateFormat YYYY-MM-DD
+  section Writing
+  Draft :a1, 2026-08-01, 7d
+  Review :after a1, 3d</div>
+<h2 id="9_3">timeline</h2>
+<p>Named historical periods/events. Keep dates factual and distinguish this authored diagram from a page-update timeline.</p>
+<div class="mermaid" style="white-space: pre-wrap;">timeline
+  title Bundle history
+  2026-07 : First draft
+  2026-08 : Review : Published</div>
+<h2 id="9_4">gitGraph</h2>
+<p>Branch/merge history or a proposed workflow. A diagram does not create Git commits.</p>
+<div class="mermaid" style="white-space: pre-wrap;">gitGraph
+  commit id: "draft"
+  branch review
+  commit id: "edits"
+  checkout main
+  merge review
+  commit id: "publish"</div>
+<h2 id="9_5">kanban</h2>
+<p>An authored work-board snapshot. It is not a live task database; changes require source edits.</p>
+<div class="mermaid" style="white-space: pre-wrap;">kanban
+  Todo
+    [Write intro]
+  Doing
+    [Review diagrams]
+  Done
+    [Ship bundle]</div>
+<h2 id="9_6">eventmodeling</h2>
+<p>Commands, events and read models across a process. Keep order and system ownership explicit.</p>
+<div class="mermaid" style="white-space: pre-wrap;">eventmodeling
+
+tf 01 ui SearchUI
+tf 02 cmd OpenPage
+tf 03 evt PageOpened
+tf 04 rmo JourneyReader -&gt;&gt; 03</div>
+<h1 id="10">Data and charts</h1>
+<p>How much and how many: shares, positions, flows, series, comparisons and overlaps.</p>
+<h2 id="10_1">pie</h2>
+<p>A small number of nonnegative parts of one whole. Use a table/bar chart when precise comparison matters.</p>
+<div class="mermaid" style="white-space: pre-wrap;">pie title Page kinds
+  "Articles" : 42
+  "Folders" : 9
+  "Glossary" : 3</div>
+<h2 id="10_2">quadrantChart</h2>
+<p>Items positioned on two meaningful dimensions. Explain axes and the basis for placements.</p>
+<div class="mermaid" style="white-space: pre-wrap;">quadrantChart
+  title Effort and value
+  x-axis Low effort --&gt; High effort
+  y-axis Low value --&gt; High value
+  Rewrite intro: [0.3, 0.8]
+  Fix typos: [0.2, 0.3]
+  New diagrams: [0.7, 0.7]</div>
+<h2 id="10_3">sankey-beta</h2>
+<p>Quantities flowing between stages. Verify units and conservation assumptions; not a generic dependency graph.</p>
+<div class="mermaid" style="white-space: pre-wrap;">sankey-beta
+
+Search,Article,40
+Search,Glossary,10
+Article,Journey,25</div>
+<h2 id="10_4">xychart-beta</h2>
+<p>Numeric comparisons or trends with labeled axes/units. Preserve measured data and avoid fabricated points.</p>
+<div class="mermaid" style="white-space: pre-wrap;">xychart-beta
+  title "Pages per month"
+  x-axis [jan, feb, mar, apr]
+  y-axis "Pages" 0 --&gt; 60
+  bar [12, 24, 38, 55]
+  line [12, 24, 38, 55]</div>
+<h2 id="10_5">radar-beta</h2>
+<p>Several comparable metrics on the same scale. Explain normalization; a table is clearer for exact values.</p>
+<div class="mermaid" style="white-space: pre-wrap;">radar-beta
+  title Page quality
+  axis clarity["Clarity"], depth["Depth"], links["Links"], media["Media"]
+  curve now["Now"]{3, 4, 2, 5}</div>
+<h2 id="10_6">treemap-beta</h2>
+<p>Nested quantitative composition. Use meaningful nonnegative sizes and a stable hierarchy.</p>
+<div class="mermaid" style="white-space: pre-wrap;">treemap-beta
+"Bundle"
+  "Articles": 42
+  "Folders": 9
+  "Glossary": 3</div>
+<h2 id="10_7">packet</h2>
+<p>Bit fields in a packet/header. Validate offsets, widths and total size against the real format.</p>
+<div class="mermaid" style="white-space: pre-wrap;">packet
+  title Page record
+  0-15: "Page id"
+  16-31: "Flags"
+  32-63: "Updated"
+  64-127: "Title"</div>
+<h2 id="10_8">venn-beta</h2>
+<p>Set membership and overlap. Do not imply measured overlap sizes without supporting data.</p>
+<div class="mermaid" style="white-space: pre-wrap;">venn-beta
+  title "Page kinds"
+  set Tagged
+  set Journey
+  union Tagged,Journey["Both"]</div>
+<h1 id="11">Maps and strategy</h1>
+<p>How ideas are arranged: hierarchies, causes, landscapes and grammars.</p>
+<h2 id="11_1">mindmap</h2>
+<p>A concept hierarchy for exploration. Use page hierarchy or a list for straightforward navigation.</p>
+<div class="mermaid" style="white-space: pre-wrap;">mindmap
+  root((portable.md))
+    Pages
+      Tags
+      Journeys
+    Rendering
+      Markdown
+      Diagrams</div>
+<h2 id="11_2">ishikawa-beta</h2>
+<p>Candidate causes grouped around a problem. Label hypotheses rather than presenting them as verified causes.</p>
+<div class="mermaid" style="white-space: pre-wrap;">ishikawa-beta
+  Page went stale
+    People
+      No owner
+    Process
+      No review date</div>
+<h2 id="11_3">wardley-beta</h2>
+<p>A strategy map of user needs, dependencies and evolution. Explain positioning assumptions.</p>
+<div class="mermaid" style="white-space: pre-wrap;">wardley-beta
+  title Publishing chain
+  anchor Reader [0.9, 0.7]
+  component Page [0.75, 0.6]
+  component Bundle [0.6, 0.4]
+  Reader -&gt; Page
+  Page -&gt; Bundle</div>
+<h2 id="11_4">cynefin-beta</h2>
+<p>Situations classified by decision context. Explain the classification rather than implying scientific measurement.</p>
+<div class="mermaid" style="white-space: pre-wrap;">cynefin-beta
+  clear "Fix a typo"
+  complicated "Restructure journeys"
+  complex "Rewrite the manual"
+  chaotic "Recover a lost bundle"</div>
+<h2 id="11_5">treeView-beta</h2>
+<p>A file or structural tree. For a navigable knowledge space, actual PMD pages still carry the content.</p>
+<div class="mermaid" style="white-space: pre-wrap;">treeView-beta
+    pmd-project/
+        index.html
+        content/
+            pmd.json
+            portable.md
+            assets/
+                example-image.png</div>
+<h2 id="11_6">railroad-abnf-beta</h2>
+<p>A grammar supplied in ABNF. Verify alternatives and repetitions against the real grammar.</p>
+<div class="mermaid" style="white-space: pre-wrap;">railroad-abnf-beta
+    title Page route
+
+    route = "#" page-id *( "#" page-id ) ;
+    page-id = 1*( ALPHA / DIGIT / "_" ) ;</div>
+<h2 id="11_7">railroad-ebnf-beta</h2>
+<p>A grammar supplied in EBNF. Keep terminal/nonterminal distinctions explicit.</p>
+<div class="mermaid" style="white-space: pre-wrap;">railroad-ebnf-beta
+    title Query option
+
+    query = "{{pages" option* "}}" ;
+    option = name "=" value ;
+    name = letter+ ;
+    letter = "a" | "b" | "c" ;</div>
+<h2 id="11_8">railroad-beta</h2>
+<p>A railroad diagram written as Mermaid’s intermediate representation. Use when that source form is supplied.</p>
+<div class="mermaid" style="white-space: pre-wrap;">railroad-beta
+    title Page route
+
+    route = sequence(terminal("#"), nonterminal("id"), zeroOrMore(sequence(terminal("#"), nonterminal("id")))) ;
+    id = oneOrMore(nonterminal("letter")) ;
+    letter = choice(terminal("a"), terminal("b")) ;</div>
+<h2 id="11_9">railroad-peg-beta</h2>
+<p>A parsing-expression grammar. Ordered alternatives are not interchangeable with ABNF/EBNF choices.</p>
+<div class="mermaid" style="white-space: pre-wrap;">railroad-peg-beta
+    title Tag filter
+
+    Filter &lt;- Tag ("," Tag)* ;
+    Tag &lt;- Letter+ ;
+    Letter &lt;- "a" / "b" / "c" ;</div>
+<h1 id="12">Media</h1>
+<p>Images, video, audio and documents share one Markdown shape: an image-style link to a file. The reader chooses the player or viewer from the file type.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Becomes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>.png</code> <code>.jpg</code> <code>.svg</code> <code>.webp</code> <code>.gif</code></td>
+<td>An image with a lightbox</td>
+</tr>
+<tr>
+<td><code>.mp4</code> <code>.webm</code></td>
+<td>A video player</td>
+</tr>
+<tr>
+<td><code>.mp3</code> <code>.wav</code> <code>.flac</code></td>
+<td>An audio player</td>
+</tr>
+<tr>
+<td><code>.pdf</code></td>
+<td>A page-by-page PDF viewer</td>
+</tr>
+<tr>
+<td><code>.csv</code> <code>.tsv</code></td>
+<td>A searchable table viewer</td>
+</tr>
+<tr>
+<td><code>.md</code></td>
+<td>The rendered Markdown file</td>
+</tr>
+<tr>
+<td><code>.txt</code> <code>.json</code> <code>.log</code></td>
+<td>A plain text viewer</td>
+</tr>
+<tr>
+<td>Anything else</td>
+<td>A download link</td>
+</tr>
+</tbody></table>
+<div class="pmd-query-cards">
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/images/"><strong>Images and emoji</strong><span>2026-10-04</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/video_audio/"><strong>Video and audio</strong><span>2026-10-04</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/documents/"><strong>Documents and data</strong><span>2026-10-04</span></a></div>
+</div><h1 id="13">Images and emoji</h1>
+<p>Raster and vector images, a chosen width, and emoji of both kinds.</p>
+<h2 id="13_1">An image and its lightbox</h2>
+<p><img src="../../content/assets/sample-image.png" alt="A pocket field guide cover"></p>
+<p>Click an image to open it in the lightbox. Zoom with the buttons, the mouse wheel or a two-finger pinch, and drag to move.</p>
+<h2 id="13_2">A chosen width</h2>
+<img src="../../content/assets/sample-image.png" alt="The same cover at a smaller size" width="240"><h2 id="13_3">A vector image</h2>
+<p><img src="../../content/assets/palette.svg" alt="An accent palette drawn as an SVG"></p>
+<h2 id="13_4">Images side by side</h2>
+<div class="md-columns-scroll"><div class="md-columns" style="--pmd-column-count:2"><div class="md-column"><p><img src="../../content/assets/sample-image.png" alt="The cover again"></p>
+</div><div class="md-column"><p><img src="../../content/assets/palette.svg" alt="The palette again"></p>
+</div></div></div>
+<h2 id="13_5">Emoji</h2>
+<p>Built-in artwork <span class="pmd-emoji-box" title=":joy:"><img class="pmd-emoji pmd-twemoji" src="https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@16.0.0/img/twitter/64/1f602.png" alt="😂" loading="lazy" decoding="async" draggable="false"></span> <span class="pmd-emoji-box" title=":book:"><img class="pmd-emoji pmd-twemoji" src="https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@16.0.0/img/twitter/64/1f4d6.png" alt="📖" loading="lazy" decoding="async" draggable="false"></span> <span class="pmd-emoji-box" title=":sparkles:"><img class="pmd-emoji pmd-twemoji" src="https://cdn.jsdelivr.net/npm/emoji-datasource-twitter@16.0.0/img/twitter/64/2728.png" alt="✨" loading="lazy" decoding="async" draggable="false"></span> and the project's own <span class="pmd-emoji-box" title=":demo:"><img class="pmd-emoji pmd-custom-emoji" src="../../content/assets/emojis/demo.svg" alt=":demo:" loading="eager" decoding="async" draggable="false"></span> come from the same shortcode syntax.</p>
+<h1 id="14">Video and audio</h1>
+<p>Players for local files, with captions and a silent loop.</p>
+<h2 id="14_1">A video player</h2>
+<p><video class="pmd-media pmd-video" src="../../content/assets/clip.webm" controls="" preload="metadata" title="A five-second playback sample">A five-second playback sample</video></p>
+<h2 id="14_2">With captions</h2>
+<p><video class="pmd-media pmd-video" controls="" preload="metadata" width="640"><source src="../../content/assets/clip.webm" type="video/webm"><track kind="captions" src="../../content/assets/clip.vtt" srclang="en" label="English" default=""></video></p>
+<h2 id="14_3">A silent loop</h2>
+<p><video class="pmd-media pmd-video" src="../../content/assets/clip.webm" autoplay="" loop="" muted="" playsinline="" title="A silent looping animation">A silent looping animation</video></p>
+<p>Click the loop to open it in the lightbox.</p>
+<h2 id="14_4">Audio</h2>
+<p><audio class="pmd-media pmd-audio" src="../../content/assets/tones.wav" controls="" preload="metadata" title="Three ascending tones">Three ascending tones</audio></p>
+<p>Three short ascending tones, C–E–G, over three seconds. No speech.</p>
+<h1 id="15">Documents and data</h1>
+<p>PDF, tables, Markdown and text files, each shown in place.</p>
+<h2 id="15_1">A PDF</h2>
+<p></p><figure class="pmd-document" data-kind="pdf" data-src="assets/guide.pdf" data-label="A one-page pocket guide"><a href="../../content/assets/guide.pdf" download="">A one-page pocket guide</a></figure><p></p>
+<h2 id="15_2">A CSV table</h2>
+<p></p><figure class="pmd-document" data-kind="csv" data-src="assets/surfaces.csv" data-label="Reader surfaces, as CSV"><a href="../../content/assets/surfaces.csv" download="">Reader surfaces, as CSV</a></figure><p></p>
+<h2 id="15_3">The same data as TSV</h2>
+<p></p><figure class="pmd-document" data-kind="tsv" data-src="assets/surfaces.tsv" data-label="Reader surfaces, as TSV"><a href="../../content/assets/surfaces.tsv" download="">Reader surfaces, as TSV</a></figure><p></p>
+<h2 id="15_4">A Markdown file</h2>
+<p></p><figure class="pmd-document" data-kind="markdown" data-src="assets/note.md" data-label="An attached note"><a href="../../content/assets/note.md" download="">An attached note</a></figure><p></p>
+<h2 id="15_5">The same file as raw text</h2>
+<p></p><figure class="pmd-document" data-kind="text" data-src="assets/note.md" data-label="The note as raw text"><a href="../../content/assets/note.md" download="">The note as raw text</a></figure><p></p>
+<h2 id="15_6">Plain text and JSON</h2>
+<p></p><figure class="pmd-document" data-kind="text" data-src="assets/readme.txt" data-label="A plain text readme"><a href="../../content/assets/readme.txt" download="">A plain text readme</a></figure><p></p>
+<p></p><figure class="pmd-document" data-kind="text" data-src="assets/settings.json" data-label="A sample project config"><a href="../../content/assets/settings.json" download="">A sample project config</a></figure><p></p>
+<h2 id="15_7">Downloads</h2>
+<p><a href="../../content/assets/guide.pdf" title="download">Download the PDF</a> · <a href="../../content/assets/surfaces.csv" title="download">Download the CSV</a></p>
+<p>Image syntax with the title <code>"download"</code> gives the same kind of link: <a href="../../content/assets/readme.txt" title="download">Download the readme</a></p>
+<h1 id="16">Page queries</h1>
+<p>A page query selects real pages by their metadata and draws the result. Every view below is one line of source and updates when the pages change.</p>
+<h2 id="16_1">List</h2>
+<ul>
+<li><a href="../../pages/text/">Text and typography</a></li>
+<li><a href="../../pages/callouts/">Callouts and spoilers</a></li>
+<li><a href="../../pages/layout/">Columns, tables and alignment</a></li>
+<li><a href="../../pages/code/">Code</a></li>
+<li><a href="../../pages/math/">Math</a></li>
+</ul>
+<h2 id="16_2">Cards</h2>
+<div class="pmd-query-cards">
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/text/"><strong>Text and typography</strong><span>gallery</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/callouts/"><strong>Callouts and spoilers</strong><span>gallery</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/layout/"><strong>Columns, tables and alignment</strong><span>gallery</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/code/"><strong>Code</strong><span>gallery</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/math/"><strong>Math</strong><span>gallery</span></a></div>
+<div class="pmd-query-card"><a class="pmd-query-card-link" href="../../pages/diagrams/"><strong>Diagrams</strong><span>gallery</span></a></div>
+</div><h2 id="16_3">Table</h2>
+<table>
+<thead>
+<tr>
+<th>Page</th>
+<th>Updated</th>
+<th>Tags</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="../../pages/callouts/">Callouts and spoilers</a></td>
+<td>2026-10-02</td>
+<td>gallery</td>
+</tr>
+<tr>
+<td><a href="../../pages/canvas/">Canvas</a></td>
+<td>2026-10-03</td>
+<td>gallery, interactive</td>
+</tr>
+<tr>
+<td><a href="../../pages/code/">Code</a></td>
+<td>2026-09-30</td>
+<td>gallery</td>
+</tr>
+<tr>
+<td><a href="../../pages/layout/">Columns, tables and alignment</a></td>
+<td>2026-10-01</td>
+<td>gallery</td>
+</tr>
+<tr>
+<td><a href="../../pages/diagrams/">Diagrams</a></td>
+<td>2026-10-04</td>
+<td>gallery</td>
+</tr>
+<tr>
+<td><a href="../../pages/notes/">Footnotes, citations and glossary terms</a></td>
+<td>2026-10-02</td>
+<td>gallery</td>
+</tr>
+</tbody></table>
+<h2 id="16_4">Timeline</h2>
+<ul>
+<li>2026-10-04 - <a href="../../pages/diagrams/">Diagrams</a></li>
+<li>2026-10-04 - <a href="../../pages/media/">Media</a></li>
+<li>2026-10-03 - <a href="../../pages/text/">Text and typography</a></li>
+<li>2026-10-03 - <a href="../../pages/queries/">Page queries</a></li>
+<li>2026-10-03 - <a href="../../pages/canvas/">Canvas</a></li>
+<li>2026-10-02 - <a href="../../pages/callouts/">Callouts and spoilers</a></li>
+</ul>
+<h2 id="16_5">Graph</h2>
+<div class="pmd-query-graph" data-pages="[&quot;text&quot;,&quot;callouts&quot;,&quot;layout&quot;,&quot;code&quot;,&quot;math&quot;,&quot;diagrams&quot;,&quot;media&quot;,&quot;queries&quot;,&quot;canvas&quot;,&quot;notes&quot;,&quot;transclusion&quot;,&quot;presentation&quot;,&quot;html&quot;]"></div><h2 id="16_6">Other filters</h2>
+<p>The children of one page:</p>
+<ul>
+<li><a href="../../pages/diagrams_data/">Data and charts</a></li>
+<li><a href="../../pages/diagrams_flow/">Flows and structure</a></li>
+<li><a href="../../pages/diagrams_maps/">Maps and strategy</a></li>
+<li><a href="../../pages/diagrams_time/">Time, plans and journeys</a></li>
+</ul>
+<p>The steps of a journey:</p>
+<ul>
+<li><a href="../../pages/theme/">Theme, accent and custom CSS</a></li>
+<li><a href="../../pages/toc/">Table of contents</a></li>
+<li><a href="../../pages/tree/">Tree shapes</a></li>
+<li><a href="../../pages/graph/">Page graph</a></li>
+<li><a href="../../pages/reading/">Reading surface</a></li>
+<li><a href="../../pages/page_options/">Per-page options</a></li>
+</ul>
+<p>Pages that mention a word, without this one:</p>
+<ul>
+<li><a href="../../pages/media/">Media</a></li>
+<li><a href="../../pages/images/">Images and emoji</a></li>
+<li><a href="../../pages/video_audio/">Video and audio</a></li>
+<li><a href="../../pages/queries/">Page queries</a></li>
+</ul>
+<p>An empty result with a message of your own:</p>
+<ul>
+<li><a href="../../pages/queries/">Page queries</a></li>
+<li><a href="../../pages/stress/">Everything, back to back</a></li>
+</ul>
+<h1 id="17">Canvas</h1>
+<p>A board of cards and connections, placed by hand. Pan, zoom and open the cards.</p>
+<div class="pmd-canvas-source">{
+  "nodes": [
+    { "id": "g-content", "type": "group", "x": -40, "y": -40, "width": 540, "height": 440, "label": "Content", "color": "2" },
+    { "id": "g-look", "type": "group", "x": 580, "y": -40, "width": 540, "height": 440, "label": "Look and navigation", "color": "5" },
+    { "id": "t-text", "type": "text", "text": "## Text\n\nMarks, lists, tasks, emoji.", "x": 0, "y": 20, "width": 230, "height": 130 },
+    { "id": "t-media", "type": "text", "text": "## Media\n\nImages, video, audio, documents.", "x": 260, "y": 20, "width": 230, "height": 130, "color": "4" },
+    { "id": "t-diagrams", "type": "text", "text": "## Diagrams\n\n35 types, drawn live.", "x": 0, "y": 190, "width": 230, "height": 130 },
+    { "id": "f-image", "type": "file", "file": "assets/sample-image.png", "x": 260, "y": 180, "width": 230, "height": 170 },
+    { "id": "t-theme", "type": "text", "text": "## Theme\n\nAccent, skins and CSS.", "x": 620, "y": 20, "width": 230, "height": 130, "color": "6" },
+    { "id": "l-graph", "type": "link", "url": "#/look/graph", "label": "Page graph", "x": 880, "y": 20, "width": 220, "height": 130 },
+    { "id": "l-tree", "type": "link", "url": "#/look/tree", "label": "Tree shapes", "x": 620, "y": 190, "width": 230, "height": 130 },
+    { "id": "t-reading", "type": "text", "text": "## Reading surface\n\nWidth, panels, previews.", "x": 880, "y": 190, "width": 220, "height": 130 }
+  ],
+  "edges": [
+    { "id": "e-text-media", "fromNode": "t-text", "toNode": "t-media", "fromSide": "right", "toSide": "left", "label": "same Markdown", "color": "3" },
+    { "id": "e-media-image", "fromNode": "t-media", "toNode": "f-image", "fromSide": "bottom", "toSide": "top", "label": "files" },
+    { "id": "e-diagrams-text", "fromNode": "t-diagrams", "toNode": "t-text", "fromSide": "top", "toSide": "bottom", "label": "text becomes drawing" },
+    { "id": "e-media-theme", "fromNode": "t-media", "toNode": "t-theme", "fromSide": "right", "toSide": "left", "label": "colors follow the theme", "color": "5" },
+    { "id": "e-theme-graph", "fromNode": "t-theme", "toNode": "l-graph", "fromSide": "right", "toSide": "left", "label": "accent" },
+    { "id": "e-tree-reading", "fromNode": "l-tree", "toNode": "t-reading", "fromSide": "right", "toSide": "left", "label": "reading" }
+  ]
+}</div>
+<table>
+<thead>
+<tr>
+<th>Card</th>
+<th>Holds</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Text</td>
+<td>Markdown</td>
+</tr>
+<tr>
+<td>Link</td>
+<td>A page route or an address</td>
+</tr>
+<tr>
+<td>File</td>
+<td>An image or document from the project</td>
+</tr>
+<tr>
+<td>Group</td>
+<td>A labeled region that contains other cards</td>
+</tr>
+</tbody></table>
+<h1 id="18">Footnotes, citations and glossary terms</h1>
+<p>Three kinds of note, each revealed in place: hover or focus them.</p>
+<h2 id="18_1">A page-local footnote</h2>
+<p>The reader keeps small asides beside the sentence that needs them.<sup><a id="footnote-ref-notes-aside" href="../../pages/stress/#footnote-notes-aside" data-footnote-ref="" aria-describedby="footnote-label">1</a></sup></p>
+<h2 id="18_2">A citation</h2>
+<p>Good graphics respect their readers' attention.<sup class="pmd-reference-marker" data-pmd-reference="tufte-2001" id="pmd-cite-tufte-2001-1"><a href="../../pages/demo_references/#1_1" class="pmd-reference-cite" data-reference-id="tufte-2001" aria-label="Reference: The Visual Display of Quantitative Information">[1]</a></sup> Typography asks for the same discipline.<sup class="pmd-reference-marker" data-pmd-reference="bringhurst-2004" id="pmd-cite-bringhurst-2004-1"><a href="../../pages/demo_references/#1_2" class="pmd-reference-cite" data-reference-id="bringhurst-2004" aria-label="Reference: The Elements of Typographic Style">[2]</a></sup></p>
+<p>The sources are entries on the <a href="../../pages/demo_references/">References page</a>, and the pocket guide is cited the same way.<sup class="pmd-reference-marker" data-pmd-reference="demo-guide" id="pmd-cite-demo-guide-1"><a href="../../pages/demo_references/#1_3" class="pmd-reference-cite" data-reference-id="demo-guide" aria-label="Reference: Pocket field guide">[3]</a></sup></p>
+<h2 id="18_3">Glossary terms</h2>
+<p>Terms defined on the glossary page show their definition on hover. This paragraph uses a <strong>bundle</strong>, a <strong>simple folder</strong>, a <strong>journey</strong>, a <strong>page query</strong> and a <strong>transclusion</strong>, and it mentions the <strong>table of contents</strong> and the <strong>page graph</strong>.</p>
+<h1 id="19">Transclusion</h1>
+<p>Write once, include elsewhere. The block below lives on another page and is shown here with its source named.</p>
+<div hidden="" data-pmd-source-page="transclusion_source" data-pmd-source-line="2"></div><blockquote>
+<p><strong>From <a href="../../pages/transclusion_source/#1_1">A reusable source</a></strong></p>
+<div class="md-callout md-note">
+<p>Keep the original observation, label your interpretation, and link the evidence.</p>
+
+</div>
+</blockquote>
+<p>A whole page can be included too:</p>
+<div hidden="" data-pmd-source-page="transclusion_source" data-pmd-source-line="2"></div><blockquote>
+<p><strong>From <a href="../../pages/transclusion_source/">A reusable source</a></strong></p>
+<h2 id="19_1">A reusable block</h2>
+<div class="md-callout md-note">
+<p>Keep the original observation, label your interpretation, and link the evidence.</p>
+
+</div>
+<h2 id="19_2">A section not included by name</h2>
+<p>The page that includes only the block above leaves this sentence behind.</p>
+</blockquote>
+<h1 id="20">Presentation</h1>
+<p>The reader turns the sections of a page into slides. Press <strong>Present</strong>, then use the arrow keys, Page Up and Page Down, or the slide controls. <kbd>Esc</kbd> returns to the article.</p>
+<h2 id="20_1">01 · One idea per slide</h2>
+<p><strong>A slide is a section.</strong> Everything a page can hold fits on one: text, columns, media, diagrams and tables.</p>
+<ul>
+<li><input type="checkbox" class="pmd-interactive-task" aria-label="Interactive task"> Try the arrow keys</li>
+<li><input type="checkbox" class="pmd-interactive-task" aria-label="Interactive task"> Try fullscreen</li>
+</ul>
+<h2 id="20_2">02 · Side by side</h2>
+<div class="md-columns-scroll"><div class="md-columns" style="--pmd-column-count:2"><div class="md-column"><h3 id="20_2_1">Write</h3>
+<p>Ordinary Markdown, as in any page.</p>
+</div><div class="md-column"><h3 id="20_2_2">Present</h3>
+<p>The same page, one section at a time.</p>
+</div></div></div>
+<h2 id="20_3">03 · A diagram</h2>
+<div class="mermaid" style="white-space: pre-wrap;">flowchart LR
+  Page[A page] --&gt; Sections[Sections] --&gt; Slides[Slides]</div>
+<h2 id="20_4">04 · A table</h2>
+<table>
+<thead>
+<tr>
+<th>Split at</th>
+<th>Slides are</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>h1</code></td>
+<td>Top-level sections</td>
+</tr>
+<tr>
+<td><code>h2</code></td>
+<td>This page's choice</td>
+</tr>
+<tr>
+<td><code>h3</code></td>
+<td>The finest split</td>
+</tr>
+<tr>
+<td><code>---</code></td>
+<td>Everything between rules</td>
+</tr>
+</tbody></table>
+<h1 id="21">HTML and embedded pages</h1>
+<p>Plain HTML is kept exactly as written. It is trusted content, so write only what you have reviewed.</p>
+<h2 id="21_1">Styled with the reader's own variables</h2>
+<div style="padding:1rem;border:1px solid var(--color-main-25percent-contrast);border-radius:var(--r-md);background:var(--color-accent-25percent)">A block colored with the reader's accent ramp, so it follows the theme.</div><h2 id="21_2">Semantic elements</h2>
+<figure>
+<img src="../../content/assets/sample-image.png" alt="The pocket guide cover" width="160">
+<figcaption>A figure with a caption.</figcaption>
+</figure><dl>
+<dt>Term</dt>
+<dd>A definition list, in plain HTML.</dd>
+<dt><abbr title="portable.md">pmd</abbr></dt>
+<dd>An abbreviation with its expansion on hover.</dd>
+</dl><h2 id="21_3">An embedded page</h2>
+<iframe src="../../content/assets/embed.html" title="A local HTML page" width="640" height="320" loading="lazy"></iframe><p>Remote embeds, such as a video from another site, need the network and the other site's permission. This one is a local file and works offline.</p>
+<h1 id="22">Theme, accent and custom CSS</h1>
+<p>A few settings in the project's <code>pmd.json</code> change the whole reader. A few reader controls change it for one visitor.</p>
+<h2 id="22_1">The visitor's choice</h2>
+<p>Press <kbd>T</kbd> to cycle light and dark. A project picks the first theme with <code>DEFAULT_THEME</code>; a visitor keeps their own choice afterwards.</p>
+<h2 id="22_2">The accent</h2>
+<p>This project's accent is <code>#e8833a</code>. The reader mixes it into the canvas to make a ramp, and every link, tint and highlight draws from it:</p>
+<div class="demo-ramp">
+<span style="background:var(--color-accent-25percent)">25%</span>
+<span style="background:var(--color-accent-50percent)">50%</span>
+<span style="background:var(--color-accent-75percent)">75%</span>
+<span style="background:var(--color-accent);color:var(--color-main)">100%</span>
+</div><p><img src="../../content/assets/palette.svg" alt="The same ramp, drawn as an SVG image"></p>
+<h2 id="22_3">Skins from one stylesheet</h2>
+<p><code>CUSTOM_CSS</code> can override any variable below. These panels are scoped copies of the reader's tokens, so four palettes sit side by side on one page.</p>
+<div class="demo-skins">
+<div class="demo-skin">
+<strong>This project</strong>
+<p>Body text with an <span class="demo-link">accent link</span> and <code>code</code>.</p>
+<span class="demo-chip">gallery</span> <span class="demo-chip">visual</span>
+</div>
+<div class="demo-skin midnight">
+<strong>Midnight</strong>
+<p>Body text with an <span class="demo-link">accent link</span> and <code>code</code>.</p>
+<span class="demo-chip">gallery</span> <span class="demo-chip">visual</span>
+</div>
+<div class="demo-skin paper">
+<strong>Paper</strong>
+<p>Body text with an <span class="demo-link">accent link</span> and <code>code</code>.</p>
+<span class="demo-chip">gallery</span> <span class="demo-chip">visual</span>
+</div>
+<div class="demo-skin terminal">
+<strong>Terminal</strong>
+<p>Body text with an <span class="demo-link">accent link</span> and <code>code</code>.</p>
+<span class="demo-chip">gallery</span> <span class="demo-chip">visual</span>
+</div>
+</div><pre><code class="language-css">:root {
+  --color-main-dark: #17131f;  /* the dark canvas */
+  --color-accent: #e8833a;     /* links, tints, highlights */
+  --r-md: 12px;                /* corner radius */
+}
+</code></pre>
+<h2 id="22_4">The variables</h2>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>What it changes</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>--color-main-dark</code>, <code>--color-main-light</code></td>
+<td>The dark and light canvas</td>
+</tr>
+<tr>
+<td><code>--color-text</code></td>
+<td>Text and, mixed in, every neutral surface and edge</td>
+</tr>
+<tr>
+<td><code>--color-accent</code></td>
+<td>Links, tints, the page graph and highlights</td>
+</tr>
+<tr>
+<td><code>--color-note</code>, <code>--color-important</code>, <code>--color-success</code>, <code>--color-warning</code>, <code>--color-danger</code></td>
+<td>The callout colors</td>
+</tr>
+<tr>
+<td><code>--font-ui</code>, <code>--font-code</code></td>
+<td>Interface and code typefaces</td>
+</tr>
+<tr>
+<td><code>--r-sm</code>, <code>--r-md</code></td>
+<td>Corner radii</td>
+</tr>
+<tr>
+<td><code>--w-sidebar</code>, <code>--w-util</code></td>
+<td>The width of the two side panels</td>
+</tr>
+<tr>
+<td><code>--h-header</code></td>
+<td>The height of the header</td>
+</tr>
+</tbody></table>
+<h2 id="22_5">Text direction</h2>
+<p>Text direction follows the language. A whole project sets it with <code>SITE.DIR</code>; a single block can carry its own.</p>
+<div dir="rtl" lang="ar">النص يتدفق من اليمين إلى اليسار، والصفحة تتبع اتجاه اللغة.</div><div dir="rtl" lang="he">הטקסט זורם מימין לשמאל.</div><h2 id="22_6">Logo, favicon and emoji</h2>
+<p><code>ICON</code> with <code>SHOW_LOGO</code> puts an image in the header, and <code>SHOW_FAVICON</code> uses it as the tab icon. <code>CUSTOM_EMOJI</code> adds project emoji such as <span class="pmd-emoji-box" title=":demo:"><img class="pmd-emoji pmd-custom-emoji" src="../../content/assets/emojis/demo.svg" alt=":demo:" loading="eager" decoding="async" draggable="false"></span>. Both come from files in the project.</p>
+<h2 id="22_7">On paper</h2>
+<p>Print the page, or save it as a PDF, and the reader switches to ink on white with a black accent.</p>
+<h1 id="23">Table of contents</h1>
+<p>The utility panel lists the headings of the page you are reading, nested by level. The entry for the section on screen is highlighted as you scroll, and a click jumps to a heading.</p>
+<h2 id="23_1">Levels</h2>
+<p>Every heading from level one to level six appears, indented under the nearest heading above it.</p>
+<h3 id="23_1_1">A third-level heading</h3>
+<p>Third-level headings nest under their second-level parent.</p>
+<h4 id="23_1_1_1">A fourth-level heading</h4>
+<p>And fourth-level headings under that.</p>
+<h5 id="23_1_1_1_1">A fifth-level heading</h5>
+<p>The outline keeps going.</p>
+<h6 id="23_1_1_1_1_1">A sixth-level heading</h6>
+<p>Six is the deepest level. <a href="../../pages/toc/">Jump back to the top of the page</a>.</p>
+<h2 id="23_2">Skipped levels</h2>
+<p>A page does not have to descend one level at a time.</p>
+<h4 id="23_2_0_1">Straight from level two to level four</h4>
+<p>The outline needs no empty wrapper for the skipped level.</p>
+<h2 id="23_3">Why headings matter</h2>
+<p>Headings feed the table of contents, the sections shown in search results and the links you can copy. Hover a heading and use its link icon to copy an address that opens the page at that point.</p>
+<h2 id="23_4">A long section</h2>
+<p>A table of contents earns its place on a long page. This section and the ones below are here to give the page enough length to scroll, so the highlighted entry has somewhere to go.</p>
+<p>Readers rarely read a long page top to bottom. They scan headings, jump to the part they need, and come back. A good outline is therefore a promise: the headings say what is under them, in the order a reader would look for it.</p>
+<h2 id="23_5">Another long section</h2>
+<p>Keep headings short and specific. "Skipped levels" tells a reader more than "More details", and it survives being read out of context in a search result.</p>
+<p>When a section grows past a screen, split it with a lower-level heading rather than a longer title. The outline then shows the shape of the argument as well as its parts.</p>
+<h2 id="23_6">A last section</h2>
+<p>The panel also works on a phone, where it sits behind the utility panel button and closes itself after a jump.</p>
+<h2 id="23_7">Notes on this page</h2>
+<p>These headings are the exhibit: three levels of nesting, a skipped level, and enough sections to scroll.</p>
+<h1 id="24">Tree shapes</h1>
+<p>The tree in the sidebar is the project's hierarchy. Each page names its parent, and the order of the bundle sets the order of siblings. This project gives it three shapes.</p>
+<table>
+<thead>
+<tr>
+<th>Shape</th>
+<th>Where to look</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Wide</strong>: many siblings</td>
+<td><a href="../../pages/content/">Content</a> has thirteen children</td>
+</tr>
+<tr>
+<td><strong>Nested</strong>: groups inside groups</td>
+<td>Diagrams, Media and Transclusion each hold their own pages</td>
+</tr>
+<tr>
+<td><strong>Deep</strong>: a long chain</td>
+<td><a href="../../pages/depth7/">Seven levels down</a></td>
+</tr>
+</tbody></table>
+<p>Levels one to six of the chain are <strong>simple folders</strong>: navigation-only nodes with no page of their own. They appear in the tree, the breadcrumbs and the graph, and a link to one points at its children.</p>
+<p><strong>Try:</strong> fold and unfold a branch with the arrow beside its title, click a parent's title to open it, then follow the deep chain and watch the breadcrumbs grow.</p>
+<h1 id="25">Page graph</h1>
+<p>The graph draws the relationships between pages: hierarchy, tags, journeys and links. It changes whenever the project changes shape, which is why this demo has so many shapes.</p>
+<h2 id="25_1">Open it</h2>
+<p>Use the graph in the utility panel, or press <kbd>G</kbd> for the fullscreen graph. Drag a node, pan and zoom, then open a page from it. None of that rewrites the Markdown.</p>
+<h2 id="25_2">What you are looking at</h2>
+<table>
+<thead>
+<tr>
+<th>You see</th>
+<th>Because</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>A grey outlined node</td>
+<td>A <a href="../../pages/tree/">simple folder</a></td>
+</tr>
+<tr>
+<td>A node tinted with the accent color</td>
+<td>A page with nothing below it</td>
+</tr>
+<tr>
+<td>A diamond labeled <code>#gallery (13)</code></td>
+<td>A tag shared by more than five pages becomes a hub</td>
+</tr>
+<tr>
+<td>Lines between the pages tagged <code>visual</code></td>
+<td>A tag with five pages or fewer links them directly</td>
+</tr>
+<tr>
+<td>Dashed gray lines when you hover a page</td>
+<td>Markdown links between pages</td>
+</tr>
+<tr>
+<td>Directed lines</td>
+<td>The steps of a journey</td>
+</tr>
+<tr>
+<td>A house, an <strong>a</strong> and an arrow</td>
+<td>The Home, <a href="../../pages/demo_glossary/">Glossary</a> and <a href="../../pages/demo_references/">References</a> pages</td>
+</tr>
+</tbody></table>
+<h2 id="25_3">Fullscreen controls</h2>
+<p>Under <strong>Graph display</strong> in the fullscreen view:</p>
+<ul>
+<li><strong>Expand all</strong> opens every folded branch.</li>
+<li><strong>Fern</strong> arranges the whole graph as a fern, so the size of every branch is visible at a glance.</li>
+<li><strong>GPU / CPU</strong> chooses where the layout is computed.</li>
+<li><strong>Label size</strong> enlarges the text from 100% to 200%.</li>
+<li>The checkboxes show or hide tag links, Markdown page links and journey links.</li>
+</ul>
+<h2 id="25_4">Smaller graphs inside a page</h2>
+<p>A page query can draw a graph of just the pages it selects. This one shows the pages of the Content tour:</p>
+<div class="pmd-query-graph" data-pages="[&quot;text&quot;,&quot;callouts&quot;,&quot;layout&quot;,&quot;code&quot;,&quot;math&quot;,&quot;diagrams&quot;,&quot;diagrams_flow&quot;,&quot;diagrams_time&quot;,&quot;diagrams_data&quot;,&quot;diagrams_maps&quot;,&quot;media&quot;,&quot;images&quot;,&quot;video_audio&quot;,&quot;documents&quot;,&quot;queries&quot;,&quot;canvas&quot;,&quot;notes&quot;,&quot;transclusion&quot;,&quot;presentation&quot;,&quot;html&quot;]"></div><p>And this one the children of Content:</p>
+<div class="pmd-query-graph" data-pages="[&quot;text&quot;,&quot;callouts&quot;,&quot;layout&quot;,&quot;code&quot;,&quot;math&quot;,&quot;diagrams&quot;,&quot;media&quot;,&quot;queries&quot;,&quot;canvas&quot;,&quot;notes&quot;,&quot;transclusion&quot;,&quot;presentation&quot;,&quot;html&quot;]"></div><h1 id="26">Reading surface</h1>
+<p>Everything a visitor can change without touching the project. None of it is saved in the Markdown.</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><kbd>T</kbd></td>
+<td>Cycles the theme</td>
+</tr>
+<tr>
+<td>The reading-width button</td>
+<td>Switches between page width and full width on wide screens</td>
+</tr>
+<tr>
+<td><kbd>A</kbd> or <kbd>Q</kbd></td>
+<td>Shows or hides the sidebar</td>
+</tr>
+<tr>
+<td><kbd>D</kbd></td>
+<td>Shows or hides the utility panel, with the graph and the table of contents</td>
+</tr>
+<tr>
+<td><kbd>W</kbd> or <kbd>Z</kbd></td>
+<td>Shows or hides the header with the breadcrumbs</td>
+</tr>
+<tr>
+<td><kbd>G</kbd></td>
+<td>Opens the fullscreen graph</td>
+</tr>
+<tr>
+<td><kbd>Ctrl</kbd>/<kbd>Cmd</kbd>+<kbd>K</kbd>, <kbd>/</kbd> or <kbd>S</kbd></td>
+<td>Focuses the search</td>
+</tr>
+<tr>
+<td><kbd>?</kbd></td>
+<td>Lists every shortcut</td>
+</tr>
+<tr>
+<td><kbd>Esc</kbd></td>
+<td>Closes panels and overlays</td>
+</tr>
+</tbody></table>
+<h2 id="26_1">Floating previews</h2>
+<p>Hover or focus a link such as <a href="../../pages/graph/">Page graph</a> to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as <strong>page query</strong> and citations such as the pocket guide<sup class="pmd-reference-marker" data-pmd-reference="demo-guide" id="pmd-cite-demo-guide-2"><a href="../../pages/demo_references/#1_3" class="pmd-reference-cite" data-reference-id="demo-guide" aria-label="Reference: Pocket field guide">[3]</a></sup> open the same kind of popover.</p>
+<h2 id="26_2">Images and the lightbox</h2>
+<p>Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See <a href="../../pages/images/">Images and emoji</a>.</p>
+<h2 id="26_3">Journeys</h2>
+<p>When a page belongs to a journey, its footer offers to follow the path. <strong>From this page</strong> and <strong>From the start</strong> choose where to begin, and <strong>Leave journey</strong> returns to ordinary navigation. Try the <a href="journey:Look%20and%20feel%20tour">Look and feel tour</a>.</p>
+<h2 id="26_4">Slides</h2>
+<p>A page with a presentation setting offers <strong>Present</strong>. See <a href="../../pages/presentation/">Presentation</a>.</p>
+<h2 id="26_5">On a phone</h2>
+<p>Swipe right for the sidebar and left for the utility panel, then swipe back to close. Wide tables, code blocks, the graph, the breadcrumbs and the image view keep their own drags.</p>
+<h1 id="27">Per-page options</h1>
+<p>A few lines in a page's header change how that page behaves. This project uses each one somewhere.</p>
+<table>
+<thead>
+<tr>
+<th>Header</th>
+<th>Effect</th>
+<th>See it here</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>kind:"simple"</code></td>
+<td>A navigation-only folder with no body</td>
+<td><a href="../../pages/tree/">The deep chain</a></td>
+</tr>
+<tr>
+<td><code>kind:"glossary"</code>, <code>kind:"references"</code></td>
+<td>Shared terms and sources, with their own graph symbols</td>
+<td><a href="../../pages/demo_glossary/">Glossary</a>, <a href="../../pages/demo_references/">References</a></td>
+</tr>
+<tr>
+<td><code>presentation:"h2"</code></td>
+<td>Offers <strong>Present</strong>, which turns sections into slides</td>
+<td><a href="../../pages/presentation/">Presentation</a></td>
+</tr>
+<tr>
+<td><code>showUpdated:"false"</code></td>
+<td>Hides the "Last updated" line</td>
+<td>Every hub page</td>
+</tr>
+<tr>
+<td><code>updated:"date" "comment"</code></td>
+<td>Shows the date and a short note</td>
+<td>The foot of this page</td>
+</tr>
+<tr>
+<td><code>noindex:"true"</code></td>
+<td>Asks search engines to skip the page</td>
+<td><a href="../../pages/stress/">Everything, back to back</a></td>
+</tr>
+<tr>
+<td><code>tags</code>, <code>journey</code></td>
+<td>Group pages for queries, the graph and tours</td>
+<td>The pages of both tours</td>
+</tr>
+</tbody></table>
+<h2 id="27_1">A header, as source</h2>
+<pre><code class="language-md">&lt;!--pmd
+id:"example"
+title:"An example page"
+parent:"home"
+tags:"gallery, visual"
+journey:"Look and feel tour" "6"
+updated:"2026-10-05" "Added the example"
+showUpdated:"true"
+--&gt;
+# An example page
+</code></pre>
+<!-- stress:end --><section class="footnotes" data-footnotes="">
+<h2 id="footnote-label" class="sr-only">Footnotes</h2>
+<ol>
+<li id="footnote-notes-aside">
+<p>This footnote belongs only to this page and appears in a popover. <a href="../../pages/stress/#footnote-ref-notes-aside" data-footnote-backref="" aria-label="Back to reference notes-aside">↩</a></p>
+</li>
+</ol>
+</section>
+<nav data-pmd-static-nav="" aria-label="Pages"><a href="../../">Everything you can display using portable.md</a> <a href="../../pages/demo_references/">References</a> </nav><noscript><footer data-pmd-static-attribution=""><a class="watermark" href="https://portable.md/" target="_blank" rel="noopener noreferrer">Powered by portable.md</a></footer></noscript></article>
+
+      <section id="util">
+        <button class="panel-close" type="button" data-command="closePanels" aria-label="Close panel" title="Close panel">×</button>
+        <div id="graph-box">
+          <svg id="mini" role="img" aria-label="Page graph"></svg>
+          <button id="expand" type="button" data-command="fullscreenGraph" aria-controls="mini" aria-expanded="false" aria-label="Expand graph">⛶</button>
+        </div>
+
+        <div class="watermark-links">
+          <a class="watermark" href="https://portable.md/" target="_blank" rel="noopener noreferrer">Powered by portable.md</a>
+          <a id="open-in-editor" href="https://editor.portable.md/" target="_blank" rel="noopener noreferrer" hidden="">Open in editor</a>
+        </div>
+        <template data-pmd-software-license="">portable.md Source-Available License 1.0
+Copyright (c) 2026 Erwan Vinot
+https://portable.md/
+
+This is one license, consisting of all eight sections below. The MIT permission
+grant in section 8 is subject to the Commons Clause in section 3 and the other
+conditions in this document. It is not an offer of the MIT License alone or a
+choice between licenses. This is a source-available license, not an OSI-approved
+open-source license.
+
+1. Scope
+
+"Software" means the original portable.md editor, reader, companion skills
+(including pmd-create and pmd-edit), scripts, documentation and software templates
+made available under this license, including copies, modifications and portions
+of them. "Licensor" means Erwan Vinot and any other copyright holder contributing
+material under this license, for their respective contributions.
+
+User Content and separately licensed third-party material are excluded as
+described in sections 5 and 7. This license applies to versions supplied under
+it; it does not revoke permissions previously granted for earlier versions
+under another license.
+
+2. Permitted use
+
+Subject to all the conditions below, you may use, study, copy, modify and
+redistribute the Software, including free forks. Individuals, businesses,
+nonprofits and public bodies may use it for their own work, including internal
+business documentation and authoring content for commercial purposes.
+
+You may pay for general-purpose computing, storage, web hosting or AI services
+to run the Software or use the skills. That alone is not a sale of the Software.
+The restrictions concern selling the Software or services based substantially
+on its functionality, not ordinary business use or the content permission in
+section 5. No fee to the Licensor is required for permitted uses.
+
+3. Commons Clause restriction
+
+"Commons Clause" License Condition v1.0
+
+The Software is provided to you by the Licensor under the License, as defined
+below, subject to the following condition.
+
+Without limiting other conditions in the License, the grant of rights under
+the License will not include, and the License does not grant to you, the right
+to Sell the Software.
+
+For purposes of the foregoing, "Sell" means practicing any or all of the rights
+granted to you under the License to provide to third parties, for a fee or other
+consideration (including without limitation fees for hosting or consulting/
+support services related to the Software), a product or service whose value
+derives, entirely or substantially, from the functionality of the Software.
+Any license notice or attribution required by the License must also include
+this Commons Clause License Condition notice.
+
+Software: portable.md editor, reader and companion skills, as defined in section 1
+License: the MIT License in section 8, subject to this complete document
+Licensor: the copyright holders identified in section 1
+
+For clarity, charging for copies of the editor, reader or skill kit, for a
+rebranded or modified equivalent, or for access to their functionality as a
+hosted or managed service is prohibited when the above definition of Sell is
+met. Packaging such an offering with nominal content does not avoid this
+restriction. Separate permission from the relevant copyright holders is
+required for uses outside this license.
+
+4. Notices and visible attribution
+
+Every distribution of the Software or a substantial portion of it must retain
+the copyright notices and a complete copy of this license. Embedded or bundled
+Software must retain these terms separately from any User Content license.
+Any sublicense must preserve these conditions for the covered Software.
+
+If you distribute or provide others with an interactive application containing
+the Software, you must provide a legible, readily discoverable, user-visible
+credit reading "Powered by portable.md" or "Built with portable.md", linked to
+https://portable.md/ where links are supported. A translation preserving the
+portable.md name is acceptable. The credit must be in the normal interface,
+such as a reader utility panel, footer or clearly labelled About/Credits screen;
+a source comment, hidden element or license file alone is insufficient. A
+collapsible panel is acceptable when its control remains readily discoverable.
+The copyright notice and full license must remain with distributed Software,
+including self-contained offline exports. They need not appear in the reader
+interface.
+
+Redistributed skills, libraries or other packages without their own interactive
+interface must instead show "portable.md by Erwan Vinot" and https://portable.md/ in a
+readily visible package description, entry document or accompanying README, with
+a reference to the included license. The supplied skill entry documents satisfy
+this requirement. Merely using a skill does not require a credit in every agent
+message or in User Content.
+
+You may restyle or relocate credits to fit your interface, but must not conceal,
+remove or make them illegible. Modified distributions must identify that they
+are modified and must not imply authorship by, or endorsement from, the original
+authors. These credits identify the Software, not the author of User Content.
+
+5. User Content and permission to distribute content bundles
+
+"User Content" means text, Markdown bundles, notes, media, data, project settings
+and other content that users supply, create, import or generate using the
+Software. It does not include the Software itself, copied skill instructions,
+software templates or third-party material merely because they are placed in a
+bundle. Using a skill to generate content does not subject that content to this
+license, except to the extent it reproduces material independently covered by it.
+
+The Licensor claims no ownership of, or license to, User Content merely because
+it is processed by the Software. Subject to rights you actually hold and any
+third-party or AI-provider terms, you may keep User Content private, publish,
+sell or license it under terms of your choice. This license does not grant you
+rights in other people's material or determine whether generated content is
+eligible for copyright protection.
+
+As an express additional permission overriding section 3 to the extent needed,
+you may distribute, sell or charge for access to genuine User Content bundles,
+books, courses, documentation or other publications that include the reader
+solely to display and navigate that content. Their value must be the authored
+content, rather than a resale of the Software or a general-purpose paid editor,
+reader or skill service. You may also pay third parties to host those content
+publications. The embedded reader remains under this Software license and must
+retain its notices and visible attribution. You may license your content
+separately, but must not state that your content license replaces the license
+of the embedded Software or its dependencies.
+
+First-party sample content supplied in the reader repository's content/ folder
+(pmd-editor/runtime/content/ in the combined development workspace) and the
+pmd-create skill's assets/starter/content/ folder may be copied, adapted,
+distributed, sold and licensed as part of your User Content without applying
+the Software attribution requirement to that content. This permission does not
+cover separately licensed assets or Software copied into those directories.
+
+Content-only exports, including Markdown, images or documents containing no
+Software, do not require portable.md branding or this Software license. No
+license for your content is selected or granted on your behalf by an export.
+
+6. Responsibility, warranty and liability
+
+You are responsible for your use of the Software and for content you provide,
+generate or distribute, including necessary permissions, privacy obligations
+and compliance with applicable law. Attribution to portable.md does not imply
+that its authors created, reviewed, verified, approved or endorsed that content.
+The Licensor does not undertake to supervise your use or verify your content.
+
+The warranty disclaimer and limitation of liability in section 8 apply, to the
+maximum extent permitted by applicable law, including to claims arising from
+User Content or misuse of the Software. Nothing in this license excludes or
+limits liability or rights that cannot lawfully be excluded or limited.
+
+7. Third-party material and names
+
+Third-party libraries, fonts, artwork, documents and other separately licensed
+material retain their respective licenses and notices. This license neither
+relicenses them nor adds restrictions to rights granted by their own licenses.
+You must comply with their applicable terms when redistributing them.
+
+No trademark rights are granted beyond the truthful attribution required here.
+Neither the Software credit nor this license authorizes misleading claims of
+affiliation, sponsorship or endorsement.
+
+8. MIT permission grant, subject to sections 1-7
+
+Copyright (c) 2026 Erwan Vinot
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+</template>
+
+        <nav id="toc" aria-label="Table of contents" aria-labelledby="toc-title" aria-busy="true">
+          <h2 id="toc-title" class="toc-title">Table of contents</h2>
+          <p class="toc-loading" role="status"><span class="toc-loading-label">Loading table of contents…</span><span class="pmd-loading-bar" aria-hidden="true"></span></p>
+        </nav>
+      </section>
+      <nav id="journey" aria-label="Journey"></nav>
+    </div>
+  </main>
+  <dialog id="kb-help" aria-labelledby="kb-help-title">
+    <div class="panel">
+      <header>
+        <h2 id="kb-help-title">Keyboard shortcuts</h2>
+        <button class="close" type="button" data-command="closeHelp" aria-label="Close help" title="Close help" autofocus="">✕</button>
+      </header>
+      <ul id="kb-help-list"></ul>
+    </div>
+  </dialog>
+
+
+<script type="application/json" id="pmd-publication">{"root":"../../","id":"stress"}</script></body></html>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/">
+  <ShortName>portable.md demo</ShortName>
+  <Description>A visual tour of everything the portable.md reader can show, and every way to change how it looks and moves.</Description>
+  <Image>https://erw.one/apps/pmd-demo-pages/content/assets/site/icon.svg</Image>
+  <Url type="text/html" template="https://erw.one/apps/pmd-demo-pages/?q={searchTerms}"/>
+</OpenSearchDescription>

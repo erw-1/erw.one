@@ -1,0 +1,17 @@
+{
+  "name": "portable.md demo",
+  "short_name": "portable.md demo",
+  "description": "A visual tour of everything the portable.md reader can show, and every way to change how it looks and moves.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#111111",
+  "theme_color": "#2a1a10",
+  "icons": [
+    {
+      "src": "content/assets/site/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

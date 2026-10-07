@@ -1,0 +1,32 @@
+{
+  "LANG": "en",
+  "TITLE": "portable.md demo",
+  "DEFAULT_THEME": "dark",
+  "ACCENT": "#e8833a",
+  "CUSTOM_CSS": ".demo-ramp{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin:1rem 0}\n.demo-ramp span{padding:.9rem .5rem;border-radius:var(--r-sm);text-align:center;font-weight:600}\n.demo-skins{display:grid;grid-template-columns:repeat(auto-fit,minmax(14rem,1fr));gap:.8rem;margin:1rem 0}\n.demo-skin{--color-main:#1e1e1e;--color-text:#d4d4d4;--color-accent:#e8833a;--demo-tint:color-mix(in srgb,var(--color-accent) 25%,var(--color-main));--demo-edge:color-mix(in srgb,var(--color-text) 12%,var(--color-main));padding:1rem;border-radius:var(--r-md);background:var(--color-main);color:var(--color-text);border:1px solid var(--demo-edge)}\n.demo-skin p{margin:.5rem 0}\n.demo-skin .demo-link{color:var(--color-accent);text-decoration:underline}\n.demo-skin code{background:var(--demo-edge);padding:.1rem .3rem;border-radius:var(--r-sm)}\n.demo-chip{display:inline-block;padding:.05rem .5rem;border-radius:999px;background:var(--demo-tint);font-size:.85em}\n.demo-skin.midnight{--color-main:#101826;--color-text:#d8e2f0;--color-accent:#6aa9ff}\n.demo-skin.paper{--color-main:#fbf6ea;--color-text:#2b2418;--color-accent:#b3541e}\n.demo-skin.terminal{--color-main:#0b1410;--color-text:#bff0c9;--color-accent:#4be37a;font-family:var(--font-code)}",
+  "CACHE_MD": 0,
+  "ALLOW_JS_FROM_MD": false,
+  "SHOW_EDITOR_LINK": true,
+  "CUSTOM_EMOJI": [
+    {
+      "alias": "demo",
+      "src": "assets/emojis/demo.svg"
+    }
+  ],
+  "SITE": {
+    "DESCRIPTION": "A visual tour of everything the portable.md reader can show, and every way to change how it looks and moves.",
+    "KEYWORDS": "portable.md, Markdown reader, diagrams, math, media, page graph, table of contents, themes",
+    "CANONICAL": "https://erw.one/apps/pmd-demo-pages-hier",
+    "THEME_COLOR": "#2a1a10",
+    "ICON": "content/assets/site/icon.svg",
+    "ICON_TYPE": "image/svg+xml",
+    "ICON_SIZES": "any",
+    "SHARE_TITLE": "Everything you can display using portable.md",
+    "SHARE_DESCRIPTION": "Text, tables, code, math, 35 diagram types, media, Canvas, queries, and every way to change the reader.",
+    "NOSCRIPT": "This demo needs JavaScript. Its Markdown source is content/portable.md.",
+    "SHOW_LOGO": true,
+    "SHOW_FAVICON": true,
+    "PUBLISH_PAGES": true,
+    "HIERARCHICAL_URLS": true
+  }
+}

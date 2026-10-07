@@ -1,0 +1,110 @@
+{
+  "generator": "portable.md",
+  "files": [
+    {
+      "path": "index.html",
+      "hash": "0aec4f59c665551532e16134ee19dae8815c561389fac00d8f7afa22e20a6a3a",
+      "git": "5c2dcc28bfb8b18ba6c05dbce7e07396b564e68b"
+    },
+    {
+      "path": ".nojekyll",
+      "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "git": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
+    },
+    {
+      "path": "pmd-reader-dist/reader-a129cadda0f80676.css",
+      "hash": "a129cadda0f806762050e312a19daec8e94e4b4914c6703c0e5ba4b3df119259",
+      "git": "f668202ded681c480994dee99d80aa3feb44d68e"
+    },
+    {
+      "path": "pmd-reader-dist/reader-37efa4299030f9a9.js",
+      "hash": "37efa4299030f9a9bce5d86ba40ac1e7797ed46e34f60bf713e8077f1069f7c6",
+      "git": "ebe80b8df0ab8fbbc9917f611e84bff03e1a7fcc"
+    },
+    {
+      "path": "pmd-custom-b3d1f870db99960a.css",
+      "hash": "b3d1f870db99960afe441beaa85befbe6df7ade61d3008b2f8d484fd7e7fff95",
+      "git": "2031985968689998b4ef16eccdd0c42760646a5b"
+    },
+    {
+      "path": "content/pmd.json",
+      "hash": "2a650ab5c87a26c9d03cb2ae1eec9f2a0d0ef3a982b1dbc0a9cdd6219ff5afd5",
+      "git": "bafdc903b9b8978c01162eae391487a6977e1c80"
+    },
+    {
+      "path": "content/portable.md",
+      "hash": "30e31c93fcdf55fc9191fc220283771381201bb4487f91ed7cfa33a8fec1b5f7",
+      "git": "007b8e7b21a0b6afebd12618368136a12fa0f9b6"
+    },
+    {
+      "path": "content/assets/clip.vtt",
+      "hash": "99bc9ac753e71087b806beb2172fe3d5d111ae331960b031249a5cd0d1e8e21d",
+      "git": "50a9fdaa91aaf89b712893f48b35e2dd3cfc9e63"
+    },
+    {
+      "path": "content/assets/clip.webm",
+      "hash": "1ef4f3e8239b01d6333402852a3f0fda1df4375aebeb10acb5c27b0255d73c81",
+      "git": "df01cb72f6b65004ba03d9a6e48b646730eb4bfe"
+    },
+    {
+      "path": "content/assets/embed.html",
+      "hash": "89b090928cc8e947070556229ae1c43fe416c763c45ba1f5e11312fca3352bee",
+      "git": "5201c1e7e0e684aa68effa34f9bd89edb78a74e3"
+    },
+    {
+      "path": "content/assets/guide.pdf",
+      "hash": "1feca7052e9092d7230ce04a647b33d559960e312a5520212305f064a46f5d8e",
+      "git": "f7fd17306821c6a24d8ac80f14126046ee080438"
+    },
+    {
+      "path": "content/assets/note.md",
+      "hash": "a4c9f75f107fe997f9676d03fb3e8f32656c15abac7e0cd2a0f1fee08809bd23",
+      "git": "80e1d24a1ed0386bdacbd2e3e499b572d3e6745d"
+    },
+    {
+      "path": "content/assets/palette.svg",
+      "hash": "f98ab208520930a421d5dc8b6713e5a6e22aa6a92842f0d3a8076e37ac985815",
+      "git": "d2feb8e228fbb7d5ee0d063b3d9e65cc19eb6e0a"
+    },
+    {
+      "path": "content/assets/readme.txt",
+      "hash": "0e80c3c7500d68d34b1895d17f6aaec6749ac20b977eaf3b2b7eb907b5e1cb3c",
+      "git": "1da8fed85f3afae9f340830c07fea929e5607570"
+    },
+    {
+      "path": "content/assets/sample-image.png",
+      "hash": "d0c6bdeb5075a86ce15b68f3d6594b4599d295a991ede6b09fef0a66e00716e2",
+      "git": "18329ddd12cc17e934acca370e1ec25a63de4f4a"
+    },
+    {
+      "path": "content/assets/settings.json",
+      "hash": "5e52b6d8e4de2824ea5ec379430b7273a9164d563cb3a03d67ffdf78dda2bb9c",
+      "git": "1d7daf0c401a45e96babeb8c33991ad795162722"
+    },
+    {
+      "path": "content/assets/surfaces.csv",
+      "hash": "0762ef4dcd96472ce55194b6bbc6935ada9a3b3dbcc932112dbd1a61555716cc",
+      "git": "b9a7c64e61a57d39cb69150ce014db05a67dc168"
+    },
+    {
+      "path": "content/assets/surfaces.tsv",
+      "hash": "c63012f40b7e7de9b9eac79f5f39594b9e1db452bbc8272658b441a8b4ca1264",
+      "git": "893d05afc05a40e1218fe3967e91018dd560712e"
+    },
+    {
+      "path": "content/assets/tones.wav",
+      "hash": "e94823e02e64ea651bfed9f40bac620c73af75bbfe7f91cc064ec02d7c744347",
+      "git": "706330913d0eb8e5aff42ce6a763c4290d894dcd"
+    },
+    {
+      "path": "content/assets/site/icon.svg",
+      "hash": "f1ecdd9afbb9ce5275e5a60567b4be6241a35994cde5223cb04c538e211a4400",
+      "git": "08a2669df08bd626675d980e1df7f8e1a298ce2f"
+    },
+    {
+      "path": "content/assets/emojis/demo.svg",
+      "hash": "d0232a2c11c450ba45fee9a3142c1ee04e80f4caf0cb962c9f652167d1a4046a",
+      "git": "08007d94417cf5edf5bbd15e46f03f5172675c79"
+    }
+  ]
+}
