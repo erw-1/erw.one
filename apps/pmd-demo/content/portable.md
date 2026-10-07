@@ -1,10 +1,10 @@
 <!--pmd
 id:"home"
-title:"Everything you can display using portable.md"
+title:"portable.md demo"
 kind:"home"
 updated:"2026-10-05"
 showUpdated:"false"
-seoTitle:"Everything you can display using portable.md"
+seoTitle:"portable.md demo"
 description:"A visual tour of everything the portable.md reader can show: text, callouts, tables, code, math, 35 diagram types, media, Canvas, queries, and every way to change the reader's look and navigation."
 -->
 # Everything you can display
@@ -1189,7 +1189,7 @@ Pages that mention a word, without this one:
 
 An empty result with a message of your own:
 
-{{pages text="zzzz-no-such-text" empty="No page contains that text."}}
+{{pages tag="no-such-tag" empty="No page has that tag."}}
 
 <!--pmd
 id:"canvas"
@@ -1424,6 +1424,19 @@ This project's accent is `#e8833a`. The reader mixes it into the canvas to make 
 </div>
 
 ![The same ramp, drawn as an SVG image](assets/palette.svg)
+
+<label class="demo-accent">Pick any color and the whole reader follows. Nothing is saved: <input type="color" class="demo-accent-input" value="#e8833a" aria-label="Accent color"></label>
+
+<script>
+(() => {
+  const input = document.querySelector('#content .demo-accent-input')
+  if (!input) return
+  const root = document.documentElement
+  const current = getComputedStyle(root).getPropertyValue('--color-accent').trim()
+  if (/^#[0-9a-f]{6}$/i.test(current)) input.value = current
+  input.addEventListener('input', () => root.style.setProperty('--color-accent', input.value))
+})()
+</script>
 
 ## Skins from one stylesheet
 
@@ -1708,7 +1721,7 @@ Everything a visitor can change without touching the project. None of it is save
 
 ## Floating previews
 
-Hover or focus a link such as [Page graph](#/look/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query** and citations such as the pocket guide[@demo-guide] open the same kind of popover.
+Click the eye beside a link such as [Page graph](#/look/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query**, citations such as the pocket guide[@demo-guide] and footnote markers need no click: hover or focus them to read their note.
 
 ## Images and the lightbox
 
@@ -2873,7 +2886,7 @@ Pages that mention a word, without this one:
 
 An empty result with a message of your own:
 
-{{pages text="zzzz-no-such-text" empty="No page contains that text."}}
+{{pages tag="no-such-tag" empty="No page has that tag."}}
 
 # Canvas
 
@@ -3026,6 +3039,19 @@ This project's accent is `#e8833a`. The reader mixes it into the canvas to make 
 </div>
 
 ![The same ramp, drawn as an SVG image](assets/palette.svg)
+
+<label class="demo-accent">Pick any color and the whole reader follows. Nothing is saved: <input type="color" class="demo-accent-input" value="#e8833a" aria-label="Accent color"></label>
+
+<script>
+(() => {
+  const input = document.querySelector('#content .demo-accent-input')
+  if (!input) return
+  const root = document.documentElement
+  const current = getComputedStyle(root).getPropertyValue('--color-accent').trim()
+  if (/^#[0-9a-f]{6}$/i.test(current)) input.value = current
+  input.addEventListener('input', () => root.style.setProperty('--color-accent', input.value))
+})()
+</script>
 
 ## Skins from one stylesheet
 
@@ -3219,7 +3245,7 @@ Everything a visitor can change without touching the project. None of it is save
 
 ## Floating previews
 
-Hover or focus a link such as [Page graph](#/look/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query** and citations such as the pocket guide[@demo-guide] open the same kind of popover.
+Click the eye beside a link such as [Page graph](#/look/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query**, citations such as the pocket guide[@demo-guide] and footnote markers need no click: hover or focus them to read their note.
 
 ## Images and the lightbox
 

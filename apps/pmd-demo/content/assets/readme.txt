@@ -1,4 +1,4 @@
-Everything you can display using portable.md
+portable.md demo
 
 Original synthetic samples for this demo project.
 Video: five-second animation, no speech.
