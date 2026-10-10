@@ -1127,7 +1127,7 @@ PDF, tables, Markdown and text files, each shown in place.
 
 ## The same file as raw text
 
-![The note as raw text](assets/note.md "plaintext")
+![The note as raw text](assets/note.md "text")
 
 ## Plain text and JSON
 
@@ -2832,7 +2832,7 @@ PDF, tables, Markdown and text files, each shown in place.
 
 ## The same file as raw text
 
-![The note as raw text](assets/note.md "plaintext")
+![The note as raw text](assets/note.md "text")
 
 ## Plain text and JSON
 
