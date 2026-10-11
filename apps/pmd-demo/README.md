@@ -25,6 +25,6 @@ To keep the site in a `docs` folder instead, upload the contents of this folder 
 
 ## Publish anywhere else
 
-Any static host works (Netlify, Cloudflare Pages, a web server of your own, and so on). Upload the folder so that `index.html` is at the root of the web address, with no build command, and serve it over HTTPS. The reader loads its math, diagram and PDF libraries from `cdn.jsdelivr.net`, so a Content-Security-Policy must allow that host. Optionally, give the hashed files in `pmd-reader-dist/` and `content/` a long cache lifetime and let the host compress text.
+Any static host works (Netlify, Cloudflare Pages, a web server of your own, and so on). Upload the folder so that `index.html` is at the root of the web address, with no build command, and serve it over HTTPS. The reader loads its math, diagram, PDF and drawing libraries from `cdn.jsdelivr.net`, so a Content-Security-Policy must allow that host. Optionally, give the hashed files in `pmd-reader-dist/` and `content/` a long cache lifetime and let the host compress text.
 
 You can delete this file: nothing depends on it.

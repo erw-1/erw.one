@@ -1347,6 +1347,19 @@ flowchart LR
 | `---` | Everything between rules |
 
 <!--pmd
+id:"excalidraw"
+title:"Drawings"
+parent:"content"
+updated:"2026-10-11"
+-->
+# Drawings
+
+Start writing here.
+
+![drawing](assets/drawing.excalidraw)
+
+
+<!--pmd
 id:"html"
 title:"HTML and embedded pages"
 parent:"content"
