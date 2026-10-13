@@ -3,8 +3,8 @@
   "files": [
     {
       "path": "index.html",
-      "hash": "24f821ca3810fd003fb893340ccbc1d9c712cb6b8d5bd36bb9037fd4899cdf18",
-      "git": "46c984eaa1fc6a08d1b732e5ed9add0a092d5f2a"
+      "hash": "708f78236d9102c7170f9a6b443cfd1649effe94f0527992293427c6d7d97395",
+      "git": "9f77296aae3b2c2c6e1529249a0fe636b33973cd"
     },
     {
       "path": ".nojekyll",
@@ -12,14 +12,14 @@
       "git": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
     },
     {
-      "path": "pmd-reader-dist/reader-9e8bf68a24c209a7.css",
-      "hash": "9e8bf68a24c209a73c0b707a79b53cc505380664141cf40860f78e6a13059c6c",
-      "git": "dc1fd8f3a071d493df183630367e49c42ed276b2"
+      "path": "pmd-reader-dist/reader-65a8ff3bcea74578.css",
+      "hash": "65a8ff3bcea74578570edf45852e6ee0584797b06beabcbd8b8fb61078a89729",
+      "git": "cb04d13fb0a462f4080e14417942bd237485ff82"
     },
     {
-      "path": "pmd-reader-dist/reader-25855fa91c5bbb4e.js",
-      "hash": "25855fa91c5bbb4ebd7c6cfaa33a649db879aa325d22ddee79f22b1992e107c1",
-      "git": "37f1995a89a589f5f7c3e48654b8e7d91ffb3d76"
+      "path": "pmd-reader-dist/reader-efd74b685f8c4343.js",
+      "hash": "efd74b685f8c434329940ed4a73456c28ed22a848cd492fc1d86fd3773f2935d",
+      "git": "c9c146155354584901dafccd20408a8d7e7954cb"
     },
     {
       "path": "pmd-custom-57373ebb4fe99721.css",
@@ -33,8 +33,8 @@
     },
     {
       "path": "content/portable.md",
-      "hash": "d6e507b67075e4be00d89012f68d03a96bbc3a6359db13256c3da5b705e87ff6",
-      "git": "38748e04244f5dbb585da8384f1f7c8cec0127fc"
+      "hash": "4d1a141c652be249b96c527806923d4f233ecf075bf58c735eaa032682513082",
+      "git": "e48817018ab47ddaf5abee083c0feb64fe461743"
     },
     {
       "path": "content/assets/clip.vtt",
@@ -105,11 +105,6 @@
       "path": "content/assets/emojis/demo.svg",
       "hash": "d0232a2c11c450ba45fee9a3142c1ee04e80f4caf0cb962c9f652167d1a4046a",
       "git": "08007d94417cf5edf5bbd15e46f03f5172675c79"
-    },
-    {
-      "path": "content/assets/drawing.excalidraw",
-      "hash": "151d2f9411c13a69936da5c9d0bc2d4e6b030f2a08251e3b282c39897f05229c",
-      "git": "ef139c402a44d15ad0cfe8652fc27eb0ea48fcba"
     }
   ]
 }
