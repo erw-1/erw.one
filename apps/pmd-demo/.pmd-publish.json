@@ -3,8 +3,8 @@
   "files": [
     {
       "path": "index.html",
-      "hash": "708f78236d9102c7170f9a6b443cfd1649effe94f0527992293427c6d7d97395",
-      "git": "9f77296aae3b2c2c6e1529249a0fe636b33973cd"
+      "hash": "4b5eb2b0a8d825b3bbd3d402e04a54088eb0205e40608d75a8d7fd9d0cbb9df4",
+      "git": "0b9157e9a0777d68aa0ee48352753ae3892461c8"
     },
     {
       "path": ".nojekyll",
@@ -12,29 +12,29 @@
       "git": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
     },
     {
-      "path": "pmd-reader-dist/reader-65a8ff3bcea74578.css",
-      "hash": "65a8ff3bcea74578570edf45852e6ee0584797b06beabcbd8b8fb61078a89729",
-      "git": "cb04d13fb0a462f4080e14417942bd237485ff82"
+      "path": "pmd-reader-dist/reader-e8a47b6d5f204d43.css",
+      "hash": "e8a47b6d5f204d43cffd5a98172361a341d1fd21545780ea121a13d3020887d3",
+      "git": "aecf9008fb2f00ea3a5de794f2465c9bad27e85b"
     },
     {
-      "path": "pmd-reader-dist/reader-efd74b685f8c4343.js",
-      "hash": "efd74b685f8c434329940ed4a73456c28ed22a848cd492fc1d86fd3773f2935d",
-      "git": "c9c146155354584901dafccd20408a8d7e7954cb"
+      "path": "pmd-reader-dist/reader-0dc6810a2f8a798d.js",
+      "hash": "0dc6810a2f8a798d0d7d4e13dc7cd5b51fd946f0cb11abe1cd0ae8d069433dac",
+      "git": "88cf588b6dabac842e9b2a5b62517d7ca7de9ae8"
     },
     {
-      "path": "pmd-custom-57373ebb4fe99721.css",
-      "hash": "57373ebb4fe99721ea8b0a44a2f2f077590b82b2669eaa25966fc5083e4863c9",
-      "git": "7571074b8d9bb6cd523b831640eac91bd3bb2e54"
+      "path": "pmd-custom-e914888dc80b910c.css",
+      "hash": "e914888dc80b910cfcda1afff487640f35b6bc3abc78c3c092ce38d1caac0c88",
+      "git": "dc7cd0a22c45782cd92eb649fa9f73c878b7e6c0"
     },
     {
       "path": "content/pmd.json",
-      "hash": "701888884965d0fb60d2024ee03feca04602d042d48999897f327acc2a085d7a",
-      "git": "0284f83bfc3c883551596e065f226486fabe14a4"
+      "hash": "b4c19f7cc6ca61c6de83cd674552547e0666587dada6fe374dd7aafb1887768e",
+      "git": "195735d42b80d483ccef6f68c8621f3ad113c2de"
     },
     {
       "path": "content/portable.md",
-      "hash": "4d1a141c652be249b96c527806923d4f233ecf075bf58c735eaa032682513082",
-      "git": "e48817018ab47ddaf5abee083c0feb64fe461743"
+      "hash": "0ee4325b59dfb46f32756caacbfaad5e416a3ed18d2a6b39493dac083790ed3c",
+      "git": "9e63ef973c074fd55222ecbf1f8d1dd2fbadff20"
     },
     {
       "path": "content/assets/clip.vtt",
@@ -80,6 +80,11 @@
       "path": "content/assets/settings.json",
       "hash": "5e52b6d8e4de2824ea5ec379430b7273a9164d563cb3a03d67ffdf78dda2bb9c",
       "git": "1d7daf0c401a45e96babeb8c33991ad795162722"
+    },
+    {
+      "path": "content/assets/sketch.excalidraw",
+      "hash": "2e3251391002bf40363434ec60ea0ce1a233264d157f4fe27ffef0e90ab3ec78",
+      "git": "9e3a00fd89504eaf4bbf19a0f616926f20fc04f9"
     },
     {
       "path": "content/assets/surfaces.csv",

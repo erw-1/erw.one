@@ -46,15 +46,15 @@ This project only shows. To learn how to write any of it, read the field guide t
 
 <!--pmd
 id:"content"
-title:"Content"
+title:":book: Content"
 parent:"home"
 updated:"2026-10-05"
 showUpdated:"false"
-description:"Thirteen kinds of content a portable.md page can hold."
+description:"Fourteen kinds of content a portable.md page can hold."
 -->
 # What a page can hold
 
-Thirteen kinds of content, one page each. Follow the [Content tour](journey:Content%20tour) or choose a card.
+Fourteen kinds of content, one page each. Follow the [Content tour](journey:Content%20tour) or choose a card.
 
 {{pages parent="content" view="cards"}}
 
@@ -114,6 +114,10 @@ This line follows two trailing spaces.
 ## Emoji
 
 Built-in :rocket: :sparkles: :books: :tada: and a project emoji :demo: from `CUSTOM_EMOJI`. Raw unicode passes through: 🚀 🎉 and joined sequences such as 👩‍🚀 and 👨‍👩‍👧‍👦.
+
+## Variables
+
+This project is {{project.title}}, this page is {{page.title}}, and {{product}} {{version}} come from `VARIABLES`. In code they stay as written: `{{product}}`.
 
 ## Edge cases that stay quiet
 
@@ -270,11 +274,13 @@ wide
 
 ## Tables
 
+:::table Alignment, code, links and an escaped pipe in a table {#alignment}
 | Facet | Purpose | Sample pages |
 | :--- | :---: | ---: |
 | **Left aligned** | Centered | Right aligned |
 | `code` in a cell | ==highlight== | [a link](#/content) |
 | A pipe, escaped | A \| B | 2 |
+:::
 
 ### A wide table scrolls instead of breaking the page
 
@@ -423,9 +429,11 @@ The mass–energy relation $E=mc^2$ stays in the sentence, and so does a braced 
 
 ## Display
 
+:::equation {#quadratic}
 $$
 x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 $$
+:::
 
 $$
 \begin{aligned}
@@ -1043,7 +1051,9 @@ Raster and vector images, a chosen width, and emoji of both kinds.
 
 ## An image and its lightbox
 
+:::figure A pocket field guide cover, with a caption and a name to link to {#cover}
 ![A pocket field guide cover](assets/sample-image.png)
+:::
 
 Click an image to open it in the lightbox. Zoom with the buttons, the mouse wheel or a two-finger pinch, and drag to move.
 
@@ -1065,7 +1075,7 @@ Click an image to open it in the lightbox. Zoom with the buttons, the mouse whee
 
 ## Emoji
 
-Built-in artwork :joy: :book: :sparkles: and the project's own :demo: come from the same shortcode syntax.
+Built-in artwork :joy: :book: :sparkles: and the project's own :demo: come from the same shortcode syntax. Page titles take them too: look at the sidebar, the breadcrumb and the cards on the home page.
 
 <!--pmd
 id:"video_audio"
@@ -1107,7 +1117,7 @@ updated:"2026-10-04"
 -->
 # Documents and data
 
-PDF, tables, Markdown and text files, each shown in place.
+PDF, tables, Markdown and text files, and a drawing, each shown in place.
 
 ## A PDF
 
@@ -1134,6 +1144,10 @@ PDF, tables, Markdown and text files, each shown in place.
 ![A plain text readme](assets/readme.txt)
 
 ![A sample project config](assets/settings.json)
+
+## A drawing
+
+![A hand-drawn sketch](assets/sketch.excalidraw)
 
 ## Downloads
 
@@ -1207,11 +1221,11 @@ A board of cards and connections, placed by hand. Pan, zoom and open the cards.
 {
   "nodes": [
     { "id": "g-content", "type": "group", "x": -40, "y": -40, "width": 540, "height": 440, "label": "Content", "color": "2" },
-    { "id": "g-look", "type": "group", "x": 580, "y": -40, "width": 540, "height": 440, "label": "Look and navigation", "color": "5" },
+    { "id": "g-look", "type": "group", "x": 580, "y": -40, "width": 540, "height": 440, "label": "Look and navigation", "color": "5", "background": "assets/palette.svg", "backgroundStyle": "ratio" },
     { "id": "t-text", "type": "text", "text": "## Text\n\nMarks, lists, tasks, emoji.", "x": 0, "y": 20, "width": 230, "height": 130 },
     { "id": "t-media", "type": "text", "text": "## Media\n\nImages, video, audio, documents.", "x": 260, "y": 20, "width": 230, "height": 130, "color": "4" },
     { "id": "t-diagrams", "type": "text", "text": "## Diagrams\n\n35 types, drawn live.", "x": 0, "y": 190, "width": 230, "height": 130 },
-    { "id": "f-image", "type": "file", "file": "assets/sample-image.png", "x": 260, "y": 180, "width": 230, "height": 170 },
+    { "id": "f-image", "type": "file", "file": "assets/sample-image.png", "subpath": "#cover", "x": 260, "y": 180, "width": 230, "height": 170 },
     { "id": "t-theme", "type": "text", "text": "## Theme\n\nAccent, skins and CSS.", "x": 620, "y": 20, "width": 230, "height": 130, "color": "6" },
     { "id": "l-graph", "type": "link", "url": "#/look/graph", "label": "Page graph", "x": 880, "y": 20, "width": 220, "height": 130 },
     { "id": "l-tree", "type": "link", "url": "#/look/tree", "label": "Tree shapes", "x": 620, "y": 190, "width": 230, "height": 130 },
@@ -1222,8 +1236,8 @@ A board of cards and connections, placed by hand. Pan, zoom and open the cards.
     { "id": "e-media-image", "fromNode": "t-media", "toNode": "f-image", "fromSide": "bottom", "toSide": "top", "label": "files" },
     { "id": "e-diagrams-text", "fromNode": "t-diagrams", "toNode": "t-text", "fromSide": "top", "toSide": "bottom", "label": "text becomes drawing" },
     { "id": "e-media-theme", "fromNode": "t-media", "toNode": "t-theme", "fromSide": "right", "toSide": "left", "label": "colors follow the theme", "color": "5" },
-    { "id": "e-theme-graph", "fromNode": "t-theme", "toNode": "l-graph", "fromSide": "right", "toSide": "left", "label": "accent" },
-    { "id": "e-tree-reading", "fromNode": "l-tree", "toNode": "t-reading", "fromSide": "right", "toSide": "left", "label": "reading" }
+    { "id": "e-theme-graph", "fromNode": "t-theme", "toNode": "l-graph", "fromSide": "right", "toSide": "left", "label": "accent", "toEnd": "none" },
+    { "id": "e-tree-reading", "fromNode": "l-tree", "toNode": "t-reading", "fromSide": "right", "toSide": "left", "label": "reading", "fromEnd": "arrow" }
   ]
 }
 ```
@@ -1255,9 +1269,9 @@ The reader keeps small asides beside the sentence that needs them.[^notes-aside]
 
 ## A citation
 
-Good graphics respect their readers' attention.[@tufte-2001] Typography asks for the same discipline.[@bringhurst-2004]
+Good graphics respect their readers' attention.[@tufte-2001] Typography asks for the same discipline.[@bringhurst-2004] Two authors are joined by an ampersand,[@kernighan-ritchie-1988] and three or more become "et al."[@abelson-1996]
 
-The sources are entries on the [References page](#/demo_references), and the pocket guide is cited the same way.[@demo-guide]
+The sources are entries on the [References page](#/demo_references), and the pocket guide is cited the same way, under a label of its own.[@demo-guide] This project cites by author and year; one line at the top of that page switches every label to a number, and an entry can carry any label it likes.
 
 ## Glossary terms
 
@@ -1382,9 +1396,143 @@ Plain HTML is kept exactly as written. It is trusted content, so write only what
 
 Remote embeds, such as a video from another site, need the network and the other site's permission. This one is a local file and works offline.
 
+## A video from another site
+
+<iframe src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Big Buck Bunny, a short film by the Blender Foundation" width="640" height="360" loading="lazy" allowfullscreen></iframe>
+
+This is the one remote embed in the project: a privacy-enhanced YouTube player. Offline the frame stays empty; [watch it on YouTube](https://www.youtube.com/watch?v=aqz-KE-bpKQ) instead. Pages can also run scripts: see [Scripts and the Power API](#/content/power).
+
+<!--pmd
+id:"power"
+title:"Scripts and the Power API"
+parent:"content"
+tags:"gallery"
+journey:"Content tour" "21"
+updated:"2026-10-14"
+-->
+# Scripts and the Power API
+
+A script on a page can change how the reader behaves. These are the six calls of `window.PMD`, one button each. Nothing here is saved.
+
+<div class="demo-power">
+<button type="button" data-power="render">renderMarkdown</button>
+<button type="button" data-power="float">floatContent</button>
+<button type="button" data-power="fill">fillContent</button>
+<button type="button" data-power="lens">lens</button>
+<button type="button" data-power="virtual">addVirtualPage</button>
+<button type="button" data-power="present">present</button>
+</div>
+
+<p class="demo-power-status" role="status">Choose a call.</p>
+
+## A string, rendered
+
+<div id="power-render" class="demo-power-box">The generated Markdown will replace this text.</div>
+
+## A card that floats
+
+<div id="power-card" class="demo-power-box">
+<strong>A movable card</strong>
+<p>Drag its header, resize its corner, then close it: it returns here.</p>
+</div>
+
+## A stage that fills the page
+
+<div id="power-stage" class="demo-power-box">
+<strong>A takeover</strong>
+<p>This could be an iframe, a canvas, a dashboard or a map. Press <kbd>Esc</kbd> or the close button to leave.</p>
+</div>
+
+## A lens, a virtual page and slides
+
+The lens keeps only the pages tagged `visual` in the sidebar, search and graph. The virtual page appears under this one in the sidebar, and the slides turn the sections of this page into a deck.
+
+<script>
+(() => {
+  const root = document.querySelector('#content .demo-power')
+  const status = document.querySelector('#content .demo-power-status')
+  if (!root || !status || !window.PMD) return
+  const say = text => { status.textContent = text }
+  const button = name => root.querySelector('[data-power="' + name + '"]')
+  const stops = {}
+  const calls = {
+    render() {
+      const markdown = '**Rendered** by the same pipeline as the page: inline math $x^2+y^2=r^2$, and a live query.\n\n' + '{{pages parent="content" sort="title" limit="3" view="cards"}}'
+      PMD.renderMarkdown(markdown, { target: '#power-render' }).then(() => say('renderMarkdown: the string went through the page renderer.'))
+    },
+    float() {
+      stops.float?.()
+      stops.float = PMD.floatContent('#power-card', { anchor: button('float'), title: 'A floating card' })
+      say('floatContent: close the panel to put the card back.')
+    },
+    fill() {
+      stops.fill?.()
+      stops.fill = PMD.fillContent('#power-stage', { closeButton: true })
+      say('fillContent: Esc or the close button returns the page.')
+    },
+    lens() {
+      if (stops.lens) { stops.lens(); stops.lens = null; say('lens: every page is back.'); return }
+      stops.lens = PMD.lens('tag="visual" sort="title"')
+      say('lens: the sidebar, search and graph show only the visual pages. Press again to restore.')
+    },
+    virtual() {
+      if (stops.virtual) { stops.virtual(); stops.virtual = null; say('addVirtualPage: removed.'); return }
+      stops.virtual = PMD.addVirtualPage({ id: 'demo_virtual', title: 'A page made by a script', parent: 'power', markdown: '# A page made by a script\n\nIt lives in this browser tab only: reload and it is gone.' })
+      say('addVirtualPage: look under this page in the sidebar. Press again to remove it.')
+    },
+    present() {
+      stops.present?.()
+      stops.present = PMD.present({ sections: 'h2' })
+      say('present: the arrow keys move between slides, Esc leaves.')
+    }
+  }
+  root.addEventListener('click', event => {
+    const target = event.target.closest('[data-power]')
+    if (target && calls[target.dataset.power]) calls[target.dataset.power]()
+  })
+})()
+</script>
+
+<!--pmd
+id:"captions"
+title:"Captions and cross-references"
+parent:"content"
+journey:"Content tour" "22"
+updated:"2026-10-14"
+-->
+# Captions and cross-references
+
+A caption gives any item a number that follows from where it stands, and a link with no text names it.
+
+:::figure The accent palette, drawn as an SVG and named for links {#palette}
+![An accent palette drawn as an SVG](assets/palette.svg)
+:::
+
+:::table The three kinds of caption {#kinds}
+| Kind | Label | Sits |
+| --- | --- | --- |
+| figure | Figure | below the item |
+| table | Table | above it |
+| equation | (1) | beside the formula |
+:::
+
+:::equation {#pythagoras}
+$$
+a^2 + b^2 = c^2
+$$
+:::
+
+:::figure A local page, set apart as a figure {#sandbox}
+<iframe src="assets/embed.html" title="A page set apart as a figure" width="420" height="120"></iframe>
+:::
+
+## Links that name their target
+
+On this page: [](#palette), [](#kinds), [](#pythagoras) and [](#sandbox). On others: the cover in [](#/content/media/images#cover), the table in [](#/content/layout#alignment) and the formula in [](#/content/math#quadratic). A page link works the same way: [](#/content/math).
+
 <!--pmd
 id:"look"
-title:"Look and navigation"
+title:":demo: Look and navigation"
 parent:"home"
 updated:"2026-10-05"
 showUpdated:"false"
@@ -1498,6 +1646,22 @@ Text direction follows the language. A whole project sets it with `SITE.DIR`; a 
 
 `ICON` with `SHOW_LOGO` puts an image in the header, and `SHOW_FAVICON` uses it as the tab icon. `CUSTOM_EMOJI` adds project emoji such as :demo:. Both come from files in the project.
 
+## Reader options
+
+`READER` in `pmd.json` decides which parts of the reader appear and how it reads. This project sets its footer, the line under every page, and numbers its pages and headings; every other option keeps its default.
+
+| Option | What it controls |
+| --- | --- |
+| `FOOTER_TEXT`, `FOOTER_LINKS` | A line of text and up to five links under every page |
+| `SEE_ALSO`, `SEE_ALSO_LIMIT`, `SEE_ALSO_TAGS` | Related pages, how many, and the tags they share |
+| `PAGE_NAV`, `JOURNEY_PROMPT` | Previous, parent, first-child and next links, and the offer to follow a journey |
+| `BREADCRUMBS`, `TOC`, `GRAPH`, `SEARCH`, `THEME_TOGGLE`, `PRINT`, `SHOW_UPDATED` | Each part of the reader, shown or hidden |
+| `FONT`, `DENSITY`, `READING_WIDTH` | Typeface, spacing and the column width a visitor starts with |
+| `INLINE_TAGS`, `LINK_PREVIEWS`, `GLOSSARY_HIGHLIGHTS`, `IMAGE_ZOOM`, `CODE_COPY`, `HEADING_LINKS`, `EXTERNAL_ICON`, `EXTERNAL_NEW_TAB` | The small behaviors of the page text, each on or off |
+| `PAGE_NUMBERS`, `HEADING_NUMBERS` | A number before each page title and heading, written as an example of the numbers you want (this project uses `I.1.1 {title}` and `{page}.1.1 {title}`) |
+| `NUMBER_COLOR` | The color of those numbers, among the ones readable on both themes |
+| `FIGURE_FORMAT`, `TABLE_FORMAT`, `EQUATION_FORMAT` | The label in front of a numbered figure, table or equation caption |
+
 ## On paper
 
 Print the page, or save it as a PDF, and the reader switches to ink on white with a black accent.
@@ -1579,7 +1743,7 @@ The tree in the sidebar is the project's hierarchy. Each page names its parent, 
 
 | Shape | Where to look |
 | --- | --- |
-| **Wide**: many siblings | [Content](#/content) has thirteen children |
+| **Wide**: many siblings | [Content](#/content) has fourteen children |
 | **Nested**: groups inside groups | Diagrams, Media and Transclusion each hold their own pages |
 | **Deep**: a long chain | [Seven levels down](#/look/tree/depth1/depth2/depth3/depth4/depth5/depth6/depth7) |
 
@@ -1710,7 +1874,7 @@ Everything a visitor can change without touching the project. None of it is save
 | Control | What it does |
 | --- | --- |
 | <kbd>T</kbd> | Cycles the theme |
-| The reading-width button | Switches between page width and full width on wide screens |
+| The reading-width button or <kbd>F</kbd> | Switches between page width and full width on wide screens |
 | <kbd>A</kbd> or <kbd>Q</kbd> | Shows or hides the sidebar |
 | <kbd>D</kbd> | Shows or hides the utility panel, with the graph and the table of contents |
 | <kbd>W</kbd> or <kbd>Z</kbd> | Shows or hides the header with the breadcrumbs |
@@ -1726,6 +1890,10 @@ Click the eye beside a link such as [Page graph](#/look/graph) to preview the pa
 ## Images and the lightbox
 
 Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See [Images and emoji](#/content/media/images).
+
+## Tags and related pages
+
+A tag written in the text, such as #gallery or #visual, links to the page that lists every page carrying it: hover or focus it for the list, or click for [the tag's own page](#/tag/interactive). Under a tagged page, **See also** ranks the pages that share its tags and shows which ones, with the tags counted once there are more than two.
 
 ## Journeys
 
@@ -1754,11 +1922,12 @@ A few lines in a page's header change how that page behaves. This project uses e
 | --- | --- | --- |
 | `kind:"simple"` | A navigation-only folder with no body | [The deep chain](#/look/tree) |
 | `kind:"glossary"`, `kind:"references"` | Shared terms and sources, with their own graph symbols | [Glossary](#/demo_glossary), [References](#/demo_references) |
-| `presentation:"h2"` | Offers **Present**, which turns sections into slides | [Presentation](#/content/presentation) |
+| `presentation:"h2"` | Offers **Present**, which turns sections into slides (split at `h1`, `h2`, `h3` or `---`) | [Presentation](#/content/presentation) |
 | `showUpdated:"false"` | Hides the "Last updated" line | Every hub page |
 | `updated:"date" "comment"` | Shows the date and a short note | The foot of this page |
 | `noindex:"true"` | Asks search engines to skip the page | [Everything, back to back](#/stress) |
-| `tags`, `journey` | Group pages for queries, the graph and tours | The pages of both tours |
+| `title:":book: Name"` | Draws an emoji in the sidebar, the breadcrumb, search and links | [Content](#/content) and [Look and navigation](#/look) |
+| `tags`, `journey` | Group pages for queries, the graph, tours and **See also** | The pages of both tours |
 
 ## A header, as source
 
@@ -1827,6 +1996,7 @@ parent:"home"
 updated:"2026-10-05"
 showUpdated:"false"
 -->
+<!-- pmd-reference-style: author-year -->
 # References
 
 Reusable entries have H2 IDs. Cite one with its ID in brackets, such as `[@tufte-2001]`.
@@ -1845,9 +2015,21 @@ Version 3.0 of a book on the craft of setting type.
 
 ## demo-guide
 
-<!-- pmd-reference: {"id":"demo-guide","type":"document","title":"Pocket field guide","author":[{"literal":"portable.md"}],"issued":{"date-parts":[[2026]]},"note":"A one-page synthetic PDF included with this project"} -->
+<!-- pmd-reference: {"id":"demo-guide","type":"document","title":"Pocket field guide","author":[{"literal":"portable.md"}],"issued":{"date-parts":[[2026]]},"citation-label":"Pocket guide","note":"A one-page synthetic PDF included with this project"} -->
 
 A one-page document included with this project. [Open the PDF](assets/guide.pdf).
+
+## kernighan-ritchie-1988
+
+<!-- pmd-reference: {"id":"kernighan-ritchie-1988","type":"book","title":"The C Programming Language","author":[{"family":"Kernighan","given":"Brian W."},{"family":"Ritchie","given":"Dennis M."}],"issued":{"date-parts":[[1988]]},"edition":"2","publisher":"Prentice Hall","publisher-place":"Englewood Cliffs, NJ"} -->
+
+A book with two authors.
+
+## abelson-1996
+
+<!-- pmd-reference: {"id":"abelson-1996","type":"book","title":"Structure and Interpretation of Computer Programs","author":[{"family":"Abelson","given":"Harold"},{"family":"Sussman","given":"Gerald Jay"},{"family":"Sussman","given":"Julie"}],"issued":{"date-parts":[[1996]]},"edition":"2","publisher":"MIT Press","publisher-place":"Cambridge, MA"} -->
+
+A book with three authors.
 
 <!--pmd
 id:"stress"
@@ -1916,6 +2098,10 @@ This line follows two trailing spaces.
 ## Emoji
 
 Built-in :rocket: :sparkles: :books: :tada: and a project emoji :demo: from `CUSTOM_EMOJI`. Raw unicode passes through: 🚀 🎉 and joined sequences such as 👩‍🚀 and 👨‍👩‍👧‍👦.
+
+## Variables
+
+This project is {{project.title}}, this page is {{page.title}}, and {{product}} {{version}} come from `VARIABLES`. In code they stay as written: `{{product}}`.
 
 ## Edge cases that stay quiet
 
@@ -2056,11 +2242,13 @@ wide
 
 ## Tables
 
+:::table Alignment, code, links and an escaped pipe in a table {#alignment}
 | Facet | Purpose | Sample pages |
 | :--- | :---: | ---: |
 | **Left aligned** | Centered | Right aligned |
 | `code` in a cell | ==highlight== | [a link](#/content) |
 | A pipe, escaped | A \| B | 2 |
+:::
 
 ### A wide table scrolls instead of breaking the page
 
@@ -2193,9 +2381,11 @@ The mass–energy relation $E=mc^2$ stays in the sentence, and so does a braced 
 
 ## Display
 
+:::equation {#quadratic}
 $$
 x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}
 $$
+:::
 
 $$
 \begin{aligned}
@@ -2762,7 +2952,9 @@ Raster and vector images, a chosen width, and emoji of both kinds.
 
 ## An image and its lightbox
 
+:::figure A pocket field guide cover, with a caption and a name to link to {#cover}
 ![A pocket field guide cover](assets/sample-image.png)
+:::
 
 Click an image to open it in the lightbox. Zoom with the buttons, the mouse wheel or a two-finger pinch, and drag to move.
 
@@ -2784,7 +2976,7 @@ Click an image to open it in the lightbox. Zoom with the buttons, the mouse whee
 
 ## Emoji
 
-Built-in artwork :joy: :book: :sparkles: and the project's own :demo: come from the same shortcode syntax.
+Built-in artwork :joy: :book: :sparkles: and the project's own :demo: come from the same shortcode syntax. Page titles take them too: look at the sidebar, the breadcrumb and the cards on the home page.
 
 # Video and audio
 
@@ -2812,7 +3004,7 @@ Three short ascending tones, C–E–G, over three seconds. No speech.
 
 # Documents and data
 
-PDF, tables, Markdown and text files, each shown in place.
+PDF, tables, Markdown and text files, and a drawing, each shown in place.
 
 ## A PDF
 
@@ -2839,6 +3031,10 @@ PDF, tables, Markdown and text files, each shown in place.
 ![A plain text readme](assets/readme.txt)
 
 ![A sample project config](assets/settings.json)
+
+## A drawing
+
+![A hand-drawn sketch](assets/sketch.excalidraw)
 
 ## Downloads
 
@@ -2896,11 +3092,11 @@ A board of cards and connections, placed by hand. Pan, zoom and open the cards.
 {
   "nodes": [
     { "id": "g-content", "type": "group", "x": -40, "y": -40, "width": 540, "height": 440, "label": "Content", "color": "2" },
-    { "id": "g-look", "type": "group", "x": 580, "y": -40, "width": 540, "height": 440, "label": "Look and navigation", "color": "5" },
+    { "id": "g-look", "type": "group", "x": 580, "y": -40, "width": 540, "height": 440, "label": "Look and navigation", "color": "5", "background": "assets/palette.svg", "backgroundStyle": "ratio" },
     { "id": "t-text", "type": "text", "text": "## Text\n\nMarks, lists, tasks, emoji.", "x": 0, "y": 20, "width": 230, "height": 130 },
     { "id": "t-media", "type": "text", "text": "## Media\n\nImages, video, audio, documents.", "x": 260, "y": 20, "width": 230, "height": 130, "color": "4" },
     { "id": "t-diagrams", "type": "text", "text": "## Diagrams\n\n35 types, drawn live.", "x": 0, "y": 190, "width": 230, "height": 130 },
-    { "id": "f-image", "type": "file", "file": "assets/sample-image.png", "x": 260, "y": 180, "width": 230, "height": 170 },
+    { "id": "f-image", "type": "file", "file": "assets/sample-image.png", "subpath": "#cover", "x": 260, "y": 180, "width": 230, "height": 170 },
     { "id": "t-theme", "type": "text", "text": "## Theme\n\nAccent, skins and CSS.", "x": 620, "y": 20, "width": 230, "height": 130, "color": "6" },
     { "id": "l-graph", "type": "link", "url": "#/look/graph", "label": "Page graph", "x": 880, "y": 20, "width": 220, "height": 130 },
     { "id": "l-tree", "type": "link", "url": "#/look/tree", "label": "Tree shapes", "x": 620, "y": 190, "width": 230, "height": 130 },
@@ -2911,8 +3107,8 @@ A board of cards and connections, placed by hand. Pan, zoom and open the cards.
     { "id": "e-media-image", "fromNode": "t-media", "toNode": "f-image", "fromSide": "bottom", "toSide": "top", "label": "files" },
     { "id": "e-diagrams-text", "fromNode": "t-diagrams", "toNode": "t-text", "fromSide": "top", "toSide": "bottom", "label": "text becomes drawing" },
     { "id": "e-media-theme", "fromNode": "t-media", "toNode": "t-theme", "fromSide": "right", "toSide": "left", "label": "colors follow the theme", "color": "5" },
-    { "id": "e-theme-graph", "fromNode": "t-theme", "toNode": "l-graph", "fromSide": "right", "toSide": "left", "label": "accent" },
-    { "id": "e-tree-reading", "fromNode": "l-tree", "toNode": "t-reading", "fromSide": "right", "toSide": "left", "label": "reading" }
+    { "id": "e-theme-graph", "fromNode": "t-theme", "toNode": "l-graph", "fromSide": "right", "toSide": "left", "label": "accent", "toEnd": "none" },
+    { "id": "e-tree-reading", "fromNode": "l-tree", "toNode": "t-reading", "fromSide": "right", "toSide": "left", "label": "reading", "fromEnd": "arrow" }
   ]
 }
 ```
@@ -2936,9 +3132,9 @@ The reader keeps small asides beside the sentence that needs them.[^notes-aside]
 
 ## A citation
 
-Good graphics respect their readers' attention.[@tufte-2001] Typography asks for the same discipline.[@bringhurst-2004]
+Good graphics respect their readers' attention.[@tufte-2001] Typography asks for the same discipline.[@bringhurst-2004] Two authors are joined by an ampersand,[@kernighan-ritchie-1988] and three or more become "et al."[@abelson-1996]
 
-The sources are entries on the [References page](#/demo_references), and the pocket guide is cited the same way.[@demo-guide]
+The sources are entries on the [References page](#/demo_references), and the pocket guide is cited the same way, under a label of its own.[@demo-guide] This project cites by author and year; one line at the top of that page switches every label to a number, and an entry can carry any label it likes.
 
 ## Glossary terms
 
@@ -3018,6 +3214,125 @@ Plain HTML is kept exactly as written. It is trusted content, so write only what
 <iframe src="assets/embed.html" title="A local HTML page" width="640" height="320" loading="lazy"></iframe>
 
 Remote embeds, such as a video from another site, need the network and the other site's permission. This one is a local file and works offline.
+
+## A video from another site
+
+<iframe src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Big Buck Bunny, a short film by the Blender Foundation" width="640" height="360" loading="lazy" allowfullscreen></iframe>
+
+This is the one remote embed in the project: a privacy-enhanced YouTube player. Offline the frame stays empty; [watch it on YouTube](https://www.youtube.com/watch?v=aqz-KE-bpKQ) instead. Pages can also run scripts: see [Scripts and the Power API](#/content/power).
+
+# Scripts and the Power API
+
+A script on a page can change how the reader behaves. These are the six calls of `window.PMD`, one button each. Nothing here is saved.
+
+<div class="demo-power">
+<button type="button" data-power="render">renderMarkdown</button>
+<button type="button" data-power="float">floatContent</button>
+<button type="button" data-power="fill">fillContent</button>
+<button type="button" data-power="lens">lens</button>
+<button type="button" data-power="virtual">addVirtualPage</button>
+<button type="button" data-power="present">present</button>
+</div>
+
+<p class="demo-power-status" role="status">Choose a call.</p>
+
+## A string, rendered
+
+<div id="power-render" class="demo-power-box">The generated Markdown will replace this text.</div>
+
+## A card that floats
+
+<div id="power-card" class="demo-power-box">
+<strong>A movable card</strong>
+<p>Drag its header, resize its corner, then close it: it returns here.</p>
+</div>
+
+## A stage that fills the page
+
+<div id="power-stage" class="demo-power-box">
+<strong>A takeover</strong>
+<p>This could be an iframe, a canvas, a dashboard or a map. Press <kbd>Esc</kbd> or the close button to leave.</p>
+</div>
+
+## A lens, a virtual page and slides
+
+The lens keeps only the pages tagged `visual` in the sidebar, search and graph. The virtual page appears under this one in the sidebar, and the slides turn the sections of this page into a deck.
+
+<script>
+(() => {
+  const root = document.querySelector('#content .demo-power')
+  const status = document.querySelector('#content .demo-power-status')
+  if (!root || !status || !window.PMD) return
+  const say = text => { status.textContent = text }
+  const button = name => root.querySelector('[data-power="' + name + '"]')
+  const stops = {}
+  const calls = {
+    render() {
+      const markdown = '**Rendered** by the same pipeline as the page: inline math $x^2+y^2=r^2$, and a live query.\n\n' + '{{pages parent="content" sort="title" limit="3" view="cards"}}'
+      PMD.renderMarkdown(markdown, { target: '#power-render' }).then(() => say('renderMarkdown: the string went through the page renderer.'))
+    },
+    float() {
+      stops.float?.()
+      stops.float = PMD.floatContent('#power-card', { anchor: button('float'), title: 'A floating card' })
+      say('floatContent: close the panel to put the card back.')
+    },
+    fill() {
+      stops.fill?.()
+      stops.fill = PMD.fillContent('#power-stage', { closeButton: true })
+      say('fillContent: Esc or the close button returns the page.')
+    },
+    lens() {
+      if (stops.lens) { stops.lens(); stops.lens = null; say('lens: every page is back.'); return }
+      stops.lens = PMD.lens('tag="visual" sort="title"')
+      say('lens: the sidebar, search and graph show only the visual pages. Press again to restore.')
+    },
+    virtual() {
+      if (stops.virtual) { stops.virtual(); stops.virtual = null; say('addVirtualPage: removed.'); return }
+      stops.virtual = PMD.addVirtualPage({ id: 'demo_virtual', title: 'A page made by a script', parent: 'power', markdown: '# A page made by a script\n\nIt lives in this browser tab only: reload and it is gone.' })
+      say('addVirtualPage: look under this page in the sidebar. Press again to remove it.')
+    },
+    present() {
+      stops.present?.()
+      stops.present = PMD.present({ sections: 'h2' })
+      say('present: the arrow keys move between slides, Esc leaves.')
+    }
+  }
+  root.addEventListener('click', event => {
+    const target = event.target.closest('[data-power]')
+    if (target && calls[target.dataset.power]) calls[target.dataset.power]()
+  })
+})()
+</script>
+
+# Captions and cross-references
+
+A caption gives any item a number that follows from where it stands, and a link with no text names it.
+
+:::figure The accent palette, drawn as an SVG and named for links {#palette}
+![An accent palette drawn as an SVG](assets/palette.svg)
+:::
+
+:::table The three kinds of caption {#kinds}
+| Kind | Label | Sits |
+| --- | --- | --- |
+| figure | Figure | below the item |
+| table | Table | above it |
+| equation | (1) | beside the formula |
+:::
+
+:::equation {#pythagoras}
+$$
+a^2 + b^2 = c^2
+$$
+:::
+
+:::figure A local page, set apart as a figure {#sandbox}
+<iframe src="assets/embed.html" title="A page set apart as a figure" width="420" height="120"></iframe>
+:::
+
+## Links that name their target
+
+On this page: [](#palette), [](#kinds), [](#pythagoras) and [](#sandbox). On others: the cover in [](#/content/media/images#cover), the table in [](#/content/layout#alignment) and the formula in [](#/content/math#quadratic). A page link works the same way: [](#/content/math).
 
 # Theme, accent and custom CSS
 
@@ -3113,6 +3428,22 @@ Text direction follows the language. A whole project sets it with `SITE.DIR`; a 
 
 `ICON` with `SHOW_LOGO` puts an image in the header, and `SHOW_FAVICON` uses it as the tab icon. `CUSTOM_EMOJI` adds project emoji such as :demo:. Both come from files in the project.
 
+## Reader options
+
+`READER` in `pmd.json` decides which parts of the reader appear and how it reads. This project sets its footer, the line under every page, and numbers its pages and headings; every other option keeps its default.
+
+| Option | What it controls |
+| --- | --- |
+| `FOOTER_TEXT`, `FOOTER_LINKS` | A line of text and up to five links under every page |
+| `SEE_ALSO`, `SEE_ALSO_LIMIT`, `SEE_ALSO_TAGS` | Related pages, how many, and the tags they share |
+| `PAGE_NAV`, `JOURNEY_PROMPT` | Previous, parent, first-child and next links, and the offer to follow a journey |
+| `BREADCRUMBS`, `TOC`, `GRAPH`, `SEARCH`, `THEME_TOGGLE`, `PRINT`, `SHOW_UPDATED` | Each part of the reader, shown or hidden |
+| `FONT`, `DENSITY`, `READING_WIDTH` | Typeface, spacing and the column width a visitor starts with |
+| `INLINE_TAGS`, `LINK_PREVIEWS`, `GLOSSARY_HIGHLIGHTS`, `IMAGE_ZOOM`, `CODE_COPY`, `HEADING_LINKS`, `EXTERNAL_ICON`, `EXTERNAL_NEW_TAB` | The small behaviors of the page text, each on or off |
+| `PAGE_NUMBERS`, `HEADING_NUMBERS` | A number before each page title and heading, written as an example of the numbers you want (this project uses `I.1.1 {title}` and `{page}.1.1 {title}`) |
+| `NUMBER_COLOR` | The color of those numbers, among the ones readable on both themes |
+| `FIGURE_FORMAT`, `TABLE_FORMAT`, `EQUATION_FORMAT` | The label in front of a numbered figure, table or equation caption |
+
 ## On paper
 
 Print the page, or save it as a PDF, and the reader switches to ink on white with a black accent.
@@ -3179,7 +3510,7 @@ The tree in the sidebar is the project's hierarchy. Each page names its parent, 
 
 | Shape | Where to look |
 | --- | --- |
-| **Wide**: many siblings | [Content](#/content) has thirteen children |
+| **Wide**: many siblings | [Content](#/content) has fourteen children |
 | **Nested**: groups inside groups | Diagrams, Media and Transclusion each hold their own pages |
 | **Deep**: a long chain | [Seven levels down](#/look/tree/depth1/depth2/depth3/depth4/depth5/depth6/depth7) |
 
@@ -3234,7 +3565,7 @@ Everything a visitor can change without touching the project. None of it is save
 | Control | What it does |
 | --- | --- |
 | <kbd>T</kbd> | Cycles the theme |
-| The reading-width button | Switches between page width and full width on wide screens |
+| The reading-width button or <kbd>F</kbd> | Switches between page width and full width on wide screens |
 | <kbd>A</kbd> or <kbd>Q</kbd> | Shows or hides the sidebar |
 | <kbd>D</kbd> | Shows or hides the utility panel, with the graph and the table of contents |
 | <kbd>W</kbd> or <kbd>Z</kbd> | Shows or hides the header with the breadcrumbs |
@@ -3250,6 +3581,10 @@ Click the eye beside a link such as [Page graph](#/look/graph) to preview the pa
 ## Images and the lightbox
 
 Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See [Images and emoji](#/content/media/images).
+
+## Tags and related pages
+
+A tag written in the text, such as #gallery or #visual, links to the page that lists every page carrying it: hover or focus it for the list, or click for [the tag's own page](#/tag/interactive). Under a tagged page, **See also** ranks the pages that share its tags and shows which ones, with the tags counted once there are more than two.
 
 ## Journeys
 
@@ -3271,11 +3606,12 @@ A few lines in a page's header change how that page behaves. This project uses e
 | --- | --- | --- |
 | `kind:"simple"` | A navigation-only folder with no body | [The deep chain](#/look/tree) |
 | `kind:"glossary"`, `kind:"references"` | Shared terms and sources, with their own graph symbols | [Glossary](#/demo_glossary), [References](#/demo_references) |
-| `presentation:"h2"` | Offers **Present**, which turns sections into slides | [Presentation](#/content/presentation) |
+| `presentation:"h2"` | Offers **Present**, which turns sections into slides (split at `h1`, `h2`, `h3` or `---`) | [Presentation](#/content/presentation) |
 | `showUpdated:"false"` | Hides the "Last updated" line | Every hub page |
 | `updated:"date" "comment"` | Shows the date and a short note | The foot of this page |
 | `noindex:"true"` | Asks search engines to skip the page | [Everything, back to back](#/stress) |
-| `tags`, `journey` | Group pages for queries, the graph and tours | The pages of both tours |
+| `title:":book: Name"` | Draws an emoji in the sidebar, the breadcrumb, search and links | [Content](#/content) and [Look and navigation](#/look) |
+| `tags`, `journey` | Group pages for queries, the graph, tours and **See also** | The pages of both tours |
 
 ## A header, as source
 

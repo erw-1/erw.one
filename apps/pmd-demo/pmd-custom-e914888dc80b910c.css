@@ -11,3 +11,7 @@
 .demo-skin.midnight{--color-main:#101826;--color-text:#d8e2f0;--color-accent:#6aa9ff}
 .demo-skin.paper{--color-main:#fbf6ea;--color-text:#2b2418;--color-accent:#b3541e}
 .demo-skin.terminal{--color-main:#0b1410;--color-text:#bff0c9;--color-accent:#4be37a;font-family:var(--font-code)}
+.demo-power{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0}
+.demo-power button{padding:.4rem .8rem;border:1px solid var(--color-main-12percent-contrast);border-radius:var(--r-sm);background:var(--color-main-3percent-contrast);font-family:var(--font-code);cursor:pointer}
+.demo-power-status{min-height:1.5em;color:var(--color-main-75percent-contrast)}
+.demo-power-box{margin:.8rem 0;padding:1rem;border:1px dashed var(--color-main-12percent-contrast);border-radius:var(--r-sm)}
