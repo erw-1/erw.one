@@ -212,7 +212,7 @@ Inline spoilers hide a word: the answer is ||forty-two||.
 
 <details>
 <summary>A plain details element</summary>
-<p>The browser's own <code>details</code> and <code>summary</code> elements work as well.</p>
+<p>The browser's own <code>details</code> and <code>summary</code> elements work as well, and look and open exactly like a spoiler block.</p>
 </details>
 
 ## Quotations
@@ -1131,6 +1131,10 @@ PDF, tables, Markdown and text files, and a drawing, each shown in place.
 
 ![Reader surfaces, as TSV](assets/surfaces.tsv)
 
+## The same data with semicolons
+
+![Reader surfaces, semicolon separated](assets/surfaces-semicolon.csv "separator ;")
+
 ## A Markdown file
 
 ![An attached note](assets/note.md)
@@ -1325,7 +1329,7 @@ updated:"2026-09-30"
 -->
 # Presentation
 
-The reader turns the sections of a page into slides. Press **Present**, then use the arrow keys, Page Up and Page Down, or the slide controls. <kbd>Esc</kbd> returns to the article.
+The reader turns the sections of a page into slides. Press **Present**, then use the arrow keys, Page Up and Page Down, or the slide controls. <kbd>Esc</kbd> returns to the article, and so does the browser's Back button, which is handy on a phone. The address names the slide, so a link to it opens the presentation there.
 
 ## 01 · One idea per slide
 
@@ -1398,7 +1402,7 @@ Remote embeds, such as a video from another site, need the network and the other
 
 ## A video from another site
 
-<iframe src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Big Buck Bunny, a short film by the Blender Foundation" width="640" height="360" loading="lazy" allowfullscreen></iframe>
+<iframe src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Big Buck Bunny, a short film by the Blender Foundation" width="640" height="360" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 This is the one remote embed in the project: a privacy-enhanced YouTube player. Offline the frame stays empty; [watch it on YouTube](https://www.youtube.com/watch?v=aqz-KE-bpKQ) instead. Pages can also run scripts: see [Scripts and the Power API](#/content/power).
 
@@ -1412,7 +1416,7 @@ updated:"2026-10-14"
 -->
 # Scripts and the Power API
 
-A script on a page can change how the reader behaves. These are the six calls of `window.PMD`, one button each. Nothing here is saved.
+A script on a page can change how the reader behaves. These are five of the six calls of `window.PMD`, one button each; the sixth, `present`, is the page's own **Present** option, shown on [Presentation](#/content/presentation). Nothing here is saved.
 
 <div class="demo-power">
 <button type="button" data-power="render">renderMarkdown</button>
@@ -1420,7 +1424,6 @@ A script on a page can change how the reader behaves. These are the six calls of
 <button type="button" data-power="fill">fillContent</button>
 <button type="button" data-power="lens">lens</button>
 <button type="button" data-power="virtual">addVirtualPage</button>
-<button type="button" data-power="present">present</button>
 </div>
 
 <p class="demo-power-status" role="status">Choose a call.</p>
@@ -1479,11 +1482,6 @@ The lens keeps only the pages tagged `visual` in the sidebar, search and graph. 
       if (stops.virtual) { stops.virtual(); stops.virtual = null; say('addVirtualPage: removed.'); return }
       stops.virtual = PMD.addVirtualPage({ id: 'demo_virtual', title: 'A page made by a script', parent: 'power', markdown: '# A page made by a script\n\nIt lives in this browser tab only: reload and it is gone.' })
       say('addVirtualPage: look under this page in the sidebar. Press again to remove it.')
-    },
-    present() {
-      stops.present?.()
-      stops.present = PMD.present({ sections: 'h2' })
-      say('present: the arrow keys move between slides, Esc leaves.')
     }
   }
   root.addEventListener('click', event => {
@@ -1656,6 +1654,7 @@ Text direction follows the language. A whole project sets it with `SITE.DIR`; a 
 | `SEE_ALSO`, `SEE_ALSO_LIMIT`, `SEE_ALSO_TAGS` | Related pages, how many, and the tags they share |
 | `PAGE_NAV`, `JOURNEY_PROMPT` | Previous, parent, first-child and next links, and the offer to follow a journey |
 | `BREADCRUMBS`, `TOC`, `GRAPH`, `SEARCH`, `THEME_TOGGLE`, `PRINT`, `SHOW_UPDATED` | Each part of the reader, shown or hidden |
+| `TOC_TITLE` | What the table of contents is called: contents, on this page, in this article or outline |
 | `FONT`, `DENSITY`, `READING_WIDTH` | Typeface, spacing and the column width a visitor starts with |
 | `INLINE_TAGS`, `LINK_PREVIEWS`, `GLOSSARY_HIGHLIGHTS`, `IMAGE_ZOOM`, `CODE_COPY`, `HEADING_LINKS`, `EXTERNAL_ICON`, `EXTERNAL_NEW_TAB` | The small behaviors of the page text, each on or off |
 | `PAGE_NUMBERS`, `HEADING_NUMBERS` | A number before each page title and heading, written as an example of the numbers you want (this project uses `I.1.1 {title}` and `{page}.1.1 {title}`) |
@@ -1833,8 +1832,8 @@ Use the graph in the utility panel, or press <kbd>G</kbd> for the fullscreen gra
 | --- | --- |
 | A grey outlined node | A [simple folder](#/look/tree) |
 | A node tinted with the accent color | A page with nothing below it |
-| A diamond labeled `#gallery (13)` | A tag shared by more than five pages becomes a hub |
-| Lines between the pages tagged `visual` | A tag with five pages or fewer links them directly |
+| A diamond labeled `#gallery (13)` | A tag shared by more than five pages becomes a hub; click it to open the tag's page |
+| Lines between the pages tagged `visual` | A tag with five pages or fewer links them directly; rest the pointer on one to see the tags |
 | Dashed gray lines when you hover a page | Markdown links between pages |
 | Directed lines | The steps of a journey |
 | A house, an **a** and an arrow | The Home, [Glossary](#/demo_glossary) and [References](#/demo_references) pages |
@@ -1844,7 +1843,7 @@ Use the graph in the utility panel, or press <kbd>G</kbd> for the fullscreen gra
 Under **Graph display** in the fullscreen view:
 
 - **Expand all** opens every folded branch.
-- **Fern** arranges the whole graph as a fern, so the size of every branch is visible at a glance.
+- **Fern** arranges the whole graph as a fern, so the size of every branch is visible at a glance. It is flat: drag to pan it like a map.
 - **GPU / CPU** chooses where the layout is computed.
 - **Label size** enlarges the text from 100% to 200%.
 - The checkboxes show or hide tag links, Markdown page links and journey links.
@@ -1887,6 +1886,9 @@ Everything a visitor can change without touching the project. None of it is save
 
 Click the eye beside a link such as [Page graph](#/look/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query**, citations such as the pocket guide[@demo-guide] and footnote markers need no click: hover or focus them to read their note.
 
+> [!NOTE]
+> **On a phone** the eye is not shown, so a link cannot be previewed there: follow it instead.
+
 ## Images and the lightbox
 
 Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See [Images and emoji](#/content/media/images).
@@ -1906,6 +1908,8 @@ A page with a presentation setting offers **Present**. See [Presentation](#/cont
 ## On a phone
 
 Swipe right for the sidebar and left for the utility panel, then swipe back to close. Wide tables, code blocks, the graph, the breadcrumbs and the image view keep their own drags.
+
+The eye of a floating preview and the reading-width button need a screen wider than 1,000 px, so a phone does not show them; the keys listed above need a keyboard.
 
 <!--pmd
 id:"page_options"
@@ -2188,7 +2192,7 @@ Inline spoilers hide a word: the answer is ||forty-two||.
 
 <details>
 <summary>A plain details element</summary>
-<p>The browser's own <code>details</code> and <code>summary</code> elements work as well.</p>
+<p>The browser's own <code>details</code> and <code>summary</code> elements work as well, and look and open exactly like a spoiler block.</p>
 </details>
 
 ## Quotations
@@ -3018,6 +3022,10 @@ PDF, tables, Markdown and text files, and a drawing, each shown in place.
 
 ![Reader surfaces, as TSV](assets/surfaces.tsv)
 
+## The same data with semicolons
+
+![Reader surfaces, semicolon separated](assets/surfaces-semicolon.csv "separator ;")
+
 ## A Markdown file
 
 ![An attached note](assets/note.md)
@@ -3152,7 +3160,7 @@ A whole page can be included too:
 
 # Presentation
 
-The reader turns the sections of a page into slides. Press **Present**, then use the arrow keys, Page Up and Page Down, or the slide controls. <kbd>Esc</kbd> returns to the article.
+The reader turns the sections of a page into slides. Press **Present**, then use the arrow keys, Page Up and Page Down, or the slide controls. <kbd>Esc</kbd> returns to the article, and so does the browser's Back button, which is handy on a phone. The address names the slide, so a link to it opens the presentation there.
 
 ## 01 · One idea per slide
 
@@ -3217,13 +3225,13 @@ Remote embeds, such as a video from another site, need the network and the other
 
 ## A video from another site
 
-<iframe src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Big Buck Bunny, a short film by the Blender Foundation" width="640" height="360" loading="lazy" allowfullscreen></iframe>
+<iframe src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Big Buck Bunny, a short film by the Blender Foundation" width="640" height="360" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 This is the one remote embed in the project: a privacy-enhanced YouTube player. Offline the frame stays empty; [watch it on YouTube](https://www.youtube.com/watch?v=aqz-KE-bpKQ) instead. Pages can also run scripts: see [Scripts and the Power API](#/content/power).
 
 # Scripts and the Power API
 
-A script on a page can change how the reader behaves. These are the six calls of `window.PMD`, one button each. Nothing here is saved.
+A script on a page can change how the reader behaves. These are five of the six calls of `window.PMD`, one button each; the sixth, `present`, is the page's own **Present** option, shown on [Presentation](#/content/presentation). Nothing here is saved.
 
 <div class="demo-power">
 <button type="button" data-power="render">renderMarkdown</button>
@@ -3231,7 +3239,6 @@ A script on a page can change how the reader behaves. These are the six calls of
 <button type="button" data-power="fill">fillContent</button>
 <button type="button" data-power="lens">lens</button>
 <button type="button" data-power="virtual">addVirtualPage</button>
-<button type="button" data-power="present">present</button>
 </div>
 
 <p class="demo-power-status" role="status">Choose a call.</p>
@@ -3290,11 +3297,6 @@ The lens keeps only the pages tagged `visual` in the sidebar, search and graph. 
       if (stops.virtual) { stops.virtual(); stops.virtual = null; say('addVirtualPage: removed.'); return }
       stops.virtual = PMD.addVirtualPage({ id: 'demo_virtual', title: 'A page made by a script', parent: 'power', markdown: '# A page made by a script\n\nIt lives in this browser tab only: reload and it is gone.' })
       say('addVirtualPage: look under this page in the sidebar. Press again to remove it.')
-    },
-    present() {
-      stops.present?.()
-      stops.present = PMD.present({ sections: 'h2' })
-      say('present: the arrow keys move between slides, Esc leaves.')
     }
   }
   root.addEventListener('click', event => {
@@ -3438,6 +3440,7 @@ Text direction follows the language. A whole project sets it with `SITE.DIR`; a 
 | `SEE_ALSO`, `SEE_ALSO_LIMIT`, `SEE_ALSO_TAGS` | Related pages, how many, and the tags they share |
 | `PAGE_NAV`, `JOURNEY_PROMPT` | Previous, parent, first-child and next links, and the offer to follow a journey |
 | `BREADCRUMBS`, `TOC`, `GRAPH`, `SEARCH`, `THEME_TOGGLE`, `PRINT`, `SHOW_UPDATED` | Each part of the reader, shown or hidden |
+| `TOC_TITLE` | What the table of contents is called: contents, on this page, in this article or outline |
 | `FONT`, `DENSITY`, `READING_WIDTH` | Typeface, spacing and the column width a visitor starts with |
 | `INLINE_TAGS`, `LINK_PREVIEWS`, `GLOSSARY_HIGHLIGHTS`, `IMAGE_ZOOM`, `CODE_COPY`, `HEADING_LINKS`, `EXTERNAL_ICON`, `EXTERNAL_NEW_TAB` | The small behaviors of the page text, each on or off |
 | `PAGE_NUMBERS`, `HEADING_NUMBERS` | A number before each page title and heading, written as an example of the numbers you want (this project uses `I.1.1 {title}` and `{page}.1.1 {title}`) |
@@ -3532,8 +3535,8 @@ Use the graph in the utility panel, or press <kbd>G</kbd> for the fullscreen gra
 | --- | --- |
 | A grey outlined node | A [simple folder](#/look/tree) |
 | A node tinted with the accent color | A page with nothing below it |
-| A diamond labeled `#gallery (13)` | A tag shared by more than five pages becomes a hub |
-| Lines between the pages tagged `visual` | A tag with five pages or fewer links them directly |
+| A diamond labeled `#gallery (13)` | A tag shared by more than five pages becomes a hub; click it to open the tag's page |
+| Lines between the pages tagged `visual` | A tag with five pages or fewer links them directly; rest the pointer on one to see the tags |
 | Dashed gray lines when you hover a page | Markdown links between pages |
 | Directed lines | The steps of a journey |
 | A house, an **a** and an arrow | The Home, [Glossary](#/demo_glossary) and [References](#/demo_references) pages |
@@ -3543,7 +3546,7 @@ Use the graph in the utility panel, or press <kbd>G</kbd> for the fullscreen gra
 Under **Graph display** in the fullscreen view:
 
 - **Expand all** opens every folded branch.
-- **Fern** arranges the whole graph as a fern, so the size of every branch is visible at a glance.
+- **Fern** arranges the whole graph as a fern, so the size of every branch is visible at a glance. It is flat: drag to pan it like a map.
 - **GPU / CPU** chooses where the layout is computed.
 - **Label size** enlarges the text from 100% to 200%.
 - The checkboxes show or hide tag links, Markdown page links and journey links.
@@ -3578,6 +3581,9 @@ Everything a visitor can change without touching the project. None of it is save
 
 Click the eye beside a link such as [Page graph](#/look/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query**, citations such as the pocket guide[@demo-guide] and footnote markers need no click: hover or focus them to read their note.
 
+> [!NOTE]
+> **On a phone** the eye is not shown, so a link cannot be previewed there: follow it instead.
+
 ## Images and the lightbox
 
 Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See [Images and emoji](#/content/media/images).
@@ -3597,6 +3603,8 @@ A page with a presentation setting offers **Present**. See [Presentation](#/cont
 ## On a phone
 
 Swipe right for the sidebar and left for the utility panel, then swipe back to close. Wide tables, code blocks, the graph, the breadcrumbs and the image view keep their own drags.
+
+The eye of a floating preview and the reading-width button need a screen wider than 1,000 px, so a phone does not show them; the keys listed above need a keyboard.
 
 # Per-page options
 

@@ -30,7 +30,7 @@
     "PRINT": true,
     "PAGE_NUMBERS": "I.1.1 {title}",
     "HEADING_NUMBERS": "{page}.1.1 {title}",
-    "NUMBER_COLOR": "warning",
+    "NUMBER_COLOR": "accent-75",
     "FOOTER_TEXT": "Every page, table and diagram in this demo is plain Markdown.",
     "FOOTER_LINKS": [
       {

@@ -3,8 +3,8 @@
   "files": [
     {
       "path": "index.html",
-      "hash": "4b5eb2b0a8d825b3bbd3d402e04a54088eb0205e40608d75a8d7fd9d0cbb9df4",
-      "git": "0b9157e9a0777d68aa0ee48352753ae3892461c8"
+      "hash": "dc0d674d18db53733b2c2eb3df404669a5822062654e6d8acadf626c9d1ae13f",
+      "git": "ef123c0e8775d56f3cdd7ec50017f53dcf49fb92"
     },
     {
       "path": ".nojekyll",
@@ -12,14 +12,14 @@
       "git": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391"
     },
     {
-      "path": "pmd-reader-dist/reader-e8a47b6d5f204d43.css",
-      "hash": "e8a47b6d5f204d43cffd5a98172361a341d1fd21545780ea121a13d3020887d3",
-      "git": "aecf9008fb2f00ea3a5de794f2465c9bad27e85b"
+      "path": "pmd-reader-dist/reader-2be32a57725296e9.css",
+      "hash": "2be32a57725296e967c0929fa9def68cb83f3d7a89b4bc37936f4fcbb4af9b60",
+      "git": "ca14c7c85f323c60738b89fd27adb941da996b52"
     },
     {
-      "path": "pmd-reader-dist/reader-0dc6810a2f8a798d.js",
-      "hash": "0dc6810a2f8a798d0d7d4e13dc7cd5b51fd946f0cb11abe1cd0ae8d069433dac",
-      "git": "88cf588b6dabac842e9b2a5b62517d7ca7de9ae8"
+      "path": "pmd-reader-dist/reader-9bdd3b400e5b2fa9.js",
+      "hash": "9bdd3b400e5b2fa90cfb096eb3b85a92bc7557e0cd1844845797f0529ec429ec",
+      "git": "a2d20d0d0fd8f9c4cf79f4ed40272c3237a1cd92"
     },
     {
       "path": "pmd-custom-e914888dc80b910c.css",
@@ -28,13 +28,13 @@
     },
     {
       "path": "content/pmd.json",
-      "hash": "b4c19f7cc6ca61c6de83cd674552547e0666587dada6fe374dd7aafb1887768e",
-      "git": "195735d42b80d483ccef6f68c8621f3ad113c2de"
+      "hash": "bfe627ca109179a1e2f5405a091b604281e5cded0994fee3a143a9106057cb18",
+      "git": "d74e2db8dde730f57e7d35cdc5aab75e2fe87a43"
     },
     {
       "path": "content/portable.md",
-      "hash": "0ee4325b59dfb46f32756caacbfaad5e416a3ed18d2a6b39493dac083790ed3c",
-      "git": "9e63ef973c074fd55222ecbf1f8d1dd2fbadff20"
+      "hash": "2ceb4cb9e867f9263d820ef0170756e8b689608fc789755fcbcc000bf35db6a0",
+      "git": "d6d5af689c4f229c224fc5ddacc62c6aeaf33b74"
     },
     {
       "path": "content/assets/clip.vtt",
@@ -85,6 +85,11 @@
       "path": "content/assets/sketch.excalidraw",
       "hash": "2e3251391002bf40363434ec60ea0ce1a233264d157f4fe27ffef0e90ab3ec78",
       "git": "9e3a00fd89504eaf4bbf19a0f616926f20fc04f9"
+    },
+    {
+      "path": "content/assets/surfaces-semicolon.csv",
+      "hash": "d7de861ff98d3e68048d82a15565d33dac23c32ace8f78e6e2050ae1f14049bf",
+      "git": "0804f10fe84d48c5b2530f5254c6be0b66afb7eb"
     },
     {
       "path": "content/assets/surfaces.csv",
