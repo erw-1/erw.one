@@ -25,9 +25,9 @@ Theme, table of contents, tree, page graph and the reading surface.
 [Start with the theme](#/look/theme) · [All of it](#/look)
 ::::column
 ### Take a tour
-Two paths through the pages, one step at a time.
+Three short paths through the pages, a few steps each.
 
-[Content tour](journey:Content%20tour) · [Look and feel tour](journey:Look%20and%20feel%20tour)
+[Content tour](journey:Content%20tour) · [Look and feel tour](journey:Look%20and%20feel%20tour) · [Reading tour](journey:Reading%20tour)
 ::::
 
 ## Try these first
@@ -226,7 +226,6 @@ id:"layout"
 title:"Columns, tables and alignment"
 parent:"content"
 tags:"gallery"
-journey:"Content tour" "3"
 updated:"2026-10-01"
 -->
 # Columns, tables and alignment
@@ -308,7 +307,7 @@ id:"code"
 title:"Code"
 parent:"content"
 tags:"gallery"
-journey:"Content tour" "4"
+journey:"Content tour" "3"
 updated:"2026-09-30"
 -->
 # Code
@@ -416,7 +415,6 @@ id:"math"
 title:"Math"
 parent:"content"
 tags:"gallery"
-journey:"Content tour" "5"
 updated:"2026-09-29"
 -->
 # Math
@@ -471,7 +469,6 @@ id:"diagrams"
 title:"Diagrams"
 parent:"content"
 tags:"gallery"
-journey:"Content tour" "6"
 updated:"2026-10-04"
 -->
 # Diagrams
@@ -490,7 +487,6 @@ flowchart LR
 id:"diagrams_flow"
 title:"Flows and structure"
 parent:"diagrams"
-journey:"Content tour" "7"
 updated:"2026-10-04"
 -->
 # Flows and structure
@@ -686,7 +682,6 @@ zenuml
 id:"diagrams_time"
 title:"Time, plans and journeys"
 parent:"diagrams"
-journey:"Content tour" "8"
 updated:"2026-10-04"
 -->
 # Time, plans and journeys
@@ -776,7 +771,6 @@ tf 04 rmo JourneyReader ->> 03
 id:"diagrams_data"
 title:"Data and charts"
 parent:"diagrams"
-journey:"Content tour" "9"
 updated:"2026-10-04"
 -->
 # Data and charts
@@ -885,7 +879,6 @@ venn-beta
 id:"diagrams_maps"
 title:"Maps and strategy"
 parent:"diagrams"
-journey:"Content tour" "10"
 updated:"2026-10-04"
 -->
 # Maps and strategy
@@ -1018,7 +1011,6 @@ id:"media"
 title:"Media"
 parent:"content"
 tags:"gallery"
-journey:"Content tour" "11"
 updated:"2026-10-04"
 -->
 # Media
@@ -1042,7 +1034,6 @@ Images, video, audio and documents share one Markdown shape: an image-style link
 id:"images"
 title:"Images and emoji"
 parent:"media"
-journey:"Content tour" "12"
 updated:"2026-10-04"
 -->
 # Images and emoji
@@ -1081,7 +1072,6 @@ Built-in artwork :joy: :book: :sparkles: and the project's own :demo: come from 
 id:"video_audio"
 title:"Video and audio"
 parent:"media"
-journey:"Content tour" "13"
 updated:"2026-10-04"
 -->
 # Video and audio
@@ -1112,7 +1102,6 @@ Three short ascending tones, C–E–G, over three seconds. No speech.
 id:"documents"
 title:"Documents and data"
 parent:"media"
-journey:"Content tour" "14"
 updated:"2026-10-04"
 -->
 # Documents and data
@@ -1164,7 +1153,6 @@ id:"queries"
 title:"Page queries"
 parent:"content"
 tags:"gallery, interactive"
-journey:"Content tour" "15"
 updated:"2026-10-03"
 -->
 # Page queries
@@ -1214,7 +1202,6 @@ id:"canvas"
 title:"Canvas"
 parent:"content"
 tags:"gallery, interactive"
-journey:"Content tour" "16"
 updated:"2026-10-03"
 -->
 # Canvas
@@ -1258,7 +1245,6 @@ id:"notes"
 title:"Footnotes, citations and glossary terms"
 parent:"content"
 tags:"gallery"
-journey:"Content tour" "17"
 updated:"2026-10-02"
 -->
 # Footnotes, citations and glossary terms
@@ -1286,7 +1272,6 @@ id:"transclusion"
 title:"Transclusion"
 parent:"content"
 tags:"gallery"
-journey:"Content tour" "18"
 updated:"2026-10-01"
 -->
 # Transclusion
@@ -1324,7 +1309,6 @@ title:"Presentation"
 presentation:"h2"
 parent:"content"
 tags:"gallery, interactive"
-journey:"Content tour" "19"
 updated:"2026-09-30"
 -->
 # Presentation
@@ -1369,7 +1353,6 @@ id:"html"
 title:"HTML and embedded pages"
 parent:"content"
 tags:"gallery, interactive"
-journey:"Content tour" "20"
 updated:"2026-09-28"
 -->
 # HTML and embedded pages
@@ -1411,7 +1394,6 @@ id:"power"
 title:"Scripts and the Power API"
 parent:"content"
 tags:"gallery"
-journey:"Content tour" "21"
 updated:"2026-10-14"
 -->
 # Scripts and the Power API
@@ -1495,7 +1477,6 @@ The lens keeps only the pages tagged `visual` in the sidebar, search and graph. 
 id:"captions"
 title:"Captions and cross-references"
 parent:"content"
-journey:"Content tour" "22"
 updated:"2026-10-14"
 -->
 # Captions and cross-references
@@ -1670,7 +1651,7 @@ id:"toc"
 title:"Table of contents"
 parent:"look"
 tags:"visual"
-journey:"Look and feel tour" "2"
+journey:"Look and feel tour, Reading tour" "2, 3"
 updated:"2026-10-03"
 -->
 # Table of contents
@@ -1733,7 +1714,6 @@ These headings are the exhibit: three levels of nesting, a skipped level, and en
 id:"tree"
 title:"Tree shapes"
 parent:"look"
-journey:"Look and feel tour" "3"
 updated:"2026-10-02"
 -->
 # Tree shapes
@@ -1815,7 +1795,7 @@ id:"graph"
 title:"Page graph"
 parent:"look"
 tags:"visual"
-journey:"Look and feel tour" "4"
+journey:"Look and feel tour" "3"
 updated:"2026-10-05"
 -->
 # Page graph
@@ -1863,7 +1843,7 @@ id:"reading"
 title:"Reading surface"
 parent:"look"
 tags:"visual, interactive"
-journey:"Look and feel tour" "5"
+journey:"Reading tour" "1"
 updated:"2026-10-05"
 -->
 # Reading surface
@@ -1899,7 +1879,7 @@ A tag written in the text, such as #gallery or #visual, links to the page that l
 
 ## Journeys
 
-When a page belongs to a journey, its footer offers to follow the path. **From this page** and **From the start** choose where to begin, and **Leave journey** returns to ordinary navigation. Try the [Look and feel tour](journey:Look%20and%20feel%20tour).
+When a page belongs to a journey, its footer offers to follow the path. **From this page** and **From the start** choose where to begin, and **Leave journey** returns to ordinary navigation. Try the [Look and feel tour](journey:Look%20and%20feel%20tour), or the [Reading tour](journey:Reading%20tour), whose middle step is [a long page](#/look/long_read) that shows the bar filling.
 
 ## Slides
 
@@ -1912,10 +1892,178 @@ Swipe right for the sidebar and left for the utility panel, then swipe back to c
 The eye of a floating preview and the reading-width button need a screen wider than 1,000 px, so a phone does not show them; the keys listed above need a keyboard.
 
 <!--pmd
+id:"long_read"
+title:"A long read"
+parent:"look"
+journey:"Reading tour" "2"
+updated:"2026-10-20"
+-->
+# A long read
+
+One page with a great deal to read, so that the journey bar, the table of contents and the heading links have something to follow.
+
+## Why this page is long
+
+The [Reading tour](journey:Reading%20tour) has three steps, and this is the middle one. Most pages here fit on a screen or two, which is not enough to see what a journey does while you read. This one runs on for a long time, with many headings, so that every part of the reader that keeps track of your place has room to show it.
+
+Scroll slowly. Along the foot of the window, the journey bar fills as you go, and its track carries a tick for every heading of this page. Beside the text, the table of contents marks the heading you are under.
+
+## The bar at the foot of the window
+
+The bar names the journey and the step you are on, and counts the pages of it that you have visited. Its track has a tick for every page and every heading of the tour, so a page with many headings shows many ticks. Previous and next buttons lead to the neighbouring steps, and the cross leaves the journey. While a journey is active, the sibling links and the **See also** list at the end of a page make way for it, because a journey has its own order.
+
+The fill follows the scroll position. Each page takes a stretch of the track as long as the page is: pages are weighted by their length, so this long page takes up most of the Reading tour, and the short pages on either side a small stretch each. The ticks turn to “read” as the fill passes them.
+
+### What counts as read
+
+The bar follows where you are, not the clock. Skim to the foot of the page and the fill reaches the end of that step; scroll back up and it follows you back. The pages you have opened are remembered in this browser, which is how the bar counts them.
+
+### Leaving and returning
+
+The cross leaves the journey and puts the ordinary navigation back; the page you are on stays where it is. Opening a page of a tour offers the tour again, from that page or from the start.
+
+## The table of contents follows you
+
+On a wide window, the table of contents lists the headings of the page in the utility panel. The one you are under is marked, and it changes as you scroll. Click any entry to jump to it; the address of the page gains that heading, so the position can be shared or bookmarked.
+
+On a phone the utility panel opens with a swipe to the left. It is the quickest way to cross a page like this one, and the clearest picture of its shape: sections, with subsections inside some of them.
+
+## Headings are signposts
+
+A long page is easier to cross when its headings tell the reader what each part is for. A good heading names the question the section answers, or the thing it describes, in a few words. It does not need a verb, and it never needs to repeat the page title.
+
+The levels should say how the parts relate. A second-level heading opens a section of its own; a third-level heading belongs to the section above it. Skipping a level, from a second straight to a fourth, leaves a hole in the table of contents.
+
+### Short, then specific
+
+Put the shortest accurate words first, and add detail only where two headings would otherwise look alike. “Options” and “Options for tables” can sit on one page; “More about the options you can set” cannot be scanned.
+
+### One idea for each section
+
+When a section begins to answer two questions, split it. Two small sections cost two lines in the table of contents and two ticks on the journey bar, and each gets its own link that others can follow.
+
+## Paragraphs that can be skimmed
+
+Most readers skim before they read. The first sentence of a paragraph should carry its point, and the rest should support it. A reader who stops after the first line has still learned something; one who goes on finds the evidence.
+
+Keep paragraphs to a few sentences. A screen full of unbroken text asks for effort before it has earned any, and on a phone it fills the whole window. White space between paragraphs is not waste: it is where the eye rests.
+
+## Lists, tables and quotations
+
+A list suits items that stand side by side and could be reordered without harm. A numbered list suits steps that happen in order. A table suits facts that have two dimensions, such as an option, its default and its effect.
+
+A quotation is for words that someone else wrote, with the source beside them. Setting a plain remark as a quotation only makes it look more important than it is.
+
+## Links that explain themselves
+
+A link should say where it goes before it is followed. “See the [table of contents](#/look/toc)” tells the reader what they will find; “click here” tells them nothing, and a screen reader that lists the links of a page reads out a column of identical words.
+
+Link to the page that answers the question, not to the front door of the topic. The floating preview, offered beside each link on a wide screen, lets a reader look before leaving, which makes a precise link even more useful.
+
+## Code, formulas and figures
+
+Show code in a block of its own, with its language named, so that it is highlighted and can be copied in one click. Keep the lines short enough to read without scrolling sideways, and say what the code does in the sentence before it.
+
+A figure belongs next to the paragraph that refers to it, with a caption that says what to notice. A figure that needs a page of explanation is the wrong figure.
+
+### Numbers and captions
+
+Where a project numbers its headings, figure and table captions take the number of their page, so a reference such as “Figure 2.1” never has to be corrected by hand when pages move.
+
+## Reading width
+
+A line of text is easiest to read when it holds roughly sixty to eighty characters. On a wide screen the reader keeps its article column narrower than the window, and the width button offers the full window for the tables and diagrams that need it. On a phone, the column is the screen.
+
+## Reading in the dark
+
+The <kbd>T</kbd> key switches between the light and the dark theme without leaving the page. A page written well for one reads well in the other, because it names its colors by role rather than by value: the ink, the paper, the accent.
+
+## Plain words
+
+Short, common words travel further than long, rare ones. “Use” does the work of “utilize”, and “show” the work of “demonstrate”. A reader in a second language, or in a hurry, or on a small screen, will thank you for each one.
+
+Keep one word for one thing. If the page says “journey” in one paragraph and “path” in the next, the reader will wonder whether they are different. Pick the term, and let the [glossary](#/demo_glossary) carry its definition.
+
+### Terms the reader may not know
+
+Define a term where it first appears, in a clause, rather than sending the reader away: “a bundle, the single file that holds every page”. A term that is used on many pages deserves a glossary entry, so that hovering it shows the definition without a click.
+
+### Names that stay put
+
+A page title can change at any time, but the identity of a page is its ID. Links follow the ID, so a title can be improved without breaking anything that points to it.
+
+## Examples earn their place
+
+An example is worth a paragraph of explanation, when it is the right one. Pick the smallest case that shows the point, and say what to look at before the reader sees it. If the example is long, put the explanation after a short version and the long version below.
+
+Real examples beat invented ones. A sentence taken from the project itself has details the reader can check; “foo” and “bar” have none, and teach only the shape.
+
+## One page for each question
+
+A page answers one question well, or a small family of questions that belong together. When it starts to answer a second, unrelated question, the second belongs on a page of its own, under the same parent, where the tree, the graph and the search can find it.
+
+The test is simple: could someone arrive at this section from a link and want only this? If so, it is a page.
+
+### When a page has grown too long
+
+A long page is fine when its parts depend on each other, as in a tutorial, a chapter or a specification. It is a problem when its parts are independent: then it is a folder in disguise. Move the independent parts into child pages, and leave the parent with a short introduction and a list of its children.
+
+### Keeping the links alive
+
+When a section moves to a page of its own, leave a line behind that links to it. Readers who arrive from an old link find the new place in one click.
+
+## Tone
+
+Write the way you would explain it across a table. Address the reader as “you”, use “we” only for what the authors really did together, and keep the passive voice for when the actor does not matter. A warm, direct tone is easier to follow than a formal one, and it is easier to translate.
+
+Avoid hedges that say nothing: “basically”, “simply”, “just”. If a step is simple, the reader will see it; if it is not, the word makes them feel slow.
+
+## Evidence and sources
+
+A claim that can be checked should say where. A source named in the text, or a link to it, lets the reader judge for themselves, and lets the author find out later whether the claim still holds.
+
+Where a project keeps a list of references, a short citation in the text shows the full entry when it is hovered. That keeps the paragraph readable and the source one click away.
+
+## Dates and revisions
+
+A page that records when it was last changed tells the reader how far to trust it. The line at the foot of this page shows its date; a short note beside the date can say what changed, which is kinder than leaving the reader to compare two versions.
+
+Change a long page in small steps. Keep its headings stable, because each heading is also a link that others may have saved, and a renamed heading breaks that link without anyone noticing.
+
+## Pictures, and their words
+
+An image carries meaning that the text does not, so it needs words of its own: a description for the reader who cannot see it, and a caption for the reader who can. The description says what the image shows; the caption says why it is there.
+
+Do not put text inside an image if it can be text on the page. Text in the page can be searched, copied, resized, translated and read aloud; text in a picture can be none of these.
+
+## Color and contrast
+
+Color should never be the only way to tell two things apart. A chart that distinguishes its lines by hue alone is unreadable for a good many readers, and for everyone on a bright screen at noon. Add a label, a shape or a pattern.
+
+Check the contrast between text and its background in both themes. Light gray on white and dark gray on black both pass for design until someone has to read a paragraph of it.
+
+## For the reader who comes back
+
+Many readers return to a long page for one thing: a command, a number, a definition. They will scan the headings first, so make those the index of the page. Keep the thing they came for under a heading that names it exactly.
+
+A table near the top that lists the main points, each linked to its section, is a cheap and reliable index. The table of contents does the same thing automatically, without an author keeping it in step.
+
+## A short checklist
+
+Before publishing a long page, read only its headings, top to bottom. Do they tell the story of the page? Then read only the first sentence of every paragraph. Does the argument survive? Last, look at the page in the other theme and on a narrow screen.
+
+If all three pass, the page is ready. If one does not, the fix is usually at the level of the headings, not the sentences.
+
+## When the page ends
+
+A long page should end on something: a summary, a next step, or the link to what comes after. In a journey, the next step is already waiting in the bar.
+
+The last step of this tour is the [table of contents](#/look/toc): the very list that has followed you down this page.
+
+<!--pmd
 id:"page_options"
 title:"Per-page options"
 parent:"look"
-journey:"Look and feel tour" "6"
 updated:"2026-10-05" "Added the table of header options"
 -->
 # Per-page options
@@ -1931,7 +2079,7 @@ A few lines in a page's header change how that page behaves. This project uses e
 | `updated:"date" "comment"` | Shows the date and a short note | The foot of this page |
 | `noindex:"true"` | Asks search engines to skip the page | [Everything, back to back](#/stress) |
 | `title:":book: Name"` | Draws an emoji in the sidebar, the breadcrumb, search and links | [Content](#/content) and [Look and navigation](#/look) |
-| `tags`, `journey` | Group pages for queries, the graph, tours and **See also** | The pages of both tours |
+| `tags`, `journey` | Group pages for queries, the graph, tours and **See also** | The pages of the three tours |
 
 ## A header, as source
 
@@ -1941,7 +2089,7 @@ id:"example"
 title:"An example page"
 parent:"home"
 tags:"gallery, visual"
-journey:"Look and feel tour" "6"
+journey:"Look and feel tour" "3"
 updated:"2026-10-05" "Added the example"
 showUpdated:"true"
 -->
@@ -2048,7 +2196,7 @@ noindex:"true"
 
 Every page of this project, one after another, on a single page. It is two things at once:
 
-- **A feature list.** The table of contents lists every kind of content and every look-and-navigation topic, in the order of the tours.
+- **A feature list.** The table of contents lists every kind of content and every look-and-navigation topic: the content pages first, then the look and navigation ones.
 - **A performance probe.** One page that holds every diagram, table, viewer, formula and code block of the project is the heaviest page the reader is asked to draw here. Time how long it takes to open, scroll and search.
 
 <!-- Generated between the markers from the other pages. Edit those pages, not this block. -->
@@ -3594,7 +3742,7 @@ A tag written in the text, such as #gallery or #visual, links to the page that l
 
 ## Journeys
 
-When a page belongs to a journey, its footer offers to follow the path. **From this page** and **From the start** choose where to begin, and **Leave journey** returns to ordinary navigation. Try the [Look and feel tour](journey:Look%20and%20feel%20tour).
+When a page belongs to a journey, its footer offers to follow the path. **From this page** and **From the start** choose where to begin, and **Leave journey** returns to ordinary navigation. Try the [Look and feel tour](journey:Look%20and%20feel%20tour), or the [Reading tour](journey:Reading%20tour), whose middle step is [a long page](#/look/long_read) that shows the bar filling.
 
 ## Slides
 
@@ -3605,6 +3753,168 @@ A page with a presentation setting offers **Present**. See [Presentation](#/cont
 Swipe right for the sidebar and left for the utility panel, then swipe back to close. Wide tables, code blocks, the graph, the breadcrumbs and the image view keep their own drags.
 
 The eye of a floating preview and the reading-width button need a screen wider than 1,000 px, so a phone does not show them; the keys listed above need a keyboard.
+
+# A long read
+
+One page with a great deal to read, so that the journey bar, the table of contents and the heading links have something to follow.
+
+## Why this page is long
+
+The [Reading tour](journey:Reading%20tour) has three steps, and this is the middle one. Most pages here fit on a screen or two, which is not enough to see what a journey does while you read. This one runs on for a long time, with many headings, so that every part of the reader that keeps track of your place has room to show it.
+
+Scroll slowly. Along the foot of the window, the journey bar fills as you go, and its track carries a tick for every heading of this page. Beside the text, the table of contents marks the heading you are under.
+
+## The bar at the foot of the window
+
+The bar names the journey and the step you are on, and counts the pages of it that you have visited. Its track has a tick for every page and every heading of the tour, so a page with many headings shows many ticks. Previous and next buttons lead to the neighbouring steps, and the cross leaves the journey. While a journey is active, the sibling links and the **See also** list at the end of a page make way for it, because a journey has its own order.
+
+The fill follows the scroll position. Each page takes a stretch of the track as long as the page is: pages are weighted by their length, so this long page takes up most of the Reading tour, and the short pages on either side a small stretch each. The ticks turn to “read” as the fill passes them.
+
+### What counts as read
+
+The bar follows where you are, not the clock. Skim to the foot of the page and the fill reaches the end of that step; scroll back up and it follows you back. The pages you have opened are remembered in this browser, which is how the bar counts them.
+
+### Leaving and returning
+
+The cross leaves the journey and puts the ordinary navigation back; the page you are on stays where it is. Opening a page of a tour offers the tour again, from that page or from the start.
+
+## The table of contents follows you
+
+On a wide window, the table of contents lists the headings of the page in the utility panel. The one you are under is marked, and it changes as you scroll. Click any entry to jump to it; the address of the page gains that heading, so the position can be shared or bookmarked.
+
+On a phone the utility panel opens with a swipe to the left. It is the quickest way to cross a page like this one, and the clearest picture of its shape: sections, with subsections inside some of them.
+
+## Headings are signposts
+
+A long page is easier to cross when its headings tell the reader what each part is for. A good heading names the question the section answers, or the thing it describes, in a few words. It does not need a verb, and it never needs to repeat the page title.
+
+The levels should say how the parts relate. A second-level heading opens a section of its own; a third-level heading belongs to the section above it. Skipping a level, from a second straight to a fourth, leaves a hole in the table of contents.
+
+### Short, then specific
+
+Put the shortest accurate words first, and add detail only where two headings would otherwise look alike. “Options” and “Options for tables” can sit on one page; “More about the options you can set” cannot be scanned.
+
+### One idea for each section
+
+When a section begins to answer two questions, split it. Two small sections cost two lines in the table of contents and two ticks on the journey bar, and each gets its own link that others can follow.
+
+## Paragraphs that can be skimmed
+
+Most readers skim before they read. The first sentence of a paragraph should carry its point, and the rest should support it. A reader who stops after the first line has still learned something; one who goes on finds the evidence.
+
+Keep paragraphs to a few sentences. A screen full of unbroken text asks for effort before it has earned any, and on a phone it fills the whole window. White space between paragraphs is not waste: it is where the eye rests.
+
+## Lists, tables and quotations
+
+A list suits items that stand side by side and could be reordered without harm. A numbered list suits steps that happen in order. A table suits facts that have two dimensions, such as an option, its default and its effect.
+
+A quotation is for words that someone else wrote, with the source beside them. Setting a plain remark as a quotation only makes it look more important than it is.
+
+## Links that explain themselves
+
+A link should say where it goes before it is followed. “See the [table of contents](#/look/toc)” tells the reader what they will find; “click here” tells them nothing, and a screen reader that lists the links of a page reads out a column of identical words.
+
+Link to the page that answers the question, not to the front door of the topic. The floating preview, offered beside each link on a wide screen, lets a reader look before leaving, which makes a precise link even more useful.
+
+## Code, formulas and figures
+
+Show code in a block of its own, with its language named, so that it is highlighted and can be copied in one click. Keep the lines short enough to read without scrolling sideways, and say what the code does in the sentence before it.
+
+A figure belongs next to the paragraph that refers to it, with a caption that says what to notice. A figure that needs a page of explanation is the wrong figure.
+
+### Numbers and captions
+
+Where a project numbers its headings, figure and table captions take the number of their page, so a reference such as “Figure 2.1” never has to be corrected by hand when pages move.
+
+## Reading width
+
+A line of text is easiest to read when it holds roughly sixty to eighty characters. On a wide screen the reader keeps its article column narrower than the window, and the width button offers the full window for the tables and diagrams that need it. On a phone, the column is the screen.
+
+## Reading in the dark
+
+The <kbd>T</kbd> key switches between the light and the dark theme without leaving the page. A page written well for one reads well in the other, because it names its colors by role rather than by value: the ink, the paper, the accent.
+
+## Plain words
+
+Short, common words travel further than long, rare ones. “Use” does the work of “utilize”, and “show” the work of “demonstrate”. A reader in a second language, or in a hurry, or on a small screen, will thank you for each one.
+
+Keep one word for one thing. If the page says “journey” in one paragraph and “path” in the next, the reader will wonder whether they are different. Pick the term, and let the [glossary](#/demo_glossary) carry its definition.
+
+### Terms the reader may not know
+
+Define a term where it first appears, in a clause, rather than sending the reader away: “a bundle, the single file that holds every page”. A term that is used on many pages deserves a glossary entry, so that hovering it shows the definition without a click.
+
+### Names that stay put
+
+A page title can change at any time, but the identity of a page is its ID. Links follow the ID, so a title can be improved without breaking anything that points to it.
+
+## Examples earn their place
+
+An example is worth a paragraph of explanation, when it is the right one. Pick the smallest case that shows the point, and say what to look at before the reader sees it. If the example is long, put the explanation after a short version and the long version below.
+
+Real examples beat invented ones. A sentence taken from the project itself has details the reader can check; “foo” and “bar” have none, and teach only the shape.
+
+## One page for each question
+
+A page answers one question well, or a small family of questions that belong together. When it starts to answer a second, unrelated question, the second belongs on a page of its own, under the same parent, where the tree, the graph and the search can find it.
+
+The test is simple: could someone arrive at this section from a link and want only this? If so, it is a page.
+
+### When a page has grown too long
+
+A long page is fine when its parts depend on each other, as in a tutorial, a chapter or a specification. It is a problem when its parts are independent: then it is a folder in disguise. Move the independent parts into child pages, and leave the parent with a short introduction and a list of its children.
+
+### Keeping the links alive
+
+When a section moves to a page of its own, leave a line behind that links to it. Readers who arrive from an old link find the new place in one click.
+
+## Tone
+
+Write the way you would explain it across a table. Address the reader as “you”, use “we” only for what the authors really did together, and keep the passive voice for when the actor does not matter. A warm, direct tone is easier to follow than a formal one, and it is easier to translate.
+
+Avoid hedges that say nothing: “basically”, “simply”, “just”. If a step is simple, the reader will see it; if it is not, the word makes them feel slow.
+
+## Evidence and sources
+
+A claim that can be checked should say where. A source named in the text, or a link to it, lets the reader judge for themselves, and lets the author find out later whether the claim still holds.
+
+Where a project keeps a list of references, a short citation in the text shows the full entry when it is hovered. That keeps the paragraph readable and the source one click away.
+
+## Dates and revisions
+
+A page that records when it was last changed tells the reader how far to trust it. The line at the foot of this page shows its date; a short note beside the date can say what changed, which is kinder than leaving the reader to compare two versions.
+
+Change a long page in small steps. Keep its headings stable, because each heading is also a link that others may have saved, and a renamed heading breaks that link without anyone noticing.
+
+## Pictures, and their words
+
+An image carries meaning that the text does not, so it needs words of its own: a description for the reader who cannot see it, and a caption for the reader who can. The description says what the image shows; the caption says why it is there.
+
+Do not put text inside an image if it can be text on the page. Text in the page can be searched, copied, resized, translated and read aloud; text in a picture can be none of these.
+
+## Color and contrast
+
+Color should never be the only way to tell two things apart. A chart that distinguishes its lines by hue alone is unreadable for a good many readers, and for everyone on a bright screen at noon. Add a label, a shape or a pattern.
+
+Check the contrast between text and its background in both themes. Light gray on white and dark gray on black both pass for design until someone has to read a paragraph of it.
+
+## For the reader who comes back
+
+Many readers return to a long page for one thing: a command, a number, a definition. They will scan the headings first, so make those the index of the page. Keep the thing they came for under a heading that names it exactly.
+
+A table near the top that lists the main points, each linked to its section, is a cheap and reliable index. The table of contents does the same thing automatically, without an author keeping it in step.
+
+## A short checklist
+
+Before publishing a long page, read only its headings, top to bottom. Do they tell the story of the page? Then read only the first sentence of every paragraph. Does the argument survive? Last, look at the page in the other theme and on a narrow screen.
+
+If all three pass, the page is ready. If one does not, the fix is usually at the level of the headings, not the sentences.
+
+## When the page ends
+
+A long page should end on something: a summary, a next step, or the link to what comes after. In a journey, the next step is already waiting in the bar.
+
+The last step of this tour is the [table of contents](#/look/toc): the very list that has followed you down this page.
 
 # Per-page options
 
@@ -3619,7 +3929,7 @@ A few lines in a page's header change how that page behaves. This project uses e
 | `updated:"date" "comment"` | Shows the date and a short note | The foot of this page |
 | `noindex:"true"` | Asks search engines to skip the page | [Everything, back to back](#/stress) |
 | `title:":book: Name"` | Draws an emoji in the sidebar, the breadcrumb, search and links | [Content](#/content) and [Look and navigation](#/look) |
-| `tags`, `journey` | Group pages for queries, the graph, tours and **See also** | The pages of both tours |
+| `tags`, `journey` | Group pages for queries, the graph, tours and **See also** | The pages of the three tours |
 
 ## A header, as source
 
@@ -3629,7 +3939,7 @@ id:"example"
 title:"An example page"
 parent:"home"
 tags:"gallery, visual"
-journey:"Look and feel tour" "6"
+journey:"Look and feel tour" "3"
 updated:"2026-10-05" "Added the example"
 showUpdated:"true"
 -->
