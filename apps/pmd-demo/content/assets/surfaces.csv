@@ -1,0 +1,15 @@
+Surface,Where it appears,What changes it
+Page tree,Sidebar,Parent and order in the bundle
+Search,Sidebar,Page titles and text
+Table of contents,Utility panel,Headings in the page
+Page graph,Utility panel and fullscreen,"Hierarchy, tags, journeys and links"
+Breadcrumbs,Header,The parent chain of the page
+Journey bar,Page footer,Journey names and step order
+See also,Page footer,Tags shared between pages
+Link previews,Floating panel,Links and headings
+Glossary popovers,Floating panel,Glossary terms and aliases
+Citation popovers,Floating panel,Reference entries
+Lightbox,Overlay,Images and Canvas cards
+Reading width,Content area,A reader toggle
+Theme,Whole reader,DEFAULT_THEME and CUSTOM_CSS
+Presentation,Overlay,The page's presentation setting
