@@ -6,8 +6,8 @@ This folder is a ready-to-publish static website: no build step and no server so
 
 ## What is in this folder
 
-- `index.html`, `pmd-reader-dist/` and any `pmd-custom-*.css`: the generated site and the reader that displays it. Do not edit them; every export rebuilds them.
-- `content/`: your project (Markdown, `pmd.json`, images and other files). Open the project's ZIP or this `content/` folder in the editor to keep working, then export again.
+- `index.html`, `pages/`, `pmd-reader-dist/` and the files beside them: the generated site and the reader that displays it. Do not edit them; every publication rebuilds them.
+- `pmd.json`, `portable.md`, `style.css` and `assets/`: a copy of your project, which the reader loads. To keep working, open the project in the editor (its folder, or a Project ZIP), not this copy, then export again.
 - `.pmd-publish.json` and `.nojekyll`: bookkeeping for the editor and for GitHub Pages. Keep them.
 
 ## Check it first
@@ -21,10 +21,10 @@ Open the folder through a local web server. Opening `index.html` straight from d
 3. After a minute or two the site is live at `https://<your-name>.github.io/<repository>/`.
 4. In the editor, open **Project config**, set **Site URL (canonical)** to that address and export again, so links, the sitemap and sharing previews use it.
 
-To keep the site in a `docs` folder instead, upload the contents of this folder into `docs/` and choose `/docs` in step 2. The editor can also publish straight to a GitHub repository, so you do not have to upload by hand.
+The editor can also publish straight to a GitHub repository, so you do not have to upload by hand.
 
 ## Publish anywhere else
 
-Any static host works (Netlify, Cloudflare Pages, a web server of your own, and so on). Upload the folder so that `index.html` is at the root of the web address, with no build command, and serve it over HTTPS. The reader loads its math, diagram, PDF and drawing libraries from `cdn.jsdelivr.net`, so a Content-Security-Policy must allow that host. Optionally, give the hashed files in `pmd-reader-dist/` and `content/` a long cache lifetime and let the host compress text.
+Any static host works (Netlify, Cloudflare Pages, a web server of your own, and so on). Upload the folder so that `index.html` is at the root of the web address, with no build command, and serve it over HTTPS. The reader loads its math, diagram, PDF and drawing libraries from `cdn.jsdelivr.net`, so a Content-Security-Policy must allow that host. Optionally, give the hashed files in `pmd-reader-dist/` a long cache lifetime and let the host compress text.
 
 You can delete this file: nothing depends on it.

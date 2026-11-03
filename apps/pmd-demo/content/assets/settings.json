@@ -1,9 +1,0 @@
-{
-  "TITLE": "A small project",
-  "LANG": "en",
-  "DEFAULT_THEME": "dark",
-  "ACCENT": "#e8833a",
-  "CACHE_MD": 0,
-  "ALLOW_JS_FROM_MD": false,
-  "SHOW_EDITOR_LINK": true
-}

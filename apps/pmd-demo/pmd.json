@@ -1,0 +1,74 @@
+{
+  "pmd": 1,
+  "title": "portable.md demo",
+  "accent": "#e8833a",
+  "scripts": true,
+  "variables": {
+    "product": "portable.md",
+    "version": "2.4"
+  },
+  "emoji": [
+    {
+      "alias": "demo",
+      "src": "assets/emojis/demo.svg"
+    }
+  ],
+  "journeys": [
+    {
+      "id": "content-tour",
+      "title": "Content tour",
+      "pages": [
+        "text",
+        "callouts",
+        "code"
+      ]
+    },
+    {
+      "id": "look-and-feel-tour",
+      "title": "Look and feel tour",
+      "pages": [
+        "theme",
+        "toc",
+        "graph"
+      ]
+    },
+    {
+      "id": "reading-tour",
+      "title": "Reading tour",
+      "pages": [
+        "reading",
+        "long_read",
+        "toc"
+      ]
+    }
+  ],
+  "reader": {
+    "print": true,
+    "pageNumbers": "I.1.1 {title}",
+    "headingNumbers": "{page}.1.1 {title}",
+    "numberColor": "accent-75",
+    "footerText": "Every page, table and diagram in this demo is plain Markdown.",
+    "footerLinks": [
+      {
+        "label": "Reading surface",
+        "url": "#/reading"
+      },
+      {
+        "label": "Page graph",
+        "url": "#/graph"
+      }
+    ]
+  },
+  "site": {
+    "description": "A visual tour of everything the portable.md reader can show, and every way to change how it looks and moves.",
+    "themeColor": "#2a1a10",
+    "icon": "assets/site/icon.svg",
+    "shareTitle": "portable.md demo",
+    "shareDescription": "Text, tables, code, math, 35 diagram types, media, Canvas, queries, and every way to change the reader.",
+    "showLogo": true,
+    "showFavicon": true
+  },
+  "publish": {
+    "noscript": "This demo needs JavaScript. Its Markdown source is portable.md."
+  }
+}

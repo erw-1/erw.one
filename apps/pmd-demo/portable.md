@@ -1,11 +1,11 @@
 <!--pmd
-id:"home"
-title:"portable.md demo"
-kind:"home"
-updated:"2026-10-05"
-showUpdated:"false"
-seoTitle:"portable.md demo"
-description:"A visual tour of everything the portable.md reader can show: text, callouts, tables, code, math, 35 diagram types, media, Canvas, queries, and every way to change the reader's look and navigation."
+id: "home"
+title: "portable.md demo"
+kind: "home"
+updated: {"date":"2026-10-05"}
+showUpdated: false
+seoTitle: "portable.md demo"
+description: "A visual tour of everything the portable.md reader can show: text, callouts, tables, code, math, 35 diagram types, media, Canvas, queries, and every way to change the reader's look and navigation."
 -->
 # Everything you can display
 
@@ -17,17 +17,17 @@ This project shows what the **portable.md** reader can put on a page, and what y
 ### Content
 Text, callouts, tables, code, math, diagrams, media, queries, Canvas and more.
 
-[Start with text](#/content/text) · [All content](#/content)
+[Start with text](#/text) · [All content](#/content)
 ::::column
 ### Look and navigation
 Theme, table of contents, tree, page graph and the reading surface.
 
-[Start with the theme](#/look/theme) · [All of it](#/look)
+[Start with the theme](#/theme) · [All of it](#/look)
 ::::column
 ### Take a tour
 Three short paths through the pages, a few steps each.
 
-[Content tour](journey:Content%20tour) · [Look and feel tour](journey:Look%20and%20feel%20tour) · [Reading tour](journey:Reading%20tour)
+[Content tour](#/journey/content-tour) · [Look and feel tour](#/journey/look-and-feel-tour) · [Reading tour](#/journey/reading-tour)
 ::::
 
 ## Try these first
@@ -45,26 +45,25 @@ This project only shows. To learn how to write any of it, read the field guide t
 :::
 
 <!--pmd
-id:"content"
-title:":book: Content"
-parent:"home"
-updated:"2026-10-05"
-showUpdated:"false"
-description:"Fourteen kinds of content a portable.md page can hold."
+id: "content"
+title: ":book: Content"
+parent: "home"
+updated: {"date":"2026-10-05"}
+showUpdated: false
+description: "Fourteen kinds of content a portable.md page can hold."
 -->
 # What a page can hold
 
-Fourteen kinds of content, one page each. Follow the [Content tour](journey:Content%20tour) or choose a card.
+Fourteen kinds of content, one page each. Follow the [Content tour](#/journey/content-tour) or choose a card.
 
 {{pages parent="content" view="cards"}}
 
 <!--pmd
-id:"text"
-title:"Text and typography"
-parent:"content"
-tags:"gallery"
-journey:"Content tour" "1"
-updated:"2026-10-03"
+id: "text"
+title: "Text and typography"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-10-03"}
 -->
 # Text and typography
 
@@ -113,11 +112,11 @@ This line follows two trailing spaces.
 
 ## Emoji
 
-Built-in :rocket: :sparkles: :books: :tada: and a project emoji :demo: from `CUSTOM_EMOJI`. Raw unicode passes through: 🚀 🎉 and joined sequences such as 👩‍🚀 and 👨‍👩‍👧‍👦.
+Built-in :rocket: :sparkles: :books: :tada: and a project emoji :demo: from `emoji`. Raw unicode passes through: 🚀 🎉 and joined sequences such as 👩‍🚀 and 👨‍👩‍👧‍👦.
 
 ## Variables
 
-This project is {{project.title}}, this page is {{page.title}}, and {{product}} {{version}} come from `VARIABLES`. In code they stay as written: `{{product}}`.
+This project is {{project.title}}, this page is {{page.title}}, and {{product}} {{version}} come from `variables`. In code they stay as written: `{{product}}`.
 
 ## Edge cases that stay quiet
 
@@ -136,12 +135,11 @@ Good typography is mostly a matter of line length and rhythm. The reader sets te
 Headings, quotes and lists keep their own spacing, so a page that mixes them still reads as one voice. Try the width button, then come back to this paragraph.
 
 <!--pmd
-id:"callouts"
-title:"Callouts and spoilers"
-parent:"content"
-tags:"gallery"
-journey:"Content tour" "2"
-updated:"2026-10-02"
+id: "callouts"
+title: "Callouts and spoilers"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-10-02"}
 -->
 # Callouts and spoilers
 
@@ -222,11 +220,11 @@ Inline spoilers hide a word: the answer is ||forty-two||.
 > > A nested quotation sits one level deeper.
 
 <!--pmd
-id:"layout"
-title:"Columns, tables and alignment"
-parent:"content"
-tags:"gallery"
-updated:"2026-10-01"
+id: "layout"
+title: "Columns, tables and alignment"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-10-01"}
 -->
 # Columns, tables and alignment
 
@@ -303,12 +301,11 @@ wide
 ***
 
 <!--pmd
-id:"code"
-title:"Code"
-parent:"content"
-tags:"gallery"
-journey:"Content tour" "3"
-updated:"2026-09-30"
+id: "code"
+title: "Code"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-09-30"}
 -->
 # Code
 
@@ -339,7 +336,7 @@ done
 ```
 
 ```json
-{ "TITLE": "Everything", "ACCENT": "#e8833a" }
+{ "title": "Everything", "accent": "#e8833a" }
 ```
 
 ```yaml
@@ -411,11 +408,11 @@ This line is deliberately far wider than the reading column so the block scrolls
 Use `inline code` for names, `a` `b` `c` side by side, and ``a `backtick` inside`` with a longer run.
 
 <!--pmd
-id:"math"
-title:"Math"
-parent:"content"
-tags:"gallery"
-updated:"2026-09-29"
+id: "math"
+title: "Math"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-09-29"}
 -->
 # Math
 
@@ -465,11 +462,11 @@ $$ not math $$
 ```
 
 <!--pmd
-id:"diagrams"
-title:"Diagrams"
-parent:"content"
-tags:"gallery"
-updated:"2026-10-04"
+id: "diagrams"
+title: "Diagrams"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-10-04"}
 -->
 # Diagrams
 
@@ -484,10 +481,10 @@ flowchart LR
 ```
 
 <!--pmd
-id:"diagrams_flow"
-title:"Flows and structure"
-parent:"diagrams"
-updated:"2026-10-04"
+id: "diagrams_flow"
+title: "Flows and structure"
+parent: "diagrams"
+updated: {"date":"2026-10-04"}
 -->
 # Flows and structure
 
@@ -679,10 +676,10 @@ zenuml
 ```
 
 <!--pmd
-id:"diagrams_time"
-title:"Time, plans and journeys"
-parent:"diagrams"
-updated:"2026-10-04"
+id: "diagrams_time"
+title: "Time, plans and journeys"
+parent: "diagrams"
+updated: {"date":"2026-10-04"}
 -->
 # Time, plans and journeys
 
@@ -768,10 +765,10 @@ tf 04 rmo JourneyReader ->> 03
 ```
 
 <!--pmd
-id:"diagrams_data"
-title:"Data and charts"
-parent:"diagrams"
-updated:"2026-10-04"
+id: "diagrams_data"
+title: "Data and charts"
+parent: "diagrams"
+updated: {"date":"2026-10-04"}
 -->
 # Data and charts
 
@@ -876,10 +873,10 @@ venn-beta
 ```
 
 <!--pmd
-id:"diagrams_maps"
-title:"Maps and strategy"
-parent:"diagrams"
-updated:"2026-10-04"
+id: "diagrams_maps"
+title: "Maps and strategy"
+parent: "diagrams"
+updated: {"date":"2026-10-04"}
 -->
 # Maps and strategy
 
@@ -946,12 +943,11 @@ A file or structural tree. For a navigable knowledge space, actual PMD pages sti
 ```mermaid
 treeView-beta
     pmd-project/
-        index.html
-        content/
-            pmd.json
-            portable.md
-            assets/
-                example-image.png
+        pmd.json
+        portable.md
+        style.css
+        assets/
+            example-image.png
 ```
 
 ## railroad-abnf-beta
@@ -1007,11 +1003,11 @@ railroad-peg-beta
 ```
 
 <!--pmd
-id:"media"
-title:"Media"
-parent:"content"
-tags:"gallery"
-updated:"2026-10-04"
+id: "media"
+title: "Media"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-10-04"}
 -->
 # Media
 
@@ -1031,10 +1027,10 @@ Images, video, audio and documents share one Markdown shape: an image-style link
 {{pages parent="media" view="cards"}}
 
 <!--pmd
-id:"images"
-title:"Images and emoji"
-parent:"media"
-updated:"2026-10-04"
+id: "images"
+title: "Images and emoji"
+parent: "media"
+updated: {"date":"2026-10-04"}
 -->
 # Images and emoji
 
@@ -1069,10 +1065,10 @@ Click an image to open it in the lightbox. Zoom with the buttons, the mouse whee
 Built-in artwork :joy: :book: :sparkles: and the project's own :demo: come from the same shortcode syntax. Page titles take them too: look at the sidebar, the breadcrumb and the cards on the home page.
 
 <!--pmd
-id:"video_audio"
-title:"Video and audio"
-parent:"media"
-updated:"2026-10-04"
+id: "video_audio"
+title: "Video and audio"
+parent: "media"
+updated: {"date":"2026-10-04"}
 -->
 # Video and audio
 
@@ -1099,10 +1095,10 @@ Click the loop to open it in the lightbox.
 Three short ascending tones, C–E–G, over three seconds. No speech.
 
 <!--pmd
-id:"documents"
-title:"Documents and data"
-parent:"media"
-updated:"2026-10-04"
+id: "documents"
+title: "Documents and data"
+parent: "media"
+updated: {"date":"2026-10-04"}
 -->
 # Documents and data
 
@@ -1149,11 +1145,11 @@ PDF, tables, Markdown and text files, and a drawing, each shown in place.
 Image syntax with the title `"download"` gives the same kind of link: ![Download the readme](assets/readme.txt "download")
 
 <!--pmd
-id:"queries"
-title:"Page queries"
-parent:"content"
-tags:"gallery, interactive"
-updated:"2026-10-03"
+id: "queries"
+title: "Page queries"
+parent: "content"
+tags: ["gallery","interactive"]
+updated: {"date":"2026-10-03"}
 -->
 # Page queries
 
@@ -1187,7 +1183,7 @@ The children of one page:
 
 The steps of a journey:
 
-{{pages journey="Look and feel tour" view="list"}}
+{{pages journey="look-and-feel-tour" view="list"}}
 
 Pages that mention a word, without this one:
 
@@ -1198,11 +1194,11 @@ An empty result with a message of your own:
 {{pages tag="no-such-tag" empty="No page has that tag."}}
 
 <!--pmd
-id:"canvas"
-title:"Canvas"
-parent:"content"
-tags:"gallery, interactive"
-updated:"2026-10-03"
+id: "canvas"
+title: "Canvas"
+parent: "content"
+tags: ["gallery","interactive"]
+updated: {"date":"2026-10-03"}
 -->
 # Canvas
 
@@ -1211,24 +1207,159 @@ A board of cards and connections, placed by hand. Pan, zoom and open the cards.
 ```canvas
 {
   "nodes": [
-    { "id": "g-content", "type": "group", "x": -40, "y": -40, "width": 540, "height": 440, "label": "Content", "color": "2" },
-    { "id": "g-look", "type": "group", "x": 580, "y": -40, "width": 540, "height": 440, "label": "Look and navigation", "color": "5", "background": "assets/palette.svg", "backgroundStyle": "ratio" },
-    { "id": "t-text", "type": "text", "text": "## Text\n\nMarks, lists, tasks, emoji.", "x": 0, "y": 20, "width": 230, "height": 130 },
-    { "id": "t-media", "type": "text", "text": "## Media\n\nImages, video, audio, documents.", "x": 260, "y": 20, "width": 230, "height": 130, "color": "4" },
-    { "id": "t-diagrams", "type": "text", "text": "## Diagrams\n\n35 types, drawn live.", "x": 0, "y": 190, "width": 230, "height": 130 },
-    { "id": "f-image", "type": "file", "file": "assets/sample-image.png", "subpath": "#cover", "x": 260, "y": 180, "width": 230, "height": 170 },
-    { "id": "t-theme", "type": "text", "text": "## Theme\n\nAccent, skins and CSS.", "x": 620, "y": 20, "width": 230, "height": 130, "color": "6" },
-    { "id": "l-graph", "type": "link", "url": "#/look/graph", "label": "Page graph", "x": 880, "y": 20, "width": 220, "height": 130 },
-    { "id": "l-tree", "type": "link", "url": "#/look/tree", "label": "Tree shapes", "x": 620, "y": 190, "width": 230, "height": 130 },
-    { "id": "t-reading", "type": "text", "text": "## Reading surface\n\nWidth, panels, previews.", "x": 880, "y": 190, "width": 220, "height": 130 }
+    {
+      "id": "g-content",
+      "type": "group",
+      "x": -40,
+      "y": -40,
+      "width": 540,
+      "height": 440,
+      "label": "Content",
+      "color": "2"
+    },
+    {
+      "id": "g-look",
+      "type": "group",
+      "x": 580,
+      "y": -40,
+      "width": 540,
+      "height": 440,
+      "label": "Look and navigation",
+      "color": "5",
+      "background": "assets/palette.svg",
+      "backgroundStyle": "ratio"
+    },
+    {
+      "id": "t-text",
+      "type": "text",
+      "text": "## Text\n\nMarks, lists, tasks, emoji.",
+      "x": 0,
+      "y": 20,
+      "width": 230,
+      "height": 130
+    },
+    {
+      "id": "t-media",
+      "type": "text",
+      "text": "## Media\n\nImages, video, audio, documents.",
+      "x": 260,
+      "y": 20,
+      "width": 230,
+      "height": 130,
+      "color": "4"
+    },
+    {
+      "id": "t-diagrams",
+      "type": "text",
+      "text": "## Diagrams\n\n35 types, drawn live.",
+      "x": 0,
+      "y": 190,
+      "width": 230,
+      "height": 130
+    },
+    {
+      "id": "f-image",
+      "type": "file",
+      "file": "assets/sample-image.png",
+      "subpath": "#cover",
+      "x": 260,
+      "y": 180,
+      "width": 230,
+      "height": 170
+    },
+    {
+      "id": "t-theme",
+      "type": "text",
+      "text": "## Theme\n\nAccent, skins and CSS.",
+      "x": 620,
+      "y": 20,
+      "width": 230,
+      "height": 130,
+      "color": "6"
+    },
+    {
+      "id": "l-graph",
+      "type": "link",
+      "url": "#/graph",
+      "label": "Page graph",
+      "x": 880,
+      "y": 20,
+      "width": 220,
+      "height": 130
+    },
+    {
+      "id": "l-tree",
+      "type": "link",
+      "url": "#/tree",
+      "label": "Tree shapes",
+      "x": 620,
+      "y": 190,
+      "width": 230,
+      "height": 130
+    },
+    {
+      "id": "t-reading",
+      "type": "text",
+      "text": "## Reading surface\n\nWidth, panels, previews.",
+      "x": 880,
+      "y": 190,
+      "width": 220,
+      "height": 130
+    }
   ],
   "edges": [
-    { "id": "e-text-media", "fromNode": "t-text", "toNode": "t-media", "fromSide": "right", "toSide": "left", "label": "same Markdown", "color": "3" },
-    { "id": "e-media-image", "fromNode": "t-media", "toNode": "f-image", "fromSide": "bottom", "toSide": "top", "label": "files" },
-    { "id": "e-diagrams-text", "fromNode": "t-diagrams", "toNode": "t-text", "fromSide": "top", "toSide": "bottom", "label": "text becomes drawing" },
-    { "id": "e-media-theme", "fromNode": "t-media", "toNode": "t-theme", "fromSide": "right", "toSide": "left", "label": "colors follow the theme", "color": "5" },
-    { "id": "e-theme-graph", "fromNode": "t-theme", "toNode": "l-graph", "fromSide": "right", "toSide": "left", "label": "accent", "toEnd": "none" },
-    { "id": "e-tree-reading", "fromNode": "l-tree", "toNode": "t-reading", "fromSide": "right", "toSide": "left", "label": "reading", "fromEnd": "arrow" }
+    {
+      "id": "e-text-media",
+      "fromNode": "t-text",
+      "toNode": "t-media",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "same Markdown",
+      "color": "3"
+    },
+    {
+      "id": "e-media-image",
+      "fromNode": "t-media",
+      "toNode": "f-image",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "files"
+    },
+    {
+      "id": "e-diagrams-text",
+      "fromNode": "t-diagrams",
+      "toNode": "t-text",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "label": "text becomes drawing"
+    },
+    {
+      "id": "e-media-theme",
+      "fromNode": "t-media",
+      "toNode": "t-theme",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "colors follow the theme",
+      "color": "5"
+    },
+    {
+      "id": "e-theme-graph",
+      "fromNode": "t-theme",
+      "toNode": "l-graph",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "accent",
+      "toEnd": "none"
+    },
+    {
+      "id": "e-tree-reading",
+      "fromNode": "l-tree",
+      "toNode": "t-reading",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "reading",
+      "fromEnd": "arrow"
+    }
   ]
 }
 ```
@@ -1241,11 +1372,11 @@ A board of cards and connections, placed by hand. Pan, zoom and open the cards.
 | Group | A labeled region that contains other cards |
 
 <!--pmd
-id:"notes"
-title:"Footnotes, citations and glossary terms"
-parent:"content"
-tags:"gallery"
-updated:"2026-10-02"
+id: "notes"
+title: "Footnotes, citations and glossary terms"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-10-02"}
 -->
 # Footnotes, citations and glossary terms
 
@@ -1268,11 +1399,11 @@ The sources are entries on the [References page](#/demo_references), and the poc
 Terms defined on the glossary page show their definition on hover. This paragraph uses a **bundle**, a **simple folder**, a **journey**, a **page query** and a **transclusion**, and it mentions the **table of contents** and the **page graph**.
 
 <!--pmd
-id:"transclusion"
-title:"Transclusion"
-parent:"content"
-tags:"gallery"
-updated:"2026-10-01"
+id: "transclusion"
+title: "Transclusion"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-10-01"}
 -->
 # Transclusion
 
@@ -1285,11 +1416,11 @@ A whole page can be included too:
 ![[transclusion_source]]
 
 <!--pmd
-id:"transclusion_source"
-title:"A reusable source"
-parent:"transclusion"
-updated:"2026-10-01"
-showUpdated:"false"
+id: "transclusion_source"
+title: "A reusable source"
+parent: "transclusion"
+updated: {"date":"2026-10-01"}
+showUpdated: false
 -->
 # One maintained source
 
@@ -1304,12 +1435,12 @@ Keep the original observation, label your interpretation, and link the evidence.
 The page that includes only the block above leaves this sentence behind.
 
 <!--pmd
-id:"presentation"
-title:"Presentation"
-presentation:"h2"
-parent:"content"
-tags:"gallery, interactive"
-updated:"2026-09-30"
+id: "presentation"
+title: "Presentation"
+parent: "content"
+tags: ["gallery","interactive"]
+updated: {"date":"2026-09-30"}
+presentation: "h2"
 -->
 # Presentation
 
@@ -1349,11 +1480,11 @@ flowchart LR
 | `---` | Everything between rules |
 
 <!--pmd
-id:"html"
-title:"HTML and embedded pages"
-parent:"content"
-tags:"gallery, interactive"
-updated:"2026-09-28"
+id: "html"
+title: "HTML and embedded pages"
+parent: "content"
+tags: ["gallery","interactive"]
+updated: {"date":"2026-09-28"}
 -->
 # HTML and embedded pages
 
@@ -1387,18 +1518,18 @@ Remote embeds, such as a video from another site, need the network and the other
 
 <iframe src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Big Buck Bunny, a short film by the Blender Foundation" width="640" height="360" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-This is the one remote embed in the project: a privacy-enhanced YouTube player. Offline the frame stays empty; [watch it on YouTube](https://www.youtube.com/watch?v=aqz-KE-bpKQ) instead. Pages can also run scripts: see [Scripts and the Power API](#/content/power).
+This is the one remote embed in the project: a privacy-enhanced YouTube player. Offline the frame stays empty; [watch it on YouTube](https://www.youtube.com/watch?v=aqz-KE-bpKQ) instead. Pages can also run scripts: see [Scripts and the Power API](#/power).
 
 <!--pmd
-id:"power"
-title:"Scripts and the Power API"
-parent:"content"
-tags:"gallery"
-updated:"2026-10-14"
+id: "power"
+title: "Scripts and the Power API"
+parent: "content"
+tags: ["gallery"]
+updated: {"date":"2026-10-14"}
 -->
 # Scripts and the Power API
 
-A script on a page can change how the reader behaves. These are five of the six calls of `window.PMD`, one button each; the sixth, `present`, is the page's own **Present** option, shown on [Presentation](#/content/presentation). Nothing here is saved.
+A script on a page can change how the reader behaves. These are five of the six calls of `window.PMD`, one button each; the sixth, `present`, is the page's own **Present** option, shown on [Presentation](#/presentation). Nothing here is saved.
 
 <div class="demo-power">
 <button type="button" data-power="render">renderMarkdown</button>
@@ -1474,10 +1605,10 @@ The lens keeps only the pages tagged `visual` in the sidebar, search and graph. 
 </script>
 
 <!--pmd
-id:"captions"
-title:"Captions and cross-references"
-parent:"content"
-updated:"2026-10-14"
+id: "captions"
+title: "Captions and cross-references"
+parent: "content"
+updated: {"date":"2026-10-14"}
 -->
 # Captions and cross-references
 
@@ -1507,31 +1638,30 @@ $$
 
 ## Links that name their target
 
-On this page: [](#palette), [](#kinds), [](#pythagoras) and [](#sandbox). On others: the cover in [](#/content/media/images#cover), the table in [](#/content/layout#alignment) and the formula in [](#/content/math#quadratic). A page link works the same way: [](#/content/math).
+On this page: [](#palette), [](#kinds), [](#pythagoras) and [](#sandbox). On others: the cover in [](#/images#cover), the table in [](#/layout#alignment) and the formula in [](#/math#quadratic). A page link works the same way: [](#/math).
 
 Every caption of the project is also listed on one page: [all figures, tables and equations](#/figures).
 
 <!--pmd
-id:"look"
-title:":demo: Look and navigation"
-parent:"home"
-updated:"2026-10-05"
-showUpdated:"false"
-description:"Every way to change how the portable.md reader looks and moves: theme, table of contents, tree, page graph and the reading surface."
+id: "look"
+title: ":demo: Look and navigation"
+parent: "home"
+updated: {"date":"2026-10-05"}
+showUpdated: false
+description: "Every way to change how the portable.md reader looks and moves: theme, table of contents, tree, page graph and the reading surface."
 -->
 # What you can change
 
-The tree, the graph and the table of contents are drawn from the project's own shape, so this demo is built to show them. Follow the [Look and feel tour](journey:Look%20and%20feel%20tour) or choose a card.
+The tree, the graph and the table of contents are drawn from the project's own shape, so this demo is built to show them. Follow the [Look and feel tour](#/journey/look-and-feel-tour) or choose a card.
 
 {{pages parent="look" view="cards"}}
 
 <!--pmd
-id:"theme"
-title:"Theme, accent and custom CSS"
-parent:"look"
-tags:"visual"
-journey:"Look and feel tour" "1"
-updated:"2026-10-04"
+id: "theme"
+title: "Theme, accent and custom CSS"
+parent: "look"
+tags: ["visual"]
+updated: {"date":"2026-10-04"}
 -->
 # Theme, accent and custom CSS
 
@@ -1539,7 +1669,7 @@ A few settings in the project's `pmd.json` change the whole reader. A few reader
 
 ## The visitor's choice
 
-Press <kbd>T</kbd> to cycle light and dark. A project picks the first theme with `DEFAULT_THEME`; a visitor keeps their own choice afterwards.
+Press <kbd>T</kbd> to cycle light and dark. A project picks the first theme with `theme`; a visitor keeps their own choice afterwards.
 
 ## The accent
 
@@ -1569,7 +1699,7 @@ This project's accent is `#e8833a`. The reader mixes it into the canvas to make 
 
 ## Skins from one stylesheet
 
-`CUSTOM_CSS` can override any variable below. These panels are scoped copies of the reader's tokens, so four palettes sit side by side on one page.
+`style.css` can override any variable below. These panels are scoped copies of the reader's tokens, so four palettes sit side by side on one page.
 
 <div class="demo-skins">
 <div class="demo-skin">
@@ -1617,7 +1747,7 @@ This project's accent is `#e8833a`. The reader mixes it into the canvas to make 
 
 ## Text direction
 
-Text direction follows the language. A whole project sets it with `SITE.DIR`; a single block can carry its own.
+Text direction follows the language. A whole project sets it with `site.dir`; a single block can carry its own.
 
 <div dir="rtl" lang="ar">النص يتدفق من اليمين إلى اليسار، والصفحة تتبع اتجاه اللغة.</div>
 
@@ -1625,39 +1755,38 @@ Text direction follows the language. A whole project sets it with `SITE.DIR`; a 
 
 ## Logo, favicon and emoji
 
-`ICON` with `SHOW_LOGO` puts an image in the header, and `SHOW_FAVICON` uses it as the tab icon. `CUSTOM_EMOJI` adds project emoji such as :demo:. Both come from files in the project.
+`icon` with `showLogo` puts an image in the header, and `showFavicon` uses it as the tab icon. `emoji` adds project emoji such as :demo:. Both come from files in the project.
 
 ## Reader options
 
-`READER` in `pmd.json` decides which parts of the reader appear and how it reads. This project sets its footer, the line under every page, and numbers its pages and headings; every other option keeps its default.
+`reader` in `pmd.json` decides which parts of the reader appear and how it reads. This project sets its footer, the line under every page, and numbers its pages and headings; every other option keeps its default.
 
 | Option | What it controls |
 | --- | --- |
-| `FOOTER_TEXT`, `FOOTER_LINKS` | A line of text and up to five links under every page |
-| `SEE_ALSO`, `SEE_ALSO_LIMIT`, `SEE_ALSO_TAGS` | Related pages, how many, and the tags they share |
-| `PAGE_NAV`, `JOURNEY_PROMPT` | Previous, parent, first-child and next links, and the offer to follow a journey |
-| `BREADCRUMBS`, `TOC`, `GRAPH`, `SEARCH`, `THEME_TOGGLE`, `PRINT`, `SHOW_UPDATED` | Each part of the reader, shown or hidden |
-| `SEARCH_BUTTON` | A search button in the top bar that opens a search field and shows the results in place of the page: off on a computer, on on a phone |
-| `SIDEBAR_HOME`, `GLOSSARY_PAGE`, `REFERENCES_PAGE`, `FIGURES_PAGE` | Whether the sidebar's page list starts with the home page, and whether it lists the glossary, references and figures pages |
-| `PHONE` | What differs on a phone: a true or false for any of the options above that can be shown or hidden, such as `TOC` or `GRAPH`; the rest follow the computer |
-| `TOC_TITLE` | What the table of contents is called: contents, on this page, in this article or outline |
-| `FONT`, `DENSITY`, `READING_WIDTH` | Typeface, spacing and the column width a visitor starts with |
-| `INLINE_TAGS`, `LINK_PREVIEWS`, `GLOSSARY_HIGHLIGHTS`, `IMAGE_ZOOM`, `CODE_COPY`, `HEADING_LINKS`, `EXTERNAL_ICON`, `EXTERNAL_NEW_TAB` | The small behaviors of the page text, each on or off |
-| `PAGE_NUMBERS`, `HEADING_NUMBERS` | A number before each page title and heading, written as an example of the numbers you want (this project uses `I.1.1 {title}` and `{page}.1.1 {title}`) |
-| `NUMBER_COLOR` | The color of those numbers, among the ones readable on both themes |
-| `FIGURE_FORMAT`, `TABLE_FORMAT`, `EQUATION_FORMAT` | The label in front of a numbered figure, table or equation caption |
+| `footerText`, `footerLinks` | A line of text and up to five links under every page |
+| `seeAlso`, `seeAlsoLimit`, `seeAlsoTags` | Related pages, how many, and the tags they share |
+| `pageNav`, `journeyPrompt` | Previous, parent, first-child and next links, and the offer to follow a journey |
+| `breadcrumbs`, `toc`, `graph`, `search`, `themeToggle`, `print`, `showUpdated` | Each part of the reader, shown or hidden |
+| `searchButton` | A search button in the top bar that opens a search field and shows the results in place of the page: off on a computer, on on a phone |
+| `sidebarHome`, `glossaryPage`, `referencesPage`, `figuresPage` | Whether the sidebar's page list starts with the home page, and whether it lists the glossary, references and figures pages |
+| `phone` | What differs on a phone: a true or false for any of the options above that can be shown or hidden, such as `toc` or `graph`; the rest follow the computer |
+| `tocTitle` | What the table of contents is called: contents, on this page, in this article or outline |
+| `font`, `density`, `readingWidth` | Typeface, spacing and the column width a visitor starts with |
+| `inlineTags`, `linkPreviews`, `glossaryHighlights`, `imageZoom`, `codeCopy`, `headingLinks`, `externalIcon`, `externalNewTab` | The small behaviors of the page text, each on or off |
+| `pageNumbers`, `headingNumbers` | A number before each page title and heading, written as an example of the numbers you want (this project uses `I.1.1 {title}` and `{page}.1.1 {title}`) |
+| `numberColor` | The color of those numbers, among the ones readable on both themes |
+| `figureFormat`, `tableFormat`, `equationFormat` | The label in front of a numbered figure, table or equation caption |
 
 ## On paper
 
 Print the page, or save it as a PDF, and the reader switches to ink on white with a black accent.
 
 <!--pmd
-id:"toc"
-title:"Table of contents"
-parent:"look"
-tags:"visual"
-journey:"Look and feel tour, Reading tour" "2, 3"
-updated:"2026-10-03"
+id: "toc"
+title: "Table of contents"
+parent: "look"
+tags: ["visual"]
+updated: {"date":"2026-10-03"}
 -->
 # Table of contents
 
@@ -1681,7 +1810,7 @@ The outline keeps going.
 
 ###### A sixth-level heading
 
-Six is the deepest level. [Jump back to the top of the page](#/look/toc).
+Six is the deepest level. [Jump back to the top of the page](#/toc).
 
 ## Skipped levels
 
@@ -1716,10 +1845,10 @@ The panel also works on a phone, where it sits behind the utility panel button a
 These headings are the exhibit: three levels of nesting, a skipped level, and enough sections to scroll.
 
 <!--pmd
-id:"tree"
-title:"Tree shapes"
-parent:"look"
-updated:"2026-10-02"
+id: "tree"
+title: "Tree shapes"
+parent: "look"
+updated: {"date":"2026-10-02"}
 -->
 # Tree shapes
 
@@ -1729,79 +1858,78 @@ The tree in the sidebar is the project's hierarchy. Each page names its parent, 
 | --- | --- |
 | **Wide**: many siblings | [Content](#/content) has fourteen children |
 | **Nested**: groups inside groups | Diagrams, Media and Transclusion each hold their own pages |
-| **Deep**: a long chain | [Seven levels down](#/look/tree/depth1/depth2/depth3/depth4/depth5/depth6/depth7) |
+| **Deep**: a long chain | [Seven levels down](#/depth7) |
 
 Levels one to six of the chain are **simple folders**: navigation-only nodes with no page of their own. They appear in the tree, the breadcrumbs and the graph, and a link to one points at its children.
 
 **Try:** fold and unfold a branch with the arrow beside its title, click a parent's title to open it, then follow the deep chain and watch the breadcrumbs grow.
 
 <!--pmd
-id:"depth1"
-title:"Level 1"
-kind:"simple"
-parent:"tree"
-updated:"2026-10-02"
+id: "depth1"
+title: "Level 1"
+parent: "tree"
+kind: "folder"
+updated: {"date":"2026-10-02"}
 -->
 
 <!--pmd
-id:"depth2"
-title:"Level 2"
-kind:"simple"
-parent:"depth1"
-updated:"2026-10-02"
+id: "depth2"
+title: "Level 2"
+parent: "depth1"
+kind: "folder"
+updated: {"date":"2026-10-02"}
 -->
 
 <!--pmd
-id:"depth3"
-title:"Level 3"
-kind:"simple"
-parent:"depth2"
-updated:"2026-10-02"
+id: "depth3"
+title: "Level 3"
+parent: "depth2"
+kind: "folder"
+updated: {"date":"2026-10-02"}
 -->
 
 <!--pmd
-id:"depth4"
-title:"Level 4"
-kind:"simple"
-parent:"depth3"
-updated:"2026-10-02"
+id: "depth4"
+title: "Level 4"
+parent: "depth3"
+kind: "folder"
+updated: {"date":"2026-10-02"}
 -->
 
 <!--pmd
-id:"depth5"
-title:"Level 5"
-kind:"simple"
-parent:"depth4"
-updated:"2026-10-02"
+id: "depth5"
+title: "Level 5"
+parent: "depth4"
+kind: "folder"
+updated: {"date":"2026-10-02"}
 -->
 
 <!--pmd
-id:"depth6"
-title:"Level 6"
-kind:"simple"
-parent:"depth5"
-updated:"2026-10-02"
+id: "depth6"
+title: "Level 6"
+parent: "depth5"
+kind: "folder"
+updated: {"date":"2026-10-02"}
 -->
 
 <!--pmd
-id:"depth7"
-title:"The bottom"
-parent:"depth6"
-updated:"2026-10-02"
+id: "depth7"
+title: "The bottom"
+parent: "depth6"
+updated: {"date":"2026-10-02"}
 -->
 # The bottom
 
 You are seven levels below Tree shapes. The breadcrumbs above show the whole chain, and the graph keeps this branch folded until you open it.
 
-[Back to the top of the chain](#/look/tree)
+[Back to the top of the chain](#/tree)
 
 <!--pmd
-id:"graph"
-title:"Page graph"
-parent:"look"
-tags:"visual"
-journey:"Look and feel tour" "3"
-updated:"2026-10-05"
+id: "graph"
+title: "Page graph"
+parent: "look"
+tags: ["visual"]
+updated: {"date":"2026-10-05"}
 -->
 # Page graph
 
@@ -1815,7 +1943,7 @@ Use the graph in the utility panel, or press <kbd>G</kbd> for the fullscreen gra
 
 | You see | Because |
 | --- | --- |
-| A grey outlined node | A [simple folder](#/look/tree) |
+| A grey outlined node | A [simple folder](#/tree) |
 | A node tinted with the accent color | A page with nothing below it |
 | A diamond labeled `#gallery (13)` | A tag shared by more than five pages becomes a hub; click it to open the tag's page |
 | Lines between the pages tagged `visual` | A tag with five pages or fewer links them directly; rest the pointer on one to see the tags |
@@ -1837,19 +1965,18 @@ Under **Graph display** in the fullscreen view:
 
 A page query can draw a graph of just the pages it selects. This one shows the pages of the Content tour:
 
-{{pages journey="Content tour" view="graph"}}
+{{pages journey="content-tour" view="graph"}}
 
 And this one the children of Content:
 
 {{pages parent="content" view="graph"}}
 
 <!--pmd
-id:"reading"
-title:"Reading surface"
-parent:"look"
-tags:"visual, interactive"
-journey:"Reading tour" "1"
-updated:"2026-10-05"
+id: "reading"
+title: "Reading surface"
+parent: "look"
+tags: ["visual","interactive"]
+updated: {"date":"2026-10-05"}
 -->
 # Reading surface
 
@@ -1869,14 +1996,14 @@ Everything a visitor can change without touching the project. None of it is save
 
 ## Floating previews
 
-Click the eye beside a link such as [Page graph](#/look/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query**, citations such as the pocket guide[@demo-guide] and footnote markers need no click: hover or focus them to read their note.
+Click the eye beside a link such as [Page graph](#/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query**, citations such as the pocket guide[@demo-guide] and footnote markers need no click: hover or focus them to read their note.
 
 > [!NOTE]
 > **On a phone** the eye is not shown, so a link cannot be previewed there: follow it instead.
 
 ## Images and the lightbox
 
-Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See [Images and emoji](#/content/media/images).
+Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See [Images and emoji](#/images).
 
 ## Tags and related pages
 
@@ -1884,11 +2011,11 @@ A tag written in the text, such as #gallery or #visual, links to the page that l
 
 ## Journeys
 
-When a page belongs to a journey, its footer offers to follow the path. **From this page** and **From the start** choose where to begin, and **Leave journey** returns to ordinary navigation. Try the [Look and feel tour](journey:Look%20and%20feel%20tour), or the [Reading tour](journey:Reading%20tour), whose middle step is [a long page](#/look/long_read) that shows the bar filling.
+When a page belongs to a journey, its footer offers to follow the path. **From this page** and **From the start** choose where to begin, and **Leave journey** returns to ordinary navigation. Try the [Look and feel tour](#/journey/look-and-feel-tour), or the [Reading tour](#/journey/reading-tour), whose middle step is [a long page](#/long_read) that shows the bar filling.
 
 ## Slides
 
-A page with a presentation setting offers **Present**. See [Presentation](#/content/presentation).
+A page with a presentation setting offers **Present**. See [Presentation](#/presentation).
 
 ## On a phone
 
@@ -1897,11 +2024,10 @@ Swipe right for the sidebar and left for the utility panel, then swipe back to c
 The eye of a floating preview and the reading-width button need a screen wider than 1,000 px, so a phone does not show them; the keys listed above need a keyboard.
 
 <!--pmd
-id:"long_read"
-title:"A long read"
-parent:"look"
-journey:"Reading tour" "2"
-updated:"2026-10-20"
+id: "long_read"
+title: "A long read"
+parent: "look"
+updated: {"date":"2026-10-20"}
 -->
 # A long read
 
@@ -1909,7 +2035,7 @@ One page with a great deal to read, so that the journey bar, the table of conten
 
 ## Why this page is long
 
-The [Reading tour](journey:Reading%20tour) has three steps, and this is the middle one. Most pages here fit on a screen or two, which is not enough to see what a journey does while you read. This one runs on for a long time, with many headings, so that every part of the reader that keeps track of your place has room to show it.
+The [Reading tour](#/journey/reading-tour) has three steps, and this is the middle one. Most pages here fit on a screen or two, which is not enough to see what a journey does while you read. This one runs on for a long time, with many headings, so that every part of the reader that keeps track of your place has room to show it.
 
 Scroll slowly. Along the foot of the window, the journey bar fills as you go, and its track carries a tick for every heading of this page. Beside the text, the table of contents marks the heading you are under.
 
@@ -1961,7 +2087,7 @@ A quotation is for words that someone else wrote, with the source beside them. S
 
 ## Links that explain themselves
 
-A link should say where it goes before it is followed. “See the [table of contents](#/look/toc)” tells the reader what they will find; “click here” tells them nothing, and a screen reader that lists the links of a page reads out a column of identical words.
+A link should say where it goes before it is followed. “See the [table of contents](#/toc)” tells the reader what they will find; “click here” tells them nothing, and a screen reader that lists the links of a page reads out a column of identical words.
 
 Link to the page that answers the question, not to the front door of the topic. The floating preview, offered beside each link on a wide screen, lets a reader look before leaving, which makes a precise link even more useful.
 
@@ -2063,13 +2189,13 @@ If all three pass, the page is ready. If one does not, the fix is usually at the
 
 A long page should end on something: a summary, a next step, or the link to what comes after. In a journey, the next step is already waiting in the bar.
 
-The last step of this tour is the [table of contents](#/look/toc): the very list that has followed you down this page.
+The last step of this tour is the [table of contents](#/toc): the very list that has followed you down this page.
 
 <!--pmd
-id:"page_options"
-title:"Per-page options"
-parent:"look"
-updated:"2026-10-05" "Added the table of header options"
+id: "page_options"
+title: "Per-page options"
+parent: "look"
+updated: {"date":"2026-10-05","note":"Added the table of header options"}
 -->
 # Per-page options
 
@@ -2077,37 +2203,37 @@ A few lines in a page's header change how that page behaves. This project uses e
 
 | Header | Effect | See it here |
 | --- | --- | --- |
-| `kind:"simple"` | A navigation-only folder with no body | [The deep chain](#/look/tree) |
-| `kind:"glossary"`, `kind:"references"` | Shared terms and sources, with their own graph symbols | [Glossary](#/demo_glossary), [References](#/demo_references) |
-| `presentation:"h2"` | Offers **Present**, which turns sections into slides (split at `h1`, `h2`, `h3` or `---`) | [Presentation](#/content/presentation) |
-| `showUpdated:"false"` | Hides the "Last updated" line | Every hub page |
-| `updated:"date" "comment"` | Shows the date and a short note | The foot of this page |
-| `noindex:"true"` | Asks search engines to skip the page | [Everything, back to back](#/stress) |
-| `title:":book: Name"` | Draws an emoji in the sidebar, the breadcrumb, search and links | [Content](#/content) and [Look and navigation](#/look) |
-| `tags`, `journey` | Group pages for queries, the graph, tours and **See also** | The pages of the three tours |
+| `kind: "folder"` | A navigation-only folder with no body | [The deep chain](#/tree) |
+| `kind: "glossary"`, `kind: "references"` | Shared terms and sources, with their own graph symbols | [Glossary](#/demo_glossary), [References](#/demo_references) |
+| `presentation: "h2"` | Offers **Present**, which turns sections into slides (split at `h1`, `h2`, `h3` or `---`) | [Presentation](#/presentation) |
+| `showUpdated: false` | Hides the "Last updated" line | Every hub page |
+| `updated: {"date":"…","note":"…"}` | Shows the date and a short note | The foot of this page |
+| `noindex: true` | Asks search engines to skip the page | [Everything, back to back](#/stress) |
+| `title: ":book: Name"` | Draws an emoji in the sidebar, the breadcrumb, search and links | [Content](#/content) and [Look and navigation](#/look) |
+| `tags: ["…"]` | Group pages for queries, the graph and **See also** | The gallery pages |
+
+The three tours are not in any header: journeys are listed in the project's `pmd.json`, each an ID, a title and its pages in order.
 
 ## A header, as source
 
 ````md
 <!--\pmd
-id:"example"
-title:"An example page"
-parent:"home"
-tags:"gallery, visual"
-journey:"Look and feel tour" "3"
-updated:"2026-10-05" "Added the example"
-showUpdated:"true"
+id: "example"
+title: "An example page"
+parent: "home"
+tags: ["gallery","visual"]
+updated: {"date":"2026-10-05","note":"Added the example"}
 -->
 # An example page
 ````
 
 <!--pmd
-id:"demo_glossary"
-title:"Glossary"
-kind:"glossary"
-parent:"home"
-updated:"2026-10-05"
-showUpdated:"false"
+id: "demo_glossary"
+title: "Glossary"
+parent: "home"
+kind: "glossary"
+updated: {"date":"2026-10-05"}
+showUpdated: false
 -->
 # Glossary
 
@@ -2146,12 +2272,12 @@ The outline of the current page's headings, in the utility panel.
 The drawing of relationships between pages: hierarchy, tags, journeys and links.
 
 <!--pmd
-id:"demo_references"
-title:"References"
-kind:"references"
-parent:"home"
-updated:"2026-10-05"
-showUpdated:"false"
+id: "demo_references"
+title: "References"
+parent: "home"
+kind: "references"
+updated: {"date":"2026-10-05"}
+showUpdated: false
 -->
 <!-- pmd-reference-style: author-year -->
 # References
@@ -2189,13 +2315,13 @@ A book with two authors.
 A book with three authors.
 
 <!--pmd
-id:"stress"
-title:"Everything, back to back"
-parent:"home"
-updated:"2026-10-05"
-showUpdated:"false"
-description:"Every page of the project on a single page: a feature list and a performance probe."
-noindex:"true"
+id: "stress"
+title: "Everything, back to back"
+parent: "home"
+updated: {"date":"2026-10-05"}
+showUpdated: false
+description: "Every page of the project on a single page: a feature list and a performance probe."
+noindex: true
 -->
 # Everything, back to back
 
@@ -2254,11 +2380,11 @@ This line follows two trailing spaces.
 
 ## Emoji
 
-Built-in :rocket: :sparkles: :books: :tada: and a project emoji :demo: from `CUSTOM_EMOJI`. Raw unicode passes through: 🚀 🎉 and joined sequences such as 👩‍🚀 and 👨‍👩‍👧‍👦.
+Built-in :rocket: :sparkles: :books: :tada: and a project emoji :demo: from `emoji`. Raw unicode passes through: 🚀 🎉 and joined sequences such as 👩‍🚀 and 👨‍👩‍👧‍👦.
 
 ## Variables
 
-This project is {{project.title}}, this page is {{page.title}}, and {{product}} {{version}} come from `VARIABLES`. In code they stay as written: `{{product}}`.
+This project is {{project.title}}, this page is {{page.title}}, and {{product}} {{version}} come from `variables`. In code they stay as written: `{{product}}`.
 
 ## Edge cases that stay quiet
 
@@ -2457,7 +2583,7 @@ done
 ```
 
 ```json
-{ "TITLE": "Everything", "ACCENT": "#e8833a" }
+{ "title": "Everything", "accent": "#e8833a" }
 ```
 
 ```yaml
@@ -3026,12 +3152,11 @@ A file or structural tree. For a navigable knowledge space, actual PMD pages sti
 ```mermaid
 treeView-beta
     pmd-project/
-        index.html
-        content/
-            pmd.json
-            portable.md
-            assets/
-                example-image.png
+        pmd.json
+        portable.md
+        style.css
+        assets/
+            example-image.png
 ```
 
 ## railroad-abnf-beta
@@ -3235,7 +3360,7 @@ The children of one page:
 
 The steps of a journey:
 
-{{pages journey="Look and feel tour" view="list"}}
+{{pages journey="look-and-feel-tour" view="list"}}
 
 Pages that mention a word, without this one:
 
@@ -3252,24 +3377,159 @@ A board of cards and connections, placed by hand. Pan, zoom and open the cards.
 ```canvas
 {
   "nodes": [
-    { "id": "g-content", "type": "group", "x": -40, "y": -40, "width": 540, "height": 440, "label": "Content", "color": "2" },
-    { "id": "g-look", "type": "group", "x": 580, "y": -40, "width": 540, "height": 440, "label": "Look and navigation", "color": "5", "background": "assets/palette.svg", "backgroundStyle": "ratio" },
-    { "id": "t-text", "type": "text", "text": "## Text\n\nMarks, lists, tasks, emoji.", "x": 0, "y": 20, "width": 230, "height": 130 },
-    { "id": "t-media", "type": "text", "text": "## Media\n\nImages, video, audio, documents.", "x": 260, "y": 20, "width": 230, "height": 130, "color": "4" },
-    { "id": "t-diagrams", "type": "text", "text": "## Diagrams\n\n35 types, drawn live.", "x": 0, "y": 190, "width": 230, "height": 130 },
-    { "id": "f-image", "type": "file", "file": "assets/sample-image.png", "subpath": "#cover", "x": 260, "y": 180, "width": 230, "height": 170 },
-    { "id": "t-theme", "type": "text", "text": "## Theme\n\nAccent, skins and CSS.", "x": 620, "y": 20, "width": 230, "height": 130, "color": "6" },
-    { "id": "l-graph", "type": "link", "url": "#/look/graph", "label": "Page graph", "x": 880, "y": 20, "width": 220, "height": 130 },
-    { "id": "l-tree", "type": "link", "url": "#/look/tree", "label": "Tree shapes", "x": 620, "y": 190, "width": 230, "height": 130 },
-    { "id": "t-reading", "type": "text", "text": "## Reading surface\n\nWidth, panels, previews.", "x": 880, "y": 190, "width": 220, "height": 130 }
+    {
+      "id": "g-content",
+      "type": "group",
+      "x": -40,
+      "y": -40,
+      "width": 540,
+      "height": 440,
+      "label": "Content",
+      "color": "2"
+    },
+    {
+      "id": "g-look",
+      "type": "group",
+      "x": 580,
+      "y": -40,
+      "width": 540,
+      "height": 440,
+      "label": "Look and navigation",
+      "color": "5",
+      "background": "assets/palette.svg",
+      "backgroundStyle": "ratio"
+    },
+    {
+      "id": "t-text",
+      "type": "text",
+      "text": "## Text\n\nMarks, lists, tasks, emoji.",
+      "x": 0,
+      "y": 20,
+      "width": 230,
+      "height": 130
+    },
+    {
+      "id": "t-media",
+      "type": "text",
+      "text": "## Media\n\nImages, video, audio, documents.",
+      "x": 260,
+      "y": 20,
+      "width": 230,
+      "height": 130,
+      "color": "4"
+    },
+    {
+      "id": "t-diagrams",
+      "type": "text",
+      "text": "## Diagrams\n\n35 types, drawn live.",
+      "x": 0,
+      "y": 190,
+      "width": 230,
+      "height": 130
+    },
+    {
+      "id": "f-image",
+      "type": "file",
+      "file": "assets/sample-image.png",
+      "subpath": "#cover",
+      "x": 260,
+      "y": 180,
+      "width": 230,
+      "height": 170
+    },
+    {
+      "id": "t-theme",
+      "type": "text",
+      "text": "## Theme\n\nAccent, skins and CSS.",
+      "x": 620,
+      "y": 20,
+      "width": 230,
+      "height": 130,
+      "color": "6"
+    },
+    {
+      "id": "l-graph",
+      "type": "link",
+      "url": "#/graph",
+      "label": "Page graph",
+      "x": 880,
+      "y": 20,
+      "width": 220,
+      "height": 130
+    },
+    {
+      "id": "l-tree",
+      "type": "link",
+      "url": "#/tree",
+      "label": "Tree shapes",
+      "x": 620,
+      "y": 190,
+      "width": 230,
+      "height": 130
+    },
+    {
+      "id": "t-reading",
+      "type": "text",
+      "text": "## Reading surface\n\nWidth, panels, previews.",
+      "x": 880,
+      "y": 190,
+      "width": 220,
+      "height": 130
+    }
   ],
   "edges": [
-    { "id": "e-text-media", "fromNode": "t-text", "toNode": "t-media", "fromSide": "right", "toSide": "left", "label": "same Markdown", "color": "3" },
-    { "id": "e-media-image", "fromNode": "t-media", "toNode": "f-image", "fromSide": "bottom", "toSide": "top", "label": "files" },
-    { "id": "e-diagrams-text", "fromNode": "t-diagrams", "toNode": "t-text", "fromSide": "top", "toSide": "bottom", "label": "text becomes drawing" },
-    { "id": "e-media-theme", "fromNode": "t-media", "toNode": "t-theme", "fromSide": "right", "toSide": "left", "label": "colors follow the theme", "color": "5" },
-    { "id": "e-theme-graph", "fromNode": "t-theme", "toNode": "l-graph", "fromSide": "right", "toSide": "left", "label": "accent", "toEnd": "none" },
-    { "id": "e-tree-reading", "fromNode": "l-tree", "toNode": "t-reading", "fromSide": "right", "toSide": "left", "label": "reading", "fromEnd": "arrow" }
+    {
+      "id": "e-text-media",
+      "fromNode": "t-text",
+      "toNode": "t-media",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "same Markdown",
+      "color": "3"
+    },
+    {
+      "id": "e-media-image",
+      "fromNode": "t-media",
+      "toNode": "f-image",
+      "fromSide": "bottom",
+      "toSide": "top",
+      "label": "files"
+    },
+    {
+      "id": "e-diagrams-text",
+      "fromNode": "t-diagrams",
+      "toNode": "t-text",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "label": "text becomes drawing"
+    },
+    {
+      "id": "e-media-theme",
+      "fromNode": "t-media",
+      "toNode": "t-theme",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "colors follow the theme",
+      "color": "5"
+    },
+    {
+      "id": "e-theme-graph",
+      "fromNode": "t-theme",
+      "toNode": "l-graph",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "accent",
+      "toEnd": "none"
+    },
+    {
+      "id": "e-tree-reading",
+      "fromNode": "l-tree",
+      "toNode": "t-reading",
+      "fromSide": "right",
+      "toSide": "left",
+      "label": "reading",
+      "fromEnd": "arrow"
+    }
   ]
 }
 ```
@@ -3380,11 +3640,11 @@ Remote embeds, such as a video from another site, need the network and the other
 
 <iframe src="https://www.youtube-nocookie.com/embed/aqz-KE-bpKQ" title="Big Buck Bunny, a short film by the Blender Foundation" width="640" height="360" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
-This is the one remote embed in the project: a privacy-enhanced YouTube player. Offline the frame stays empty; [watch it on YouTube](https://www.youtube.com/watch?v=aqz-KE-bpKQ) instead. Pages can also run scripts: see [Scripts and the Power API](#/content/power).
+This is the one remote embed in the project: a privacy-enhanced YouTube player. Offline the frame stays empty; [watch it on YouTube](https://www.youtube.com/watch?v=aqz-KE-bpKQ) instead. Pages can also run scripts: see [Scripts and the Power API](#/power).
 
 # Scripts and the Power API
 
-A script on a page can change how the reader behaves. These are five of the six calls of `window.PMD`, one button each; the sixth, `present`, is the page's own **Present** option, shown on [Presentation](#/content/presentation). Nothing here is saved.
+A script on a page can change how the reader behaves. These are five of the six calls of `window.PMD`, one button each; the sixth, `present`, is the page's own **Present** option, shown on [Presentation](#/presentation). Nothing here is saved.
 
 <div class="demo-power">
 <button type="button" data-power="render">renderMarkdown</button>
@@ -3487,7 +3747,7 @@ $$
 
 ## Links that name their target
 
-On this page: [](#palette), [](#kinds), [](#pythagoras) and [](#sandbox). On others: the cover in [](#/content/media/images#cover), the table in [](#/content/layout#alignment) and the formula in [](#/content/math#quadratic). A page link works the same way: [](#/content/math).
+On this page: [](#palette), [](#kinds), [](#pythagoras) and [](#sandbox). On others: the cover in [](#/images#cover), the table in [](#/layout#alignment) and the formula in [](#/math#quadratic). A page link works the same way: [](#/math).
 
 Every caption of the project is also listed on one page: [all figures, tables and equations](#/figures).
 
@@ -3497,7 +3757,7 @@ A few settings in the project's `pmd.json` change the whole reader. A few reader
 
 ## The visitor's choice
 
-Press <kbd>T</kbd> to cycle light and dark. A project picks the first theme with `DEFAULT_THEME`; a visitor keeps their own choice afterwards.
+Press <kbd>T</kbd> to cycle light and dark. A project picks the first theme with `theme`; a visitor keeps their own choice afterwards.
 
 ## The accent
 
@@ -3527,7 +3787,7 @@ This project's accent is `#e8833a`. The reader mixes it into the canvas to make 
 
 ## Skins from one stylesheet
 
-`CUSTOM_CSS` can override any variable below. These panels are scoped copies of the reader's tokens, so four palettes sit side by side on one page.
+`style.css` can override any variable below. These panels are scoped copies of the reader's tokens, so four palettes sit side by side on one page.
 
 <div class="demo-skins">
 <div class="demo-skin">
@@ -3575,7 +3835,7 @@ This project's accent is `#e8833a`. The reader mixes it into the canvas to make 
 
 ## Text direction
 
-Text direction follows the language. A whole project sets it with `SITE.DIR`; a single block can carry its own.
+Text direction follows the language. A whole project sets it with `site.dir`; a single block can carry its own.
 
 <div dir="rtl" lang="ar">النص يتدفق من اليمين إلى اليسار، والصفحة تتبع اتجاه اللغة.</div>
 
@@ -3583,27 +3843,27 @@ Text direction follows the language. A whole project sets it with `SITE.DIR`; a 
 
 ## Logo, favicon and emoji
 
-`ICON` with `SHOW_LOGO` puts an image in the header, and `SHOW_FAVICON` uses it as the tab icon. `CUSTOM_EMOJI` adds project emoji such as :demo:. Both come from files in the project.
+`icon` with `showLogo` puts an image in the header, and `showFavicon` uses it as the tab icon. `emoji` adds project emoji such as :demo:. Both come from files in the project.
 
 ## Reader options
 
-`READER` in `pmd.json` decides which parts of the reader appear and how it reads. This project sets its footer, the line under every page, and numbers its pages and headings; every other option keeps its default.
+`reader` in `pmd.json` decides which parts of the reader appear and how it reads. This project sets its footer, the line under every page, and numbers its pages and headings; every other option keeps its default.
 
 | Option | What it controls |
 | --- | --- |
-| `FOOTER_TEXT`, `FOOTER_LINKS` | A line of text and up to five links under every page |
-| `SEE_ALSO`, `SEE_ALSO_LIMIT`, `SEE_ALSO_TAGS` | Related pages, how many, and the tags they share |
-| `PAGE_NAV`, `JOURNEY_PROMPT` | Previous, parent, first-child and next links, and the offer to follow a journey |
-| `BREADCRUMBS`, `TOC`, `GRAPH`, `SEARCH`, `THEME_TOGGLE`, `PRINT`, `SHOW_UPDATED` | Each part of the reader, shown or hidden |
-| `SEARCH_BUTTON` | A search button in the top bar that opens a search field and shows the results in place of the page: off on a computer, on on a phone |
-| `SIDEBAR_HOME`, `GLOSSARY_PAGE`, `REFERENCES_PAGE`, `FIGURES_PAGE` | Whether the sidebar's page list starts with the home page, and whether it lists the glossary, references and figures pages |
-| `PHONE` | What differs on a phone: a true or false for any of the options above that can be shown or hidden, such as `TOC` or `GRAPH`; the rest follow the computer |
-| `TOC_TITLE` | What the table of contents is called: contents, on this page, in this article or outline |
-| `FONT`, `DENSITY`, `READING_WIDTH` | Typeface, spacing and the column width a visitor starts with |
-| `INLINE_TAGS`, `LINK_PREVIEWS`, `GLOSSARY_HIGHLIGHTS`, `IMAGE_ZOOM`, `CODE_COPY`, `HEADING_LINKS`, `EXTERNAL_ICON`, `EXTERNAL_NEW_TAB` | The small behaviors of the page text, each on or off |
-| `PAGE_NUMBERS`, `HEADING_NUMBERS` | A number before each page title and heading, written as an example of the numbers you want (this project uses `I.1.1 {title}` and `{page}.1.1 {title}`) |
-| `NUMBER_COLOR` | The color of those numbers, among the ones readable on both themes |
-| `FIGURE_FORMAT`, `TABLE_FORMAT`, `EQUATION_FORMAT` | The label in front of a numbered figure, table or equation caption |
+| `footerText`, `footerLinks` | A line of text and up to five links under every page |
+| `seeAlso`, `seeAlsoLimit`, `seeAlsoTags` | Related pages, how many, and the tags they share |
+| `pageNav`, `journeyPrompt` | Previous, parent, first-child and next links, and the offer to follow a journey |
+| `breadcrumbs`, `toc`, `graph`, `search`, `themeToggle`, `print`, `showUpdated` | Each part of the reader, shown or hidden |
+| `searchButton` | A search button in the top bar that opens a search field and shows the results in place of the page: off on a computer, on on a phone |
+| `sidebarHome`, `glossaryPage`, `referencesPage`, `figuresPage` | Whether the sidebar's page list starts with the home page, and whether it lists the glossary, references and figures pages |
+| `phone` | What differs on a phone: a true or false for any of the options above that can be shown or hidden, such as `toc` or `graph`; the rest follow the computer |
+| `tocTitle` | What the table of contents is called: contents, on this page, in this article or outline |
+| `font`, `density`, `readingWidth` | Typeface, spacing and the column width a visitor starts with |
+| `inlineTags`, `linkPreviews`, `glossaryHighlights`, `imageZoom`, `codeCopy`, `headingLinks`, `externalIcon`, `externalNewTab` | The small behaviors of the page text, each on or off |
+| `pageNumbers`, `headingNumbers` | A number before each page title and heading, written as an example of the numbers you want (this project uses `I.1.1 {title}` and `{page}.1.1 {title}`) |
+| `numberColor` | The color of those numbers, among the ones readable on both themes |
+| `figureFormat`, `tableFormat`, `equationFormat` | The label in front of a numbered figure, table or equation caption |
 
 ## On paper
 
@@ -3631,7 +3891,7 @@ The outline keeps going.
 
 ###### A sixth-level heading
 
-Six is the deepest level. [Jump back to the top of the page](#/look/toc).
+Six is the deepest level. [Jump back to the top of the page](#/toc).
 
 ## Skipped levels
 
@@ -3673,7 +3933,7 @@ The tree in the sidebar is the project's hierarchy. Each page names its parent, 
 | --- | --- |
 | **Wide**: many siblings | [Content](#/content) has fourteen children |
 | **Nested**: groups inside groups | Diagrams, Media and Transclusion each hold their own pages |
-| **Deep**: a long chain | [Seven levels down](#/look/tree/depth1/depth2/depth3/depth4/depth5/depth6/depth7) |
+| **Deep**: a long chain | [Seven levels down](#/depth7) |
 
 Levels one to six of the chain are **simple folders**: navigation-only nodes with no page of their own. They appear in the tree, the breadcrumbs and the graph, and a link to one points at its children.
 
@@ -3691,7 +3951,7 @@ Use the graph in the utility panel, or press <kbd>G</kbd> for the fullscreen gra
 
 | You see | Because |
 | --- | --- |
-| A grey outlined node | A [simple folder](#/look/tree) |
+| A grey outlined node | A [simple folder](#/tree) |
 | A node tinted with the accent color | A page with nothing below it |
 | A diamond labeled `#gallery (13)` | A tag shared by more than five pages becomes a hub; click it to open the tag's page |
 | Lines between the pages tagged `visual` | A tag with five pages or fewer links them directly; rest the pointer on one to see the tags |
@@ -3713,7 +3973,7 @@ Under **Graph display** in the fullscreen view:
 
 A page query can draw a graph of just the pages it selects. This one shows the pages of the Content tour:
 
-{{pages journey="Content tour" view="graph"}}
+{{pages journey="content-tour" view="graph"}}
 
 And this one the children of Content:
 
@@ -3737,14 +3997,14 @@ Everything a visitor can change without touching the project. None of it is save
 
 ## Floating previews
 
-Click the eye beside a link such as [Page graph](#/look/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query**, citations such as the pocket guide[@demo-guide] and footnote markers need no click: hover or focus them to read their note.
+Click the eye beside a link such as [Page graph](#/graph) to preview the page beside the one you are reading. Pin the preview to keep it, move and resize it, follow a link inside it, and open a pop-out note where one is offered. Glossary terms such as **page query**, citations such as the pocket guide[@demo-guide] and footnote markers need no click: hover or focus them to read their note.
 
 > [!NOTE]
 > **On a phone** the eye is not shown, so a link cannot be previewed there: follow it instead.
 
 ## Images and the lightbox
 
-Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See [Images and emoji](#/content/media/images).
+Click any image, GIF-mode loop or Canvas card to open it in the lightbox, and zoom and drag inside it. See [Images and emoji](#/images).
 
 ## Tags and related pages
 
@@ -3752,11 +4012,11 @@ A tag written in the text, such as #gallery or #visual, links to the page that l
 
 ## Journeys
 
-When a page belongs to a journey, its footer offers to follow the path. **From this page** and **From the start** choose where to begin, and **Leave journey** returns to ordinary navigation. Try the [Look and feel tour](journey:Look%20and%20feel%20tour), or the [Reading tour](journey:Reading%20tour), whose middle step is [a long page](#/look/long_read) that shows the bar filling.
+When a page belongs to a journey, its footer offers to follow the path. **From this page** and **From the start** choose where to begin, and **Leave journey** returns to ordinary navigation. Try the [Look and feel tour](#/journey/look-and-feel-tour), or the [Reading tour](#/journey/reading-tour), whose middle step is [a long page](#/long_read) that shows the bar filling.
 
 ## Slides
 
-A page with a presentation setting offers **Present**. See [Presentation](#/content/presentation).
+A page with a presentation setting offers **Present**. See [Presentation](#/presentation).
 
 ## On a phone
 
@@ -3770,7 +4030,7 @@ One page with a great deal to read, so that the journey bar, the table of conten
 
 ## Why this page is long
 
-The [Reading tour](journey:Reading%20tour) has three steps, and this is the middle one. Most pages here fit on a screen or two, which is not enough to see what a journey does while you read. This one runs on for a long time, with many headings, so that every part of the reader that keeps track of your place has room to show it.
+The [Reading tour](#/journey/reading-tour) has three steps, and this is the middle one. Most pages here fit on a screen or two, which is not enough to see what a journey does while you read. This one runs on for a long time, with many headings, so that every part of the reader that keeps track of your place has room to show it.
 
 Scroll slowly. Along the foot of the window, the journey bar fills as you go, and its track carries a tick for every heading of this page. Beside the text, the table of contents marks the heading you are under.
 
@@ -3822,7 +4082,7 @@ A quotation is for words that someone else wrote, with the source beside them. S
 
 ## Links that explain themselves
 
-A link should say where it goes before it is followed. “See the [table of contents](#/look/toc)” tells the reader what they will find; “click here” tells them nothing, and a screen reader that lists the links of a page reads out a column of identical words.
+A link should say where it goes before it is followed. “See the [table of contents](#/toc)” tells the reader what they will find; “click here” tells them nothing, and a screen reader that lists the links of a page reads out a column of identical words.
 
 Link to the page that answers the question, not to the front door of the topic. The floating preview, offered beside each link on a wide screen, lets a reader look before leaving, which makes a precise link even more useful.
 
@@ -3924,7 +4184,7 @@ If all three pass, the page is ready. If one does not, the fix is usually at the
 
 A long page should end on something: a summary, a next step, or the link to what comes after. In a journey, the next step is already waiting in the bar.
 
-The last step of this tour is the [table of contents](#/look/toc): the very list that has followed you down this page.
+The last step of this tour is the [table of contents](#/toc): the very list that has followed you down this page.
 
 # Per-page options
 
@@ -3932,26 +4192,26 @@ A few lines in a page's header change how that page behaves. This project uses e
 
 | Header | Effect | See it here |
 | --- | --- | --- |
-| `kind:"simple"` | A navigation-only folder with no body | [The deep chain](#/look/tree) |
-| `kind:"glossary"`, `kind:"references"` | Shared terms and sources, with their own graph symbols | [Glossary](#/demo_glossary), [References](#/demo_references) |
-| `presentation:"h2"` | Offers **Present**, which turns sections into slides (split at `h1`, `h2`, `h3` or `---`) | [Presentation](#/content/presentation) |
-| `showUpdated:"false"` | Hides the "Last updated" line | Every hub page |
-| `updated:"date" "comment"` | Shows the date and a short note | The foot of this page |
-| `noindex:"true"` | Asks search engines to skip the page | [Everything, back to back](#/stress) |
-| `title:":book: Name"` | Draws an emoji in the sidebar, the breadcrumb, search and links | [Content](#/content) and [Look and navigation](#/look) |
-| `tags`, `journey` | Group pages for queries, the graph, tours and **See also** | The pages of the three tours |
+| `kind: "folder"` | A navigation-only folder with no body | [The deep chain](#/tree) |
+| `kind: "glossary"`, `kind: "references"` | Shared terms and sources, with their own graph symbols | [Glossary](#/demo_glossary), [References](#/demo_references) |
+| `presentation: "h2"` | Offers **Present**, which turns sections into slides (split at `h1`, `h2`, `h3` or `---`) | [Presentation](#/presentation) |
+| `showUpdated: false` | Hides the "Last updated" line | Every hub page |
+| `updated: {"date":"…","note":"…"}` | Shows the date and a short note | The foot of this page |
+| `noindex: true` | Asks search engines to skip the page | [Everything, back to back](#/stress) |
+| `title: ":book: Name"` | Draws an emoji in the sidebar, the breadcrumb, search and links | [Content](#/content) and [Look and navigation](#/look) |
+| `tags: ["…"]` | Group pages for queries, the graph and **See also** | The gallery pages |
+
+The three tours are not in any header: journeys are listed in the project's `pmd.json`, each an ID, a title and its pages in order.
 
 ## A header, as source
 
 ````md
 <!--\pmd
-id:"example"
-title:"An example page"
-parent:"home"
-tags:"gallery, visual"
-journey:"Look and feel tour" "3"
-updated:"2026-10-05" "Added the example"
-showUpdated:"true"
+id: "example"
+title: "An example page"
+parent: "home"
+tags: ["gallery","visual"]
+updated: {"date":"2026-10-05","note":"Added the example"}
 -->
 # An example page
 ````

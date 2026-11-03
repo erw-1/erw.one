@@ -1,0 +1,9 @@
+{
+  "pmd": 1,
+  "title": "A small project",
+  "lang": "en",
+  "theme": "dark",
+  "accent": "#e8833a",
+  "scripts": false,
+  "editorLink": true
+}

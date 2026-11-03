@@ -11,5 +11,5 @@ Glossary popovers;Floating panel;Glossary terms and aliases
 Citation popovers;Floating panel;Reference entries
 Lightbox;Overlay;Images and Canvas cards
 Reading width;Content area;A reader toggle
-Theme;Whole reader;DEFAULT_THEME and CUSTOM_CSS
+Theme;Whole reader;theme and style.css
 Presentation;Overlay;The page's presentation setting
