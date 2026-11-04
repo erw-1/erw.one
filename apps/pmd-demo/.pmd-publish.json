@@ -3,8 +3,8 @@
   "files": [
     {
       "path": "index.html",
-      "hash": "0375e33dc2cf08405036589e3bd93ab45829977f9a52922195772418a92f2394",
-      "git": "ffddc95239d8176a297911800118d3fefd1f94a8"
+      "hash": "d94113ded28df92df6006452e21bfe430a682ee6020deb01e65655e6699e70bd",
+      "git": "853ebd5a3d16a85dbb0d75cd19df5bf2281cac76"
     },
     {
       "path": ".nojekyll",
@@ -17,12 +17,12 @@
       "git": "1524e30134bd4a455d061e330e842db07b814402"
     },
     {
-      "path": "pmd-reader-dist/reader-4d34cedb14bd5aa6.js",
-      "hash": "4d34cedb14bd5aa6a1ee08d4044f5a69f22ecfbd50d3a15729301be5f23c5eea",
-      "git": "be8f56c5cda87de1153990e3b960244e1e4217a9"
+      "path": "pmd-reader-dist/reader-ac9b7a5645c4df37.js",
+      "hash": "ac9b7a5645c4df377dde665a9e2389845155b2ed7cfa988063299929119c36d0",
+      "git": "e5630d316673572b54c44983b7663a8f9d2f5bd8"
     },
     {
-      "path": "pmd-custom-c6e8f8101ce0345d.css",
+      "path": "style.css",
       "hash": "c6e8f8101ce0345da3bdb00c930113d40dc90751693db061854e277f7b12f294",
       "git": "d432cfe30b6d5ea48e8560a7598afc363f859505"
     },
@@ -35,11 +35,6 @@
       "path": "portable.md",
       "hash": "ca95ce8b8cb1d442406f780bc38a93521cc2e3a9c96020372fc5a32458eb26f4",
       "git": "4341d3dd96ba192669a44251a669f06dce823790"
-    },
-    {
-      "path": "style.css",
-      "hash": "c6e8f8101ce0345da3bdb00c930113d40dc90751693db061854e277f7b12f294",
-      "git": "d432cfe30b6d5ea48e8560a7598afc363f859505"
     },
     {
       "path": "assets/clip.vtt",
