@@ -7,7 +7,7 @@ Uses and plans for the future :
 - Homepage
   - Personal portolio (GIS stuff, maps, etc, ...)
   - A page for my CV
-  - Maybe I'll add a photography section since I like to take pictures
+  - Maybe I'll add a photography section since I like to take pictures 
   
 - hosting random web projects in the "apps" folder
 - URL shortener with redirects in the "r" folder
